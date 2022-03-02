@@ -11,6 +11,7 @@
     "react-dom": "^17.0.2",
     "react-jss": "^10.9.0",
     "react-scripts": "5.0.0",
+    "serve": "^13.0.2",
     "typescript": "^4.5.5"
   },
   "devDependencies": {
@@ -49,5 +50,9 @@
     "*.{js,jsx,json,md}": [
       "prettier --write"
     ]
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": ">=8"
   }
 }
