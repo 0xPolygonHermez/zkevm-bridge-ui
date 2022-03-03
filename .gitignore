@@ -1,0 +1,15 @@
+# Editors
+.vscode/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env*
+!.env.example
+
+# Artifacts
+build/
+
+# System files
+**/.DS_Store
