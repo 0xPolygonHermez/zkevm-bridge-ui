@@ -1,14 +1,9 @@
-import "src/views/app.styles.ts";
+import Router from "src/routing/routes";
+import useAppStyles from "src/views/app.styles";
 
-function App(): JSX.Element {
-  return (
-    <div className="App">
-      <div className="App-header">
-        <h2>Welcome to Bridge</h2>
-      </div>
-      <p className="App-intro">Polygon Hermez Bridge</p>
-    </div>
-  );
-}
+const App = (): JSX.Element => {
+  useAppStyles();
+  return <Router />;
+};
 
 export default App;

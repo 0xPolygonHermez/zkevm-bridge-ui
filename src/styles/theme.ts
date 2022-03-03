@@ -17,12 +17,12 @@ const theme = {
       hover: "#000411",
     },
     grey: {
-      veryLight: "#e1e1f1",
-      light: "#f3f3f8",
+      veryLight: "#f3f3f8",
+      light: "#E2E5EE",
       main: "#888baa",
       dark: "#7a7c89",
       dark05: "rgba(122, 124, 137, 0.5)",
-      hover: "rgba(122, 124, 137, 0.2)",
+      hover: "rgba(67, 85, 140, 0.1)",
     },
     red: {
       light: "rgba(255, 75, 64, 0.15)",
