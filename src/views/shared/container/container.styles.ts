@@ -17,7 +17,7 @@ const useContainerStyles = createUseStyles((theme: Theme) => ({
   wrapper: {
     width: "100%",
     maxWidth: 700 + 2 * theme.spacing(3.5),
-    padding: `0px ${theme.spacing(3.5)}px`,
+    padding: [[theme.spacing(1), theme.spacing(3.5)]],
   },
 }));
 

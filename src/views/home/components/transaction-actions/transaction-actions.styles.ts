@@ -6,7 +6,7 @@ const useTransactionActionsStyles = createUseStyles((theme: Theme) => ({
   buttons: {
     display: "flex",
     justifyContent: "center",
-    margin: [[theme.spacing(1), theme.spacing(5), theme.spacing(2)]],
+    margin: [[theme.spacing(1), theme.spacing(5)]],
   },
   actionBtn: {
     margin: [[0, theme.spacing(2.5)]],

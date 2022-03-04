@@ -4,9 +4,9 @@ const Container: React.FC<ContainerStyles> = ({ background, children }): JSX.Ele
   const classes = useContainerStyles({ background });
 
   return (
-    <section className={classes.root}>
+    <div className={classes.root}>
       <div className={classes.wrapper}>{children}</div>
-    </section>
+    </div>
   );
 };
 
