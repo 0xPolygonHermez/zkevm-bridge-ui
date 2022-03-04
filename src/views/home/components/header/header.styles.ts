@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const flexBox = { width: "100%", display: "flex" };
+const flexBox = { flex: 1, display: "flex" };
 const btn = (theme: Theme) => ({
   display: "inline-flex",
   alignItems: "center",
@@ -27,10 +27,9 @@ const btn = (theme: Theme) => ({
 const useHeaderHomeStyles = createUseStyles((theme: Theme) => ({
   header: {
     ...flexBox,
-    justifyContent: "space-between",
     fontWeight: theme.fontWeights.medium,
     "& > *": {
-      width: "100%",
+      flex: 1,
     },
   },
   settingsBtn: {
