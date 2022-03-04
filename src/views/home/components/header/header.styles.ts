@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useHeaderHomeStyles = createUseStyles((theme: Theme) => ({
+const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
     display: "flex",
     fontWeight: theme.fontWeights.medium,
@@ -53,4 +53,4 @@ const useHeaderHomeStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useHeaderHomeStyles;
+export default useHeaderStyles;
