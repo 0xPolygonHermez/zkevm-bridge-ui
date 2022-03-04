@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { ReactComponent as Plus } from "src/assets/icons/plus.svg";
+import { ReactComponent as Deposit } from "src/assets/icons/deposit.svg";
 import { ReactComponent as Withdraw } from "src/assets/icons/withdraw.svg";
 import useTransactionActionsStyles from "src/views/home/components/transaction-actions/transaction-actions.styles";
 
@@ -10,7 +10,7 @@ const TransactionActions = () => {
     <div className={classes.buttons}>
       <Link to={"/"} className={classes.actionBtn}>
         <p className={classes.circle}>
-          <Plus />
+          <Deposit />
         </p>
         <p className={classes.actionText}>Deposit</p>
       </Link>
