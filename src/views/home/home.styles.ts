@@ -14,9 +14,9 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     padding: [[theme.spacing(1.25), theme.spacing(3)]],
     borderRadius: theme.spacing(7),
     fontWeight: theme.fontWeights.medium,
-    "& svg": {
-      marginRight: theme.spacing(1),
-    },
+  },
+  icon: {
+    marginRight: theme.spacing(1),
   },
 }));
 

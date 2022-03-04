@@ -9,20 +9,20 @@ const Header = () => {
   const classes = useHeaderHomeStyles();
   return (
     <header className={classes.header}>
-      <div className={classes.settingsBtn}>
-        <Link to={"/"}>
-          <Settings />
-          <p>Settings</p>
+      <div className={classes.settingsButton}>
+        <Link to={"/"} className={classes.button}>
+          <Settings className={classes.icon} />
+          <p className={classes.text}>Settings</p>
         </Link>
       </div>
-      <div className={classes.logo}>
-        <Logo />
-        <p>Bridge</p>
+      <div className={classes.logoBox}>
+        <Logo className={classes.logoIcon} />
+        <p className={classes.logoText}>Bridge</p>
       </div>
-      <div className={classes.myAccountBtn}>
-        <Link to={"/"}>
-          <p>My Address</p>
-          <QR />
+      <div className={classes.myAccountButton}>
+        <Link to={"/"} className={classes.button}>
+          <p className={classes.text}>My Address</p>
+          <QR className={classes.icon} />
         </Link>
       </div>
     </header>

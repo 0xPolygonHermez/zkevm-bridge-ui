@@ -13,7 +13,7 @@ const useTransactionActionsStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    "&:hover p:first-child": {
+    "&:hover > :first-child": {
       transform: "scale(0.97)",
       boxShadow: ` 0 ${theme.spacing(1)}px ${theme.spacing(2.5)}px ${theme.palette.primary.hover}`,
       transition: theme.hoverTransition,

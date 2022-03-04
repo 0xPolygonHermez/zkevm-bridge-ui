@@ -11,7 +11,7 @@ const Home = (): JSX.Element => {
       <Header />
       <div className={classes.chainRow}>
         <div className={classes.chain}>
-          <EthIcon />
+          <EthIcon className={classes.icon} />
           Ethereum chain
         </div>
       </div>
