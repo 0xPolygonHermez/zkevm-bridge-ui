@@ -15,14 +15,12 @@ const btn = (theme: Theme) => ({
   "& p": {
     margin: [[0, theme.spacing(1)]],
     display: "none",
+    [theme.breakpoints.upSm]: {
+      display: "inherit",
+    },
   },
   "&:hover": {
     backgroundColor: theme.palette.grey.light,
-  },
-  [theme.breakpoints.upSm]: {
-    "& p": {
-      display: "inherit",
-    },
   },
 });
 
