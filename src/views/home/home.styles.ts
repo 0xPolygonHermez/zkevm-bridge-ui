@@ -8,7 +8,6 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
   },
   chain: {
     display: "inline-flex",
-    justifyContent: "center",
     alignItems: "center",
     margin: theme.spacing(3),
     backgroundColor: theme.palette.grey.light,
