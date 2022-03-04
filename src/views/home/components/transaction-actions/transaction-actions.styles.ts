@@ -8,25 +8,24 @@ const useTransactionActionsStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "center",
     margin: [[theme.spacing(1), theme.spacing(5)]],
   },
-  actionBtn: {
+  buttonBox: {
+    textAlign: "center",
+  },
+  actionButton: {
     margin: [[0, theme.spacing(2.5)]],
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    "&:hover > :first-child": {
+    backgroundColor: theme.palette.white,
+    justifyContent: "center",
+    width: theme.spacing(8),
+    height: theme.spacing(8),
+    borderRadius: theme.spacing(8),
+    "&:hover": {
       transform: "scale(0.97)",
       boxShadow: ` 0 ${theme.spacing(1)}px ${theme.spacing(2.5)}px ${theme.palette.primary.hover}`,
       transition: theme.hoverTransition,
     },
-  },
-  circle: {
-    display: "flex",
-    backgroundColor: theme.palette.white,
-    justifyContent: "center",
-    alignItems: "center",
-    width: theme.spacing(8),
-    height: theme.spacing(8),
-    borderRadius: theme.spacing(8),
   },
   actionText: {
     fontWeight: theme.fontWeights.medium,
