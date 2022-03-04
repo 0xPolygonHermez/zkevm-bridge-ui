@@ -1,4 +1,4 @@
-import Router from "src/routing/routes";
+import Router from "src/routing/router";
 import useAppStyles from "src/views/app.styles";
 
 const App = (): JSX.Element => {
