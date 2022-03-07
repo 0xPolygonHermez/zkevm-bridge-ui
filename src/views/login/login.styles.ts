@@ -24,6 +24,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     marginTop: theme.spacing(6),
+    marginBottom: theme.spacing(8),
   },
   cardHeader: {
     margin: 0,
