@@ -55,7 +55,7 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
-      color: theme.palette.black.main,
+      color: theme.palette.black,
     },
     "#app-root": {
       zIndex: 0,

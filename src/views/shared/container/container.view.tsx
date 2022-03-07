@@ -1,10 +1,16 @@
-import useContainerStyles, { ContainerStyles } from "src/views/shared/container/container.styles";
+import { FC } from "react";
 
-const Container: React.FC<ContainerStyles> = ({ background, children }): JSX.Element => {
-  const classes = useContainerStyles({ background });
+import useContainerStyles from "src/views/shared/container/container.styles";
+
+interface ContainerProps {
+  flexDirection?: "row" | "column";
+}
+
+const Container: FC<ContainerProps> = ({ flexDirection = "row", children }): JSX.Element => {
+  const classes = useContainerStyles({ flexDirection });
 
   return (
-    <div className={classes.root}>
+    <div className={classes.container}>
       <div className={classes.wrapper}>{children}</div>
     </div>
   );
