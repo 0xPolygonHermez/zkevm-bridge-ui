@@ -29,6 +29,7 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     padding: [theme.spacing(0.75), theme.spacing(1)],
     borderRadius: theme.spacing(1),
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
