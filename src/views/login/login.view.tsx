@@ -1,5 +1,4 @@
 import Card from "src/views/shared/card/card.view";
-import Container from "src/views/shared/container/container.view";
 import useLoginStyles from "src/views/login/login.styles";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconnect.svg";
@@ -25,37 +24,35 @@ const Login = () => {
   ];
 
   return (
-    <div className={classes.login}>
-      <Container flexDirection="column">
-        <PolygonHermezLogo className={classes.logo} />
-        <Typography type="body1" className={classes.appName}>
-          Bridge
+    <>
+      <PolygonHermezLogo className={classes.logo} />
+      <Typography type="body1" className={classes.appName}>
+        Bridge
+      </Typography>
+      <Card className={classes.card}>
+        <Typography type="h1" className={classes.cardHeader}>
+          Connect a wallet
         </Typography>
-        <Card className={classes.card}>
-          <Typography type="h1" className={classes.cardHeader}>
-            Connect a wallet
-          </Typography>
-          <ul className={classes.walletList}>
-            {walletsData.map(({ name, description, Icon, iconContainerClassName }, i) => (
-              <li key={i} className={classes.wallet}>
-                <div className={classes.walletInfo}>
-                  <div className={`${classes.walletIconContainer} ${iconContainerClassName}`}>
-                    <Icon />
-                  </div>
-                  <div>
-                    <Typography type="body1" className={classes.walletName}>
-                      {name}
-                    </Typography>
-                    <Typography type="body2">{description}</Typography>
-                  </div>
+        <ul className={classes.walletList}>
+          {walletsData.map(({ name, description, Icon, iconContainerClassName }, i) => (
+            <li key={i} className={classes.wallet}>
+              <div className={classes.walletInfo}>
+                <div className={`${classes.walletIconContainer} ${iconContainerClassName}`}>
+                  <Icon />
                 </div>
-                <CaretRightIcon />
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </Container>
-    </div>
+                <div>
+                  <Typography type="body1" className={classes.walletName}>
+                    {name}
+                  </Typography>
+                  <Typography type="body2">{description}</Typography>
+                </div>
+              </div>
+              <CaretRightIcon />
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </>
   );
 };
 
