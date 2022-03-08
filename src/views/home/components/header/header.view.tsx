@@ -20,7 +20,7 @@ const Header = () => {
           Bridge
         </Typography>
       </div>
-      <Link to={"/"} className={classes.link}>
+      <Link to={"/activity"} className={classes.link}>
         <Typography type="body1">Activity</Typography>
         <ClockIcon className={classes.activityIcon} />
       </Link>
