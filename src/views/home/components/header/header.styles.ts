@@ -18,12 +18,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(0.5),
     color: theme.palette.black,
   },
-  settingsIcon: {
-    marginRight: theme.spacing(1),
-  },
-  activityIcon: {
-    marginLeft: theme.spacing(1),
-  },
   link: {
     display: "flex",
     alignItems: "center",
@@ -32,6 +26,20 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
+    },
+  },
+  settingsLabel: {
+    display: "none",
+    [theme.breakpoints.upSm]: {
+      display: "block",
+      marginLeft: theme.spacing(1),
+    },
+  },
+  activityLabel: {
+    display: "none",
+    [theme.breakpoints.upSm]: {
+      display: "block",
+      marginRight: theme.spacing(1),
     },
   },
 }));

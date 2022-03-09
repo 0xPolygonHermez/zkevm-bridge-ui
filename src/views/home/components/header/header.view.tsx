@@ -12,8 +12,10 @@ const Header: FC = () => {
   return (
     <header className={classes.header}>
       <Link to={"/"} className={classes.link}>
-        <SettingIcon className={classes.settingsIcon} />
-        <Typography type="body1">Settings</Typography>
+        <SettingIcon />
+        <Typography type="body1" className={classes.settingsLabel}>
+          Settings
+        </Typography>
       </Link>
       <div className={classes.logoWrapper}>
         <PolygonHermezIcon />
@@ -22,8 +24,10 @@ const Header: FC = () => {
         </Typography>
       </div>
       <Link to={"/"} className={classes.link}>
-        <Typography type="body1">Activity</Typography>
-        <ClockIcon className={classes.activityIcon} />
+        <Typography type="body1" className={classes.activityLabel}>
+          Activity
+        </Typography>
+        <ClockIcon />
       </Link>
     </header>
   );
