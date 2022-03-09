@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import Card from "src/views/shared/card/card.view";
 import useLoginStyles from "src/views/login/login.styles";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
@@ -6,7 +8,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import { ReactComponent as CaretRightIcon } from "src/assets/icons/caret-right.svg";
 import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
 
-const Login = () => {
+const Login: FC = () => {
   const classes = useLoginStyles();
   const walletsData = [
     {
