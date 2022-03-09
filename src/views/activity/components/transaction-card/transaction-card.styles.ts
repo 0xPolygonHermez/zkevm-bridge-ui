@@ -4,7 +4,7 @@ import { Theme } from "src/styles/theme";
 
 const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   card: {
-    padding: [[theme.spacing(2), theme.spacing(3)]],
+    padding: [theme.spacing(2), theme.spacing(3)],
     marginTop: theme.spacing(2),
     cursor: "pointer",
     "&:hover": {
@@ -30,7 +30,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   },
   actionColumn: {
     flex: 1,
-    margin: [[0, theme.spacing(2)]],
+    margin: [0, theme.spacing(2)],
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
@@ -44,7 +44,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     color: theme.palette.orange.main,
     fontWeight: theme.fontWeights.medium,
     fontSize: theme.spacing(1.75),
-    padding: [[theme.spacing(0.5), theme.spacing(1)]],
+    padding: [theme.spacing(0.5), theme.spacing(1)],
     borderRadius: theme.spacing(1),
     alignSelf: "flex-start",
   },
