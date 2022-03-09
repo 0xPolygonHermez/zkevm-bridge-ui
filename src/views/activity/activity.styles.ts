@@ -13,19 +13,23 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(1),
   },
   selectorBox: {
+    display: "flex",
     padding: [[theme.spacing(0.75), theme.spacing(1)]],
     marginRight: theme.spacing(2),
     borderRadius: theme.spacing(1),
     backgroundColor: theme.palette.white,
   },
   status: {
-    display: "inline-flex",
     padding: [[theme.spacing(0.5), theme.spacing(1)]],
+    lineHeight: `${theme.spacing(1.75)}px`,
   },
   number: {
+    display: "flex",
+    alignItems: "center",
     backgroundColor: theme.palette.grey.light,
-    padding: [[theme.spacing(0.5), theme.spacing(1)]],
+    padding: [[0, theme.spacing(1)]],
     borderRadius: theme.spacing(0.75),
+    lineHeight: `${theme.spacing(1.75)}px`,
   },
   inactiveBox: {
     backgroundColor: "inherit",

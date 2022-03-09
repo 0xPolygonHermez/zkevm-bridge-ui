@@ -22,26 +22,32 @@ const Activity = () => {
     <>
       <Header title={"Activity"} />
       <div className={classes.selectorBoxes}>
-        <div onClick={!listAll ? changeList : undefined}>
+        <div
+          className={`${classes.selectorBox} ${!listAll ? classes.inactiveBox : ""}`}
+          onClick={!listAll ? changeList : undefined}
+        >
+          <Typography type={"body1"} className={classes.status}>
+            All
+          </Typography>
           <Typography
-            type={"body1"}
-            className={`${classes.selectorBox} ${!listAll ? classes.inactiveBox : ""}`}
+            type={"body2"}
+            className={`${classes.number} ${!listAll ? classes.inactiveNumber : ""}`}
           >
-            <span className={classes.status}>All</span>
-            <span className={`${classes.number} ${!listAll ? classes.inactiveNumber : ""}`}>
-              {demoData.length}
-            </span>
+            {demoData.length}
           </Typography>
         </div>
-        <div onClick={listAll ? changeList : undefined}>
+        <div
+          className={`${classes.selectorBox} ${listAll ? classes.inactiveBox : ""}`}
+          onClick={listAll ? changeList : undefined}
+        >
+          <Typography type={"body1"} className={classes.status}>
+            Pending
+          </Typography>
           <Typography
-            type={"body1"}
-            className={`${classes.selectorBox} ${listAll ? classes.inactiveBox : ""}`}
+            type={"body2"}
+            className={`${classes.number} ${listAll ? classes.inactiveNumber : ""}`}
           >
-            <span className={classes.status}>Pending</span>
-            <span className={`${classes.number} ${listAll ? classes.inactiveNumber : ""}`}>
-              {pendingActivities.length}
-            </span>
+            {pendingActivities.length}
           </Typography>
         </div>
       </div>
