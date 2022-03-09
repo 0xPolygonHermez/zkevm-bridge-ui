@@ -1,4 +1,11 @@
-const FiatAmount = ({ amount, token }: { amount: number; token: "eth" | "dai" }) => {
+import { FC } from "react";
+
+interface FiatAmountProps {
+  amount: number;
+  token: "eth" | "dai";
+}
+
+const FiatAmount: FC<FiatAmountProps> = ({ amount, token }) => {
   const rates = {
     dai: 1.02,
     eth: 2500,
