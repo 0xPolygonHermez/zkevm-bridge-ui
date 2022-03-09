@@ -14,9 +14,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     },
   },
   row: {
-    justifyContent: "space-between",
     display: "flex",
-    flex: 1,
   },
   steps: {
     color: theme.palette.grey.dark,
