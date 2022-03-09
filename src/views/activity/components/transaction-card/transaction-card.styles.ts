@@ -92,6 +92,10 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
     },
+    "&:disabled": {
+      backgroundColor: theme.palette.disabled,
+      cursor: "initial",
+    },
   },
 }));
 

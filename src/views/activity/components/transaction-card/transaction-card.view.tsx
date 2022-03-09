@@ -95,7 +95,9 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
           <Typography type={"body2"}>
             Step 2 will require signature in {convertToTime()}.
           </Typography>
-          <button className={classes.finaliseButton}>Finalise </button>
+          <button disabled className={classes.finaliseButton}>
+            Finalise{" "}
+          </button>
         </div>
       )}
       {status === "hold" && (
