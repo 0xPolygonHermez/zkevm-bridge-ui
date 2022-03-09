@@ -6,6 +6,7 @@ import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
 import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import FiatAmount from "src/views/shared/fiatAmount/fiat-amount";
 import Typography from "src/views/shared/typography/typography.view";
+import Card from "src/views/shared/card/card.view";
 
 export interface TransactionCardProps {
   type: "l1" | "l2";
@@ -55,7 +56,7 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
   };
 
   return (
-    <div className={classes.card}>
+    <Card className={classes.card}>
       {status === "initiate" && <p className={classes.steps}>STEP 1/2</p>}
       {status === "hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
@@ -106,7 +107,7 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
           <button className={classes.finaliseButton}>Finalise </button>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -5,8 +5,6 @@ import { Theme } from "src/styles/theme";
 const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   card: {
     padding: [[theme.spacing(2), theme.spacing(3)]],
-    backgroundColor: theme.palette.white,
-    borderRadius: theme.spacing(2),
     marginTop: theme.spacing(2),
     cursor: "pointer",
     "&:hover": {
