@@ -3,13 +3,6 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useLoginStyles = createUseStyles((theme: Theme) => ({
-  login: {
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    background: theme.palette.grey.light,
-  },
   logo: {
     margin: [theme.spacing(8), "auto", 0, "auto"],
   },
@@ -18,7 +11,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     margin: "auto",
     padding: [theme.spacing(1.25), theme.spacing(4)],
     background: theme.palette.grey.main,
-    borderRadius: 56,
+    borderRadius: theme.spacing(7),
   },
   card: {
     display: "flex",
@@ -27,7 +20,6 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(8),
   },
   cardHeader: {
-    margin: 0,
     padding: [theme.spacing(3), theme.spacing(4), theme.spacing(2)],
   },
   walletList: {

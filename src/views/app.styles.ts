@@ -72,12 +72,6 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
       textDecoration: "none",
       color: "inherit",
     },
-    p: {
-      margin: 0,
-    },
-    h1: {
-      margin: 0,
-    },
   },
 }));
 
