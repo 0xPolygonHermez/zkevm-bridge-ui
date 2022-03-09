@@ -3,11 +3,6 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  title: {
-    margin: [[theme.spacing(3), 0]],
-    fontWeight: theme.fontWeights.bold,
-    fontSize: theme.spacing(3),
-  },
   selectorBoxes: {
     display: "flex",
     marginTop: theme.spacing(1),
