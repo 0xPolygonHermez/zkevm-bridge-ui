@@ -16,21 +16,14 @@ export interface TransactionCardProps {
   amount: number;
 }
 
-const TrasnsactionCard = ({
-  type,
-  timestamp,
-  token,
-  amount,
-  status,
-}: TransactionCardProps): JSX.Element => {
+const TrasnsactionCard = ({ type, timestamp, token, amount, status }: TransactionCardProps) => {
   const classes = useTransactionCardStyles();
-  const Icon =
-    status !== "complete" && status !== "error"
-      ? ReloadIcon
-      : type === "l1"
-      ? TransferL1Icon
-      : TransferL2Icon;
-  const action = type === "l1" ? "Transfer to L1" : "Transfer to L2";
+  const IconsLayer = {
+    l1: TransferL1Icon,
+    l2: TransferL2Icon,
+  };
+  const Icon = status !== "complete" && status !== "error" ? ReloadIcon : IconsLayer[type];
+  const actionText = type === "l1" ? "Transfer to L1" : "Transfer to L2";
   const statusText = {
     hold: "On Hold",
     initiate: "Initiate",
@@ -71,7 +64,7 @@ const TrasnsactionCard = ({
           <Icon />
         </div>
         <div className={classes.actionColumn}>
-          <Typography type={"body1"}>{action}</Typography>
+          <Typography type={"body1"}>{actionText}</Typography>
           {status === "complete" ? (
             <Typography type={"body2"} className={classes.time}>
               {convertToTime()} ago
