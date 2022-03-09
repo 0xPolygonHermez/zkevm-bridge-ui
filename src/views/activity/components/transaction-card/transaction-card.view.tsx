@@ -30,7 +30,6 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
     process: "Processing",
     error: "Error",
   };
-
   const tokenIcons = {
     eth: EthToken,
     dai: DaiToken,
