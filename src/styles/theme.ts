@@ -11,9 +11,15 @@ const theme = {
       main: "#e2e5ee",
       dark: "#7c7e96",
     },
-    orange: { main: "#e17e26", opacity: "rgba(225,126,38,0.1)" },
-    red: { main: "#e8430d", opacity: "rgba(232,67,12,0.1)" },
-    disabled: "#78798D",
+    warning: {
+      main: "#e17e26",
+      ligth: "rgba(225,126,38,0.1)",
+    },
+    error: {
+      main: "#e8430d",
+      ligth: "rgba(232,67,12,0.1)",
+    },
+    disabled: "#78798d",
   },
   hoverTransition: "all 100ms",
   breakpoints: {

@@ -1,17 +1,17 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { ReactComponent as BackIcon } from "src/assets/icons/back.svg";
-import { ReactComponent as CloseIcon } from "src/assets/icons/close.svg";
+import { ReactComponent as BackIcon } from "src/assets/icons/arrow-left.svg";
+import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
 import useHeaderStyles from "src/views/shared/header/header.styles";
 import Typography from "src/views/shared/typography/typography.view";
 
 interface HeaderProps {
   title: string;
-  close?: boolean;
+  onClose?: boolean;
 }
 
-const Header: FC<HeaderProps> = ({ title, close }) => {
+const Header: FC<HeaderProps> = ({ title, onClose }) => {
   const classes = useHeaderStyles();
   return (
     <header className={classes.header}>
@@ -22,7 +22,7 @@ const Header: FC<HeaderProps> = ({ title, close }) => {
         {title}
       </Typography>
       <Link to="/" className={classes.sideButton}>
-        {close && <CloseIcon className={classes.icon} />}
+        {onClose && <CloseIcon className={classes.icon} />}
       </Link>
     </header>
   );

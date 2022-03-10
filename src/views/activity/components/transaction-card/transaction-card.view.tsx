@@ -1,7 +1,7 @@
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
-import { ReactComponent as TransferL1Icon } from "src/assets/icons/transfer-l1.svg";
-import { ReactComponent as TransferL2Icon } from "src/assets/icons/transfer-l2.svg";
-import { ReactComponent as ReloadIcon } from "src/assets/icons/reload-card.svg";
+import { ReactComponent as TransferL1Icon } from "src/assets/icons/l1-transfer.svg";
+import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.svg";
+import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
 import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import FiatAmount from "src/views/shared/fiatAmount/fiat-amount";
@@ -13,23 +13,23 @@ export interface TransactionCardProps {
   id: number;
   timestamp: number;
   token: "eth" | "dai";
-  status: "hold" | "initiate" | "process" | "complete" | "error";
+  status: "processing" | "initiated" | "on-hold" | "completed" | "failed";
   amount: number;
 }
 
-const TrasnsactionCard = ({ type, timestamp, token, amount, status }: TransactionCardProps) => {
+const TransactionCard = ({ type, timestamp, token, amount, status }: TransactionCardProps) => {
   const classes = useTransactionCardStyles();
   const IconsLayer = {
     l1: TransferL1Icon,
     l2: TransferL2Icon,
   };
-  const Icon = status !== "complete" && status !== "error" ? ReloadIcon : IconsLayer[type];
+  const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[type];
   const actionText = type === "l1" ? "Transfer to L1" : "Transfer to L2";
   const statusText = {
-    hold: "On Hold",
-    initiate: "Initiate",
-    process: "Processing",
-    error: "Error",
+    ["on-hold"]: "On Hold",
+    initiated: "Initiate",
+    processing: "Processing",
+    failed: "Error",
   };
   const tokenIcons = {
     eth: EthToken,
@@ -57,22 +57,22 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
 
   return (
     <Card className={classes.card}>
-      {status === "initiate" && <p className={classes.steps}>STEP 1/2</p>}
-      {status === "hold" && <p className={classes.steps}>STEP 2/2</p>}
+      {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
+      {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
           <Icon />
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">{actionText}</Typography>
-          {status === "complete" ? (
+          {status === "completed" ? (
             <Typography type="body2" className={classes.time}>
               {convertToTime()} ago
             </Typography>
           ) : (
             <span
               className={`${classes.statusBox} ${
-                status === "hold" || status === "error" ? classes.redStatus : ""
+                status === "on-hold" || status === "failed" ? classes.redStatus : ""
               }`}
             >
               {statusText[status]}
@@ -91,7 +91,7 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
           </Typography>
         </div>
       </div>
-      {status === "initiate" && (
+      {status === "initiated" && (
         <div className={classes.bottom}>
           <Typography type="body2">Step 2 will require signature in {convertToTime()}.</Typography>
           <button disabled className={classes.finaliseButton}>
@@ -99,7 +99,7 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
           </button>
         </div>
       )}
-      {status === "hold" && (
+      {status === "on-hold" && (
         <div className={classes.bottom}>
           <Typography type="body2">Sign required to finalise transaction.</Typography>
           <button className={classes.finaliseButton}>Finalise </button>
@@ -109,4 +109,4 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
   );
 };
 
-export default TrasnsactionCard;
+export default TransactionCard;

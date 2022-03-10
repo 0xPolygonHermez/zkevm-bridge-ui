@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import TrasnsactionCard from "src/views/activity/components/transaction-card/transaction-card.view";
+import TransactionCard from "src/views/activity/components/transaction-card/transaction-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
@@ -10,11 +10,11 @@ const Activity = () => {
   const classes = useActivityStyles();
   const [listAll, setListAll] = useState(true);
   const pendingActivities = demoData.filter(
-    (data) => data.status !== "complete" && data.status !== "error"
+    (data) => data.status !== "completed" && data.status !== "failed"
   );
   const transactionsList = listAll ? demoData : pendingActivities;
 
-  const changeList = () => {
+  const onChangeList = () => {
     setListAll(!listAll);
   };
 
@@ -24,7 +24,7 @@ const Activity = () => {
       <div className={classes.selectorBoxes}>
         <div
           className={`${classes.selectorBox} ${!listAll ? classes.inactiveBox : ""}`}
-          onClick={!listAll ? changeList : undefined}
+          onClick={!listAll ? onChangeList : undefined}
         >
           <Typography type="body1" className={classes.status}>
             All
@@ -38,7 +38,7 @@ const Activity = () => {
         </div>
         <div
           className={`${classes.selectorBox} ${listAll ? classes.inactiveBox : ""}`}
-          onClick={listAll ? changeList : undefined}
+          onClick={listAll ? onChangeList : undefined}
         >
           <Typography type="body1" className={classes.status}>
             Pending
@@ -52,7 +52,7 @@ const Activity = () => {
         </div>
       </div>
       {transactionsList.map((transaction) => (
-        <TrasnsactionCard {...transaction} key={transaction.id} />
+        <TransactionCard {...transaction} key={transaction.id} />
       ))}
     </>
   );
