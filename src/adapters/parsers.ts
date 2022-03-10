@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
+import { Env } from "src/domain";
+
+const envParser = StrictSchema<Env>()(z.object({ REACT_APP_INFURA_API_KEY: z.string() }));
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
-export { ethereumAccountsParser };
+export { envParser, ethereumAccountsParser };

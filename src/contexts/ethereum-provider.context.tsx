@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { EthereumEvent, MetaMaskProvider, WalletName } from "src/domain";
 import { AsyncTask } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
-import { getAccounts } from "src/adapters/ethereum";
+import { getConnectedAccounts } from "src/adapters/ethereum";
+import { useEnvContext } from "./env.context";
 
 interface EthereumProviderContextData {
   provider?: Web3Provider;
@@ -21,11 +22,10 @@ const EthereumProviderContext = createContext<EthereumProviderContextData>({
 
 const EthereumProviderProvider: FC = (props) => {
   const navigate = useNavigate();
-  const [rawProvider, setRawProvider] = useState<
-    MetaMaskProvider | WalletConnectProvider | undefined
-  >(undefined);
-  const [provider, setProvider] = useState<Web3Provider | undefined>(undefined);
+  const [rawProvider, setRawProvider] = useState<MetaMaskProvider | WalletConnectProvider>();
+  const [provider, setProvider] = useState<Web3Provider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
+  const env = useEnvContext();
 
   const connectProvider = async (walletName: WalletName): Promise<void> => {
     switch (walletName) {
@@ -34,7 +34,7 @@ const EthereumProviderProvider: FC = (props) => {
           const metaMaskProvider = window.ethereum;
           const web3Provider = new Web3Provider(window.ethereum);
 
-          return getAccounts(web3Provider)
+          return getConnectedAccounts(web3Provider)
             .then((accounts) => {
               setRawProvider(metaMaskProvider);
               setProvider(web3Provider);
@@ -49,20 +49,26 @@ const EthereumProviderProvider: FC = (props) => {
         }
       }
       case WalletName.WALLET_CONNECT: {
-        const walletConnectProvider = new WalletConnectProvider({
-          infuraId: process.env.REACT_APP_INFURA_API_KEY as string,
-        });
-        const web3Provider = new Web3Provider(walletConnectProvider);
+        if (env) {
+          const walletConnectProvider = new WalletConnectProvider({
+            infuraId: env.REACT_APP_INFURA_API_KEY,
+          });
+          const web3Provider = new Web3Provider(walletConnectProvider);
 
-        return walletConnectProvider
-          .enable()
-          .then((accounts) => {
-            setRawProvider(walletConnectProvider);
-            setProvider(web3Provider);
-            setAccount({ status: "successful", data: accounts[0] });
-          })
-          .catch(() => {
-            setAccount({ status: "failed", error: "Error loading account" });
+          return walletConnectProvider
+            .enable()
+            .then((accounts) => {
+              setRawProvider(walletConnectProvider);
+              setProvider(web3Provider);
+              setAccount({ status: "successful", data: accounts[0] });
+            })
+            .catch(() => {
+              setAccount({ status: "failed", error: "Error loading account" });
+            });
+        } else
+          return setAccount({
+            status: "failed",
+            error: "The env hasn't be initialized properly",
           });
       }
     }
