@@ -1,11 +1,12 @@
 import { createContext, FC, useContext, useEffect, useState } from "react";
 import { Web3Provider } from "@ethersproject/providers";
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { MetaMaskEvent, WalletName } from "src/domain";
+import { EthereumEvent, MetaMaskProvider, WalletName } from "src/domain";
 import { AsyncTask } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
+import { getAccounts } from "src/adapters/ethereum";
 
 interface EthereumProviderContextData {
   provider?: Web3Provider;
@@ -20,6 +21,9 @@ const EthereumProviderContext = createContext<EthereumProviderContextData>({
 
 const EthereumProviderProvider: FC = (props) => {
   const navigate = useNavigate();
+  const [rawProvider, setRawProvider] = useState<
+    MetaMaskProvider | WalletConnectProvider | undefined
+  >(undefined);
   const [provider, setProvider] = useState<Web3Provider | undefined>(undefined);
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
 
@@ -27,15 +31,15 @@ const EthereumProviderProvider: FC = (props) => {
     switch (walletName) {
       case WalletName.METAMASK: {
         if (window.ethereum) {
+          const metaMaskProvider = window.ethereum;
           const web3Provider = new Web3Provider(window.ethereum);
 
-          setProvider(web3Provider);
-
-          return web3Provider
-            .send("eth_requestAccounts", [])
-            .then((accounts) =>
-              setAccount({ status: "successful", data: (accounts as string[])[0] })
-            )
+          return getAccounts(web3Provider)
+            .then((accounts) => {
+              setRawProvider(metaMaskProvider);
+              setProvider(web3Provider);
+              setAccount({ status: "successful", data: accounts[0] });
+            })
             .catch(() => setAccount({ status: "failed", error: "Error loading account" }));
         } else {
           return setAccount({
@@ -50,13 +54,14 @@ const EthereumProviderProvider: FC = (props) => {
         });
         const web3Provider = new Web3Provider(walletConnectProvider);
 
-        setProvider(web3Provider);
-
         return walletConnectProvider
           .enable()
-          .then((accounts) => setAccount({ status: "successful", data: accounts[0] }))
-          .catch((error) => {
-            console.log(error);
+          .then((accounts) => {
+            setRawProvider(walletConnectProvider);
+            setProvider(web3Provider);
+            setAccount({ status: "successful", data: accounts[0] });
+          })
+          .catch(() => {
             setAccount({ status: "failed", error: "Error loading account" });
           });
       }
@@ -76,33 +81,24 @@ const EthereumProviderProvider: FC = (props) => {
         }
       }
     };
-
-    if (window.ethereum && window.ethereum.on) {
-      window.ethereum.on(MetaMaskEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-    }
-
-    return () => {
-      if (window.ethereum && window.ethereum.removeListener) {
-        window.ethereum.removeListener(MetaMaskEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      }
-    };
-  }, [navigate]);
-
-  useEffect(() => {
-    const onChainChanged = () => {
+    const onChainChangedOrDisconnect = () => {
       window.location.reload();
     };
 
-    if (window.ethereum && window.ethereum.on) {
-      window.ethereum.on(MetaMaskEvent.CHAIN_CHANGED, onChainChanged);
+    if (rawProvider && rawProvider.on) {
+      rawProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+      rawProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+      rawProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
     }
 
     return () => {
-      if (window.ethereum && window.ethereum.removeListener) {
-        window.ethereum.removeListener(MetaMaskEvent.CHAIN_CHANGED, onChainChanged);
+      if (rawProvider && rawProvider.removeListener) {
+        rawProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+        rawProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+        rawProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
       }
     };
-  }, []);
+  }, [rawProvider, navigate]);
 
   return (
     <EthereumProviderContext.Provider value={{ provider, account, connectProvider }} {...props} />

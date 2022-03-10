@@ -1,12 +1,9 @@
 /// <reference types="react-scripts" />
 
-import { ExternalProvider, BaseProvider } from "@ethersproject/providers";
+import { MetaMaskProvider } from "./domain";
 
 declare global {
   interface Window {
-    ethereum?: ExternalProvider & {
-      on?: BaseProvider["on"];
-      removeListener?: BaseProvider["removeListener"];
-    };
+    ethereum?: MetaMaskProvider;
   }
 }
