@@ -14,7 +14,6 @@ enum StatusText {
   initiated = "Initiated",
   processing = "Processing",
   failed = "Error",
-  completed = "Completed",
 }
 export interface TransactionCardProps {
   type: "l1" | "l2";
