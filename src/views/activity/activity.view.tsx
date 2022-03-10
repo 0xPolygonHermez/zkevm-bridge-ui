@@ -7,45 +7,44 @@ import Header from "src/views/shared/header/header.view";
 import { demoData } from "src/views/activity/demo-data";
 
 const Activity = () => {
+  const [displayAll, setDisplayAll] = useState(true);
   const classes = useActivityStyles();
-  const [listAll, setListAll] = useState(true);
   const pendingActivities = demoData.filter(
     (data) => data.status !== "completed" && data.status !== "failed"
   );
-  const transactionsList = listAll ? demoData : pendingActivities;
+  const transactionsList = displayAll ? demoData : pendingActivities;
 
-  const onChangeList = () => {
-    setListAll(!listAll);
-  };
+  const onDisplayAll = () => setDisplayAll(true);
+  const onDisplayPending = () => setDisplayAll(false);
 
   return (
     <>
       <Header title="Activity" />
       <div className={classes.selectorBoxes}>
         <div
-          className={`${classes.selectorBox} ${!listAll ? classes.inactiveBox : ""}`}
-          onClick={!listAll ? onChangeList : undefined}
+          className={`${classes.selectorBox} ${!displayAll ? classes.inactiveBox : ""}`}
+          onClick={onDisplayAll}
         >
           <Typography type="body1" className={classes.status}>
             All
           </Typography>
           <Typography
             type="body2"
-            className={`${classes.number} ${!listAll ? classes.inactiveNumber : ""}`}
+            className={`${classes.number} ${!displayAll ? classes.inactiveNumber : ""}`}
           >
             {demoData.length}
           </Typography>
         </div>
         <div
-          className={`${classes.selectorBox} ${listAll ? classes.inactiveBox : ""}`}
-          onClick={listAll ? onChangeList : undefined}
+          className={`${classes.selectorBox} ${displayAll ? classes.inactiveBox : ""}`}
+          onClick={onDisplayPending}
         >
           <Typography type="body1" className={classes.status}>
             Pending
           </Typography>
           <Typography
             type="body2"
-            className={`${classes.number} ${listAll ? classes.inactiveNumber : ""}`}
+            className={`${classes.number} ${displayAll ? classes.inactiveNumber : ""}`}
           >
             {pendingActivities.length}
           </Typography>
