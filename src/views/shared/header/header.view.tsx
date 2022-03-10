@@ -18,9 +18,7 @@ const Header: FC<HeaderProps> = ({ title, onClose }) => {
       <Link to="/" className={classes.sideButton}>
         <BackIcon className={classes.icon} />
       </Link>
-      <Typography type="h1" className={classes.title}>
-        {title}
-      </Typography>
+      <Typography type="h1">{title}</Typography>
       <Link to="/" className={classes.sideButton}>
         {onClose && <CloseIcon className={classes.icon} />}
       </Link>

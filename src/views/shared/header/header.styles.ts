@@ -7,6 +7,7 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     margin: [theme.spacing(3), 0],
     alignItems: "center",
+    justifyContent: "space-between",
   },
   sideButton: {
     width: theme.spacing(5),
@@ -24,10 +25,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
-  },
-  title: {
-    flex: 1,
-    textAlign: "center",
   },
 }));
 
