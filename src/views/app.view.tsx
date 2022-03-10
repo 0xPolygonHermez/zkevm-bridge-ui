@@ -1,11 +1,8 @@
-import { Route, Routes } from "react-router-dom";
-
 import useAppStyles from "src/views/app.styles";
 import Layout from "src/views/core/layout/layout.view";
-import Home from "src/views/home/home.view";
-import Login from "src/views/login/login.view";
 import { EthereumProviderProvider } from "src/contexts/ethereum-provider.context";
 import { EnvProvider } from "src/contexts/env.context";
+import Router from "./core/router/router.view";
 
 const App = (): JSX.Element => {
   useAppStyles();
@@ -14,10 +11,7 @@ const App = (): JSX.Element => {
     <EnvProvider>
       <EthereumProviderProvider>
         <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
+          <Router />
         </Layout>
       </EthereumProviderProvider>
     </EnvProvider>
