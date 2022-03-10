@@ -10,7 +10,7 @@ const Header = () => {
   const classes = useHeaderStyles();
   return (
     <header className={classes.header}>
-      <Link to={"/"} className={classes.link}>
+      <Link to="/settings" className={classes.link}>
         <SettingIcon className={classes.settingsIcon} />
         <Typography type="body1">Settings</Typography>
       </Link>

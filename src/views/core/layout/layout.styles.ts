@@ -9,7 +9,7 @@ const useLayoutStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     background: theme.palette.grey.light,
-    padding: [0, theme.spacing(3.5)],
+    padding: [0, theme.spacing(2)],
   },
   container: {
     width: "100%",
