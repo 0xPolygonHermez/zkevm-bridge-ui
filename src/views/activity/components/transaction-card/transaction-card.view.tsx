@@ -9,6 +9,13 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import timeAgo from "src/utils/time-ago";
 
+enum StatusText {
+  "on-hold" = "On Hold",
+  initiated = "Initiated",
+  processing = "Processing",
+  failed = "Error",
+  completed = "Completed",
+}
 export interface TransactionCardProps {
   type: "l1" | "l2";
   id: number;
@@ -26,12 +33,6 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
   };
   const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[type];
   const actionText = type === "l1" ? "Transfer to L1" : "Transfer to L2";
-  const statusText = {
-    ["on-hold"]: "On Hold",
-    initiated: "Initiate",
-    processing: "Processing",
-    failed: "Error",
-  };
   const tokenIcons = {
     eth: EthToken,
     dai: DaiToken,
@@ -58,7 +59,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
                 status === "on-hold" || status === "failed" ? classes.redStatus : ""
               }`}
             >
-              {statusText[status]}
+              {StatusText[status]}
             </span>
           )}
         </div>
