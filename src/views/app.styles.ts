@@ -55,7 +55,7 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
-      color: theme.palette.black.main,
+      color: theme.palette.black,
     },
     "#app-root": {
       zIndex: 0,
@@ -71,12 +71,6 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
     a: {
       textDecoration: "none",
       color: "inherit",
-    },
-    p: {
-      margin: 0,
-    },
-    h1: {
-      margin: 0,
     },
   },
 }));

@@ -5,51 +5,42 @@ import { Theme } from "src/styles/theme";
 const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
     display: "flex",
-    fontWeight: theme.fontWeights.medium,
-  },
-  settingsButton: {
-    flex: 1,
-    display: "flex",
     alignItems: "center",
+    marginTop: theme.spacing(2),
   },
-  myAccountButton: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "right",
-  },
-  button: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: [[theme.spacing(0.75), theme.spacing(1)]],
-    borderRadius: theme.spacing(1),
-    height: theme.spacing(4.5),
-    "&:hover": {
-      backgroundColor: theme.palette.grey.light,
-    },
-  },
-  icon: {
-    width: 24,
-  },
-  text: {
-    margin: [[0, theme.spacing(1)]],
-    display: "none",
-    [theme.breakpoints.upSm]: {
-      display: "inherit",
-    },
-  },
-  logoBox: {
+  logoWrapper: {
     flex: 1,
     alignItems: "center",
     textAlign: "center",
     flexDirection: "column",
   },
-  logoIcon: {
-    width: 43,
+  appName: {
+    marginTop: theme.spacing(0.5),
+    color: theme.palette.black,
   },
-  logoText: {
-    marginTop: -theme.spacing(1.5),
-    fontSize: theme.spacing(1.75),
+  link: {
+    display: "flex",
+    alignItems: "center",
+    padding: [theme.spacing(0.75), theme.spacing(1)],
+    borderRadius: theme.spacing(1),
+    transition: theme.hoverTransition,
+    "&:hover": {
+      backgroundColor: theme.palette.grey.main,
+    },
+  },
+  settingsLabel: {
+    display: "none",
+    [theme.breakpoints.upSm]: {
+      display: "block",
+      marginLeft: theme.spacing(1),
+    },
+  },
+  activityLabel: {
+    display: "none",
+    [theme.breakpoints.upSm]: {
+      display: "block",
+      marginRight: theme.spacing(1),
+    },
   },
 }));
 
