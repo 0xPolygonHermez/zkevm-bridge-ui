@@ -1,4 +1,5 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Card from "src/views/shared/card/card.view";
 import useLoginStyles from "src/views/login/login.styles";
@@ -7,9 +8,25 @@ import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconn
 import Typography from "src/views/shared/typography/typography.view";
 import { ReactComponent as CaretRightIcon } from "src/assets/icons/caret-right.svg";
 import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
+import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
+import { WalletName } from "src/domain";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
+  const navigate = useNavigate();
+  const { connectProvider, account } = useEthereumProviderContext();
+
+  const onConnectProvider = (walletName: WalletName) => {
+    if (connectProvider) {
+      void connectProvider(walletName);
+    }
+  };
+
+  useEffect(() => {
+    if (account.status === "successful") {
+      navigate("/");
+    }
+  }, [account, navigate]);
 
   return (
     <>
@@ -22,7 +39,11 @@ const Login: FC = () => {
           Connect a wallet
         </Typography>
         <ul className={classes.walletList}>
-          <li className={classes.wallet}>
+          <li
+            className={classes.wallet}
+            role="button"
+            onClick={() => onConnectProvider(WalletName.METAMASK)}
+          >
             <div className={classes.walletInfo}>
               <div className={`${classes.walletIconContainer} ${classes.metaMaskIconContainer}`}>
                 <MetaMaskIcon />
@@ -36,7 +57,11 @@ const Login: FC = () => {
             </div>
             <CaretRightIcon />
           </li>
-          <li className={classes.wallet}>
+          <li
+            className={classes.wallet}
+            role="button"
+            onClick={() => onConnectProvider(WalletName.WALLET_CONNECT)}
+          >
             <div className={classes.walletInfo}>
               <div
                 className={`${classes.walletIconContainer} ${classes.walletConnectIconContainer}`}
