@@ -64,9 +64,9 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
           <Icon />
         </div>
         <div className={classes.actionColumn}>
-          <Typography type={"body1"}>{actionText}</Typography>
+          <Typography type="body1">{actionText}</Typography>
           {status === "complete" ? (
-            <Typography type={"body2"} className={classes.time}>
+            <Typography type="body2" className={classes.time}>
               {convertToTime()} ago
             </Typography>
           ) : (
@@ -82,28 +82,26 @@ const TrasnsactionCard = ({ type, timestamp, token, amount, status }: Transactio
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
             <TokenIcon className={classes.tokenIcon} />
-            <Typography type={"body1"}>
+            <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>
           </div>
-          <Typography type={"body2"}>
+          <Typography type="body2">
             <FiatAmount amount={amount} token={token} />
           </Typography>
         </div>
       </div>
       {status === "initiate" && (
         <div className={classes.bottom}>
-          <Typography type={"body2"}>
-            Step 2 will require signature in {convertToTime()}.
-          </Typography>
+          <Typography type="body2">Step 2 will require signature in {convertToTime()}.</Typography>
           <button disabled className={classes.finaliseButton}>
-            Finalise{" "}
+            Finalise
           </button>
         </div>
       )}
       {status === "hold" && (
         <div className={classes.bottom}>
-          <Typography type={"body2"}>Sign required to finalise transaction.</Typography>
+          <Typography type="body2">Sign required to finalise transaction.</Typography>
           <button className={classes.finaliseButton}>Finalise </button>
         </div>
       )}

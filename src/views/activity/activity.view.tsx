@@ -20,17 +20,17 @@ const Activity = () => {
 
   return (
     <>
-      <Header title={"Activity"} />
+      <Header title="Activity" />
       <div className={classes.selectorBoxes}>
         <div
           className={`${classes.selectorBox} ${!listAll ? classes.inactiveBox : ""}`}
           onClick={!listAll ? changeList : undefined}
         >
-          <Typography type={"body1"} className={classes.status}>
+          <Typography type="body1" className={classes.status}>
             All
           </Typography>
           <Typography
-            type={"body2"}
+            type="body2"
             className={`${classes.number} ${!listAll ? classes.inactiveNumber : ""}`}
           >
             {demoData.length}
@@ -40,11 +40,11 @@ const Activity = () => {
           className={`${classes.selectorBox} ${listAll ? classes.inactiveBox : ""}`}
           onClick={listAll ? changeList : undefined}
         >
-          <Typography type={"body1"} className={classes.status}>
+          <Typography type="body1" className={classes.status}>
             Pending
           </Typography>
           <Typography
-            type={"body2"}
+            type="body2"
             className={`${classes.number} ${listAll ? classes.inactiveNumber : ""}`}
           >
             {pendingActivities.length}

@@ -11,7 +11,7 @@ const Header: FC = () => {
   const classes = useHeaderStyles();
   return (
     <header className={classes.header}>
-      <Link to={"/"} className={classes.link}>
+      <Link to="/" className={classes.link}>
         <SettingIcon />
         <Typography type="body1" className={classes.settingsLabel}>
           Settings
