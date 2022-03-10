@@ -7,6 +7,7 @@ import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import FiatAmount from "src/views/shared/fiatAmount/fiat-amount";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
+import timeAgo from "src/utils/time-ago";
 
 export interface TransactionCardProps {
   type: "l1" | "l2";
@@ -37,24 +38,6 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
   };
   const TokenIcon = tokenIcons[token] || tokenIcons["eth"];
 
-  const convertToTime = (): string => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const seconds = Math.floor(diff / 1000);
-    if (seconds < 60) {
-      return `${seconds}s`;
-    } else if (seconds < 3600) {
-      const minutes = Math.floor(seconds / 60);
-      return `${minutes}m`;
-    } else if (seconds < 86400) {
-      const hours = Math.floor(seconds / 3600);
-      return `${hours}h`;
-    } else {
-      const days = Math.floor(seconds / 86400);
-      return `${days}d`;
-    }
-  };
-
   return (
     <Card className={classes.card}>
       {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
@@ -67,7 +50,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
           <Typography type="body1">{actionText}</Typography>
           {status === "completed" ? (
             <Typography type="body2" className={classes.time}>
-              {convertToTime()} ago
+              {timeAgo(timestamp)} ago
             </Typography>
           ) : (
             <span
@@ -93,7 +76,9 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Step 2 will require signature in {convertToTime()}.</Typography>
+          <Typography type="body2">
+            Step 2 will require signature in {timeAgo(timestamp)}.
+          </Typography>
           <button disabled className={classes.finaliseButton}>
             Finalise
           </button>
