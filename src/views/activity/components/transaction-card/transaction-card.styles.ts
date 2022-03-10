@@ -42,7 +42,6 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   statusBox: {
     backgroundColor: theme.palette.orange.opacity,
     color: theme.palette.orange.main,
-    fontWeight: theme.fontWeights.medium,
     fontSize: theme.spacing(1.75),
     padding: [theme.spacing(0.5), theme.spacing(1)],
     borderRadius: theme.spacing(1),
@@ -64,7 +63,6 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   token: {
     display: "flex",
     alignItems: "center",
-    fontWeight: theme.fontWeights.medium,
   },
   fiat: {
     color: theme.palette.grey.dark,

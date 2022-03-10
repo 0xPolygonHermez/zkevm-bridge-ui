@@ -16,10 +16,6 @@ const theme = {
     disabled: "#78798D",
   },
   hoverTransition: "all 100ms",
-  fontWeights: {
-    medium: "500",
-    bold: "700",
-  },
   breakpoints: {
     upSm: "@media (min-width: 576px)",
   },
