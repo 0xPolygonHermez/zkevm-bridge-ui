@@ -40,17 +40,16 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     fontSize: theme.spacing(1.75),
   },
   statusBox: {
-    backgroundColor: theme.palette.orange.opacity,
-    color: theme.palette.orange.main,
-    fontWeight: theme.fontWeights.medium,
+    backgroundColor: theme.palette.warning.ligth,
+    color: theme.palette.warning.main,
     fontSize: theme.spacing(1.75),
     padding: [theme.spacing(0.5), theme.spacing(1)],
     borderRadius: theme.spacing(1),
     alignSelf: "flex-start",
   },
   redStatus: {
-    color: theme.palette.red.main,
-    backgroundColor: theme.palette.red.opacity,
+    color: theme.palette.error.main,
+    backgroundColor: theme.palette.error.ligth,
   },
   tokenColumn: {
     display: "flex",
@@ -64,7 +63,6 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   token: {
     display: "flex",
     alignItems: "center",
-    fontWeight: theme.fontWeights.medium,
   },
   fiat: {
     color: theme.palette.grey.dark,

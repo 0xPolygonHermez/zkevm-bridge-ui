@@ -6,7 +6,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l1",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000),
-    status: "hold",
+    status: "on-hold",
     amount: Math.floor(Math.random() * 100),
   },
   {
@@ -14,7 +14,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l2",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 2),
-    status: "initiate",
+    status: "initiated",
     amount: Math.floor(Math.random() * 100),
   },
   {
@@ -22,7 +22,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l2",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60),
-    status: "process",
+    status: "processing",
     amount: Math.floor(Math.random() * 100),
   },
   {
@@ -30,7 +30,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l2",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 2),
-    status: "complete",
+    status: "completed",
     amount: Math.floor(Math.random() * 100),
   },
   {
@@ -38,7 +38,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l1",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 24),
-    status: "complete",
+    status: "completed",
     amount: Math.floor(Math.random() * 100),
   },
   {
@@ -46,7 +46,7 @@ export const demoData: TransactionCardProps[] = [
     type: "l1",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 24),
-    status: "error",
+    status: "failed",
     amount: Math.floor(Math.random() * 100),
   },
 ];

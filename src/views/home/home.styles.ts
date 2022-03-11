@@ -3,11 +3,6 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useHomeStyles = createUseStyles((theme: Theme) => ({
-  home: {
-    width: "100%",
-    minHeight: "100vh",
-    background: theme.palette.grey.light,
-  },
   ethereumAddress: {
     display: "flex",
     alignItems: "center",
