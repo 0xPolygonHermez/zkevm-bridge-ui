@@ -31,7 +31,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     flexWrap: "wrap",
     gap: theme.spacing(2),
     [theme.breakpoints.upSm]: {
-      width: "75%",
+      width: "80%",
     },
   },
   currencyBox: {
