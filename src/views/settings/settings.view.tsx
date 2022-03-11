@@ -33,12 +33,10 @@ const Settings = () => {
       </Typography>
       <Card className={classes.card}>
         <div className={classes.currenciesRow}>
-          <div>
-            <Typography type="body1" className={classes.row}>
-              <ConversionIcon className={classes.conversionIcon} />
-              Currency conversion
-            </Typography>
-          </div>
+          <Typography type="body1" className={classes.row}>
+            <ConversionIcon className={classes.conversionIcon} />
+            Currency conversion
+          </Typography>
           <Typography type="body2">Select a currency for conversion display</Typography>
           <div className={classes.currencies}>
             {currencies.map((currency) => (
@@ -49,7 +47,7 @@ const Settings = () => {
                 onClick={() => setCurrencySelected(currency.id)}
                 key={currency.id}
               >
-                {currency.id === currencySelected ? <CheckedIcon /> : <UncheckedIcon />}{" "}
+                {currency.id === currencySelected ? <CheckedIcon /> : <UncheckedIcon />}
                 <span className={classes.currencyText}>{currency.name}</span> {currency.icon}
               </div>
             ))}
