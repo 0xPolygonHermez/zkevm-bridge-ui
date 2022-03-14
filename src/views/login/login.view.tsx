@@ -10,6 +10,7 @@ import { ReactComponent as CaretRightIcon } from "src/assets/icons/caret-right.s
 import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
 import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
 import { WalletName } from "src/domain";
+import routes from "src/routes";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
@@ -24,7 +25,7 @@ const Login: FC = () => {
 
   useEffect(() => {
     if (account.status === "successful") {
-      navigate("/");
+      navigate(routes.home.path);
     }
   }, [account, navigate]);
 

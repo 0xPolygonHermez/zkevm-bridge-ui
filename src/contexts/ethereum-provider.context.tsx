@@ -8,6 +8,7 @@ import { AsyncTask } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
 import { getConnectedAccounts } from "src/adapters/ethereum";
 import { useEnvContext } from "./env.context";
+import routes from "src/routes";
 
 interface EthereumProviderContextData {
   provider?: Web3Provider;
@@ -83,7 +84,7 @@ const EthereumProviderProvider: FC = (props) => {
           setAccount({ status: "successful", data: parsedAccounts.data[0] });
         } else {
           setAccount({ status: "pending" });
-          navigate("/login");
+          navigate(routes.login.path);
         }
       }
     };
