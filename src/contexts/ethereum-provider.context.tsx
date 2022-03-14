@@ -29,6 +29,7 @@ const EthereumProviderProvider: FC = (props) => {
   const env = useEnvContext();
 
   const connectProvider = async (walletName: WalletName): Promise<void> => {
+    setAccount({ status: "loading" });
     switch (walletName) {
       case WalletName.METAMASK: {
         if (window.ethereum) {
