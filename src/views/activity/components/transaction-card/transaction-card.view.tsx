@@ -4,10 +4,10 @@ import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.s
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
 import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
-import FiatAmount from "src/views/shared/fiatAmount/fiat-amount";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import { timeAgo } from "src/utils/time";
+import { fiatAmount } from "src/utils/amounts";
 
 enum StatusText {
   "on-hold" = "On Hold",
@@ -69,9 +69,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
               {amount} {token.toUpperCase()}
             </Typography>
           </div>
-          <Typography type="body2">
-            <FiatAmount amount={amount} token={token} />
-          </Typography>
+          <Typography type="body2">{fiatAmount({ amount, token })}</Typography>
         </div>
       </div>
       {status === "initiated" && (
