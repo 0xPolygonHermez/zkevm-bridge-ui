@@ -48,7 +48,6 @@ const Settings = () => {
           <div className={classes.currencies}>
             {currencies.map((currency) => (
               <label
-                htmlFor={currency.id}
                 className={`${classes.currencyBox} ${
                   currency.id === selectedCurrencyId ? classes.currencySelected : ""
                 }`}
