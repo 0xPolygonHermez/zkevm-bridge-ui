@@ -47,16 +47,24 @@ const Settings = () => {
           <Typography type="body2">Select a currency for conversion display</Typography>
           <div className={classes.currencies}>
             {currencies.map((currency) => (
-              <div
+              <label
+                htmlFor={currency.id}
                 className={`${classes.currencyBox} ${
                   currency.id === selectedCurrencyId ? classes.currencySelected : ""
                 }`}
-                onClick={() => setSelectedCurrencyId(currency.id)}
                 key={currency.id}
               >
                 {currency.id === selectedCurrencyId ? <CheckedIcon /> : <UncheckedIcon />}
-                <span className={classes.currencyText}>{currency.name}</span> {currency.icon}
-              </div>
+                <input
+                  type="radio"
+                  name="currency"
+                  id={currency.id}
+                  className={classes.radioInput}
+                  onChange={() => setSelectedCurrencyId(currency.id)}
+                />
+                <span className={classes.currencyText}>{currency.name}</span>
+                {currency.icon}
+              </label>
             ))}
           </div>
         </div>

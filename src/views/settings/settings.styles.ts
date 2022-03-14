@@ -69,6 +69,10 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  radioInput: {
+    position: "absolute",
+    opacity: 0,
+  },
 }));
 
 export default useActivityStyles;
