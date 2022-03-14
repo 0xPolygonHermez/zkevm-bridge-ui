@@ -8,21 +8,28 @@ import { ReactComponent as ConversionIcon } from "src/assets/icons/currency-conv
 import { ReactComponent as CheckedIcon } from "src/assets/icons/checkbox-checked.svg";
 import { ReactComponent as UncheckedIcon } from "src/assets/icons/checkbox-unchecked.svg";
 import { ReactComponent as LogoutIcon } from "src/assets/icons/logout.svg";
-import { ReactComponent as EurIcon } from "src/assets/currencies/eur.svg";
-import { ReactComponent as UsdIcon } from "src/assets/currencies/usd.svg";
-import { ReactComponent as JpyIcon } from "src/assets/currencies/jpy.svg";
-import { ReactComponent as GbpIcon } from "src/assets/currencies/gbp.svg";
-import { ReactComponent as CnyIcon } from "src/assets/currencies/cny.svg";
+import { ReactComponent as EurIcon } from "src/assets/icons/currencies/eur.svg";
+import { ReactComponent as UsdIcon } from "src/assets/icons/currencies/usd.svg";
+import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
+import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
+import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 
+enum Currencies {
+  eur = "eur",
+  usd = "usd",
+  jpy = "jpy",
+  gbp = "gbp",
+  cny = "cny",
+}
 const Settings = () => {
   const classes = useSettingsStyles();
-  const [currencySelected, setCurrencySelected] = useState("eur");
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.eur);
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: "eur" },
-    { icon: <UsdIcon />, name: "USD", id: "usd" },
-    { icon: <GbpIcon />, name: "GBP", id: "gbp" },
-    { icon: <CnyIcon />, name: "CNY", id: "cny" },
-    { icon: <JpyIcon />, name: "JPY", id: "jpy" },
+    { icon: <EurIcon />, name: "EUR", id: Currencies.eur },
+    { icon: <UsdIcon />, name: "USD", id: Currencies.usd },
+    { icon: <GbpIcon />, name: "GBP", id: Currencies.gbp },
+    { icon: <CnyIcon />, name: "CNY", id: Currencies.cny },
+    { icon: <JpyIcon />, name: "JPY", id: Currencies.jpy },
   ];
 
   return (
@@ -42,12 +49,12 @@ const Settings = () => {
             {currencies.map((currency) => (
               <div
                 className={`${classes.currencyBox} ${
-                  currency.id === currencySelected ? classes.currencySelected : ""
+                  currency.id === selectedCurrencyId ? classes.currencySelected : ""
                 }`}
-                onClick={() => setCurrencySelected(currency.id)}
+                onClick={() => setSelectedCurrencyId(currency.id)}
                 key={currency.id}
               >
-                {currency.id === currencySelected ? <CheckedIcon /> : <UncheckedIcon />}
+                {currency.id === selectedCurrencyId ? <CheckedIcon /> : <UncheckedIcon />}
                 <span className={classes.currencyText}>{currency.name}</span> {currency.icon}
               </div>
             ))}
