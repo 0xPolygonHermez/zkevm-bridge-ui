@@ -7,7 +7,7 @@ import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import FiatAmount from "src/views/shared/fiatAmount/fiat-amount";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import timeAgo from "src/utils/time-ago";
+import { timeAgo } from "src/utils/time";
 
 enum StatusText {
   "on-hold" = "On Hold",

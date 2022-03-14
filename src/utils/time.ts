@@ -1,4 +1,4 @@
-const timeAgo = (timestamp: number): string => {
+export const timeAgo = (timestamp: number): string => {
   const now = Date.now();
   const diff = now - timestamp;
   const seconds = Math.floor(diff / 1000);
@@ -15,5 +15,3 @@ const timeAgo = (timestamp: number): string => {
     return `${days}d`;
   }
 };
-
-export default timeAgo;
