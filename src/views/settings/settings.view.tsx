@@ -15,21 +15,21 @@ import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 
 enum Currencies {
-  eur = "eur",
-  usd = "usd",
-  jpy = "jpy",
-  gbp = "gbp",
-  cny = "cny",
+  EUR = "eur",
+  USD = "usd",
+  JPY = "jpy",
+  GBP = "gbp",
+  CNY = "cny",
 }
 const Settings = () => {
   const classes = useSettingsStyles();
-  const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.eur);
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.EUR);
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: Currencies.eur },
-    { icon: <UsdIcon />, name: "USD", id: Currencies.usd },
-    { icon: <GbpIcon />, name: "GBP", id: Currencies.gbp },
-    { icon: <CnyIcon />, name: "CNY", id: Currencies.cny },
-    { icon: <JpyIcon />, name: "JPY", id: Currencies.jpy },
+    { icon: <EurIcon />, name: "EUR", id: Currencies.EUR },
+    { icon: <UsdIcon />, name: "USD", id: Currencies.USD },
+    { icon: <GbpIcon />, name: "GBP", id: Currencies.GBP },
+    { icon: <CnyIcon />, name: "CNY", id: Currencies.CNY },
+    { icon: <JpyIcon />, name: "JPY", id: Currencies.JPY },
   ];
 
   return (
