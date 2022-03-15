@@ -6,8 +6,8 @@ import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
 import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import { timeAgo } from "src/utils/time";
-import { fiatAmount } from "src/utils/amounts";
+import { getTimeFromNow } from "src/utils/time";
+import { convertTokenAmountToFiat } from "src/utils/amounts";
 
 enum StatusText {
   "on-hold" = "On Hold",
@@ -50,7 +50,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
           <Typography type="body1">{actionText}</Typography>
           {status === "completed" ? (
             <Typography type="body2" className={classes.time}>
-              {timeAgo(timestamp)} ago
+              {getTimeFromNow(timestamp)} ago
             </Typography>
           ) : (
             <span
@@ -69,13 +69,13 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
               {amount} {token.toUpperCase()}
             </Typography>
           </div>
-          <Typography type="body2">{fiatAmount({ amount, token })}</Typography>
+          <Typography type="body2">{convertTokenAmountToFiat({ amount, token })}</Typography>
         </div>
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
           <Typography type="body2">
-            Step 2 will require signature in {timeAgo(timestamp)}.
+            Step 2 will require signature in {getTimeFromNow(timestamp)}.
           </Typography>
           <button disabled className={classes.finaliseButton}>
             Finalise

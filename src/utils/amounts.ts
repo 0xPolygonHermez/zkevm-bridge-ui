@@ -1,4 +1,4 @@
-interface FiatAmountProps {
+interface TokenAmountToFiatParams {
   amount: number;
   token: "eth" | "dai";
 }
@@ -8,7 +8,7 @@ const rates = {
   eth: 2500,
 };
 
-export const fiatAmount = ({ amount, token }: FiatAmountProps): string => {
+export const convertTokenAmountToFiat = ({ amount, token }: TokenAmountToFiatParams): string => {
   const fiat = amount * rates[token];
   return `$${fiat.toFixed(2)}`;
 };
