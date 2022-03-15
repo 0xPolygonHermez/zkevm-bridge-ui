@@ -18,7 +18,6 @@ interface EthereumProviderContextData {
 }
 
 const EthereumProviderContext = createContext<EthereumProviderContextData>({
-  provider: undefined,
   account: { status: "pending" },
 });
 
