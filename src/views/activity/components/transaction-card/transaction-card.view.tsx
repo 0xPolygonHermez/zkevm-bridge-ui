@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
 import { ReactComponent as TransferL1Icon } from "src/assets/icons/l1-transfer.svg";
 import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.svg";
@@ -6,7 +8,7 @@ import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
 import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import { getTimeFromNow } from "src/utils/time";
+import { getTimeFromNow, TimeFromNowParams } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 
 enum StatusText {
@@ -18,13 +20,13 @@ enum StatusText {
 export interface TransactionCardProps {
   type: "l1" | "l2";
   id: number;
-  timestamp: number;
+  timestamp: TimeFromNowParams["timestamp"];
   token: "eth" | "dai";
   status: "processing" | "initiated" | "on-hold" | "completed" | "failed";
   amount: number;
 }
 
-const TransactionCard = ({ type, timestamp, token, amount, status }: TransactionCardProps) => {
+const TransactionCard: FC<TransactionCardProps> = ({ type, timestamp, token, amount, status }) => {
   const classes = useTransactionCardStyles();
   const IconsLayer = {
     l1: TransferL1Icon,
@@ -50,7 +52,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
           <Typography type="body1">{actionText}</Typography>
           {status === "completed" ? (
             <Typography type="body2" className={classes.time}>
-              {getTimeFromNow(timestamp)} ago
+              {getTimeFromNow({ timestamp })} ago
             </Typography>
           ) : (
             <span
@@ -75,7 +77,7 @@ const TransactionCard = ({ type, timestamp, token, amount, status }: Transaction
       {status === "initiated" && (
         <div className={classes.bottom}>
           <Typography type="body2">
-            Step 2 will require signature in {getTimeFromNow(timestamp)}.
+            Step 2 will require signature in {getTimeFromNow({ timestamp })}.
           </Typography>
           <button disabled className={classes.finaliseButton}>
             Finalise

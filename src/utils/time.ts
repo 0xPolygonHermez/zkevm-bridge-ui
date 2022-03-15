@@ -1,4 +1,8 @@
-export const getTimeFromNow = (timestamp: number): string => {
+export interface TimeFromNowParams {
+  timestamp: number;
+}
+
+export const getTimeFromNow = ({ timestamp }: TimeFromNowParams): string => {
   const now = Date.now();
   const diff = now - timestamp;
   const seconds = Math.floor(diff / 1000);

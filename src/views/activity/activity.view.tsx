@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FC } from "react";
 
 import TransactionCard from "src/views/activity/components/transaction-card/transaction-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
@@ -6,7 +6,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
 import { demoData } from "src/views/activity/demo-data";
 
-const Activity = () => {
+const Activity: FC = () => {
   const [displayAll, setDisplayAll] = useState(true);
   const classes = useActivityStyles({ displayAll });
   const pendingActivities = demoData.filter(
