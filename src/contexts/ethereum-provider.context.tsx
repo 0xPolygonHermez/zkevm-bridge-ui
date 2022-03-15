@@ -74,10 +74,14 @@ const EthereumProviderProvider: FC = (props) => {
 
   const disconnectProvider = (): Promise<void> => {
     if (provider?.provider && provider.provider instanceof WalletConnectProvider) {
-      return provider.provider.disconnect().then(() => setProvider(undefined));
+      return provider.provider.disconnect().then(() => {
+        setProvider(undefined);
+        setAccount({ status: "pending" });
+      });
     } else {
       return new Promise((resolve) => {
         setProvider(undefined);
+        setAccount({ status: "pending" });
         resolve();
       });
     }
