@@ -1,10 +1,3 @@
-import { ExternalProvider, BaseProvider } from "@ethersproject/providers";
-
-export type MetaMaskProvider = ExternalProvider & {
-  on?: BaseProvider["on"];
-  removeListener?: BaseProvider["removeListener"];
-};
-
 export enum WalletName {
   METAMASK,
   WALLET_CONNECT,
