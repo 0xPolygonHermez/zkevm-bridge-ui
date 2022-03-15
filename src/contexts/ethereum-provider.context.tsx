@@ -10,14 +10,14 @@ import { getConnectedAccounts } from "src/adapters/ethereum";
 import { useEnvContext } from "./env.context";
 import routes from "src/routes";
 
-interface EthereumProviderContextData {
+interface EthereumProviderContext {
   provider?: Web3Provider;
   account: AsyncTask<string, string>;
   connectProvider?: (walletName: WalletName) => Promise<void>;
   disconnectProvider?: () => Promise<void>;
 }
 
-const EthereumProviderContext = createContext<EthereumProviderContextData>({
+const ethereumProviderContext = createContext<EthereumProviderContext>({
   account: { status: "pending" },
 });
 
@@ -124,15 +124,15 @@ const EthereumProviderProvider: FC = (props) => {
   }, [provider, navigate]);
 
   return (
-    <EthereumProviderContext.Provider
+    <ethereumProviderContext.Provider
       value={{ provider, account, connectProvider, disconnectProvider }}
       {...props}
     />
   );
 };
 
-const useEthereumProviderContext = (): EthereumProviderContextData => {
-  return useContext(EthereumProviderContext);
+const useEthereumProviderContext = (): EthereumProviderContext => {
+  return useContext(ethereumProviderContext);
 };
 
 export { EthereumProviderProvider, useEthereumProviderContext };
