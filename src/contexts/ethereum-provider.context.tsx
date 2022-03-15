@@ -31,7 +31,7 @@ const EthereumProviderProvider: FC = (props) => {
   const connectProvider = async (walletName: WalletName): Promise<void> => {
     switch (walletName) {
       case WalletName.METAMASK: {
-        if (window.ethereum) {
+        if (window.ethereum && window.ethereum.isMetaMask) {
           const web3Provider = new Web3Provider(window.ethereum);
 
           return getConnectedAccounts(web3Provider)
