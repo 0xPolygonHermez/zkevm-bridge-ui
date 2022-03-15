@@ -72,6 +72,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
   radioInput: {
     position: "absolute",
     opacity: 0,
+    cursor: "pointer",
   },
 }));
 

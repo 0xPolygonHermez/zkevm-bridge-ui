@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FC } from "react";
 
 import useSettingsStyles from "src/views/settings/settings.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -21,7 +21,7 @@ enum Currencies {
   GBP = "gbp",
   CNY = "cny",
 }
-const Settings = () => {
+const Settings: FC = () => {
   const classes = useSettingsStyles();
   const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.EUR);
   const currencies = [
