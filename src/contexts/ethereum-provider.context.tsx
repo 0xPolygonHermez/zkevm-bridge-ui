@@ -14,6 +14,7 @@ interface EthereumProviderContextData {
   provider?: Web3Provider;
   account: AsyncTask<string, string>;
   connectProvider?: (walletName: WalletName) => Promise<void>;
+  disconnectProvider?: () => Promise<void>;
 }
 
 const EthereumProviderContext = createContext<EthereumProviderContextData>({
@@ -71,6 +72,17 @@ const EthereumProviderProvider: FC = (props) => {
     }
   };
 
+  const disconnectProvider = (): Promise<void> => {
+    if (provider?.provider && provider.provider instanceof WalletConnectProvider) {
+      return provider.provider.disconnect().then(() => setProvider(undefined));
+    } else {
+      return new Promise((resolve) => {
+        setProvider(undefined);
+        resolve();
+      });
+    }
+  };
+
   useEffect(() => {
     const internalProvider: Record<string, unknown> | undefined = provider?.provider;
     const onAccountsChanged = (accounts: unknown): void => {
@@ -109,7 +121,10 @@ const EthereumProviderProvider: FC = (props) => {
   }, [provider, navigate]);
 
   return (
-    <EthereumProviderContext.Provider value={{ provider, account, connectProvider }} {...props} />
+    <EthereumProviderContext.Provider
+      value={{ provider, account, connectProvider, disconnectProvider }}
+      {...props}
+    />
   );
 };
 
