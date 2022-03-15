@@ -11,6 +11,15 @@ const theme = {
       main: "#e2e5ee",
       dark: "#7c7e96",
     },
+    warning: {
+      main: "#e17e26",
+      ligth: "rgba(225,126,38,0.1)",
+    },
+    error: {
+      main: "#e8430d",
+      ligth: "rgba(232,67,12,0.1)",
+    },
+    disabled: "#78798d",
   },
   hoverTransition: "all 100ms",
   breakpoints: {
