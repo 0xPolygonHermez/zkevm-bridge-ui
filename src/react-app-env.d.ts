@@ -1,9 +1,9 @@
 /// <reference types="react-scripts" />
 
-import { MetaMaskProvider } from "./domain";
+import { ExternalProvider } from "@ethersproject/providers";
 
 declare global {
   interface Window {
-    ethereum?: MetaMaskProvider;
+    ethereum?: ExternalProvider;
   }
 }

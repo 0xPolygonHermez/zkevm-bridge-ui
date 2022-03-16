@@ -12,12 +12,12 @@ const Home = (): JSX.Element => {
   return (
     <>
       <Header />
-      <div className={classes.ethereumAddress}>
-        <MetaMaskIcon className={classes.metaMaskIcon} />
-        {account.status === "successful" && (
+      {account.status === "successful" && (
+        <div className={classes.ethereumAddress}>
+          <MetaMaskIcon className={classes.metaMaskIcon} />
           <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

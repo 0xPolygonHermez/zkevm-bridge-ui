@@ -3,27 +3,26 @@ import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { EthereumEvent, MetaMaskProvider, WalletName } from "src/domain";
+import { EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
 import { getConnectedAccounts } from "src/adapters/ethereum";
 import { useEnvContext } from "./env.context";
 import routes from "src/routes";
 
-interface EthereumProviderContextData {
+interface EthereumProviderContext {
   provider?: Web3Provider;
   account: AsyncTask<string, string>;
   connectProvider?: (walletName: WalletName) => Promise<void>;
+  disconnectProvider?: () => Promise<void>;
 }
 
-const EthereumProviderContext = createContext<EthereumProviderContextData>({
-  provider: undefined,
+const ethereumProviderContext = createContext<EthereumProviderContext>({
   account: { status: "pending" },
 });
 
 const EthereumProviderProvider: FC = (props) => {
   const navigate = useNavigate();
-  const [rawProvider, setRawProvider] = useState<MetaMaskProvider | WalletConnectProvider>();
   const [provider, setProvider] = useState<Web3Provider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
@@ -32,13 +31,11 @@ const EthereumProviderProvider: FC = (props) => {
     setAccount({ status: "loading" });
     switch (walletName) {
       case WalletName.METAMASK: {
-        if (window.ethereum) {
-          const metaMaskProvider = window.ethereum;
+        if (window.ethereum && window.ethereum.isMetaMask) {
           const web3Provider = new Web3Provider(window.ethereum);
 
           return getConnectedAccounts(web3Provider)
             .then((accounts) => {
-              setRawProvider(metaMaskProvider);
               setProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
@@ -60,7 +57,6 @@ const EthereumProviderProvider: FC = (props) => {
           return walletConnectProvider
             .enable()
             .then((accounts) => {
-              setRawProvider(walletConnectProvider);
               setProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
@@ -76,7 +72,23 @@ const EthereumProviderProvider: FC = (props) => {
     }
   };
 
+  const disconnectProvider = (): Promise<void> => {
+    if (provider?.provider && provider.provider instanceof WalletConnectProvider) {
+      return provider.provider.disconnect().then(() => {
+        setProvider(undefined);
+        setAccount({ status: "pending" });
+      });
+    } else {
+      return new Promise((resolve) => {
+        setProvider(undefined);
+        setAccount({ status: "pending" });
+        resolve();
+      });
+    }
+  };
+
   useEffect(() => {
+    const internalProvider: Record<string, unknown> | undefined = provider?.provider;
     const onAccountsChanged = (accounts: unknown): void => {
       const parsedAccounts = ethereumAccountsParser.safeParse(accounts);
 
@@ -93,28 +105,35 @@ const EthereumProviderProvider: FC = (props) => {
       window.location.reload();
     };
 
-    if (rawProvider && rawProvider.on) {
-      rawProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      rawProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-      rawProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
+    if (internalProvider && "on" in internalProvider && typeof internalProvider.on === "function") {
+      internalProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+      internalProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+      internalProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
     }
 
     return () => {
-      if (rawProvider && rawProvider.removeListener) {
-        rawProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        rawProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-        rawProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+      if (
+        internalProvider &&
+        "removeListener" in internalProvider &&
+        typeof internalProvider.removeListener === "function"
+      ) {
+        internalProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+        internalProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+        internalProvider.removeListener(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
       }
     };
-  }, [rawProvider, navigate]);
+  }, [provider, navigate]);
 
   return (
-    <EthereumProviderContext.Provider value={{ provider, account, connectProvider }} {...props} />
+    <ethereumProviderContext.Provider
+      value={{ provider, account, connectProvider, disconnectProvider }}
+      {...props}
+    />
   );
 };
 
-const useEthereumProviderContext = (): EthereumProviderContextData => {
-  return useContext(EthereumProviderContext);
+const useEthereumProviderContext = (): EthereumProviderContext => {
+  return useContext(ethereumProviderContext);
 };
 
 export { EthereumProviderProvider, useEthereumProviderContext };
