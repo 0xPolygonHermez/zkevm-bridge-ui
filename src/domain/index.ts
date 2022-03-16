@@ -12,3 +12,15 @@ export enum EthereumEvent {
 export interface Env {
   REACT_APP_INFURA_API_KEY: string;
 }
+
+// User notifications
+export type Message =
+  | {
+      type: "info-msg" | "success-msg" | "error-msg";
+      text: string;
+    }
+  | {
+      type: "error";
+      text?: string;
+      parsed: string;
+    };
