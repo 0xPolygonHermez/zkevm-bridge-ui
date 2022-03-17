@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Card from "src/views/shared/card/card.view";
 import useLoginStyles from "src/views/login/login.styles";
@@ -11,12 +11,14 @@ import { WalletName } from "src/domain";
 import routes from "src/routes";
 import WalletList from "./components/wallet-list/wallet-list.view";
 import AccountLoader from "./components/account-loader/account-loader.view";
+import { routerStateParser } from "src/adapters/parsers";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
   const navigate = useNavigate();
-  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const { state } = useLocation();
   const { connectProvider, account } = useEthereumProviderContext();
+  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   const onConnectProvider = (walletName: WalletName) => {
     setSelectedWallet(walletName);
@@ -30,9 +32,15 @@ const Login: FC = () => {
       setSelectedWallet(undefined);
     }
     if (account.status === "successful") {
-      navigate(routes.home.path);
+      const routerState = routerStateParser.safeParse(state);
+
+      if (routerState.success) {
+        navigate(routerState.data.redirectUrl);
+      } else {
+        navigate(routes.home.path);
+      }
     }
-  }, [account, navigate]);
+  }, [account, state, navigate]);
 
   return (
     <>
