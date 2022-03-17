@@ -4,10 +4,12 @@ import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
 import { EthereumEvent, WalletName } from "src/domain";
-import { AsyncTask } from "src/utils/types";
+import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
 import { getConnectedAccounts } from "src/adapters/ethereum";
+import { parseError } from "src/adapters/error";
 import { useEnvContext } from "./env.context";
+import { useGlobalContext } from "src/contexts/global.context";
 import routes from "src/routes";
 
 interface EthereumProviderContext {
@@ -26,23 +28,34 @@ const EthereumProviderProvider: FC = (props) => {
   const [provider, setProvider] = useState<Web3Provider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
+  const { openSnackbar } = useGlobalContext();
 
   const connectProvider = async (walletName: WalletName): Promise<void> => {
     switch (walletName) {
       case WalletName.METAMASK: {
         if (window.ethereum && window.ethereum.isMetaMask) {
           const web3Provider = new Web3Provider(window.ethereum);
-
           return getConnectedAccounts(web3Provider)
             .then((accounts) => {
               setProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
-            .catch(() => setAccount({ status: "failed", error: "Error loading account" }));
+            .catch((error) =>
+              parseError(error).then((errorMsg) => {
+                if (isMetamaskUserRejectedRequestError(error)) {
+                  setAccount({ status: "failed", error: errorMsg });
+                } else {
+                  openSnackbar({
+                    type: "error",
+                    parsed: errorMsg,
+                  });
+                }
+              })
+            );
         } else {
           return setAccount({
             status: "failed",
-            error: "There is no Ethereum provider injected in the window",
+            error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser.`,
           });
         }
       }
