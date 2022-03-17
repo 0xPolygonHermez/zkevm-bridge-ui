@@ -21,7 +21,7 @@ const AccountLoader: FC<AccountLoaderProps> = ({ selectedWallet }) => {
             MetaMask
           </Typography>
           <Typography type="body2" className={classes.hint}>
-            Follow the instructions in Metamask
+            Follow the instructions in MetaMask
           </Typography>
         </div>
       );
