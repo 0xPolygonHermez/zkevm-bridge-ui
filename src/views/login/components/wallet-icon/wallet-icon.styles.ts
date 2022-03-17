@@ -1,9 +1,14 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
+import { WalletIconSize } from "src/views/login/components/wallet-icon/wallet-icon.view";
+
+interface WalletIconStylesProps {
+  size: WalletIconSize;
+}
 
 const useWalletIconStyles = createUseStyles((theme: Theme) => ({
-  walletIcon: ({ size }: { size: "sm" | "lg" }) => ({
+  walletIcon: ({ size }: WalletIconStylesProps) => ({
     borderRadius: "50%",
     height: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
     width: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
