@@ -4,18 +4,20 @@ import useTransactionCardStyles from "src/views/activity/components/transaction-
 import { ReactComponent as TransferL1Icon } from "src/assets/icons/l1-transfer.svg";
 import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.svg";
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
-import { ReactComponent as EthToken } from "src/assets/tokens/eth.svg";
-import { ReactComponent as DaiToken } from "src/assets/tokens/dai.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import { getTimeFromNow, TimeFromNowParams } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
+import { useNavigate } from "react-router-dom";
+import routes from "src/routes";
+import TokenIcon from "src/views/shared/token-icon/token-icon";
 
-enum StatusText {
+export enum StatusText {
   "on-hold" = "On Hold",
   initiated = "Initiated",
   processing = "Processing",
   failed = "Error",
+  completed = "Completed",
 }
 export interface TransactionCardProps {
   type: "l1" | "l2";
@@ -26,22 +28,28 @@ export interface TransactionCardProps {
   amount: number;
 }
 
-const TransactionCard: FC<TransactionCardProps> = ({ type, timestamp, token, amount, status }) => {
+const TransactionCard: FC<TransactionCardProps> = ({
+  id,
+  type,
+  timestamp,
+  token,
+  amount,
+  status,
+}) => {
   const classes = useTransactionCardStyles();
+  const navigate = useNavigate();
   const IconsLayer = {
     l1: TransferL1Icon,
     l2: TransferL2Icon,
   };
   const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[type];
   const actionText = type === "l1" ? "Transfer to L1" : "Transfer to L2";
-  const tokenIcons = {
-    eth: EthToken,
-    dai: DaiToken,
-  };
-  const TokenIcon = tokenIcons[token] || tokenIcons["eth"];
 
   return (
-    <Card className={classes.card}>
+    <Card
+      className={classes.card}
+      onClick={() => navigate(`${routes.transactionDetails.path.split(":")[0]}${id}`)}
+    >
       {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
@@ -66,7 +74,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ type, timestamp, token, amo
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <TokenIcon className={classes.tokenIcon} />
+            <TokenIcon token={token} className={classes.tokenIcon} />
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>

@@ -19,6 +19,7 @@ const theme = {
       main: "#e8430d",
       ligth: "rgba(232,67,12,0.1)",
     },
+    success: "#1ccc8d",
     disabled: "#78798d",
   },
   hoverTransition: "all 100ms",
