@@ -1,5 +1,6 @@
 import React from "react";
 
+import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as CloseIconLight } from "src/assets/icons/close-white.svg";
 import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
 //domain
@@ -37,6 +38,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>
+          <ErrorIcon />
           <p className={classes.message}>{text}</p>
           <button
             className={classes.reportButton}
