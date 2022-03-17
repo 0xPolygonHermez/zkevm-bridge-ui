@@ -73,9 +73,18 @@ const EthereumProviderProvider: FC = (props) => {
               setProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
-            .catch(() => {
-              setAccount({ status: "failed", error: "Error loading account" });
-            });
+            .catch((error) =>
+              parseError(error).then((errorMsg) => {
+                if (error instanceof Error && error.message === "User closed modal") {
+                  setAccount({ status: "pending" });
+                } else {
+                  openSnackbar({
+                    type: "error",
+                    parsed: errorMsg,
+                  });
+                }
+              })
+            );
         } else
           return setAccount({
             status: "failed",

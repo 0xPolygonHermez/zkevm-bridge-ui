@@ -26,7 +26,7 @@ const Login: FC = () => {
   };
 
   useEffect(() => {
-    if (account.status === "failed") {
+    if (account.status === "failed" || account.status === "pending") {
       setSelectedWallet(undefined);
     }
     if (account.status === "successful") {
