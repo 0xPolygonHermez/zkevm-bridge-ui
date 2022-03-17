@@ -26,6 +26,9 @@ const Login: FC = () => {
   };
 
   useEffect(() => {
+    if (account.status === "failed") {
+      setSelectedWallet(undefined);
+    }
     if (account.status === "successful") {
       navigate(routes.home.path);
     }
@@ -38,7 +41,7 @@ const Login: FC = () => {
         Bridge
       </Typography>
       <Card className={classes.card}>
-        {account.status === "pending" || account.status === "failed" ? (
+        {selectedWallet === undefined ? (
           <>
             <Typography type="h1" className={classes.cardHeader}>
               Connect a wallet

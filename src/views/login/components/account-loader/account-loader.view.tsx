@@ -6,7 +6,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import WalletIcon from "../wallet-icon/wallet-icon.view";
 
 interface AccountLoaderProps {
-  selectedWallet?: WalletName;
+  selectedWallet: WalletName;
 }
 
 const AccountLoader: FC<AccountLoaderProps> = ({ selectedWallet }) => {
@@ -42,9 +42,6 @@ const AccountLoader: FC<AccountLoaderProps> = ({ selectedWallet }) => {
           </Typography>
         </div>
       );
-    }
-    default: {
-      return null;
     }
   }
 };
