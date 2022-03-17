@@ -1,23 +1,11 @@
 import { createUseStyles } from "react-jss";
 
-import theme, { Theme } from "src/styles/theme";
+import { Theme } from "src/styles/theme";
 import { TransactionCardProps } from "src/views/activity/components/transaction-card/transaction-card.view";
 
 interface StylesProps {
   status: TransactionCardProps["status"];
 }
-
-const getColorFromStatus = ({ status }: StylesProps) => {
-  switch (status) {
-    case "completed":
-      return theme.palette.success;
-    case "on-hold":
-    case "failed":
-      return theme.palette.error.main;
-    default:
-      return theme.palette.warning.main;
-  }
-};
 
 const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   card: {
@@ -26,7 +14,17 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   dot: {
     width: theme.spacing(0.75),
     height: theme.spacing(0.75),
-    backgroundColor: getColorFromStatus,
+    backgroundColor: ({ status }: StylesProps) => {
+      switch (status) {
+        case "completed":
+          return theme.palette.success;
+        case "on-hold":
+        case "failed":
+          return theme.palette.error.main;
+        default:
+          return theme.palette.warning.main;
+      }
+    },
     borderRadius: "50%",
   },
   balance: {
@@ -47,16 +45,23 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   row: {
     display: "flex",
     justifyContent: "space-between",
-    padding: [theme.spacing(2.5), 0],
+    alignItems: "flex-start",
+    flexDirection: "column",
+    padding: [theme.spacing(2), 0],
+    gap: theme.spacing(1),
+    [theme.breakpoints.upSm]: {
+      alignItems: "center",
+      flexDirection: "row",
+      padding: [theme.spacing(2.5), 0],
+    },
   },
   alignRow: {
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
   },
-  hermezChain: {
-    width: theme.spacing(2.5),
-    height: theme.spacing(2.5),
+  lastRow: {
+    paddingBottom: 0,
   },
   explorerButton: {
     display: "flex",
@@ -74,17 +79,22 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   finaliseRow: {
     display: "flex",
     justifyContent: "center",
+    margin: [theme.spacing(3), 0],
+    [theme.breakpoints.upSm]: {
+      margin: [theme.spacing(6), 0],
+    },
   },
   finaliseButton: {
     display: "inline-flex",
     justifyContent: "center",
-    margin: [theme.spacing(6), 0],
+    alignItems: "center",
     padding: [theme.spacing(2), theme.spacing(2)],
     width: theme.spacing(31),
     border: "none",
     backgroundColor: theme.palette.primary.main,
     cursor: "pointer",
     borderRadius: theme.spacing(5),
+    gap: theme.spacing(1),
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
     },
@@ -95,6 +105,11 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   },
   finaliseButtonText: {
     color: theme.palette.white,
+  },
+  finaliseSpinner: {
+    "& path": {
+      fill: theme.palette.white,
+    },
   },
 }));
 

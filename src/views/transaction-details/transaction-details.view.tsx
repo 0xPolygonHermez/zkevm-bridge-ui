@@ -1,11 +1,9 @@
 import { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
-import { ReactComponent as EthChainIcon } from "src/assets/icons/ethereum.svg";
-import { ReactComponent as HermezChainIcon } from "src/assets/icons/polygon-hermez.svg";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "../shared/typography/typography.view";
@@ -14,27 +12,18 @@ import { demoData } from "../activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import TokenIcon from "../shared/token-icon/token-icon";
+import ChainRow from "./components/chain-row/chain-row";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const data = demoData.find((demo) => demo.id.toString() === transactionId);
   const classes = useTransactionDetailsStyles({ status: data?.status || "initiated" });
-  const ethChain = (
-    <>
-      <EthChainIcon /> Ethereum chain
-    </>
-  );
-  const hermezChain = (
-    <>
-      <HermezChainIcon className={classes.hermezChain} /> Polygon Hermez chain
-    </>
-  );
-  const chain = {
-    l1: { from: hermezChain, to: ethChain },
-    l2: { from: ethChain, to: hermezChain },
-  };
 
-  if (!data) return null;
+  if (!data) {
+    Navigate({ to: "/activity", replace: true });
+    return null;
+  }
+
   const { amount, token, timestamp, type, status } = data;
   return (
     <>
@@ -73,7 +62,7 @@ const TransactionDetails: FC = () => {
             From
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            {chain[type].from}
+            <ChainRow type={type} side="from" />
           </Typography>
         </div>
         <div className={classes.row}>
@@ -81,7 +70,7 @@ const TransactionDetails: FC = () => {
             To
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            {chain[type].to}
+            <ChainRow type={type} side="to" />
           </Typography>
         </div>
         <div className={classes.row}>
@@ -89,7 +78,8 @@ const TransactionDetails: FC = () => {
             L2 Fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" /> 0.00ETH
+            <TokenIcon token="eth" />
+            {`0.01ETH ~ ${convertTokenAmountToFiat({ amount: 0.01, token: "eth" })}`}
           </Typography>
         </div>
         <div className={classes.row}>
@@ -97,10 +87,11 @@ const TransactionDetails: FC = () => {
             L1 gas fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" /> 0.00ETH
+            <TokenIcon token="eth" />
+            {`0.10ETH ~ ${convertTokenAmountToFiat({ amount: 0.1, token: "eth" })}`}
           </Typography>
         </div>
-        <div className={classes.row}>
+        <div className={`${classes.row} ${classes.lastRow}`}>
           <Typography type="body2" className={classes.alignRow}>
             Track transaction
           </Typography>
@@ -115,6 +106,7 @@ const TransactionDetails: FC = () => {
             <Typography type="body1" className={classes.finaliseButtonText}>
               Finalise
             </Typography>
+            {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
           </button>
         </div>
       )}
