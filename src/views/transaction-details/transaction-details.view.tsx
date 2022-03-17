@@ -18,7 +18,6 @@ import TokenIcon from "../shared/token-icon/token-icon";
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const data = demoData.find((demo) => demo.id.toString() === transactionId);
-  console.log(data);
   const classes = useTransactionDetailsStyles({ status: data?.status || "initiated" });
   const ethChain = (
     <>
@@ -105,11 +104,20 @@ const TransactionDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             Track transaction
           </Typography>
-          <Link to="#" target="_blank" className={classes.button}>
+          <Link to="#" target="_blank" className={classes.explorerButton}>
             <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
           </Link>
         </div>
       </Card>
+      {(status === "initiated" || status === "on-hold") && (
+        <div className={classes.finaliseRow}>
+          <button className={classes.finaliseButton} disabled={status === "initiated"}>
+            <Typography type="body1" className={classes.finaliseButtonText}>
+              Finalise
+            </Typography>
+          </button>
+        </div>
+      )}
     </>
   );
 };

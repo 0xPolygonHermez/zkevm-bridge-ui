@@ -1,11 +1,23 @@
 import { createUseStyles } from "react-jss";
 
-import { Theme } from "src/styles/theme";
+import theme, { Theme } from "src/styles/theme";
 import { TransactionCardProps } from "src/views/activity/components/transaction-card/transaction-card.view";
 
 interface StylesProps {
   status: TransactionCardProps["status"];
 }
+
+const getColorFromStatus = ({ status }: StylesProps) => {
+  switch (status) {
+    case "completed":
+      return theme.palette.success;
+    case "on-hold":
+    case "failed":
+      return theme.palette.error.main;
+    default:
+      return theme.palette.warning.main;
+  }
+};
 
 const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   card: {
@@ -14,12 +26,7 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   dot: {
     width: theme.spacing(0.75),
     height: theme.spacing(0.75),
-    backgroundColor: ({ status }: StylesProps) =>
-      status === "initiated" || status === "processing"
-        ? theme.palette.warning.main
-        : status === "on-hold" || status === "failed"
-        ? theme.palette.error.main
-        : theme.palette.success,
+    backgroundColor: getColorFromStatus,
     borderRadius: "50%",
   },
   balance: {
@@ -51,7 +58,7 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     width: theme.spacing(2.5),
     height: theme.spacing(2.5),
   },
-  button: {
+  explorerButton: {
     display: "flex",
     cursor: "pointer",
     padding: [theme.spacing(1), theme.spacing(2)],
@@ -59,6 +66,35 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     border: "none",
     borderRadius: theme.spacing(1),
+    backgroundColor: theme.palette.grey.light,
+    "&:hover": {
+      backgroundColor: theme.palette.grey.main,
+    },
+  },
+  finaliseRow: {
+    display: "flex",
+    justifyContent: "center",
+  },
+  finaliseButton: {
+    display: "inline-flex",
+    justifyContent: "center",
+    margin: [theme.spacing(6), 0],
+    padding: [theme.spacing(2), theme.spacing(2)],
+    width: theme.spacing(31),
+    border: "none",
+    backgroundColor: theme.palette.primary.main,
+    cursor: "pointer",
+    borderRadius: theme.spacing(5),
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    "&:disabled": {
+      backgroundColor: theme.palette.disabled,
+      cursor: "initial",
+    },
+  },
+  finaliseButtonText: {
+    color: theme.palette.white,
   },
 }));
 
