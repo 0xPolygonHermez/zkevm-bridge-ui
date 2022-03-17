@@ -20,14 +20,12 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
         role="button"
         onClick={() => onSelectWallet(WalletName.METAMASK)}
       >
+        <WalletIcon walletName={WalletName.METAMASK} size="sm" className={classes.walletIcon} />
         <div className={classes.walletInfo}>
-          <WalletIcon walletName={WalletName.METAMASK} size="sm" className={classes.walletIcon} />
-          <div>
-            <Typography type="body1" className={classes.walletName}>
-              MetaMask
-            </Typography>
-            <Typography type="body2">Connect using web wallet</Typography>
-          </div>
+          <Typography type="body1" className={classes.walletName}>
+            MetaMask
+          </Typography>
+          <Typography type="body2">Connect using web wallet</Typography>
         </div>
         <CaretRightIcon />
       </li>
@@ -36,18 +34,16 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
         role="button"
         onClick={() => onSelectWallet(WalletName.WALLET_CONNECT)}
       >
+        <WalletIcon
+          walletName={WalletName.WALLET_CONNECT}
+          size="sm"
+          className={classes.walletIcon}
+        />
         <div className={classes.walletInfo}>
-          <WalletIcon
-            walletName={WalletName.WALLET_CONNECT}
-            size="sm"
-            className={classes.walletIcon}
-          />
-          <div>
-            <Typography type="body1" className={classes.walletName}>
-              WalletConnect
-            </Typography>
-            <Typography type="body2">Connect using mobile wallet</Typography>
-          </div>
+          <Typography type="body1" className={classes.walletName}>
+            WalletConnect
+          </Typography>
+          <Typography type="body2">Connect using mobile wallet</Typography>
         </div>
         <CaretRightIcon />
       </li>
