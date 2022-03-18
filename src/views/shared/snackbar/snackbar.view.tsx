@@ -1,7 +1,7 @@
 import React from "react";
 
 import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
-import { ReactComponent as CloseIconLight } from "src/assets/icons/close-white.svg";
+import { ReactComponent as XmarkWhiteIcon } from "src/assets/icons/xmark-white.svg";
 import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
 import { Message } from "src/domain";
@@ -47,7 +47,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
             Report
           </button>
           <button className={classes.closeButton} onClick={onClose}>
-            <CloseIconLight />
+            <XmarkWhiteIcon className={classes.closeIcon}/>
           </button>
         </div>
       </div>
