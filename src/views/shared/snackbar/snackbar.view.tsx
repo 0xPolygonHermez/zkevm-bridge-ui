@@ -3,10 +3,8 @@ import React from "react";
 import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as CloseIconLight } from "src/assets/icons/close-white.svg";
 import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
-//domain
+import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
 import { Message } from "src/domain";
-
-const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
 interface SnackbarProps {
   message: Message;

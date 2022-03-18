@@ -3,6 +3,7 @@ import * as platform from "platform";
 import * as StackTrace from "stacktrace-js";
 
 import { StrictSchema } from "src/utils/type-safety";
+import { REPORT_ERROR_FORM_ENTRIES, REPORT_ERROR_FORM_URL } from "src/constants";
 
 interface MessageKeyError {
   message: string;
@@ -83,16 +84,6 @@ export function logDecodingError<T>(error: ZodError<T>, details: string): void {
     }
   });
 }
-
-export const REPORT_ERROR_FORM_ENTRIES = {
-  url: "entry.2056392454",
-  network: "entry.1632331664",
-  platform: "entry.259085709",
-  error: "entry.1383309652",
-};
-
-export const REPORT_ERROR_FORM_URL =
-  "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
 
 /**
  * Report an error using the report issue form
