@@ -60,17 +60,13 @@ const TransactionDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            <ChainRow type={type} side="from" />
-          </Typography>
+          <ChainRow type={type} side="from" className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             To
           </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            <ChainRow type={type} side="to" />
-          </Typography>
+          <ChainRow type={type} side="to" className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
