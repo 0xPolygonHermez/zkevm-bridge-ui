@@ -48,9 +48,6 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     lineHeight: "14px",
     padding: theme.spacing(1),
     cursor: "pointer",
-    "&:hover:not(:disabled)": {
-      background: "transparent",
-    },
   },
 }));
 
