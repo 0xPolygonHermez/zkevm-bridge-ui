@@ -44,7 +44,7 @@ const EthereumProviderProvider: FC = (props) => {
             .catch((error) =>
               parseError(error).then((errorMsg) => {
                 if (isMetamaskUserRejectedRequestError(error)) {
-                  setAccount({ status: "failed", error: errorMsg });
+                  setAccount({ status: "pending" });
                 } else {
                   openSnackbar({
                     type: "error",
