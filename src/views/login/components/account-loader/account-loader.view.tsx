@@ -3,7 +3,7 @@ import { FC } from "react";
 import useAccountLoaderStyles from "src/views/login/components/account-loader/account-loader.styles";
 import { WalletName } from "src/domain";
 import Typography from "src/views/shared/typography/typography.view";
-import WalletIcon from "../wallet-icon/wallet-icon.view";
+import WalletIcon from "src/views/login/components/wallet-icon/wallet-icon.view";
 
 interface AccountLoaderProps {
   selectedWallet: WalletName;

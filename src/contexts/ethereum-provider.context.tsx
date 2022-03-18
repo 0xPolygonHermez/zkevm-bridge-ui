@@ -8,7 +8,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser } from "src/adapters/parsers";
 import { getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
-import { useEnvContext } from "./env.context";
+import { useEnvContext } from "src/contexts/env.context";
 import { useGlobalContext } from "src/contexts/global.context";
 import routes from "src/routes";
 
