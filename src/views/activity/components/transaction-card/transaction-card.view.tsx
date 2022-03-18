@@ -12,13 +12,13 @@ import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import TokenIcon from "src/views/shared/token-icon/token-icon";
 
-export enum StatusText {
-  "on-hold" = "On Hold",
-  initiated = "Initiated",
-  processing = "Processing",
-  failed = "Error",
-  completed = "Completed",
-}
+export const statusText = {
+  "on-hold": "On Hold",
+  initiated: "Initiated",
+  processing: "Processing",
+  failed: "Error",
+  completed: "Completed",
+};
 export interface TransactionCardProps {
   type: "l1" | "l2";
   id: number;
@@ -68,7 +68,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
                 status === "on-hold" || status === "failed" ? classes.redStatus : ""
               }`}
             >
-              {StatusText[status]}
+              {statusText[status]}
             </span>
           )}
         </div>

@@ -7,7 +7,7 @@ import Header from "src/views/shared/header/header.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
-import { StatusText } from "src/views/activity/components/transaction-card/transaction-card.view";
+import { statusText } from "src/views/activity/components/transaction-card/transaction-card.view";
 import { demoData } from "src/views/activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
@@ -39,7 +39,7 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {StatusText[status]}
+            {statusText[status]}
           </Typography>
         </div>
         <div className={classes.row}>
