@@ -97,7 +97,7 @@ export const REPORT_ERROR_FORM_URL =
 /**
  * Report an error using the report issue form
  */
-export function reportError(error: string) {
+export function reportError(error: string): void {
   // ToDo: Add network data
   const data = {
     [REPORT_ERROR_FORM_ENTRIES.url]: window.location.href,
