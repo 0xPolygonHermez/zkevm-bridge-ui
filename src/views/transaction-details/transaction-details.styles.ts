@@ -1,10 +1,8 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
-import { TransactionCardProps } from "src/views/activity/components/transaction-card/transaction-card.view";
-
 interface StylesProps {
-  status: TransactionCardProps["status"];
+  status: "processing" | "initiated" | "on-hold" | "completed" | "failed";
 }
 
 const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
