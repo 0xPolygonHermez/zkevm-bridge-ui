@@ -27,7 +27,11 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
             <Typography type="body1" className={classes.walletName}>
               {walletName}
             </Typography>
-            <Typography type="body2">Connect using web wallet</Typography>
+            {walletName === WalletName.METAMASK ? (
+              <Typography type="body2">Connect using web wallet</Typography>
+            ) : (
+              <Typography type="body2">Connect using mobile wallet</Typography>
+            )}
           </div>
           <CaretRightIcon />
         </li>
