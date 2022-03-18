@@ -20,7 +20,7 @@ const TransactionDetails: FC = () => {
   const classes = useTransactionDetailsStyles({ status: data?.status || "initiated" });
 
   if (!data) {
-    return Navigate({ to: "/activity", replace: true });
+    return <Navigate to="/activity" replace />;
   }
 
   const { amount, token, timestamp, type, status } = data;
