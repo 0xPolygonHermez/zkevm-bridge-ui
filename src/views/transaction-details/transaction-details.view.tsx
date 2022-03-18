@@ -6,13 +6,13 @@ import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
-import Typography from "../shared/typography/typography.view";
-import { StatusText } from "../activity/components/transaction-card/transaction-card.view";
-import { demoData } from "../activity/demo-data";
+import Typography from "src/views/shared/typography/typography.view";
+import { StatusText } from "src/views/activity/components/transaction-card/transaction-card.view";
+import { demoData } from "src/views/activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
-import TokenIcon from "../shared/token-icon/token-icon";
-import ChainRow from "./components/chain-row/chain-row";
+import TokenIcon from "src/views/shared/token-icon/token-icon";
+import ChainRow from "src/views/transaction-details/components/chain-row/chain-row";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
