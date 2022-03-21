@@ -47,7 +47,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
             Report
           </button>
           <button className={classes.closeButton} onClick={onClose}>
-            <CloseIcon className={classes.closeIcon}/>
+            <CloseIcon className={classes.closeIcon} />
           </button>
         </div>
       </div>

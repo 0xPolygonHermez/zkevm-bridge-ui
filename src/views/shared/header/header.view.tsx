@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { ReactComponent as BackIcon } from "src/assets/icons/arrow-left.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
@@ -13,11 +13,13 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ title, onClose }) => {
   const classes = useHeaderStyles();
+  const navigate = useNavigate();
+
   return (
     <header className={classes.header}>
-      <Link to="/" className={classes.sideButton}>
+      <div onClick={() => navigate(-1)} className={classes.sideButton}>
         <BackIcon className={classes.icon} />
-      </Link>
+      </div>
       <Typography type="h1">{title}</Typography>
       <Link to="/" className={classes.sideButton}>
         {onClose && <CloseIcon className={classes.icon} />}
