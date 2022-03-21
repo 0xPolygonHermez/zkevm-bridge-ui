@@ -38,6 +38,9 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
   closeIcon: {
     width: "20px",
     height: "20px",
+    "& rect": {
+      fill: theme.palette.white,
+    },
   },
   reportButton: {
     textTransform: "uppercase",
