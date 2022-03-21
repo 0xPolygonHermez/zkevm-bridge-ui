@@ -1,11 +1,9 @@
 import { createUseStyles } from "react-jss";
 
-import { Theme } from "src/styles/theme";
-
-const useChainStyles = createUseStyles((theme: Theme) => ({
+const useChainStyles = createUseStyles(() => ({
   hermezChain: {
-    width: theme.spacing(2.5),
-    height: theme.spacing(2.5),
+    width: 20,
+    height: 20,
   },
 }));
 
