@@ -2,6 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 import { TransactionStatus } from "src/domain";
+
 interface StylesProps {
   status: TransactionStatus;
 }
