@@ -13,19 +13,19 @@ interface ChainProps {
 const Chain: FC<ChainProps> = ({ chain, className }) => {
   const classes = useChainStyles();
 
-  const EthereumChain = (
-    <Typography type="body1" className={className}>
-      <EthChainIcon /> Ethereum chain
-    </Typography>
-  );
-
-  const PolygonHermezChain = (
-    <Typography type="body1" className={className}>
-      <HermezChainIcon className={classes.hermezChain} /> Polygon Hermez chain
-    </Typography>
-  );
-
-  return chain === "ethereum" ? EthereumChain : PolygonHermezChain;
+  if (chain === "ethereum") {
+    return (
+      <Typography type="body1" className={className}>
+        <EthChainIcon /> Ethereum chain
+      </Typography>
+    );
+  } else {
+    return (
+      <Typography type="body1" className={className}>
+        <HermezChainIcon className={classes.hermezChain} /> Polygon Hermez chain
+      </Typography>
+    );
+  }
 };
 
 export default Chain;
