@@ -11,26 +11,18 @@ export enum EthereumEvent {
 
 export type TransactionStatus = "processing" | "initiated" | "on-hold" | "completed" | "failed";
 
-export enum TransactionStatusText {
-  PROCESSING = "Processing",
-  INITIATED = "Initiated",
-  ON_HOLD = "On Hold",
-  COMPLETED = "Completed",
-  FAILED = "Error",
-}
-
-export function transactionStatusText(status: TransactionStatus): TransactionStatusText {
+export function getTransactionStatusText(status: TransactionStatus): string {
   switch (status) {
     case "processing":
-      return TransactionStatusText.PROCESSING;
+      return "Processing";
     case "initiated":
-      return TransactionStatusText.INITIATED;
+      return "Initiated";
     case "on-hold":
-      return TransactionStatusText.ON_HOLD;
+      return "On Hold";
     case "completed":
-      return TransactionStatusText.COMPLETED;
+      return "Completed";
     case "failed":
-      return TransactionStatusText.FAILED;
+      return "Error";
   }
 }
 

@@ -12,7 +12,7 @@ import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import TokenIcon from "src/views/shared/token-icon/token-icon";
 import Chain from "src/views/transaction-details/components/chain/chain";
-import { transactionStatusText } from "src/domain";
+import { getTransactionStatusText } from "src/domain";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -39,7 +39,7 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {transactionStatusText(status)}
+            {getTransactionStatusText(status)}
           </Typography>
         </div>
         <div className={classes.row}>

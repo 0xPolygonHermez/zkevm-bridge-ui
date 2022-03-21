@@ -11,7 +11,7 @@ import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import TokenIcon from "src/views/shared/token-icon/token-icon";
-import { TransactionStatus, transactionStatusText } from "src/domain";
+import { TransactionStatus, getTransactionStatusText } from "src/domain";
 
 export interface TransactionCardProps {
   target: "l1" | "l2";
@@ -62,7 +62,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
                 status === "on-hold" || status === "failed" ? classes.redStatus : ""
               }`}
             >
-              {transactionStatusText(status)}
+              {getTransactionStatusText(status)}
             </span>
           )}
         </div>
