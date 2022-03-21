@@ -11,8 +11,8 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
   },
   dot: {
-    width: theme.spacing(0.75),
-    height: theme.spacing(0.75),
+    width: 6,
+    height: 6,
     backgroundColor: ({ status }: StylesProps) => {
       switch (status) {
         case "completed":
@@ -37,8 +37,8 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(1.5),
   },
   tokenIcon: {
-    width: theme.spacing(6),
-    height: theme.spacing(6),
+    width: 48,
+    height: 48,
     margin: [theme.spacing(1), 0, theme.spacing(2)],
   },
   row: {
@@ -88,11 +88,11 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "center",
     alignItems: "center",
     padding: [theme.spacing(2), theme.spacing(2)],
-    width: theme.spacing(31),
+    width: 248,
     border: "none",
     backgroundColor: theme.palette.primary.main,
     cursor: "pointer",
-    borderRadius: theme.spacing(5),
+    borderRadius: 40,
     gap: theme.spacing(1),
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
