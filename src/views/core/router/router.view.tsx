@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import routes from "src/routes";
 import PrivateRoute from "src/views/shared/private-route/private-route.view";
@@ -22,6 +22,7 @@ const Router: FC = () => {
           }
         />
       ))}
+      <Route path="*" element={<Navigate to={routes.home.path} />} />
     </Routes>
   );
 };

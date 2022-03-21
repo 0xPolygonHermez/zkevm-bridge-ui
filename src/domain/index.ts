@@ -1,3 +1,11 @@
+export interface Env {
+  REACT_APP_INFURA_API_KEY: string;
+}
+
+export interface RouterState {
+  redirectUrl: string;
+}
+
 export enum WalletName {
   METAMASK = "MetaMask",
   WALLET_CONNECT = "WalletConnect",
@@ -24,8 +32,4 @@ export function getTransactionStatusText(status: TransactionStatus): string {
     case "failed":
       return "Error";
   }
-}
-
-export interface Env {
-  REACT_APP_INFURA_API_KEY: string;
 }
