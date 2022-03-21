@@ -6,7 +6,7 @@ import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.s
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import { getTimeFromNow, TimeFromNowParams } from "src/utils/time";
+import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
@@ -16,7 +16,7 @@ import { TransactionStatus, transactionStatusText } from "src/domain";
 export interface TransactionCardProps {
   target: "l1" | "l2";
   id: number;
-  timestamp: TimeFromNowParams["timestamp"];
+  timestamp: number;
   token: "eth" | "dai";
   status: TransactionStatus;
   amount: number;
@@ -54,7 +54,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
           <Typography type="body1">{actionText}</Typography>
           {status === "completed" ? (
             <Typography type="body2" className={classes.time}>
-              {getTimeFromNow({ timestamp })} ago
+              {getTimeFromNow({ timestamp })}
             </Typography>
           ) : (
             <span

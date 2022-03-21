@@ -52,22 +52,22 @@ const TransactionDetails: FC = () => {
                 Estimating Time <SpinnerIcon />
               </>
             ) : (
-              <>{getTimeFromNow({ timestamp })} ago</>
+              getTimeFromNow({ timestamp })
             )}
           </Typography>
         </div>
-      <div className={classes.row}>
-        <Typography type="body2" className={classes.alignRow}>
-          From
-        </Typography>
-        <Chain chain={target === "l1" ? "polygon" : "ethereum"} className={classes.alignRow} />
-      </div>
-      <div className={classes.row}>
-        <Typography type="body2" className={classes.alignRow}>
-          To
-        </Typography>
-        <Chain chain={target === "l1" ? "ethereum" : "polygon"} className={classes.alignRow} />
-      </div>
+        <div className={classes.row}>
+          <Typography type="body2" className={classes.alignRow}>
+            From
+          </Typography>
+          <Chain chain={target === "l1" ? "polygon" : "ethereum"} className={classes.alignRow} />
+        </div>
+        <div className={classes.row}>
+          <Typography type="body2" className={classes.alignRow}>
+            To
+          </Typography>
+          <Chain chain={target === "l1" ? "ethereum" : "polygon"} className={classes.alignRow} />
+        </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             L2 Fee
