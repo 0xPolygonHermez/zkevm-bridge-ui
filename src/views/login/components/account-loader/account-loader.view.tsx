@@ -6,47 +6,23 @@ import Typography from "src/views/shared/typography/typography.view";
 import WalletIcon from "../wallet-icon/wallet-icon.view";
 
 interface AccountLoaderProps {
-  selectedWallet?: WalletName;
+  selectedWallet: WalletName;
 }
 
 const AccountLoader: FC<AccountLoaderProps> = ({ selectedWallet }) => {
   const classes = useAccountLoaderStyles();
 
-  switch (selectedWallet) {
-    case WalletName.METAMASK: {
-      return (
-        <div className={classes.accountLoader}>
-          <WalletIcon walletName={WalletName.METAMASK} size="lg" className={classes.walletIcon} />
-          <Typography type="body1" className={classes.walletName}>
-            MetaMask
-          </Typography>
-          <Typography type="body2" className={classes.hint}>
-            Follow the instructions in Metamask
-          </Typography>
-        </div>
-      );
-    }
-    case WalletName.WALLET_CONNECT: {
-      return (
-        <div className={classes.accountLoader}>
-          <WalletIcon
-            walletName={WalletName.WALLET_CONNECT}
-            size="lg"
-            className={classes.walletIcon}
-          />
-          <Typography type="body1" className={classes.walletName}>
-            WalletConnect
-          </Typography>
-          <Typography type="body2" className={classes.hint}>
-            Follow the instructions in WalletConnect
-          </Typography>
-        </div>
-      );
-    }
-    default: {
-      return null;
-    }
-  }
+  return (
+    <div className={classes.accountLoader}>
+      <WalletIcon walletName={selectedWallet} size="lg" className={classes.walletIcon} />
+      <Typography type="body1" className={classes.walletName}>
+        {selectedWallet}
+      </Typography>
+      <Typography type="body2" className={classes.hint}>
+        Follow the instructions in {selectedWallet}
+      </Typography>
+    </div>
+  );
 };
 
 export default AccountLoader;

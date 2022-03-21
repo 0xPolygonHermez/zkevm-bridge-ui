@@ -15,42 +15,27 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
 
   return (
     <ul className={classes.walletList}>
-      <li
-        className={classes.wallet}
-        role="button"
-        onClick={() => onSelectWallet(WalletName.METAMASK)}
-      >
-        <div className={classes.walletInfo}>
-          <WalletIcon walletName={WalletName.METAMASK} size="sm" className={classes.walletIcon} />
-          <div>
+      {Object.values(WalletName).map((walletName) => (
+        <li
+          key={walletName}
+          className={classes.wallet}
+          role="button"
+          onClick={() => onSelectWallet(walletName)}
+        >
+          <WalletIcon walletName={walletName} size="sm" className={classes.walletIcon} />
+          <div className={classes.walletInfo}>
             <Typography type="body1" className={classes.walletName}>
-              MetaMask
+              {walletName}
             </Typography>
-            <Typography type="body2">Connect using web wallet</Typography>
+            {walletName === WalletName.METAMASK ? (
+              <Typography type="body2">Connect using web wallet</Typography>
+            ) : (
+              <Typography type="body2">Connect using mobile wallet</Typography>
+            )}
           </div>
-        </div>
-        <CaretRightIcon />
-      </li>
-      <li
-        className={classes.wallet}
-        role="button"
-        onClick={() => onSelectWallet(WalletName.WALLET_CONNECT)}
-      >
-        <div className={classes.walletInfo}>
-          <WalletIcon
-            walletName={WalletName.WALLET_CONNECT}
-            size="sm"
-            className={classes.walletIcon}
-          />
-          <div>
-            <Typography type="body1" className={classes.walletName}>
-              WalletConnect
-            </Typography>
-            <Typography type="body2">Connect using mobile wallet</Typography>
-          </div>
-        </div>
-        <CaretRightIcon />
-      </li>
+          <CaretRightIcon />
+        </li>
+      ))}
     </ul>
   );
 };

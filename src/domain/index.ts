@@ -1,6 +1,6 @@
 export enum WalletName {
-  METAMASK,
-  WALLET_CONNECT,
+  METAMASK = "MetaMask",
+  WALLET_CONNECT = "WalletConnect",
 }
 
 export enum EthereumEvent {

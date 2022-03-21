@@ -5,9 +5,11 @@ import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconnect.svg";
 import useWalletIconStyles from "src/views/login/components/wallet-icon/wallet-icon.styles";
 
+export type WalletIconSize = "sm" | "lg";
+
 interface WalletIconProps {
   walletName: WalletName;
-  size: "sm" | "lg";
+  size: WalletIconSize;
   className?: string;
 }
 

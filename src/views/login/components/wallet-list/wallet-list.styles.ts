@@ -23,8 +23,7 @@ const useWalletListStyles = createUseStyles((theme: Theme) => ({
     marginRight: theme.spacing(2),
   },
   walletInfo: {
-    display: "flex",
-    alignItems: "center",
+    flex: 1,
   },
   walletName: {
     marginBottom: theme.spacing(1),
