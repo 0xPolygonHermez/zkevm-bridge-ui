@@ -3,7 +3,7 @@ import { TransactionCardProps } from "src/views/activity/components/transaction-
 export const demoData: TransactionCardProps[] = [
   {
     id: Math.random(),
-    type: "l1",
+    target: "l1",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000),
     status: "on-hold",
@@ -11,7 +11,7 @@ export const demoData: TransactionCardProps[] = [
   },
   {
     id: Math.random(),
-    type: "l2",
+    target: "l2",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 2),
     status: "initiated",
@@ -19,7 +19,7 @@ export const demoData: TransactionCardProps[] = [
   },
   {
     id: Math.random(),
-    type: "l2",
+    target: "l2",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60),
     status: "processing",
@@ -27,7 +27,7 @@ export const demoData: TransactionCardProps[] = [
   },
   {
     id: Math.random(),
-    type: "l2",
+    target: "l2",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 2),
     status: "completed",
@@ -35,7 +35,7 @@ export const demoData: TransactionCardProps[] = [
   },
   {
     id: Math.random(),
-    type: "l1",
+    target: "l1",
     token: "eth",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 24),
     status: "completed",
@@ -43,7 +43,7 @@ export const demoData: TransactionCardProps[] = [
   },
   {
     id: Math.random(),
-    type: "l1",
+    target: "l1",
     token: "dai",
     timestamp: Date.now() - Math.floor(Math.random() * 10000 * 60 * 60 * 24),
     status: "failed",

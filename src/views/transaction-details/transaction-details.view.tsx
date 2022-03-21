@@ -7,12 +7,12 @@ import Header from "src/views/shared/header/header.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
-import { statusText } from "src/views/activity/components/transaction-card/transaction-card.view";
 import { demoData } from "src/views/activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import TokenIcon from "src/views/shared/token-icon/token-icon";
-import ChainRow from "src/views/transaction-details/components/chain-row/chain-row";
+import Chain from "src/views/transaction-details/components/chain/chain";
+import { transactionStatusText } from "src/domain";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -23,7 +23,7 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, token, timestamp, type, status } = data;
+  const { amount, token, timestamp, target, status } = data;
   return (
     <>
       <Header title="Transaction Details" />
@@ -39,7 +39,7 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {statusText[status]}
+            {transactionStatusText(status)}
           </Typography>
         </div>
         <div className={classes.row}>
@@ -56,18 +56,18 @@ const TransactionDetails: FC = () => {
             )}
           </Typography>
         </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            From
-          </Typography>
-          <ChainRow type={type} side="from" className={classes.alignRow} />
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            To
-          </Typography>
-          <ChainRow type={type} side="to" className={classes.alignRow} />
-        </div>
+      <div className={classes.row}>
+        <Typography type="body2" className={classes.alignRow}>
+          From
+        </Typography>
+        <Chain chain={target === "l1" ? "polygon" : "ethereum"} className={classes.alignRow} />
+      </div>
+      <div className={classes.row}>
+        <Typography type="body2" className={classes.alignRow}>
+          To
+        </Typography>
+        <Chain chain={target === "l1" ? "ethereum" : "polygon"} className={classes.alignRow} />
+      </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             L2 Fee

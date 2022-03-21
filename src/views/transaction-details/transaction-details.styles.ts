@@ -1,8 +1,9 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
+import { TransactionStatus } from "src/domain";
 interface StylesProps {
-  status: "processing" | "initiated" | "on-hold" | "completed" | "failed";
+  status: TransactionStatus;
 }
 
 const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({

@@ -12,7 +12,7 @@ const tokenIcons = {
   dai: DaiToken,
 };
 const TokenIcon: FC<TokenIconProps> = ({ token, className }) => {
-  const Icon = tokenIcons[token] || tokenIcons["eth"];
+  const Icon = tokenIcons[token];
   return <Icon className={className} />;
 };
 

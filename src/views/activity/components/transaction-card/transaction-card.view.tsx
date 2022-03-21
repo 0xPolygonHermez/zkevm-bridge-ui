@@ -11,26 +11,20 @@ import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import TokenIcon from "src/views/shared/token-icon/token-icon";
+import { TransactionStatus, transactionStatusText } from "src/domain";
 
-export const statusText = {
-  "on-hold": "On Hold",
-  initiated: "Initiated",
-  processing: "Processing",
-  failed: "Error",
-  completed: "Completed",
-};
 export interface TransactionCardProps {
-  type: "l1" | "l2";
+  target: "l1" | "l2";
   id: number;
   timestamp: TimeFromNowParams["timestamp"];
   token: "eth" | "dai";
-  status: "processing" | "initiated" | "on-hold" | "completed" | "failed";
+  status: TransactionStatus;
   amount: number;
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({
   id,
-  type,
+  target,
   timestamp,
   token,
   amount,
@@ -42,8 +36,8 @@ const TransactionCard: FC<TransactionCardProps> = ({
     l1: TransferL1Icon,
     l2: TransferL2Icon,
   };
-  const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[type];
-  const actionText = type === "l1" ? "Transfer to L1" : "Transfer to L2";
+  const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[target];
+  const actionText = target === "l1" ? "Transfer to L1" : "Transfer to L2";
 
   return (
     <Card
@@ -68,7 +62,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
                 status === "on-hold" || status === "failed" ? classes.redStatus : ""
               }`}
             >
-              {statusText[status]}
+              {transactionStatusText(status)}
             </span>
           )}
         </div>
