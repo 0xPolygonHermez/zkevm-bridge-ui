@@ -33,3 +33,15 @@ export function getTransactionStatusText(status: TransactionStatus): string {
       return "Error";
   }
 }
+
+// User notifications
+export type Message =
+  | {
+      type: "info-msg" | "success-msg" | "error-msg";
+      text: string;
+    }
+  | {
+      type: "error";
+      text?: string;
+      parsed: string;
+    };

@@ -1,7 +1,7 @@
 import Home from "src/views/home/home.view";
 import Login from "src/views/login/login.view";
-import Activity from "src/views/activity/activity.view";
 import Settings from "src/views/settings/settings.view";
+import Activity from "src/views/activity/activity.view";
 import TransactionDetails from "src/views/transaction-details/transaction-details.view";
 
 const routes = {

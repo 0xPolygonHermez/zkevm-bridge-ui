@@ -13,11 +13,13 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.grey.main,
     borderRadius: theme.spacing(7),
   },
+  cardWrap: {
+    margin: [theme.spacing(3), 0],
+  },
   card: {
     display: "flex",
     flexDirection: "column",
-    marginTop: theme.spacing(6),
-    marginBottom: theme.spacing(8),
+    margin: [theme.spacing(3), 0],
   },
   cardHeader: {
     padding: [theme.spacing(3), theme.spacing(4), theme.spacing(2)],

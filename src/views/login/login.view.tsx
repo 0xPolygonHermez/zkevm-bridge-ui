@@ -3,15 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import Card from "src/views/shared/card/card.view";
 import useLoginStyles from "src/views/login/login.styles";
-
 import Typography from "src/views/shared/typography/typography.view";
+import Error from "src/views/shared/error/error.view";
+import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
+import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
 import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
-import { WalletName } from "src/domain";
 import routes from "src/routes";
-import WalletList from "./components/wallet-list/wallet-list.view";
-import AccountLoader from "./components/account-loader/account-loader.view";
 import { routerStateParser } from "src/adapters/parsers";
+import { WalletName } from "src/domain";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
@@ -28,7 +28,7 @@ const Login: FC = () => {
   };
 
   useEffect(() => {
-    if (account.status === "failed") {
+    if (account.status === "failed" || account.status === "pending") {
       setSelectedWallet(undefined);
     }
     if (account.status === "successful") {
@@ -48,23 +48,29 @@ const Login: FC = () => {
       <Typography type="body1" className={classes.appName}>
         Bridge
       </Typography>
-      <Card className={classes.card}>
-        {selectedWallet === undefined ? (
-          <>
-            <Typography type="h1" className={classes.cardHeader}>
-              Connect a wallet
-            </Typography>
-            <WalletList onSelectWallet={onConnectProvider} />
-          </>
-        ) : (
-          <>
-            <Typography type="h1" className={`${classes.cardHeader} ${classes.cardHeaderCentered}`}>
-              Connecting to
-            </Typography>
-            <AccountLoader selectedWallet={selectedWallet} />
-          </>
-        )}
-      </Card>
+      <div className={classes.cardWrap}>
+        <Card className={classes.card}>
+          {selectedWallet === undefined ? (
+            <>
+              <Typography type="h1" className={classes.cardHeader}>
+                Connect a wallet
+              </Typography>
+              <WalletList onSelectWallet={onConnectProvider} />
+            </>
+          ) : (
+            <>
+              <Typography
+                type="h1"
+                className={`${classes.cardHeader} ${classes.cardHeaderCentered}`}
+              >
+                Connecting to
+              </Typography>
+              <AccountLoader selectedWallet={selectedWallet} />
+            </>
+          )}
+        </Card>
+        {account.status === "failed" && <Error error={account.error} />}
+      </div>
     </>
   );
 };
