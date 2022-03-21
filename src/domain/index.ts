@@ -16,3 +16,20 @@ export enum EthereumEvent {
   CHAIN_CHANGED = "chainChanged",
   DISCONNECT = "disconnect",
 }
+
+export type TransactionStatus = "processing" | "initiated" | "on-hold" | "completed" | "failed";
+
+export function getTransactionStatusText(status: TransactionStatus): string {
+  switch (status) {
+    case "processing":
+      return "Processing";
+    case "initiated":
+      return "Initiated";
+    case "on-hold":
+      return "On Hold";
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Error";
+  }
+}
