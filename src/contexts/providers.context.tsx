@@ -15,12 +15,22 @@ import routes from "src/routes";
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
-  connectProvider?: (walletName: WalletName) => Promise<void>;
-  disconnectProvider?: () => Promise<void>;
+  connectProvider: (walletName: WalletName) => Promise<void>;
+  disconnectProvider: () => Promise<void>;
 }
+
+const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
+  connectProvider: () => {
+    console.error(providersContextNotReadyErrorMsg);
+    return Promise.resolve();
+  },
+  disconnectProvider: () => {
+    console.error(providersContextNotReadyErrorMsg);
+    return Promise.resolve();
+  },
 });
 
 const ProvidersProvider: FC = (props) => {

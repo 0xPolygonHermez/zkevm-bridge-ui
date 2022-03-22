@@ -35,9 +35,7 @@ const Settings: FC = () => {
   ];
 
   const onDisconnectProvider = () => {
-    if (disconnectProvider) {
-      void disconnectProvider();
-    }
+    void disconnectProvider();
   };
 
   return (

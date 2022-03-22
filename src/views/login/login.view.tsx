@@ -22,9 +22,7 @@ const Login: FC = () => {
 
   const onConnectProvider = (walletName: WalletName) => {
     setSelectedWallet(walletName);
-    if (connectProvider) {
-      void connectProvider(walletName);
-    }
+    void connectProvider(walletName);
   };
 
   useEffect(() => {
