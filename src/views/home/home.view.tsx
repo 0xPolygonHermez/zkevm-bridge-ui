@@ -3,11 +3,11 @@ import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import Header from "src/views/home/components/header/header.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
-import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
-  const { account } = useEthereumProviderContext();
+  const { account } = useProvidersContext();
 
   return (
     <>

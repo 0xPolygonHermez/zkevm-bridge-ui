@@ -13,7 +13,7 @@ import { ReactComponent as UsdIcon } from "src/assets/icons/currencies/usd.svg";
 import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
-import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 
 enum Currencies {
   EUR = "eur",
@@ -25,7 +25,7 @@ enum Currencies {
 const Settings: FC = () => {
   const classes = useSettingsStyles();
   const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.EUR);
-  const { disconnectProvider } = useEthereumProviderContext();
+  const { disconnectProvider } = useProvidersContext();
   const currencies = [
     { icon: <EurIcon />, name: "EUR", id: Currencies.EUR },
     { icon: <UsdIcon />, name: "USD", id: Currencies.USD },

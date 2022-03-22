@@ -12,20 +12,20 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useGlobalContext } from "src/contexts/global.context";
 import routes from "src/routes";
 
-interface EthereumProviderContext {
-  provider?: Web3Provider;
+interface ProvidersContext {
+  connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
   connectProvider?: (walletName: WalletName) => Promise<void>;
   disconnectProvider?: () => Promise<void>;
 }
 
-const ethereumProviderContext = createContext<EthereumProviderContext>({
+const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
 });
 
-const EthereumProviderProvider: FC = (props) => {
+const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
-  const [provider, setProvider] = useState<Web3Provider>();
+  const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useGlobalContext();
@@ -38,7 +38,7 @@ const EthereumProviderProvider: FC = (props) => {
           const web3Provider = new Web3Provider(window.ethereum);
           return getConnectedAccounts(web3Provider)
             .then((accounts) => {
-              setProvider(web3Provider);
+              setConnectedProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
             .catch((error) =>
@@ -70,7 +70,7 @@ const EthereumProviderProvider: FC = (props) => {
           return walletConnectProvider
             .enable()
             .then((accounts) => {
-              setProvider(web3Provider);
+              setConnectedProvider(web3Provider);
               setAccount({ status: "successful", data: accounts[0] });
             })
             .catch((error) =>
@@ -88,21 +88,24 @@ const EthereumProviderProvider: FC = (props) => {
         } else
           return setAccount({
             status: "failed",
-            error: "The env hasn't be initialized properly",
+            error: "The env has not been initialized correctly.",
           });
       }
     }
   };
 
   const disconnectProvider = (): Promise<void> => {
-    if (provider?.provider && provider.provider instanceof WalletConnectProvider) {
-      return provider.provider.disconnect().then(() => {
-        setProvider(undefined);
+    if (
+      connectedProvider?.provider &&
+      connectedProvider.provider instanceof WalletConnectProvider
+    ) {
+      return connectedProvider.provider.disconnect().then(() => {
+        setConnectedProvider(undefined);
         setAccount({ status: "pending" });
       });
     } else {
       return new Promise((resolve) => {
-        setProvider(undefined);
+        setConnectedProvider(undefined);
         setAccount({ status: "pending" });
         resolve();
       });
@@ -110,7 +113,8 @@ const EthereumProviderProvider: FC = (props) => {
   };
 
   useEffect(() => {
-    const internalProvider: Record<string, unknown> | undefined = provider?.provider;
+    const internalConnectedProvider: Record<string, unknown> | undefined =
+      connectedProvider?.provider;
     const onAccountsChanged = (accounts: unknown): void => {
       const parsedAccounts = ethereumAccountsParser.safeParse(accounts);
 
@@ -127,35 +131,45 @@ const EthereumProviderProvider: FC = (props) => {
       window.location.reload();
     };
 
-    if (internalProvider && "on" in internalProvider && typeof internalProvider.on === "function") {
-      internalProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      internalProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-      internalProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
+    if (
+      internalConnectedProvider &&
+      "on" in internalConnectedProvider &&
+      typeof internalConnectedProvider.on === "function"
+    ) {
+      internalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
+      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
     }
 
     return () => {
       if (
-        internalProvider &&
-        "removeListener" in internalProvider &&
-        typeof internalProvider.removeListener === "function"
+        internalConnectedProvider &&
+        "removeListener" in internalConnectedProvider &&
+        typeof internalConnectedProvider.removeListener === "function"
       ) {
-        internalProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        internalProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-        internalProvider.removeListener(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
+        internalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+        internalConnectedProvider.removeListener(
+          EthereumEvent.CHAIN_CHANGED,
+          onChainChangedOrDisconnect
+        );
+        internalConnectedProvider.removeListener(
+          EthereumEvent.DISCONNECT,
+          onChainChangedOrDisconnect
+        );
       }
     };
-  }, [provider, navigate]);
+  }, [connectedProvider, navigate]);
 
   return (
-    <ethereumProviderContext.Provider
-      value={{ provider, account, connectProvider, disconnectProvider }}
+    <providersContext.Provider
+      value={{ connectedProvider, account, connectProvider, disconnectProvider }}
       {...props}
     />
   );
 };
 
-const useEthereumProviderContext = (): EthereumProviderContext => {
-  return useContext(ethereumProviderContext);
+const useProvidersContext = (): ProvidersContext => {
+  return useContext(providersContext);
 };
 
-export { EthereumProviderProvider, useEthereumProviderContext };
+export { ProvidersProvider, useProvidersContext };
