@@ -1,5 +1,6 @@
 export interface Env {
   REACT_APP_INFURA_API_KEY: string;
+  REACT_APP_L1_PROVIDER_NETWORK: string;
 }
 
 export interface RouterState {
