@@ -7,6 +7,7 @@ const envParser = StrictSchema<Env>()(
   z.object({
     REACT_APP_INFURA_API_KEY: z.string(),
     REACT_APP_L1_PROVIDER_NETWORK: z.string(),
+    REACT_APP_L2_PROVIDER_URL: z.string(),
   })
 );
 

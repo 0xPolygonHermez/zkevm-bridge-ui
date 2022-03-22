@@ -1,5 +1,5 @@
 import { createContext, FC, useContext, useEffect, useState } from "react";
-import { Web3Provider, InfuraProvider } from "@ethersproject/providers";
+import { Web3Provider, InfuraProvider, JsonRpcProvider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,7 @@ import routes from "src/routes";
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   l1Provider?: InfuraProvider;
+  l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
@@ -38,6 +39,7 @@ const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
   const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
   const [l1Provider, setL1Provider] = useState<InfuraProvider>();
+  const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useGlobalContext();
@@ -157,6 +159,7 @@ const ProvidersProvider: FC = (props) => {
       setL1Provider(
         new InfuraProvider(env.REACT_APP_L1_PROVIDER_NETWORK, env.REACT_APP_INFURA_API_KEY)
       );
+      setL2Provider(new JsonRpcProvider(env.REACT_APP_L2_PROVIDER_URL));
     }
 
     return () => {
@@ -184,6 +187,7 @@ const ProvidersProvider: FC = (props) => {
         connectedProvider,
         account,
         l1Provider,
+        l2Provider,
         connectProvider,
         disconnectProvider,
       }}
