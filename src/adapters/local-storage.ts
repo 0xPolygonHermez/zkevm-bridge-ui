@@ -20,30 +20,18 @@ export function getStorageVersion(): number {
 }
 
 // Helpers
-
-type Value = string | number | boolean | Record<string, unknown> | Array<unknown>;
-
-export function getStorageByKey<T extends Value>(
-  key: string,
-  defaultValue: T,
-  parser: z.ZodSchema<T>
-): T {
-  const string = localStorage.getItem(key);
-  if (string === null) {
+export function getStorageByKey<T>(key: string, defaultValue: T, parser: z.ZodSchema<T>): T {
+  const value = localStorage.getItem(key);
+  if (value === null) {
     setStorageByKey(key, defaultValue);
     return defaultValue;
   } else {
-    try {
-      const value: unknown = JSON.parse(string);
-      const parsed = parser.safeParse(value);
-      return parsed.success ? parsed.data : defaultValue;
-    } catch (_) {
-      return string as T;
-    }
+    const parsed = parser.safeParse(value);
+    return parsed.success ? parsed.data : defaultValue;
   }
 }
 
-export function setStorageByKey(key: string, value: Value): void {
+export function setStorageByKey(key: string, value: unknown): void {
   const string = typeof value === "string" ? value : JSON.stringify(value);
   localStorage.setItem(key, string);
 }
