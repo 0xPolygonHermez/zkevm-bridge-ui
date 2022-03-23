@@ -4,26 +4,38 @@ import * as constants from "src/constants";
 import { Currency } from "src/domain";
 
 export function getCurrency(): Currency {
-  return getStorageByKey(
-    constants.PREFERRED_CURRENCY_KEY,
-    constants.PREFERRED_CURRENCY,
-    z.nativeEnum(Currency)
-  );
+  return getStorageByKey({
+    key: constants.PREFERRED_CURRENCY_KEY,
+    defaultValue: constants.PREFERRED_CURRENCY,
+    parser: z.nativeEnum(Currency),
+  });
 }
 
 export function setCurrency(currency: Currency): void {
-  setStorageByKey(constants.PREFERRED_CURRENCY_KEY, currency);
+  setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
 }
 
 export function getStorageVersion(): number {
-  return getStorageByKey(constants.STORAGE_VERSION_KEY, constants.STORAGE_VERSION, z.number());
+  return getStorageByKey({
+    key: constants.STORAGE_VERSION_KEY,
+    defaultValue: constants.STORAGE_VERSION,
+    parser: z.number(),
+  });
 }
 
 // Helpers
-export function getStorageByKey<T>(key: string, defaultValue: T, parser: z.ZodSchema<T>): T {
+export function getStorageByKey<T>({
+  key,
+  defaultValue,
+  parser,
+}: {
+  key: string;
+  defaultValue: T;
+  parser: z.ZodSchema<T>;
+}): T {
   const value = localStorage.getItem(key);
   if (value === null) {
-    setStorageByKey(key, defaultValue);
+    setStorageByKey({ key, value: defaultValue });
     return defaultValue;
   } else {
     const parsed = parser.safeParse(value);
@@ -31,7 +43,7 @@ export function getStorageByKey<T>(key: string, defaultValue: T, parser: z.ZodSc
   }
 }
 
-export function setStorageByKey(key: string, value: unknown): void {
+export function setStorageByKey({ key, value }: { key: string; value: unknown }): void {
   const string = typeof value === "string" ? value : JSON.stringify(value);
   localStorage.setItem(key, string);
 }
