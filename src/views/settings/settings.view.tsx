@@ -14,7 +14,7 @@ import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Currencies } from "src/domain";
+import { Currency } from "src/domain";
 import * as localStorage from "src/adapters/local-storage";
 
 const Settings: FC = () => {
@@ -22,18 +22,18 @@ const Settings: FC = () => {
   const [selectedCurrencyId, setSelectedCurrencyId] = useState(localStorage.getCurrency());
   const { disconnectProvider } = useProvidersContext();
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: Currencies.EUR },
-    { icon: <UsdIcon />, name: "USD", id: Currencies.USD },
-    { icon: <GbpIcon />, name: "GBP", id: Currencies.GBP },
-    { icon: <CnyIcon />, name: "CNY", id: Currencies.CNY },
-    { icon: <JpyIcon />, name: "JPY", id: Currencies.JPY },
+    { icon: <EurIcon />, name: "EUR", id: Currency.EUR },
+    { icon: <UsdIcon />, name: "USD", id: Currency.USD },
+    { icon: <GbpIcon />, name: "GBP", id: Currency.GBP },
+    { icon: <CnyIcon />, name: "CNY", id: Currency.CNY },
+    { icon: <JpyIcon />, name: "JPY", id: Currency.JPY },
   ];
 
   const onDisconnectProvider = () => {
     void disconnectProvider();
   };
 
-  const onCurrencySelected = (currency: Currencies) => {
+  const onCurrencySelected = (currency: Currency) => {
     setSelectedCurrencyId(currency);
     localStorage.setCurrency(currency);
   };

@@ -1,17 +1,17 @@
 import { z } from "zod";
 
 import * as constants from "src/constants";
-import { Currencies } from "src/domain";
+import { Currency } from "src/domain";
 
-export function getCurrency(): Currencies {
+export function getCurrency(): Currency {
   return getStorageByKey(
     constants.PREFERRED_CURRENCY_KEY,
     constants.PREFERRED_CURRENCY,
-    z.nativeEnum(Currencies)
+    z.nativeEnum(Currency)
   );
 }
 
-export function setCurrency(currency: Currencies): void {
+export function setCurrency(currency: Currency): void {
   setStorageByKey(constants.PREFERRED_CURRENCY_KEY, currency);
 }
 

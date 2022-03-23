@@ -36,7 +36,7 @@ export function getTransactionStatusText(status: TransactionStatus): string {
   }
 }
 
-export enum Currencies {
+export enum Currency {
   EUR = "eur",
   USD = "usd",
   JPY = "jpy",
