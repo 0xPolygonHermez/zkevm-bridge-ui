@@ -1,6 +1,6 @@
 import { GlobalProvider } from "src/contexts/global.context";
 import { EnvProvider } from "src/contexts/env.context";
-import { EthereumProviderProvider } from "src/contexts/ethereum-provider.context";
+import { ProvidersProvider } from "src/contexts/providers.context";
 import Layout from "src/views/core/layout/layout.view";
 import Router from "src/views/core/router/router.view";
 import useAppStyles from "src/views/app.styles";
@@ -11,11 +11,11 @@ const App = (): JSX.Element => {
   return (
     <GlobalProvider>
       <EnvProvider>
-        <EthereumProviderProvider>
+        <ProvidersProvider>
           <Layout>
             <Router />
           </Layout>
-        </EthereumProviderProvider>
+        </ProvidersProvider>
       </EnvProvider>
     </GlobalProvider>
   );

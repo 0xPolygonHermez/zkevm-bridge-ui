@@ -8,7 +8,7 @@ import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
-import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 import { routerStateParser } from "src/adapters/parsers";
 import { WalletName } from "src/domain";
@@ -17,14 +17,12 @@ const Login: FC = () => {
   const classes = useLoginStyles();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { connectProvider, account } = useEthereumProviderContext();
+  const { connectProvider, account } = useProvidersContext();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   const onConnectProvider = (walletName: WalletName) => {
     setSelectedWallet(walletName);
-    if (connectProvider) {
-      void connectProvider(walletName);
-    }
+    void connectProvider(walletName);
   };
 
   useEffect(() => {

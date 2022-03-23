@@ -1,11 +1,11 @@
 import { FC } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
-import { useEthereumProviderContext } from "src/contexts/ethereum-provider.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 
 const PrivateRoute: FC = ({ children }) => {
-  const { provider } = useEthereumProviderContext();
+  const { connectedProvider: provider } = useProvidersContext();
   const { pathname } = useLocation();
 
   if (!provider) {
