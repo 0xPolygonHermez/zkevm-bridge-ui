@@ -155,13 +155,6 @@ const ProvidersProvider: FC = (props) => {
       internalConnectedProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
     }
 
-    if (env) {
-      setL1Provider(
-        new InfuraProvider(env.REACT_APP_L1_PROVIDER_NETWORK, env.REACT_APP_INFURA_API_KEY)
-      );
-      setL2Provider(new JsonRpcProvider(env.REACT_APP_L2_PROVIDER_URL));
-    }
-
     return () => {
       if (
         internalConnectedProvider &&
@@ -179,7 +172,16 @@ const ProvidersProvider: FC = (props) => {
         );
       }
     };
-  }, [connectedProvider, env, navigate]);
+  }, [connectedProvider, navigate]);
+
+  useEffect(() => {
+    if (env) {
+      setL1Provider(
+        new InfuraProvider(env.REACT_APP_L1_PROVIDER_NETWORK, env.REACT_APP_INFURA_API_KEY)
+      );
+      setL2Provider(new JsonRpcProvider(env.REACT_APP_L2_PROVIDER_URL));
+    }
+  }, [env]);
 
   return (
     <providersContext.Provider
