@@ -27,20 +27,28 @@ export function getStorageByKey<T>({
 }): T {
   const value = localStorage.getItem(key);
   if (value === null) {
-    setStorageByKey({ key, value: defaultValue });
-    return defaultValue;
+    return setStorageByKey({ key, value: defaultValue });
   } else {
     const parsed = parser.safeParse(value);
     if (parsed.success) {
       return parsed.data;
     } else {
-      setStorageByKey({ key, value: defaultValue });
-      return defaultValue;
+      try {
+        const parsedJson = parser.safeParse(JSON.parse(value));
+        if (parsedJson.success) {
+          return parsedJson.data;
+        } else {
+          return setStorageByKey({ key, value: defaultValue });
+        }
+      } catch (_) {
+        return setStorageByKey({ key, value: defaultValue });
+      }
     }
   }
 }
 
-export function setStorageByKey({ key, value }: { key: string; value: unknown }): void {
+export function setStorageByKey<T>({ key, value }: { key: string; value: T }): T {
   const string = typeof value === "string" ? value : JSON.stringify(value);
   localStorage.setItem(key, string);
+  return value;
 }
