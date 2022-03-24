@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@typechain/ethers-v5": "^10.0.0",
     "@types/node": "^16.11.26",
     "@types/platform": "^1.3.4",
     "@types/react": "^17.0.39",
@@ -18,6 +19,7 @@
     "react-scripts": "^4.0.3",
     "serve": "^13.0.2",
     "stacktrace-js": "^2.0.2",
+    "typechain": "^8.0.0",
     "typescript": "^4.5.5",
     "zod": "^3.13.4"
   },
@@ -29,7 +31,9 @@
   "scripts": {
     "build": "react-scripts build",
     "format": "prettier --write .",
+    "generate-contract-types": "./scripts/generate-contract-types.sh",
     "lint": "eslint --fix --ext .ts,.tsx .",
+    "postinstall": "npm run generate-contract-types",
     "prepare": "husky install",
     "start:dev": "react-scripts start",
     "start:prod": "serve -s -C -p 80 build"
