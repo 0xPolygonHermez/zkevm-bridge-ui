@@ -2,6 +2,10 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import { Env, RouterState } from "src/domain";
+import {
+  GetFiatExchangeRatesError,
+  GetFiatExchangeRatesResponse,
+} from "src/adapters/fiat-exchange-rates";
 
 const envParser = StrictSchema<Env>()(
   z.object({
@@ -10,6 +14,7 @@ const envParser = StrictSchema<Env>()(
     REACT_APP_L2_PROVIDER_URL: z.string(),
     REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS: z.string(),
     REACT_APP_USDT_CONTRACT_ADDRESS: z.string(),
+    REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
   })
 );
 
@@ -17,4 +22,23 @@ const routerStateParser = StrictSchema<RouterState>()(z.object({ redirectUrl: z.
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
-export { envParser, routerStateParser, ethereumAccountsParser };
+const fiatExchangeRatesParser = StrictSchema<GetFiatExchangeRatesResponse>()(
+  z.object({ rates: z.record(z.number()) })
+);
+
+const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesError>()(
+  z.object({
+    error: z.object({
+      code: z.string(),
+      message: z.string(),
+    }),
+  })
+);
+
+export {
+  envParser,
+  routerStateParser,
+  ethereumAccountsParser,
+  fiatExchangeRatesParser,
+  fiatExchangeRatesErrorParser,
+};
