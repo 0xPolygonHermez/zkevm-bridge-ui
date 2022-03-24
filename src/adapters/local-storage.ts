@@ -31,7 +31,12 @@ export function getStorageByKey<T>({
     return defaultValue;
   } else {
     const parsed = parser.safeParse(value);
-    return parsed.success ? parsed.data : defaultValue;
+    if (parsed.success) {
+      return parsed.data;
+    } else {
+      setStorageByKey({ key, value: defaultValue });
+      return defaultValue;
+    }
   }
 }
 
