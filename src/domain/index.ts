@@ -36,6 +36,14 @@ export function getTransactionStatusText(status: TransactionStatus): string {
   }
 }
 
+export enum Currency {
+  EUR = "eur",
+  USD = "usd",
+  JPY = "jpy",
+  GBP = "gbp",
+  CNY = "cny",
+}
+
 // User notifications
 export type Message =
   | {

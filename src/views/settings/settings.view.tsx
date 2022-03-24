@@ -14,28 +14,28 @@ import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { Currency } from "src/domain";
+import * as localStorage from "src/adapters/local-storage";
 
-enum Currencies {
-  EUR = "eur",
-  USD = "usd",
-  JPY = "jpy",
-  GBP = "gbp",
-  CNY = "cny",
-}
 const Settings: FC = () => {
   const classes = useSettingsStyles();
-  const [selectedCurrencyId, setSelectedCurrencyId] = useState(Currencies.EUR);
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState(localStorage.getCurrency());
   const { disconnectProvider } = useProvidersContext();
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: Currencies.EUR },
-    { icon: <UsdIcon />, name: "USD", id: Currencies.USD },
-    { icon: <GbpIcon />, name: "GBP", id: Currencies.GBP },
-    { icon: <CnyIcon />, name: "CNY", id: Currencies.CNY },
-    { icon: <JpyIcon />, name: "JPY", id: Currencies.JPY },
+    { icon: <EurIcon />, name: "EUR", id: Currency.EUR },
+    { icon: <UsdIcon />, name: "USD", id: Currency.USD },
+    { icon: <GbpIcon />, name: "GBP", id: Currency.GBP },
+    { icon: <CnyIcon />, name: "CNY", id: Currency.CNY },
+    { icon: <JpyIcon />, name: "JPY", id: Currency.JPY },
   ];
 
   const onDisconnectProvider = () => {
     void disconnectProvider();
+  };
+
+  const onSelectCurrency = (currency: Currency) => {
+    setSelectedCurrencyId(currency);
+    localStorage.setCurrency(currency);
   };
 
   return (
@@ -65,7 +65,7 @@ const Settings: FC = () => {
                   name="currency"
                   id={currency.id}
                   className={classes.radioInput}
-                  onChange={() => setSelectedCurrencyId(currency.id)}
+                  onChange={() => onSelectCurrency(currency.id)}
                 />
                 <span className={classes.currencyText}>{currency.name}</span>
                 {currency.icon}

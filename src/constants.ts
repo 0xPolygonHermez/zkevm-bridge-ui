@@ -1,3 +1,8 @@
+import { Currency } from "src/domain";
+
+export const PREFERRED_CURRENCY_KEY = "currency";
+export const PREFERRED_CURRENCY = Currency.USD;
+
 export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
 export const REPORT_ERROR_FORM_ENTRIES = {
