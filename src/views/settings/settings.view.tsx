@@ -33,7 +33,7 @@ const Settings: FC = () => {
     void disconnectProvider();
   };
 
-  const onCurrencySelected = (currency: Currency) => {
+  const onSelectCurrency = (currency: Currency) => {
     setSelectedCurrencyId(currency);
     localStorage.setCurrency(currency);
   };
@@ -65,7 +65,7 @@ const Settings: FC = () => {
                   name="currency"
                   id={currency.id}
                   className={classes.radioInput}
-                  onChange={() => onCurrencySelected(currency.id)}
+                  onChange={() => onSelectCurrency(currency.id)}
                 />
                 <span className={classes.currencyText}>{currency.name}</span>
                 {currency.icon}
