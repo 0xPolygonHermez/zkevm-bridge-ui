@@ -1,8 +1,5 @@
 import { Currency } from "src/domain";
 
-export const STORAGE_VERSION_KEY = "version";
-export const STORAGE_VERSION = 1;
-
 export const PREFERRED_CURRENCY_KEY = "currency";
 export const PREFERRED_CURRENCY = Currency.USD;
 

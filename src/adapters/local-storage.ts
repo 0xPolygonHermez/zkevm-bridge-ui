@@ -15,14 +15,6 @@ export function setCurrency(currency: Currency): void {
   setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
 }
 
-export function getStorageVersion(): number {
-  return getStorageByKey({
-    key: constants.STORAGE_VERSION_KEY,
-    defaultValue: constants.STORAGE_VERSION,
-    parser: z.number(),
-  });
-}
-
 // Helpers
 export function getStorageByKey<T>({
   key,
