@@ -5,7 +5,7 @@
 # GitHub token to grant access to https://github.com/hermeznetwork/comms-protocol
 
 TMP_PATH="tmp"
-TARGET_PATH="types"
+TARGET_PATH="src/types"
 PROTO_PATH="$TMP_PATH/third_party"
 PROTO_FILE="proto/bridge/v1/query.proto"
 REPOSITORY="https://$GH_TOKEN@github.com/hermeznetwork/comms-protocol.git"
