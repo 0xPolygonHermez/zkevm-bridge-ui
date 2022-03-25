@@ -10,6 +10,7 @@ node_modules/
 
 # Artifacts
 build/
+types
 
 # System files
 **/.DS_Store
