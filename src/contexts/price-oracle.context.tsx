@@ -64,6 +64,10 @@ const PriceOracleProvider: FC = (props) => {
       const usdPrice = Number(formatUnits(rate, USDT_DECIMALS));
       const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
 
+      if (!fiatExchangeRate) {
+        throw new Error("Fiat exchange rate not found");
+      }
+
       return usdPrice * fiatExchangeRate;
     },
     [env, fiatExchangeRates, quoterContract, preferredCurrency]

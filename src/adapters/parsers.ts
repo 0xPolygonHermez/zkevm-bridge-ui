@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
-import { Env, RouterState } from "src/domain";
+import { Env, FiatExchangeRates, RouterState } from "src/domain";
 import {
   GetFiatExchangeRatesError,
   GetFiatExchangeRatesResponse,
@@ -22,8 +22,18 @@ const routerStateParser = StrictSchema<RouterState>()(z.object({ redirectUrl: z.
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
+const fiatExchangeRatesKeyParser = StrictSchema<keyof FiatExchangeRates>()(
+  z.union([
+    z.literal("EUR"),
+    z.literal("USD"),
+    z.literal("JPY"),
+    z.literal("GBP"),
+    z.literal("CNY"),
+  ])
+);
+
 const fiatExchangeRatesParser = StrictSchema<GetFiatExchangeRatesResponse>()(
-  z.object({ rates: z.record(z.number()) })
+  z.object({ rates: z.record(fiatExchangeRatesKeyParser, z.number()) })
 );
 
 const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesError>()(

@@ -47,7 +47,7 @@ export enum Currency {
   CNY = "CNY",
 }
 
-export type FiatExchangeRates = Record<string, number>;
+export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
 
 // User notifications
 export type Message =

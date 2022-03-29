@@ -3,7 +3,7 @@ import { FIAT_EXCHANGE_RATES_API_URL } from "src/constants";
 import { Currency, FiatExchangeRates } from "src/domain";
 
 export interface GetFiatExchangeRatesResponse {
-  rates: Record<string, number>;
+  rates: FiatExchangeRates;
 }
 
 export interface GetFiatExchangeRatesError {
