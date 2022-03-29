@@ -1,9 +1,11 @@
 import { BigNumber } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
+import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { PriceOracle, PriceOracle__factory } from "src/types/contracts/price-oracle";
+import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 
 interface PriceOracleContext {
   getTokenPrice: (tokenAddress: string) => Promise<BigNumber>;
@@ -21,31 +23,37 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
   const { l1Provider } = useProvidersContext();
-  const [priceOracleContract, setPriceOracleContract] = useState<PriceOracle>();
+  const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
 
   const getTokenPrice = useCallback(
-    async (tokenAddress: string): Promise<BigNumber> => {
+    (tokenAddress: string): Promise<BigNumber> => {
       if (env === undefined) {
         throw new Error("Environment is not available");
       }
 
-      if (priceOracleContract === undefined) {
+      if (quoterContract === undefined) {
         throw new Error("Price oracle contract is not available");
       }
 
-      return priceOracleContract.getRate(tokenAddress, env.REACT_APP_USDT_CONTRACT_ADDRESS, true);
+      return quoterContract.callStatic.quoteExactInputSingle(
+        tokenAddress,
+        env.REACT_APP_USDT_CONTRACT_ADDRESS,
+        UNISWAP_V3_POOL_FEE,
+        parseUnits("1"),
+        0
+      );
     },
-    [env, priceOracleContract]
+    [env, quoterContract]
   );
 
   useEffect(() => {
     if (env && l1Provider) {
-      const oracleContract = PriceOracle__factory.connect(
+      const quoterContract = UniswapQuoter__factory.connect(
         env.REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS,
         l1Provider
       );
 
-      setPriceOracleContract(oracleContract);
+      setQuoterContract(quoterContract);
     }
   }, [env, l1Provider]);
 
