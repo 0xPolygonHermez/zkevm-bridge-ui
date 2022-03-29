@@ -127,7 +127,7 @@ const ProvidersProvider: FC = (props) => {
         resolve();
       });
     }
-  }, [connectedProvider?.provider]);
+  }, [connectedProvider]);
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
