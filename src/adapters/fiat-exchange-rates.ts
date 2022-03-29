@@ -35,7 +35,7 @@ const getFiatExchangeRates = ({
       if (parsedResponse.success) {
         return parsedResponse.data.rates;
       } else {
-        throw new Error("An error occurred when trying to parse the getFiatExchangeRates response");
+        throw parsedResponse.error;
       }
     } else {
       const error: unknown = await res.json();
@@ -44,7 +44,7 @@ const getFiatExchangeRates = ({
       if (parsedResponse.success) {
         throw parsedResponse.data.error;
       } else {
-        throw new Error("An error occured when trying to parse the getFiatExchangeRates error");
+        throw parsedResponse.error;
       }
     }
   });
