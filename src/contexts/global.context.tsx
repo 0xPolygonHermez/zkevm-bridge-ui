@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useState } from "react";
+import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 
 import { Message } from "src/domain";
 
@@ -36,20 +36,29 @@ const GlobalProvider: FC = (props) => {
     status: "closed",
   });
 
-  const openSnackbar = (message: Message): void => {
-    setSnackbar({
-      status: "open",
-      message,
-    });
-  };
+  const openSnackbar = useCallback(
+    (message: Message): void =>
+      setSnackbar({
+        status: "open",
+        message,
+      }),
+    []
+  );
 
-  const closeSnackbar = (): void => {
-    setSnackbar({
-      status: "closed",
-    });
-  };
+  const closeSnackbar = useCallback(
+    (): void =>
+      setSnackbar({
+        status: "closed",
+      }),
+    []
+  );
 
-  return <globalContext.Provider value={{ snackbar, openSnackbar, closeSnackbar }} {...props} />;
+  const getValue = useMemo(
+    () => ({ snackbar, openSnackbar, closeSnackbar }),
+    [closeSnackbar, openSnackbar, snackbar]
+  );
+
+  return <globalContext.Provider value={getValue} {...props} />;
 };
 
 const useGlobalContext = (): GlobalContext => {
