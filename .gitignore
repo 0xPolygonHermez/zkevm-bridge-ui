@@ -14,5 +14,5 @@ build/
 # System files
 **/.DS_Store
 
-# Contract types
-src/types/contracts
+# Generated types
+src/types
