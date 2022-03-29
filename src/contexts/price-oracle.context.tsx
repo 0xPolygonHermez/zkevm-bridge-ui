@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
-import { createContext, FC, useContext, useEffect, useState } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
@@ -25,23 +25,26 @@ const PriceOracleProvider: FC = (props) => {
   const { l1Provider } = useProvidersContext();
   const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
 
-  const getTokenPrice = (tokenAddress: string): Promise<BigNumber> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
+  const getTokenPrice = useCallback(
+    (tokenAddress: string): Promise<BigNumber> => {
+      if (env === undefined) {
+        throw new Error("Environment is not available");
+      }
 
-    if (quoterContract === undefined) {
-      throw new Error("Price oracle contract is not available");
-    }
+      if (quoterContract === undefined) {
+        throw new Error("Price oracle contract is not available");
+      }
 
-    return quoterContract.callStatic.quoteExactInputSingle(
-      tokenAddress,
-      env.REACT_APP_USDT_CONTRACT_ADDRESS,
-      UNISWAP_V3_POOL_FEE,
-      parseUnits("1"),
-      0
-    );
-  };
+      return quoterContract.callStatic.quoteExactInputSingle(
+        tokenAddress,
+        env.REACT_APP_USDT_CONTRACT_ADDRESS,
+        UNISWAP_V3_POOL_FEE,
+        parseUnits("1"),
+        0
+      );
+    },
+    [env, quoterContract]
+  );
 
   useEffect(() => {
     if (env && l1Provider) {
@@ -54,7 +57,9 @@ const PriceOracleProvider: FC = (props) => {
     }
   }, [env, l1Provider]);
 
-  return <priceOracleContext.Provider value={{ getTokenPrice }} {...props} />;
+  const value = useMemo(() => ({ getTokenPrice }), [getTokenPrice]);
+
+  return <priceOracleContext.Provider value={value} {...props} />;
 };
 
 const usePriceOracleContext = (): PriceOracleContext => {
