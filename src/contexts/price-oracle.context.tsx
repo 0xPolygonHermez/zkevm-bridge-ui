@@ -49,9 +49,9 @@ const PriceOracleProvider: FC = (props) => {
     }
   }, [env, l1Provider]);
 
-  const getValue = useMemo(() => ({ getTokenPrice }), [getTokenPrice]);
+  const value = useMemo(() => ({ getTokenPrice }), [getTokenPrice]);
 
-  return <priceOracleContext.Provider value={getValue} {...props} />;
+  return <priceOracleContext.Provider value={value} {...props} />;
 };
 
 const usePriceOracleContext = (): PriceOracleContext => {

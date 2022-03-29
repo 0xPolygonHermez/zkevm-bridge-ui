@@ -53,12 +53,12 @@ const GlobalProvider: FC = (props) => {
     []
   );
 
-  const getValue = useMemo(
+  const value = useMemo(
     () => ({ snackbar, openSnackbar, closeSnackbar }),
     [closeSnackbar, openSnackbar, snackbar]
   );
 
-  return <globalContext.Provider value={getValue} {...props} />;
+  return <globalContext.Provider value={value} {...props} />;
 };
 
 const useGlobalContext = (): GlobalContext => {

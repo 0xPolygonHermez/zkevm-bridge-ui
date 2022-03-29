@@ -186,7 +186,7 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [env]);
 
-  const getValue = useMemo(
+  const value = useMemo(
     () => ({
       connectedProvider,
       account,
@@ -198,7 +198,7 @@ const ProvidersProvider: FC = (props) => {
     [account, connectProvider, connectedProvider, disconnectProvider, l1Provider, l2Provider]
   );
 
-  return <providersContext.Provider value={getValue} {...props} />;
+  return <providersContext.Provider value={value} {...props} />;
 };
 
 const useProvidersContext = (): ProvidersContext => {
