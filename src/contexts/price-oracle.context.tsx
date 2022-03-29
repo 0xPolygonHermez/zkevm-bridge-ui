@@ -23,8 +23,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
     console.error(priceOracleContextNotReadyErrorMsg);
   },
   getTokenPrice: () => {
-    console.error(priceOracleContextNotReadyErrorMsg);
-    return Promise.resolve(0);
+    return Promise.reject(new Error(priceOracleContextNotReadyErrorMsg));
   },
 });
 

@@ -26,12 +26,10 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
   connectProvider: () => {
-    console.error(providersContextNotReadyErrorMsg);
-    return Promise.resolve();
+    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
   disconnectProvider: () => {
-    console.error(providersContextNotReadyErrorMsg);
-    return Promise.resolve();
+    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
 });
 
