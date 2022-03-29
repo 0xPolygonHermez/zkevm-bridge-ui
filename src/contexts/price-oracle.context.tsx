@@ -1,19 +1,19 @@
-import { formatUnits } from "ethers/lib/utils";
-import { createContext, FC, useContext, useEffect, useState } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 
 import { useEnvContext } from "src/contexts/env.context";
-import { useGlobalContext } from "src/contexts/global.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
-import { PriceOracle, PriceOracle__factory } from "src/types/contracts/price-oracle";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates";
 import { USDT_DECIMALS } from "src/constants";
+import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/local-storage";
 
 interface PriceOracleContext {
   preferredCurrency?: Currency;
-  changePreferredCurrency: (currency: Currency) => void;
   getTokenPrice: (tokenAddress: string, preferredCurrency: Currency) => Promise<number>;
+  changePreferredCurrency: (currency: Currency) => void;
 }
 
 const priceOracleContextNotReadyErrorMsg = "The price oracle context is not yet ready";
@@ -31,48 +31,52 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
   const { l1Provider } = useProvidersContext();
-  const { openSnackbar } = useGlobalContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
-  const [priceOracleContract, setPriceOracleContract] = useState<PriceOracle>();
+  const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
 
-  const changePreferredCurrency = (currency: Currency): void => {
+  const changePreferredCurrency = useCallback((currency: Currency): void => {
     storage.setCurrency(currency);
     setPreferredCurrency(currency);
-  };
+  }, []);
 
-  const getTokenPrice = async (tokenAddress: string): Promise<number> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
+  const getTokenPrice = useCallback(
+    async (tokenAddress: string): Promise<number> => {
+      if (env === undefined) {
+        throw new Error("Environment is not available");
+      }
 
-    if (priceOracleContract === undefined) {
-      throw new Error("Price oracle contract is not available");
-    }
+      if (quoterContract === undefined) {
+        throw new Error("Price oracle contract is not available");
+      }
 
-    if (fiatExchangeRates === undefined) {
-      throw new Error("Fiat exchange rates are not available");
-    }
+      if (fiatExchangeRates === undefined) {
+        throw new Error("Fiat exchange rates are not available");
+      }
 
-    const rate = await priceOracleContract.getRate(
-      tokenAddress,
-      env.REACT_APP_USDT_CONTRACT_ADDRESS,
-      true
-    );
-    const usdPrice = Number(formatUnits(rate, USDT_DECIMALS));
-    const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
+      const rate = await quoterContract.callStatic.quoteExactInputSingle(
+        tokenAddress,
+        env.REACT_APP_USDT_CONTRACT_ADDRESS,
+        UNISWAP_V3_POOL_FEE,
+        parseUnits("1"),
+        0
+      );
+      const usdPrice = Number(formatUnits(rate, USDT_DECIMALS));
+      const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
 
-    return usdPrice * fiatExchangeRate;
-  };
+      return usdPrice * fiatExchangeRate;
+    },
+    [env, fiatExchangeRates, quoterContract, preferredCurrency]
+  );
 
   useEffect(() => {
     if (env && l1Provider) {
-      const oracleContract = PriceOracle__factory.connect(
+      const quoterContract = UniswapQuoter__factory.connect(
         env.REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS,
         l1Provider
       );
 
-      setPriceOracleContract(oracleContract);
+      setQuoterContract(quoterContract);
     }
   }, [env, l1Provider]);
 
@@ -80,21 +84,16 @@ const PriceOracleProvider: FC = (props) => {
     if (env) {
       getFiatExchangeRates({ apiKey: env.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY })
         .then(setFiatExchangeRates)
-        .catch((error) => {
-          console.error(error);
-          // void parseError(error).then((parsedError) =>
-          //   openSnackbar({ type: "error", parsed: parsedError })
-          // );
-        });
+        .catch(console.error);
     }
-  }, [env, openSnackbar]);
+  }, [env]);
 
-  return (
-    <priceOracleContext.Provider
-      value={{ preferredCurrency, changePreferredCurrency, getTokenPrice }}
-      {...props}
-    />
+  const value = useMemo(
+    () => ({ preferredCurrency, getTokenPrice, changePreferredCurrency }),
+    [preferredCurrency, getTokenPrice, changePreferredCurrency]
   );
+
+  return <priceOracleContext.Provider value={value} {...props} />;
 };
 
 const usePriceOracleContext = (): PriceOracleContext => {

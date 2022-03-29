@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useEffect, useState } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Web3Provider, InfuraProvider, JsonRpcProvider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
@@ -44,71 +44,74 @@ const ProvidersProvider: FC = (props) => {
   const env = useEnvContext();
   const { openSnackbar } = useGlobalContext();
 
-  const connectProvider = async (walletName: WalletName): Promise<void> => {
-    setAccount({ status: "loading" });
-    switch (walletName) {
-      case WalletName.METAMASK: {
-        if (window.ethereum && window.ethereum.isMetaMask) {
-          const web3Provider = new Web3Provider(window.ethereum);
-          return getConnectedAccounts(web3Provider)
-            .then((accounts) => {
-              setConnectedProvider(web3Provider);
-              setAccount({ status: "successful", data: accounts[0] });
-            })
-            .catch((error) =>
-              parseError(error).then((errorMsg) => {
-                if (isMetamaskUserRejectedRequestError(error)) {
-                  setAccount({ status: "pending" });
-                } else {
-                  openSnackbar({
-                    type: "error",
-                    parsed: errorMsg,
-                  });
-                }
+  const connectProvider = useCallback(
+    async (walletName: WalletName): Promise<void> => {
+      setAccount({ status: "loading" });
+      switch (walletName) {
+        case WalletName.METAMASK: {
+          if (window.ethereum && window.ethereum.isMetaMask) {
+            const web3Provider = new Web3Provider(window.ethereum);
+            return getConnectedAccounts(web3Provider)
+              .then((accounts) => {
+                setConnectedProvider(web3Provider);
+                setAccount({ status: "successful", data: accounts[0] });
               })
-            );
-        } else {
-          return setAccount({
-            status: "failed",
-            error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser.`,
-          });
+              .catch((error) =>
+                parseError(error).then((errorMsg) => {
+                  if (isMetamaskUserRejectedRequestError(error)) {
+                    setAccount({ status: "pending" });
+                  } else {
+                    openSnackbar({
+                      type: "error",
+                      parsed: errorMsg,
+                    });
+                  }
+                })
+              );
+          } else {
+            return setAccount({
+              status: "failed",
+              error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser.`,
+            });
+          }
+        }
+        case WalletName.WALLET_CONNECT: {
+          if (env) {
+            const walletConnectProvider = new WalletConnectProvider({
+              infuraId: env.REACT_APP_INFURA_API_KEY,
+            });
+            const web3Provider = new Web3Provider(walletConnectProvider);
+
+            return walletConnectProvider
+              .enable()
+              .then((accounts) => {
+                setConnectedProvider(web3Provider);
+                setAccount({ status: "successful", data: accounts[0] });
+              })
+              .catch((error) =>
+                parseError(error).then((errorMsg) => {
+                  if (error instanceof Error && error.message === "User closed modal") {
+                    setAccount({ status: "pending" });
+                  } else {
+                    openSnackbar({
+                      type: "error",
+                      parsed: errorMsg,
+                    });
+                  }
+                })
+              );
+          } else
+            return setAccount({
+              status: "failed",
+              error: "The env has not been initialized correctly.",
+            });
         }
       }
-      case WalletName.WALLET_CONNECT: {
-        if (env) {
-          const walletConnectProvider = new WalletConnectProvider({
-            infuraId: env.REACT_APP_INFURA_API_KEY,
-          });
-          const web3Provider = new Web3Provider(walletConnectProvider);
+    },
+    [env, openSnackbar]
+  );
 
-          return walletConnectProvider
-            .enable()
-            .then((accounts) => {
-              setConnectedProvider(web3Provider);
-              setAccount({ status: "successful", data: accounts[0] });
-            })
-            .catch((error) =>
-              parseError(error).then((errorMsg) => {
-                if (error instanceof Error && error.message === "User closed modal") {
-                  setAccount({ status: "pending" });
-                } else {
-                  openSnackbar({
-                    type: "error",
-                    parsed: errorMsg,
-                  });
-                }
-              })
-            );
-        } else
-          return setAccount({
-            status: "failed",
-            error: "The env has not been initialized correctly.",
-          });
-      }
-    }
-  };
-
-  const disconnectProvider = (): Promise<void> => {
+  const disconnectProvider = useCallback((): Promise<void> => {
     if (
       connectedProvider?.provider &&
       connectedProvider.provider instanceof WalletConnectProvider
@@ -124,7 +127,7 @@ const ProvidersProvider: FC = (props) => {
         resolve();
       });
     }
-  };
+  }, [connectedProvider]);
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
@@ -183,19 +186,19 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [env]);
 
-  return (
-    <providersContext.Provider
-      value={{
-        connectedProvider,
-        account,
-        l1Provider,
-        l2Provider,
-        connectProvider,
-        disconnectProvider,
-      }}
-      {...props}
-    />
+  const value = useMemo(
+    () => ({
+      connectedProvider,
+      account,
+      l1Provider,
+      l2Provider,
+      connectProvider,
+      disconnectProvider,
+    }),
+    [account, connectProvider, connectedProvider, disconnectProvider, l1Provider, l2Provider]
   );
+
+  return <providersContext.Provider value={value} {...props} />;
 };
 
 const useProvidersContext = (): ProvidersContext => {
