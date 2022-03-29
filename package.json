@@ -26,7 +26,8 @@
   "devDependencies": {
     "@hermeznetwork/eslint-config-hermez": "^1.0.1",
     "husky": "^7.0.4",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "react-error-overlay": "^6.0.9"
   },
   "scripts": {
     "build": "react-scripts build",
