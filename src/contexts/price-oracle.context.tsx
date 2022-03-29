@@ -9,6 +9,8 @@ import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates";
 import { USDT_DECIMALS } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/local-storage";
+import { parseError } from "src/adapters/error";
+import { useGlobalContext } from "src/contexts/global.context";
 
 interface PriceOracleContext {
   preferredCurrency?: Currency;
@@ -30,6 +32,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
   const { l1Provider } = useProvidersContext();
+  const { openSnackbar } = useGlobalContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
   const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
@@ -87,9 +90,13 @@ const PriceOracleProvider: FC = (props) => {
     if (env) {
       getFiatExchangeRates({ apiKey: env.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY })
         .then(setFiatExchangeRates)
-        .catch(console.error);
+        .catch((error) => {
+          void parseError(error).then((parsedError) =>
+            openSnackbar({ type: "error", parsed: parsedError })
+          );
+        });
     }
-  }, [env]);
+  }, [env, openSnackbar]);
 
   const value = useMemo(
     () => ({ preferredCurrency, getTokenPrice, changePreferredCurrency }),
