@@ -25,7 +25,7 @@ const PriceOracleProvider: FC = (props) => {
   const { l1Provider } = useProvidersContext();
   const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
 
-  const getTokenPrice = async (tokenAddress: string): Promise<BigNumber> => {
+  const getTokenPrice = (tokenAddress: string): Promise<BigNumber> => {
     if (env === undefined) {
       throw new Error("Environment is not available");
     }
