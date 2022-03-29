@@ -1,5 +1,5 @@
 import { BigNumber } from "ethers";
-import { createContext, FC, useContext, useEffect, useState } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -23,17 +23,20 @@ const PriceOracleProvider: FC = (props) => {
   const { l1Provider } = useProvidersContext();
   const [priceOracleContract, setPriceOracleContract] = useState<PriceOracle>();
 
-  const getTokenPrice = async (tokenAddress: string): Promise<BigNumber> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
+  const getTokenPrice = useCallback(
+    async (tokenAddress: string): Promise<BigNumber> => {
+      if (env === undefined) {
+        throw new Error("Environment is not available");
+      }
 
-    if (priceOracleContract === undefined) {
-      throw new Error("Price oracle contract is not available");
-    }
+      if (priceOracleContract === undefined) {
+        throw new Error("Price oracle contract is not available");
+      }
 
-    return priceOracleContract.getRate(tokenAddress, env.REACT_APP_USDT_CONTRACT_ADDRESS, true);
-  };
+      return priceOracleContract.getRate(tokenAddress, env.REACT_APP_USDT_CONTRACT_ADDRESS, true);
+    },
+    [env, priceOracleContract]
+  );
 
   useEffect(() => {
     if (env && l1Provider) {
@@ -46,7 +49,9 @@ const PriceOracleProvider: FC = (props) => {
     }
   }, [env, l1Provider]);
 
-  return <priceOracleContext.Provider value={{ getTokenPrice }} {...props} />;
+  const value = useMemo(() => ({ getTokenPrice }), [getTokenPrice]);
+
+  return <priceOracleContext.Provider value={value} {...props} />;
 };
 
 const usePriceOracleContext = (): PriceOracleContext => {
