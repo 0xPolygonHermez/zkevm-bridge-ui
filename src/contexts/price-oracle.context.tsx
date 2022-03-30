@@ -6,7 +6,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates";
-import { USDT_DECIMALS } from "src/constants";
+import { PREFERRED_CURRENCY, USDT_DECIMALS } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/storage";
 import { parseError } from "src/adapters/error";
@@ -21,6 +21,7 @@ interface PriceOracleContext {
 const priceOracleContextNotReadyErrorMsg = "The price oracle context is not yet ready";
 
 const priceOracleContext = createContext<PriceOracleContext>({
+  preferredCurrency: PREFERRED_CURRENCY,
   changePreferredCurrency: () => {
     console.error(priceOracleContextNotReadyErrorMsg);
   },
