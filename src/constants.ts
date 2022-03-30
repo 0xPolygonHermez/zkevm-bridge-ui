@@ -18,3 +18,5 @@ export const REPORT_ERROR_FORM_URL =
 export const USDT_DECIMALS = 6;
 
 export const UNISWAP_V3_POOL_FEE = 3000;
+
+export const FIAT_EXCHANGE_RATES_API_URL = "https://api.exchangeratesapi.io/v1/latest";
