@@ -11,4 +11,4 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-export { getConnectedAccounts };
+export { ethereumAccountsParser, getConnectedAccounts };

@@ -11,7 +11,7 @@ import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-l
 import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 import { WalletName } from "src/domain";
-import { getRouterState } from "src/adapters/browser";
+import { routerStateParser } from "src/adapters/browser";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
@@ -30,7 +30,7 @@ const Login: FC = () => {
       setSelectedWallet(undefined);
     }
     if (account.status === "successful") {
-      const routerState = getRouterState(state);
+      const routerState = routerStateParser.safeParse(state);
 
       if (routerState.success) {
         navigate(routerState.data.redirectUrl);

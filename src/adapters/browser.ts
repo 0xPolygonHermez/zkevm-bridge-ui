@@ -5,8 +5,4 @@ import { RouterState } from "src/domain";
 
 const routerStateParser = StrictSchema<RouterState>()(z.object({ redirectUrl: z.string() }));
 
-const getRouterState = (state: unknown) => {
-  return routerStateParser.safeParse(state);
-};
-
-export { getRouterState };
+export { routerStateParser };

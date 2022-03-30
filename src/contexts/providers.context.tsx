@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { ethereumAccountsParser } from "src/adapters/parsers";
-import { getConnectedAccounts } from "src/adapters/ethereum";
+import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useGlobalContext } from "src/contexts/global.context";
