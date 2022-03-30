@@ -5,6 +5,7 @@ export interface Env {
   REACT_APP_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS: string;
   REACT_APP_USDT_CONTRACT_ADDRESS: string;
+  REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
 }
 
 export interface RouterState {
@@ -40,12 +41,14 @@ export function getTransactionStatusText(status: TransactionStatus): string {
 }
 
 export enum Currency {
-  EUR = "eur",
-  USD = "usd",
-  JPY = "jpy",
-  GBP = "gbp",
-  CNY = "cny",
+  EUR = "EUR",
+  USD = "USD",
+  JPY = "JPY",
+  GBP = "GBP",
+  CNY = "CNY",
 }
+
+export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
 
 // User notifications
 export type Message =
