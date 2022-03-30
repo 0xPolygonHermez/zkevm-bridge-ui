@@ -8,7 +8,7 @@ import { Currency, FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates";
 import { USDT_DECIMALS } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
-import * as storage from "src/adapters/local-storage";
+import * as storage from "src/adapters/storage";
 import { parseError } from "src/adapters/error";
 import { useGlobalContext } from "src/contexts/global.context";
 

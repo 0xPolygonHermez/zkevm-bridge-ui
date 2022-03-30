@@ -1,12 +1,14 @@
-import { fiatExchangeRatesErrorParser, fiatExchangeRatesParser } from "src/adapters/parsers";
-import { FIAT_EXCHANGE_RATES_API_URL } from "src/constants";
-import { Currency, FiatExchangeRates } from "src/domain";
+import { z } from "zod";
 
-export interface GetFiatExchangeRatesResponse {
+import { Currency, FiatExchangeRates } from "src/domain";
+import { StrictSchema } from "src/utils/type-safety";
+import { FIAT_EXCHANGE_RATES_API_URL } from "src/constants";
+
+interface GetFiatExchangeRatesSuccessResponse {
   rates: FiatExchangeRates;
 }
 
-export interface GetFiatExchangeRatesError {
+interface GetFiatExchangeRatesErrorResponse {
   error: {
     code: string;
     message: string;
@@ -16,6 +18,29 @@ export interface GetFiatExchangeRatesError {
 interface GetFiatExchangeRatesParams {
   apiKey: string;
 }
+
+const fiatExchangeRatesKeyParser = StrictSchema<keyof FiatExchangeRates>()(
+  z.union([
+    z.literal("EUR"),
+    z.literal("USD"),
+    z.literal("JPY"),
+    z.literal("GBP"),
+    z.literal("CNY"),
+  ])
+);
+
+const fiatExchangeRatesParser = StrictSchema<GetFiatExchangeRatesSuccessResponse>()(
+  z.object({ rates: z.record(fiatExchangeRatesKeyParser, z.number()) })
+);
+
+const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesErrorResponse>()(
+  z.object({
+    error: z.object({
+      code: z.string(),
+      message: z.string(),
+    }),
+  })
+);
 
 const getFiatExchangeRates = ({
   apiKey,
