@@ -77,6 +77,6 @@ protoc -I=$TMP_PATH $PROTO_PATH/$PROTO_FILE \
 
 # Remove unused import that breaks the compilation until this is fixed:
 # https://github.com/grpc/grpc-web/issues/529
-ls -1 $OUTPUT_PATH/$PROTO_PATH/*.js | xargs sed -i "" '/google_api_annotations_pb =/d'
+perl -ni -e 'print unless /google_api_annotations_pb/' $OUTPUT_PATH/$PROTO_PATH/*.js
 
 rm -rf $TMP_PATH
