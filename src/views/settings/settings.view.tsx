@@ -22,11 +22,11 @@ const Settings: FC = () => {
   const { disconnectProvider } = useProvidersContext();
   const { preferredCurrency, changePreferredCurrency } = usePriceOracleContext();
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: Currency.EUR },
-    { icon: <UsdIcon />, name: "USD", id: Currency.USD },
-    { icon: <GbpIcon />, name: "GBP", id: Currency.GBP },
-    { icon: <CnyIcon />, name: "CNY", id: Currency.CNY },
-    { icon: <JpyIcon />, name: "JPY", id: Currency.JPY },
+    { id: Currency.EUR, icon: <EurIcon /> },
+    { id: Currency.USD, icon: <UsdIcon /> },
+    { id: Currency.GBP, icon: <GbpIcon /> },
+    { id: Currency.CNY, icon: <CnyIcon /> },
+    { id: Currency.JPY, icon: <JpyIcon /> },
   ];
 
   const onDisconnectProvider = () => {
@@ -64,7 +64,7 @@ const Settings: FC = () => {
                   className={classes.radioInput}
                   onChange={() => onChangePreferredCurrency(currency.id)}
                 />
-                <span className={classes.currencyText}>{currency.name}</span>
+                <span className={classes.currencyText}>{currency.id}</span>
                 {currency.icon}
               </label>
             ))}
