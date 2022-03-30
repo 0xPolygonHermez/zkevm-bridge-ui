@@ -1,5 +1,9 @@
+import { z } from "zod";
 import { Web3Provider } from "@ethersproject/providers";
-import { ethereumAccountsParser } from "src/adapters/parsers";
+
+import { StrictSchema } from "src/utils/type-safety";
+
+const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
   return provider
@@ -7,4 +11,4 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-export { getConnectedAccounts };
+export { ethereumAccountsParser, getConnectedAccounts };

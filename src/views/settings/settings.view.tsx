@@ -1,4 +1,4 @@
-import { useState, FC } from "react";
+import { FC } from "react";
 
 import useSettingsStyles from "src/views/settings/settings.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -15,28 +15,25 @@ import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Currency } from "src/domain";
-import * as localStorage from "src/adapters/local-storage";
+import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 
 const Settings: FC = () => {
   const classes = useSettingsStyles();
-  const [selectedCurrencyId, setSelectedCurrencyId] = useState(localStorage.getCurrency());
   const { disconnectProvider } = useProvidersContext();
+  const { preferredCurrency, changePreferredCurrency } = usePriceOracleContext();
   const currencies = [
-    { icon: <EurIcon />, name: "EUR", id: Currency.EUR },
-    { icon: <UsdIcon />, name: "USD", id: Currency.USD },
-    { icon: <GbpIcon />, name: "GBP", id: Currency.GBP },
-    { icon: <CnyIcon />, name: "CNY", id: Currency.CNY },
-    { icon: <JpyIcon />, name: "JPY", id: Currency.JPY },
+    { id: Currency.EUR, icon: <EurIcon /> },
+    { id: Currency.USD, icon: <UsdIcon /> },
+    { id: Currency.GBP, icon: <GbpIcon /> },
+    { id: Currency.CNY, icon: <CnyIcon /> },
+    { id: Currency.JPY, icon: <JpyIcon /> },
   ];
 
   const onDisconnectProvider = () => {
     void disconnectProvider();
   };
 
-  const onSelectCurrency = (currency: Currency) => {
-    setSelectedCurrencyId(currency);
-    localStorage.setCurrency(currency);
-  };
+  const onChangePreferredCurrency = changePreferredCurrency;
 
   return (
     <>
@@ -55,19 +52,19 @@ const Settings: FC = () => {
             {currencies.map((currency) => (
               <label
                 className={`${classes.currencyBox} ${
-                  currency.id === selectedCurrencyId ? classes.currencySelected : ""
+                  currency.id === preferredCurrency ? classes.currencySelected : ""
                 }`}
                 key={currency.id}
               >
-                {currency.id === selectedCurrencyId ? <CheckedIcon /> : <UncheckedIcon />}
+                {currency.id === preferredCurrency ? <CheckedIcon /> : <UncheckedIcon />}
                 <input
                   type="radio"
                   name="currency"
                   id={currency.id}
                   className={classes.radioInput}
-                  onChange={() => onSelectCurrency(currency.id)}
+                  onChange={() => onChangePreferredCurrency(currency.id)}
                 />
-                <span className={classes.currencyText}>{currency.name}</span>
+                <span className={classes.currencyText}>{currency.id}</span>
                 {currency.icon}
               </label>
             ))}
