@@ -35,7 +35,7 @@
     "build": "react-scripts build",
     "format": "prettier --write .",
     "generate-contract-types": "./scripts/generate-contract-types.sh",
-    "generate-proto-types": "./scripts/generate-proto-types.sh",
+    "generate-proto-types": "./scripts/generate-proto-types.sh -ssh",
     "lint": "eslint --fix --ext .ts,.tsx .",
     "postinstall": "npm run generate-contract-types && npm run generate-proto-types",
     "prepare": "husky install",
