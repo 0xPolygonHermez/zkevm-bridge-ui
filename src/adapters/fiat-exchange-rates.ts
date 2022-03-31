@@ -1,4 +1,5 @@
 import { z } from "zod";
+import axios from "axios";
 
 import { Currency, FiatExchangeRates } from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
@@ -45,34 +46,40 @@ const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesErrorRespo
 const getFiatExchangeRates = ({
   apiKey,
 }: GetFiatExchangeRatesParams): Promise<FiatExchangeRates> => {
-  const requestQueryParams = new URLSearchParams({
+  const params = {
     access_key: apiKey,
     base: Currency.USD,
-    symbols: Object.values(Currency).join(","),
-  });
-  const requestUrl = `${FIAT_EXCHANGE_RATES_API_URL}?${requestQueryParams.toString()}`;
+    symbols: Object.values(Currency).join("."),
+  };
 
-  return fetch(requestUrl).then(async (res) => {
-    if (res.ok) {
-      const data: unknown = await res.json();
-      const parsedResponse = fiatExchangeRatesParser.safeParse(data);
+  return axios
+    .request({
+      baseURL: FIAT_EXCHANGE_RATES_API_URL,
+      params,
+      method: "GET",
+    })
+    .then((res) => {
+      const parsedRes = fiatExchangeRatesParser.safeParse(res.data);
 
-      if (parsedResponse.success) {
-        return parsedResponse.data.rates;
+      if (parsedRes.success) {
+        return parsedRes.data.rates;
       } else {
-        throw parsedResponse.error;
+        throw parsedRes.error;
       }
-    } else {
-      const error: unknown = await res.json();
-      const parsedResponse = fiatExchangeRatesErrorParser.safeParse(error);
+    })
+    .catch((error) => {
+      if (axios.isAxiosError(error) && error.response) {
+        const parsedError = fiatExchangeRatesErrorParser.safeParse(error.response.data);
 
-      if (parsedResponse.success) {
-        throw parsedResponse.data.error;
+        if (parsedError.success) {
+          throw parsedError.data.error;
+        } else {
+          throw parsedError.error;
+        }
       } else {
-        throw parsedResponse.error;
+        throw error;
       }
-    }
-  });
+    });
 };
 
 export { getFiatExchangeRates };
