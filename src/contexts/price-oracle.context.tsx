@@ -79,7 +79,7 @@ const PriceOracleProvider: FC = (props) => {
   useEffect(() => {
     if (env && l1Provider) {
       const quoterContract = UniswapQuoter__factory.connect(
-        env.REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS,
+        env.REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
         l1Provider
       );
 
