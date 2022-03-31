@@ -1,4 +1,4 @@
-import { BigNumber, ContractTransaction } from "ethers";
+import { BigNumber, ContractTransaction, Overrides, PayableOverrides } from "ethers";
 import { createContext, FC, useContext, useEffect, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -10,7 +10,8 @@ interface BridgeContext {
     token: string,
     amount: BigNumber,
     destinationNetwork: number,
-    destinationAddress: string
+    destinationAddress: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ) => Promise<ContractTransaction>;
   claim: (
     originalTokenAddress: string,
@@ -22,7 +23,8 @@ interface BridgeContext {
     index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
-    rollupExitRoot: string
+    rollupExitRoot: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
   ) => Promise<ContractTransaction>;
 }
 
@@ -46,7 +48,8 @@ const BridgeProvider: FC = (props) => {
     token: string,
     amount: BigNumber,
     destinationNetwork: number,
-    destinationAddress: string
+    destinationAddress: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction> => {
     if (env === undefined) {
       throw new Error("Environment is not available");
@@ -56,7 +59,7 @@ const BridgeProvider: FC = (props) => {
       throw new Error("Bridge contract is not available");
     }
 
-    return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress);
+    return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, overrides);
   };
 
   const claim = (
@@ -69,7 +72,8 @@ const BridgeProvider: FC = (props) => {
     index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
-    rollupExitRoot: string
+    rollupExitRoot: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction> => {
     if (env === undefined) {
       throw new Error("Environment is not available");
@@ -89,7 +93,8 @@ const BridgeProvider: FC = (props) => {
       index,
       globalExitRootNum,
       mainnetExitRoot,
-      rollupExitRoot
+      rollupExitRoot,
+      overrides
     );
   };
 
