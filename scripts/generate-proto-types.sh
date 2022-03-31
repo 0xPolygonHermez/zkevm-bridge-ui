@@ -66,8 +66,6 @@ OUTPUT_PATH="src/types"
 REPOSITORY="https://$GH_TOKEN@github.com/hermeznetwork/comms-protocol.git"
 BRANCH="main"
 
-mkdir $TMP_PATH
-mkdir $OUTPUT_PATH
 git clone --branch $BRANCH $REPOSITORY $TMP_PATH
 
 protoc -I=$TMP_PATH $PROTO_PATH/$PROTO_FILE \
