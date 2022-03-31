@@ -49,7 +49,7 @@ const getFiatExchangeRates = ({
   const params = {
     access_key: apiKey,
     base: Currency.USD,
-    symbols: Object.values(Currency).join("."),
+    symbols: Object.values(Currency).join(","),
   };
 
   return axios
