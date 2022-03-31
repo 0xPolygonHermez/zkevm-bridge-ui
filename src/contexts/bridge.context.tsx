@@ -39,7 +39,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { l1Provider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const [bridgeContract, setBridgeContract] = useState<Bridge>();
 
   const bridge = (
@@ -94,12 +94,15 @@ const BridgeProvider: FC = (props) => {
   };
 
   useEffect(() => {
-    if (env && l1Provider) {
-      const contract = Bridge__factory.connect(env.REACT_APP_BRIDGE_CONTRACT_ADDRESS, l1Provider);
+    if (env && connectedProvider) {
+      const contract = Bridge__factory.connect(
+        env.REACT_APP_BRIDGE_CONTRACT_ADDRESS,
+        connectedProvider.getSigner()
+      );
 
       setBridgeContract(contract);
     }
-  }, [env, l1Provider]);
+  }, [env, connectedProvider]);
 
   return <bridgeContext.Provider value={{ bridge, claim }} {...props} />;
 };
