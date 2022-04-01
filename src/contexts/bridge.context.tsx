@@ -3,7 +3,7 @@ import { createContext, FC, useContext, useEffect, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Bridge, Bridge__factory } from "src/types/contracts/bridge";
+import { Bridge, Bridge__factory } from "src/types/contracts/bridge/bridge";
 
 interface BridgeContext {
   bridge: (
