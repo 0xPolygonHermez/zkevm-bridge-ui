@@ -1,4 +1,4 @@
-import { BigNumber, ContractTransaction, Overrides, PayableOverrides } from "ethers";
+import { BigNumber, ContractTransaction, PayableOverrides } from "ethers";
 import { createContext, FC, useContext, useEffect, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -16,15 +16,13 @@ interface BridgeContext {
   claim: (
     originalTokenAddress: string,
     amount: BigNumber,
-    originalNetwork: number,
+    originalNetwork: string,
     destinationNetwork: number,
     destinationAddress: string,
     smtProof: string[],
-    index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
-    rollupExitRoot: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    rollupExitRoot: string
   ) => Promise<ContractTransaction>;
 }
 
@@ -62,18 +60,16 @@ const BridgeProvider: FC = (props) => {
     return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, overrides);
   };
 
-  const claim = (
+  const claim = async (
     originalTokenAddress: string,
     amount: BigNumber,
-    originalNetwork: number,
+    originalNetwork: string,
     destinationNetwork: number,
     destinationAddress: string,
     smtProof: string[],
-    index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
     rollupExitRoot: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction> => {
     if (env === undefined) {
       throw new Error("Environment is not available");
@@ -82,6 +78,10 @@ const BridgeProvider: FC = (props) => {
     if (bridgeContract === undefined) {
       throw new Error("Bridge contract is not available");
     }
+
+    const filter = bridgeContract.filters.ClaimEvent(null, null, null, null, null);
+    const events = await bridgeContract.queryFilter(filter, 0, "latest");
+    const index = events.length;
 
     return bridgeContract.claim(
       originalTokenAddress,
@@ -93,8 +93,7 @@ const BridgeProvider: FC = (props) => {
       index,
       globalExitRootNum,
       mainnetExitRoot,
-      rollupExitRoot,
-      overrides
+      rollupExitRoot
     );
   };
 
