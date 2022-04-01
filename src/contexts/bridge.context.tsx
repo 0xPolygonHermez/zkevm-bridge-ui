@@ -1,13 +1,9 @@
-import { BigNumber, ContractTransaction, Overrides, PayableOverrides, CallOverrides } from "ethers";
+import { BigNumber, ContractTransaction, Overrides, PayableOverrides } from "ethers";
 import { createContext, FC, useContext, useEffect, useState } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Bridge__factory } from "src/types/contracts/bridge/bridge";
-import {
-  GlobalExitRootManager,
-  GlobalExitRootManager__factory,
-} from "src/types/contracts/bridge/global-exit-root-manager";
 
 interface BridgeContext {
   bridge: (
@@ -24,16 +20,10 @@ interface BridgeContext {
     destinationNetwork: number,
     destinationAddress: string,
     smtProof: string[],
-    index: number,
+    index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
     rollupExitRoot: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ) => Promise<ContractTransaction>;
-  lastMainnetExitRoot: (overrides?: CallOverrides) => Promise<string>;
-  lastGlobalExitRootNum: (overrides?: CallOverrides) => Promise<BigNumber>;
-  updateExitRoot: (
-    newRoot: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ) => Promise<ContractTransaction>;
 }
@@ -47,23 +37,12 @@ const bridgeContext = createContext<BridgeContext>({
   claim: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  lastMainnetExitRoot: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  lastGlobalExitRootNum: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  updateExitRoot: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
 });
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
   const { connectedProvider } = useProvidersContext();
   const [bridgeContract, setBridgeContract] = useState<Bridge>();
-  const [globalExitRootManagerContract, setGlobalExitRootManagerContract] =
-    useState<GlobalExitRootManager>();
 
   const bridge = (
     token: string,
@@ -90,7 +69,7 @@ const BridgeProvider: FC = (props) => {
     destinationNetwork: number,
     destinationAddress: string,
     smtProof: string[],
-    index: number,
+    index: BigNumber,
     globalExitRootNum: number,
     mainnetExitRoot: string,
     rollupExitRoot: string,
@@ -119,65 +98,18 @@ const BridgeProvider: FC = (props) => {
     );
   };
 
-  const lastMainnetExitRoot = (overrides?: CallOverrides): Promise<string> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
-
-    if (globalExitRootManagerContract === undefined) {
-      throw new Error("GlobalExitRootManager contract is not available");
-    }
-
-    return globalExitRootManagerContract.lastMainnetExitRoot(overrides);
-  };
-
-  const lastGlobalExitRootNum = (overrides?: CallOverrides): Promise<BigNumber> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
-
-    if (globalExitRootManagerContract === undefined) {
-      throw new Error("GlobalExitRootManager contract is not available");
-    }
-    return globalExitRootManagerContract.lastGlobalExitRootNum(overrides);
-  };
-
-  const updateExitRoot = (
-    newRoot: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction> => {
-    if (env === undefined) {
-      throw new Error("Environment is not available");
-    }
-
-    if (globalExitRootManagerContract === undefined) {
-      throw new Error("GlobalExitRootManager contract is not available");
-    }
-    return globalExitRootManagerContract.updateExitRoot(newRoot, overrides);
-  };
-
   useEffect(() => {
     if (env && connectedProvider) {
-      const bridgeContractInstance = Bridge__factory.connect(
+      const contract = Bridge__factory.connect(
         env.REACT_APP_BRIDGE_CONTRACT_ADDRESS,
         connectedProvider.getSigner()
       );
-      setBridgeContract(bridgeContractInstance);
 
-      const globalExitRootManagerContractInstance = GlobalExitRootManager__factory.connect(
-        env.REACT_APP_GLOBAL_EXIT_ROOT_MANAGER_CONTRACT_ADDRESS,
-        connectedProvider
-      );
-      setGlobalExitRootManagerContract(globalExitRootManagerContractInstance);
+      setBridgeContract(contract);
     }
   }, [env, connectedProvider]);
 
-  return (
-    <bridgeContext.Provider
-      value={{ bridge, claim, lastMainnetExitRoot, lastGlobalExitRootNum, updateExitRoot }}
-      {...props}
-    />
-  );
+  return <bridgeContext.Provider value={{ bridge, claim }} {...props} />;
 };
 
 const useBridgeContext = (): BridgeContext => {
