@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@polygon-hermez/zkevm-commonjs": "https://github.com/hermeznetwork/zkevm-commonjs.git",
     "@typechain/ethers-v5": "^10.0.0",
     "@types/node": "^16.11.26",
     "@types/platform": "^1.3.4",
