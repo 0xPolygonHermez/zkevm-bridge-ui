@@ -1,4 +1,4 @@
-import { BigNumber, ContractTransaction, PayableOverrides } from "ethers";
+import { BigNumber, ContractTransaction, constants as ethersConstants } from "ethers";
 import { createContext, FC, useContext, useEffect, useState, useCallback } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -10,8 +10,7 @@ interface BridgeContext {
     token: string,
     amount: BigNumber,
     destinationNetwork: number,
-    destinationAddress: string,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    destinationAddress: string
   ) => Promise<ContractTransaction>;
   claim: (
     originalTokenAddress: string,
@@ -47,8 +46,7 @@ const BridgeProvider: FC = (props) => {
       token: string,
       amount: BigNumber,
       destinationNetwork: number,
-      destinationAddress: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      destinationAddress: string
     ): Promise<ContractTransaction> => {
       if (env === undefined) {
         throw new Error("Environment is not available");
@@ -58,13 +56,13 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      return bridgeContract.bridge(
-        token,
-        amount,
-        destinationNetwork,
-        destinationAddress,
-        overrides
-      );
+      if (token !== ethersConstants.AddressZero) {
+        throw new Error("ERC-20 tokens are not yet supported");
+      }
+
+      return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, {
+        value: amount,
+      });
     },
     [bridgeContract, env]
   );
