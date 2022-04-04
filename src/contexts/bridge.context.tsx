@@ -2,7 +2,7 @@ import { createContext, FC, useCallback, useContext } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { Bridge } from "src/domain";
-import * as api from "../adapters/bridge-api";
+import * as api from "src//adapters/bridge-api";
 
 interface GetBridgesParams {
   ethereumAddress: string;
