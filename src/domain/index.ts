@@ -79,6 +79,10 @@ export interface Claim {
   blockNumber: string;
 }
 
+export interface ClaimStatus {
+  isReady: boolean;
+}
+
 export interface MerkleProof {
   merkleProof: string[];
   exitRootNumber: string;

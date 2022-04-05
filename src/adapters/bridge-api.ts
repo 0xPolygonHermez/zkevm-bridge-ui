@@ -33,9 +33,10 @@ interface GetBridgesParams {
   ethereumAddress: string;
 }
 
-interface GetClaimsParams {
+interface GetClaimStatusParams {
   env: domain.Env;
-  ethereumAddress: string;
+  originNetwork: number;
+  depositCount: number;
 }
 
 interface GetMerkleProofParams {
@@ -44,16 +45,25 @@ interface GetMerkleProofParams {
   depositCount: number;
 }
 
+interface GetClaimsParams {
+  env: domain.Env;
+  ethereumAddress: string;
+}
+
 interface GetBridgesResponse {
   deposits?: Bridge[];
 }
 
-interface GetClaimsResponse {
-  claims?: Claim[];
+interface GetClaimStatusResponse {
+  ready?: boolean;
 }
 
 interface GetMerkleProofResponse {
   proof: MerkleProof;
+}
+
+interface GetClaimsResponse {
+  claims?: Claim[];
 }
 
 const bridgeParser = StrictSchema<Bridge>()(
@@ -69,6 +79,27 @@ const bridgeParser = StrictSchema<Bridge>()(
 const getBridgesResponseParser = StrictSchema<GetBridgesResponse>()(
   z.object({
     deposits: z.optional(z.array(bridgeParser)),
+  })
+);
+
+const getClaimStatusResponseParser = StrictSchema<GetClaimStatusResponse>()(
+  z.object({
+    ready: z.optional(z.boolean()),
+  })
+);
+
+const merkleProofParser = StrictSchema<MerkleProof>()(
+  z.object({
+    merkle_proof: z.array(z.string()),
+    exit_root_num: z.string(),
+    main_exit_root: z.string(),
+    rollup_exit_root: z.string(),
+  })
+);
+
+const getMerkleProofResponseParser = StrictSchema<GetMerkleProofResponse>()(
+  z.object({
+    proof: merkleProofParser,
   })
 );
 
@@ -89,21 +120,6 @@ const getClaimsResponseParser = StrictSchema<GetClaimsResponse>()(
   })
 );
 
-const merkleProofParser = StrictSchema<MerkleProof>()(
-  z.object({
-    merkle_proof: z.array(z.string()),
-    exit_root_num: z.string(),
-    main_exit_root: z.string(),
-    rollup_exit_root: z.string(),
-  })
-);
-
-const getMerkleProofParser = StrictSchema<GetMerkleProofResponse>()(
-  z.object({
-    proof: merkleProofParser,
-  })
-);
-
 const apiBridgeToDomain = ({
   token_addr,
   amount,
@@ -116,6 +132,18 @@ const apiBridgeToDomain = ({
   destinationAddress: dest_addr,
   destinationNetwork: dest_net,
   depositCount: deposit_cnt,
+});
+
+const apiMerkleProofToDomain = ({
+  merkle_proof,
+  exit_root_num,
+  main_exit_root,
+  rollup_exit_root,
+}: MerkleProof): domain.MerkleProof => ({
+  merkleProof: merkle_proof,
+  exitRootNumber: exit_root_num,
+  mainExitRoot: main_exit_root,
+  rollupExitRoot: rollup_exit_root,
 });
 
 const apiClaimToDomain = ({
@@ -132,18 +160,6 @@ const apiClaimToDomain = ({
   destinationNetwork: dest_net,
   destinationAddress: dest_addr,
   blockNumber: block_num,
-});
-
-const apiMerkleProofToDomain = ({
-  merkle_proof,
-  exit_root_num,
-  main_exit_root,
-  rollup_exit_root,
-}: MerkleProof): domain.MerkleProof => ({
-  merkleProof: merkle_proof,
-  exitRootNumber: exit_root_num,
-  mainExitRoot: main_exit_root,
-  rollupExitRoot: rollup_exit_root,
 });
 
 const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
@@ -166,6 +182,32 @@ const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.
     });
 };
 
+const getClaimStatus = ({
+  env,
+  originNetwork,
+  depositCount,
+}: GetClaimStatusParams): Promise<domain.ClaimStatus> => {
+  return axios
+    .request({
+      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      url: `/claim-status`,
+      method: "GET",
+      params: {
+        origin_net: originNetwork,
+        deposit_cnt: depositCount,
+      },
+    })
+    .then((res) => {
+      const parsedData = getClaimStatusResponseParser.safeParse(res.data);
+
+      if (parsedData.success) {
+        return parsedData.data.ready === true ? { isReady: true } : { isReady: false };
+      } else {
+        throw parsedData.error;
+      }
+    });
+};
+
 const getMerkleProof = ({
   env,
   originNetwork,
@@ -182,7 +224,7 @@ const getMerkleProof = ({
       },
     })
     .then((res) => {
-      const parsedData = getMerkleProofParser.safeParse(res.data);
+      const parsedData = getMerkleProofResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
         return apiMerkleProofToDomain(parsedData.data.proof);
@@ -212,4 +254,4 @@ const getClaims = ({ env, ethereumAddress }: GetClaimsParams): Promise<domain.Cl
     });
 };
 
-export { getBridges, getMerkleProof, getClaims };
+export { getBridges, getClaimStatus, getMerkleProof, getClaims };

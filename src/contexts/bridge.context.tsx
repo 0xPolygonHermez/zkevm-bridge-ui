@@ -1,14 +1,10 @@
 import { createContext, FC, useCallback, useContext } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
-import { Bridge, Claim, MerkleProof } from "src/domain";
+import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
 import * as api from "src/adapters/bridge-api";
 
 interface GetBridgesParams {
-  ethereumAddress: string;
-}
-
-interface GetClaimsParams {
   ethereumAddress: string;
 }
 
@@ -17,9 +13,19 @@ interface GetMerkleProofParams {
   depositCount: number;
 }
 
+interface GetClaimStatusParams {
+  originNetwork: number;
+  depositCount: number;
+}
+
+interface GetClaimsParams {
+  ethereumAddress: string;
+}
+
 interface BridgeContext {
   getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
   getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
+  getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
 }
 
@@ -27,6 +33,9 @@ const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
   getBridges: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getClaimStatus: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getMerkleProof: () => {
@@ -47,6 +56,17 @@ const BridgeProvider: FC = (props) => {
       }
 
       return api.getBridges({ env, ethereumAddress });
+    },
+    [env]
+  );
+
+  const getClaimStatus = useCallback(
+    ({ originNetwork, depositCount }: GetClaimStatusParams) => {
+      if (env === undefined) {
+        throw new Error("The bridge API client couldn't be instantiated");
+      }
+
+      return api.getClaimStatus({ env, originNetwork, depositCount });
     },
     [env]
   );
@@ -73,7 +93,12 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
-  return <bridgeContext.Provider value={{ getBridges, getMerkleProof, getClaims }} {...props} />;
+  return (
+    <bridgeContext.Provider
+      value={{ getBridges, getClaimStatus, getMerkleProof, getClaims }}
+      {...props}
+    />
+  );
 };
 
 const useBridgeContext = (): BridgeContext => {

@@ -9,7 +9,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
-  const { getClaims, getMerkleProof } = useBridgeContext();
+  const { getClaims, getMerkleProof, getClaimStatus } = useBridgeContext();
   const { account } = useProvidersContext();
 
   useEffect(() => {
@@ -17,6 +17,7 @@ const Home = (): JSX.Element => {
       console.log
     );
     void getMerkleProof({ originNetwork: 0, depositCount: 2 }).then(console.log);
+    void getClaimStatus({ originNetwork: 0, depositCount: 2 }).then(console.log);
   });
 
   return (
