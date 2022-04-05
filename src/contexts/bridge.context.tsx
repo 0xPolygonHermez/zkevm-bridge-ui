@@ -8,12 +8,12 @@ interface GetBridgesParams {
   ethereumAddress: string;
 }
 
-interface GetMerkleProofParams {
+interface GetClaimStatusParams {
   originNetwork: number;
   depositCount: number;
 }
 
-interface GetClaimStatusParams {
+interface GetMerkleProofParams {
   originNetwork: number;
   depositCount: number;
 }
@@ -24,8 +24,8 @@ interface GetClaimsParams {
 
 interface BridgeContext {
   getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
-  getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
+  getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
 }
 
