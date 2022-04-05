@@ -2,9 +2,10 @@ export interface Env {
   REACT_APP_INFURA_API_KEY: string;
   REACT_APP_L1_PROVIDER_NETWORK: string;
   REACT_APP_L2_PROVIDER_URL: string;
-  REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS: string;
+  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
   REACT_APP_USDT_CONTRACT_ADDRESS: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
+  REACT_APP_BRIDGE_API_URL: string;
 }
 
 export interface RouterState {
@@ -60,3 +61,11 @@ export type Message =
       text?: string;
       parsed: string;
     };
+
+export interface Bridge {
+  tokenAddress: string;
+  amount: string;
+  destinationNetwork: number;
+  destinationAddress: string;
+  depositCount: string;
+}
