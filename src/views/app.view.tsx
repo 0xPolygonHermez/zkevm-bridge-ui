@@ -5,6 +5,7 @@ import Layout from "src/views/core/layout/layout.view";
 import Router from "src/views/core/router/router.view";
 import useAppStyles from "src/views/app.styles";
 import { PriceOracleProvider } from "src/contexts/price-oracle.context";
+import { BridgeProvider } from "src/contexts/bridge.context";
 import { TransactionProvider } from "src/contexts/transaction.context";
 
 const App = (): JSX.Element => {
@@ -14,13 +15,15 @@ const App = (): JSX.Element => {
     <GlobalProvider>
       <EnvProvider>
         <ProvidersProvider>
-          <PriceOracleProvider>
-            <TransactionProvider>
-              <Layout>
-                <Router />
-              </Layout>
-            </TransactionProvider>
-          </PriceOracleProvider>
+          <BridgeProvider>
+            <PriceOracleProvider>
+              <TransactionProvider>
+                <Layout>
+                  <Router />
+                </Layout>
+              </TransactionProvider>
+            </PriceOracleProvider>
+          </BridgeProvider>
         </ProvidersProvider>
       </EnvProvider>
     </GlobalProvider>

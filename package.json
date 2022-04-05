@@ -9,6 +9,7 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "@walletconnect/ethereum-provider": "^1.7.5",
+    "axios": "^0.26.1",
     "ethers": "^5.5.4",
     "google-protobuf": "^3.20.0-rc.2",
     "grpc-web": "^1.3.1",
@@ -35,9 +36,8 @@
     "build": "react-scripts build",
     "format": "prettier --write .",
     "generate-contract-types": "./scripts/generate-contract-types.sh",
-    "generate-proto-types": "./scripts/generate-proto-types.sh",
     "lint": "eslint --fix --ext .ts,.tsx .",
-    "postinstall": "npm run generate-contract-types && npm run generate-proto-types",
+    "postinstall": "npm run generate-contract-types",
     "prepare": "husky install",
     "start:dev": "react-scripts start",
     "start:prod": "serve -s -C -p 80 build"
