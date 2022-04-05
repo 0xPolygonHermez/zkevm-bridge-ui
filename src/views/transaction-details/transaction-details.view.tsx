@@ -10,7 +10,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import { demoData } from "src/views/activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
-import TokenIcon from "src/views/shared/token-icon/token-icon";
+import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
 import { getTransactionStatusText } from "src/domain";
 
@@ -29,7 +29,7 @@ const TransactionDetails: FC = () => {
       <Header title="Transaction Details" />
       <Card className={classes.card}>
         <div className={classes.balance}>
-          <TokenIcon token={token} className={classes.tokenIcon} />
+          <TokenIcon token={token} className={classes.tokenIcon} size={12} />
           <Typography type="h2">{`${amount} ${token.toUpperCase()}`}</Typography>
           <Typography type="body2">{convertTokenAmountToFiat({ amount, token })}</Typography>
         </div>
@@ -73,7 +73,7 @@ const TransactionDetails: FC = () => {
             L2 Fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" />
+            <TokenIcon token="eth" size={5} />
             {`0.01ETH ~ ${convertTokenAmountToFiat({ amount: 0.01, token: "eth" })}`}
           </Typography>
         </div>
@@ -82,7 +82,7 @@ const TransactionDetails: FC = () => {
             L1 gas fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" />
+            <TokenIcon token="eth" size={5} />
             {`0.10ETH ~ ${convertTokenAmountToFiat({ amount: 0.1, token: "eth" })}`}
           </Typography>
         </div>

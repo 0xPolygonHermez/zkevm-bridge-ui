@@ -15,6 +15,12 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     width: 20,
     marginRight: theme.spacing(1),
   },
+  cards: {
+    margin: [theme.spacing(5), 0],
+  },
+  button: {
+    margin: [theme.spacing(1), "auto"],
+  },
 }));
 
 export default useHomeStyles;

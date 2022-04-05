@@ -10,7 +10,7 @@ import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
-import TokenIcon from "src/views/shared/token-icon/token-icon";
+import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import { TransactionStatus, getTransactionStatusText } from "src/domain";
 
 export interface TransactionCardProps {
@@ -68,7 +68,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <TokenIcon token={token} className={classes.tokenIcon} />
+            <TokenIcon token={token} className={classes.tokenIcon} size={5} />
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>

@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 export interface Env {
   REACT_APP_INFURA_API_KEY: string;
   REACT_APP_L1_PROVIDER_NETWORK: string;
@@ -60,3 +62,18 @@ export type Message =
       text?: string;
       parsed: string;
     };
+
+export type Chain = {
+  name: string;
+  chainId: number;
+  icon: FC<{ className?: string }>;
+};
+
+export type Token = {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoURI: string;
+  chainId?: number;
+};
