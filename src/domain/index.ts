@@ -78,3 +78,10 @@ export interface Claim {
   destinationAddress: string;
   blockNumber: string;
 }
+
+export interface MerkleProof {
+  merkleProof: string[];
+  exitRootNumber: string;
+  mainExitRoot: string;
+  rollupExitRoot: string;
+}

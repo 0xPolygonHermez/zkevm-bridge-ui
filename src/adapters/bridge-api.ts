@@ -21,6 +21,13 @@ interface Claim {
   block_num: string;
 }
 
+interface MerkleProof {
+  merkle_proof: string[];
+  exit_root_num: string;
+  main_exit_root: string;
+  rollup_exit_root: string;
+}
+
 interface GetBridgesParams {
   env: domain.Env;
   ethereumAddress: string;
@@ -31,12 +38,22 @@ interface GetClaimsParams {
   ethereumAddress: string;
 }
 
+interface GetMerkleProofParams {
+  env: domain.Env;
+  originNetwork: number;
+  depositCount: number;
+}
+
 interface GetBridgesResponse {
   deposits?: Bridge[];
 }
 
 interface GetClaimsResponse {
   claims?: Claim[];
+}
+
+interface GetMerkleProofResponse {
+  proof: MerkleProof;
 }
 
 const bridgeParser = StrictSchema<Bridge>()(
@@ -72,6 +89,21 @@ const getClaimsResponseParser = StrictSchema<GetClaimsResponse>()(
   })
 );
 
+const merkleProofParser = StrictSchema<MerkleProof>()(
+  z.object({
+    merkle_proof: z.array(z.string()),
+    exit_root_num: z.string(),
+    main_exit_root: z.string(),
+    rollup_exit_root: z.string(),
+  })
+);
+
+const getMerkleProofParser = StrictSchema<GetMerkleProofResponse>()(
+  z.object({
+    proof: merkleProofParser,
+  })
+);
+
 const apiBridgeToDomain = ({
   token_addr,
   amount,
@@ -102,6 +134,18 @@ const apiClaimToDomain = ({
   blockNumber: block_num,
 });
 
+const apiMerkleProofToDomain = ({
+  merkle_proof,
+  exit_root_num,
+  main_exit_root,
+  rollup_exit_root,
+}: MerkleProof): domain.MerkleProof => ({
+  merkleProof: merkle_proof,
+  exitRootNumber: exit_root_num,
+  mainExitRoot: main_exit_root,
+  rollupExitRoot: rollup_exit_root,
+});
+
 const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
   return axios
     .request({
@@ -116,6 +160,32 @@ const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.
         return parsedData.data.deposits !== undefined
           ? parsedData.data.deposits.map(apiBridgeToDomain)
           : [];
+      } else {
+        throw parsedData.error;
+      }
+    });
+};
+
+const getMerkleProof = ({
+  env,
+  originNetwork,
+  depositCount,
+}: GetMerkleProofParams): Promise<domain.MerkleProof> => {
+  return axios
+    .request({
+      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      url: `/merkle-proofs`,
+      method: "GET",
+      params: {
+        origin_net: originNetwork,
+        deposit_cnt: depositCount,
+      },
+    })
+    .then((res) => {
+      const parsedData = getMerkleProofParser.safeParse(res.data);
+
+      if (parsedData.success) {
+        return apiMerkleProofToDomain(parsedData.data.proof);
       } else {
         throw parsedData.error;
       }
@@ -142,4 +212,4 @@ const getClaims = ({ env, ethereumAddress }: GetClaimsParams): Promise<domain.Cl
     });
 };
 
-export { getBridges, getClaims };
+export { getBridges, getMerkleProof, getClaims };

@@ -1,7 +1,7 @@
 import { createContext, FC, useCallback, useContext } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
-import { Bridge, Claim } from "src/domain";
+import { Bridge, Claim, MerkleProof } from "src/domain";
 import * as api from "src/adapters/bridge-api";
 
 interface GetBridgesParams {
@@ -12,8 +12,14 @@ interface GetClaimsParams {
   ethereumAddress: string;
 }
 
+interface GetMerkleProofParams {
+  originNetwork: number;
+  depositCount: number;
+}
+
 interface BridgeContext {
   getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
+  getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
 }
 
@@ -21,6 +27,9 @@ const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
   getBridges: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getMerkleProof: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getClaims: () => {
@@ -42,6 +51,17 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
+  const getMerkleProof = useCallback(
+    ({ originNetwork, depositCount }: GetMerkleProofParams) => {
+      if (env === undefined) {
+        throw new Error("The bridge API client couldn't be instantiated");
+      }
+
+      return api.getMerkleProof({ env, originNetwork, depositCount });
+    },
+    [env]
+  );
+
   const getClaims = useCallback(
     ({ ethereumAddress }: GetClaimsParams) => {
       if (env === undefined) {
@@ -53,7 +73,7 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
-  return <bridgeContext.Provider value={{ getBridges, getClaims }} {...props} />;
+  return <bridgeContext.Provider value={{ getBridges, getMerkleProof, getClaims }} {...props} />;
 };
 
 const useBridgeContext = (): BridgeContext => {
