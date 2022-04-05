@@ -37,7 +37,7 @@ const getBridgesResponseParser = StrictSchema<GetBridgesResponse>()(
   })
 );
 
-const transformApiBridgeToDomain = ({
+const apiBridgeToDomain = ({
   token_addr,
   amount,
   dest_addr,
@@ -63,7 +63,7 @@ const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.
 
       if (parsedData.success) {
         return parsedData.data.deposits !== undefined
-          ? parsedData.data.deposits.map(transformApiBridgeToDomain)
+          ? parsedData.data.deposits.map(apiBridgeToDomain)
           : [];
       } else {
         throw parsedData.error;
