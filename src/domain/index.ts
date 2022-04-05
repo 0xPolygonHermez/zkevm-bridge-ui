@@ -69,3 +69,12 @@ export interface Bridge {
   destinationAddress: string;
   depositCount: string;
 }
+
+export interface Claim {
+  index: string;
+  tokenAddress: string;
+  amount: string;
+  destinationNetwork: number;
+  destinationAddress: string;
+  blockNumber: string;
+}
