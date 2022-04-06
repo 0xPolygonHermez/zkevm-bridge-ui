@@ -52,7 +52,7 @@ const BridgeProvider: FC = (props) => {
   const getBridges = useCallback(
     ({ ethereumAddress }: GetBridgesParams) => {
       if (env === undefined) {
-        throw new Error("The bridge API client couldn't be instantiated");
+        throw new Error("Env is not available");
       }
 
       return api.getBridges({ env, ethereumAddress });
@@ -63,7 +63,7 @@ const BridgeProvider: FC = (props) => {
   const getClaimStatus = useCallback(
     ({ originNetwork, depositCount }: GetClaimStatusParams) => {
       if (env === undefined) {
-        throw new Error("The bridge API client couldn't be instantiated");
+        throw new Error("Env is not available");
       }
 
       return api.getClaimStatus({ env, originNetwork, depositCount });
@@ -74,7 +74,7 @@ const BridgeProvider: FC = (props) => {
   const getMerkleProof = useCallback(
     ({ originNetwork, depositCount }: GetMerkleProofParams) => {
       if (env === undefined) {
-        throw new Error("The bridge API client couldn't be instantiated");
+        throw new Error("Env is not available");
       }
 
       return api.getMerkleProof({ env, originNetwork, depositCount });
@@ -85,7 +85,7 @@ const BridgeProvider: FC = (props) => {
   const getClaims = useCallback(
     ({ ethereumAddress }: GetClaimsParams) => {
       if (env === undefined) {
-        throw new Error("The bridge API client couldn't be instantiated");
+        throw new Error("Env is not available");
       }
 
       return api.getClaims({ env, ethereumAddress });
