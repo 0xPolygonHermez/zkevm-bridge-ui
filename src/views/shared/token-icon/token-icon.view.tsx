@@ -14,7 +14,7 @@ type Token = {
 };
 
 const TokenIcon: FC<TokenIconProps> = ({ token, className, size }) => {
-  const classes = useTokenIconStyles(size);
+  const classes = useTokenIconStyles(size || 4);
   const tokenomincs = tokens as Token[];
   const wanted = token === "eth" ? "weth" : token;
   const icon: Token | undefined = tokenomincs.find((t) => {

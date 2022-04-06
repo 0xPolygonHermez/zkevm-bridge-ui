@@ -77,7 +77,7 @@ const Cards: FC = () => {
         <div className={`${classes.row} ${classes.middleRow}`}>
           <div className={classes.maxWrapper}>
             <button className={classes.tokenSelector} onClick={onTokenSelectorClick}>
-              <TokenIcon token={transaction.token.symbol} className={classes.icons} size={6} />
+              <TokenIcon token={transaction.token.symbol} size={6} />
               <Typography type="h2">{transaction.token.symbol}</Typography>
               <CaretDown className={classes.icons} />
             </button>
