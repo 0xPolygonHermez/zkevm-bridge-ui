@@ -5,7 +5,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
-import * as api from "src/adapters/bridge-api";
+import * as bridgeApi from "src/adapters/bridge-api";
 
 interface GetBridgesParams {
   ethereumAddress: string;
@@ -83,7 +83,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return api.getBridges({ env, ethereumAddress });
+      return bridgeApi.getBridges({ env, ethereumAddress });
     },
     [env]
   );
@@ -94,7 +94,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return api.getClaimStatus({ env, originNetwork, depositCount });
+      return bridgeApi.getClaimStatus({ env, originNetwork, depositCount });
     },
     [env]
   );
@@ -105,7 +105,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return api.getMerkleProof({ env, originNetwork, depositCount });
+      return bridgeApi.getMerkleProof({ env, originNetwork, depositCount });
     },
     [env]
   );
@@ -116,7 +116,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return api.getClaims({ env, ethereumAddress });
+      return bridgeApi.getClaims({ env, ethereumAddress });
     },
     [env]
   );
