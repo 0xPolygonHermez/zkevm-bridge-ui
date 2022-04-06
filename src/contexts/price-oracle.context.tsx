@@ -5,7 +5,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
-import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates";
+import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
 import { PREFERRED_CURRENCY, USDT_DECIMALS } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/storage";
@@ -79,7 +79,7 @@ const PriceOracleProvider: FC = (props) => {
   useEffect(() => {
     if (env && l1Provider) {
       const quoterContract = UniswapQuoter__factory.connect(
-        env.REACT_APP_PRICE_ORACLE_CONTRACT_ADDRESS,
+        env.REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
         l1Provider
       );
 

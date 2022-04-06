@@ -4,6 +4,8 @@ import { createContext, FC, useContext, useEffect, useState, useCallback } from 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Bridge__factory } from "src/types/contracts/bridge";
+import * as api from "src/adapters/bridge-api";
+import * as domain from "src/domain";
 
 interface BridgeContext {
   bridge: (
@@ -23,6 +25,11 @@ interface BridgeContext {
     mainnetExitRoot: string,
     rollupExitRoot: string
   ) => Promise<ContractTransaction>;
+  getBridges: (params: GetBridgesParams) => Promise<domain.Bridge[]>;
+}
+
+interface GetBridgesParams {
+  ethereumAddress: string;
 }
 
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
@@ -32,6 +39,9 @@ const bridgeContext = createContext<BridgeContext>({
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   claim: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
 });
@@ -107,6 +117,17 @@ const BridgeProvider: FC = (props) => {
     [bridgeContract, env]
   );
 
+  const getBridges = useCallback(
+    ({ ethereumAddress }: GetBridgesParams) => {
+      if (env === undefined) {
+        throw new Error("The bridge API client couldn't be instantiated");
+      }
+
+      return api.getBridges({ env, ethereumAddress });
+    },
+    [env]
+  );
+
   useEffect(() => {
     if (env && connectedProvider) {
       const contract = Bridge__factory.connect(
@@ -118,7 +139,7 @@ const BridgeProvider: FC = (props) => {
     }
   }, [env, connectedProvider]);
 
-  return <bridgeContext.Provider value={{ bridge, claim }} {...props} />;
+  return <bridgeContext.Provider value={{ bridge, claim, getBridges }} {...props} />;
 };
 
 const useBridgeContext = (): BridgeContext => {

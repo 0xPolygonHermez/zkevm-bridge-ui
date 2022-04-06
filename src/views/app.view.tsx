@@ -14,13 +14,13 @@ const App = (): JSX.Element => {
     <GlobalProvider>
       <EnvProvider>
         <ProvidersProvider>
-          <PriceOracleProvider>
-            <BridgeProvider>
+          <BridgeProvider>
+            <PriceOracleProvider>
               <Layout>
                 <Router />
               </Layout>
-            </BridgeProvider>
-          </PriceOracleProvider>
+            </PriceOracleProvider>
+          </BridgeProvider>
         </ProvidersProvider>
       </EnvProvider>
     </GlobalProvider>
