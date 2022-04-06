@@ -70,3 +70,23 @@ export interface Bridge {
   destinationAddress: string;
   depositCount: string;
 }
+
+export interface Claim {
+  index: string;
+  tokenAddress: string;
+  amount: string;
+  destinationNetwork: number;
+  destinationAddress: string;
+  blockNumber: string;
+}
+
+export interface ClaimStatus {
+  isReady: boolean;
+}
+
+export interface MerkleProof {
+  merkleProof: string[];
+  exitRootNumber: string;
+  mainExitRoot: string;
+  rollupExitRoot: string;
+}
