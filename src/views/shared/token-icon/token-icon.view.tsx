@@ -14,10 +14,10 @@ type Token = {
 };
 
 const TokenIcon: FC<TokenIconProps> = ({ token, className, size }) => {
-  const classes = useTokenIconStyles(size || 4);
-  const tokenomincs = tokens as Token[];
+  const classes = useTokenIconStyles(size || 16);
+  const tokenList = tokens;
   const wanted = token === "eth" ? "weth" : token;
-  const icon: Token | undefined = tokenomincs.find((t) => {
+  const icon: Token | undefined = tokenList.find((t) => {
     return t.symbol === wanted.toUpperCase();
   });
   return <img src={icon?.logoURI} className={`${classes.icon} ${className ? className : ""}`} />;

@@ -68,7 +68,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <TokenIcon token={token} className={classes.tokenIcon} size={5} />
+            <TokenIcon token={token} className={classes.tokenIcon} size={20} />
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>

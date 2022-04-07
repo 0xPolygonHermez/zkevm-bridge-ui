@@ -29,7 +29,7 @@ const TransactionDetails: FC = () => {
       <Header title="Transaction Details" />
       <Card className={classes.card}>
         <div className={classes.balance}>
-          <TokenIcon token={token} className={classes.tokenIcon} size={12} />
+          <TokenIcon token={token} className={classes.tokenIcon} size={48} />
           <Typography type="h2">{`${amount} ${token.toUpperCase()}`}</Typography>
           <Typography type="body2">{convertTokenAmountToFiat({ amount, token })}</Typography>
         </div>
@@ -73,7 +73,7 @@ const TransactionDetails: FC = () => {
             L2 Fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" size={5} />
+            <TokenIcon token="eth" size={20} />
             {`0.01ETH ~ ${convertTokenAmountToFiat({ amount: 0.01, token: "eth" })}`}
           </Typography>
         </div>
@@ -82,7 +82,7 @@ const TransactionDetails: FC = () => {
             L1 gas fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" size={5} />
+            <TokenIcon token="eth" size={20} />
             {`0.10ETH ~ ${convertTokenAmountToFiat({ amount: 0.1, token: "eth" })}`}
           </Typography>
         </div>
