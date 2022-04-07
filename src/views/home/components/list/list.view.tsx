@@ -18,30 +18,23 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
   const classes = useListStyles();
   const [values, setValues] = useState(list);
 
+  const filterChain = (chain: Chain, value: string) =>
+    chain.name.toUpperCase().includes(value.toUpperCase());
+  const filterToken = (token: Token, value: string) =>
+    token.name.toUpperCase().includes(value.toUpperCase()) ||
+    token.symbol.toUpperCase().includes(value.toUpperCase());
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filterChain = (chain: Chain) =>
-      chain.name.toUpperCase().includes(event.target.value.toUpperCase());
-    const filterToken = (token: Token) =>
-      token.name.toUpperCase().includes(event.target.value.toUpperCase()) ||
-      token.symbol.toUpperCase().includes(event.target.value.toUpperCase());
+    const value = event.target.value;
     const filtered: ListProps["list"] =
       list.type === "chain"
-        ? { ...list, type: "chain", items: list.items.filter(filterChain) }
-        : { ...list, type: "token", items: list.items.filter(filterToken) };
+        ? { ...list, type: "chain", items: list.items.filter((chain) => filterChain(chain, value)) }
+        : {
+            ...list,
+            type: "token",
+            items: list.items.filter((token) => filterToken(token, value)),
+          };
 
     setValues(filtered);
-  };
-
-  const onClickChain = (element: Chain) => {
-    if (list.type === "chain") {
-      list.onClick(element);
-    }
-  };
-
-  const onClickToken = (element: Token) => {
-    if (list.type === "token") {
-      list.onClick(element);
-    }
   };
 
   return (
@@ -59,7 +52,7 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
                 <button
                   className={classes.button}
                   key={`${element.name}${element.chainId}`}
-                  onClick={() => onClickChain(element)}
+                  onClick={() => values.onClick(element)}
                 >
                   {Icon && <Icon className={classes.icon} />}
                   <Typography type="body1">{element.name}</Typography>
@@ -71,9 +64,9 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
                 <button
                   className={classes.button}
                   key={`${element.name}${element.address}`}
-                  onClick={() => onClickToken(element)}
+                  onClick={() => values.onClick(element)}
                 >
-                  {element.symbol && <TokenIcon token={element.symbol} size={6} />}
+                  {element.symbol && <TokenIcon token={element.symbol} size={24} />}
                   <Typography type="body1">{element.name}</Typography>
                 </button>
               );
