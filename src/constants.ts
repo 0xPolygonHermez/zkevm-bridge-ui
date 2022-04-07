@@ -1,4 +1,6 @@
 import { Currency } from "src/domain";
+import { ReactComponent as EthChainIcon } from "src/assets/chains/ethereum.svg";
+import { ReactComponent as PolygonHermezChainIcon } from "src/assets/chains/polygon-hermez-chain.svg";
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 export const PREFERRED_CURRENCY = Currency.USD;
@@ -20,3 +22,8 @@ export const USDT_DECIMALS = 6;
 export const UNISWAP_V3_POOL_FEE = 3000;
 
 export const FIAT_EXCHANGE_RATES_API_URL = "https://api.exchangeratesapi.io/v1/latest";
+
+export const chains = [
+  { name: "Ethereum chain", icon: EthChainIcon, chainId: 1 },
+  { name: "Polygon Hermez chain", icon: PolygonHermezChainIcon, chainId: 10 },
+];

@@ -72,17 +72,24 @@ export interface Bridge {
   depositCount: string;
 }
 
-export type Chain = {
+export interface Chain {
   name: string;
   chainId: number;
   icon: FC<{ className?: string }>;
-};
+}
 
-export type Token = {
+export interface Token {
   name: string;
   symbol: string;
   address: string;
   decimals: number;
   logoURI: string;
   chainId?: number;
-};
+}
+
+export interface Transaction {
+  chainFrom: Chain;
+  chainTo: Chain;
+  token: Token;
+  amount: number;
+}
