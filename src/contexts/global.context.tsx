@@ -1,4 +1,12 @@
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import {
+  ComponentType,
+  createContext,
+  FC,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 import { Message } from "src/domain";
 
@@ -17,7 +25,7 @@ type ModalState =
     }
   | {
       status: "open";
-      component: FC;
+      component: ComponentType;
     };
 
 interface GlobalContext {
@@ -25,7 +33,7 @@ interface GlobalContext {
   openSnackbar: (message: Message) => void;
   closeSnackbar: () => void;
   modal: ModalState;
-  openModal: (component: FC) => void;
+  openModal: (component: ComponentType) => void;
   closeModal: () => void;
 }
 
@@ -76,7 +84,7 @@ const GlobalProvider: FC = (props) => {
   );
 
   const openModal = useCallback(
-    (component: FC): void =>
+    (component: ComponentType): void =>
       setModal({
         status: "open",
         component,

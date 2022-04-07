@@ -1,8 +1,8 @@
-import { FC } from "react";
+import { ComponentType } from "react";
 import useModalStyles from "src/views/shared/modal/modal.styles";
 
 interface ModalProps {
-  component: FC;
+  component: ComponentType;
   onClose: () => void;
 }
 

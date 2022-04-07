@@ -9,7 +9,7 @@ import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import List from "src/views/home/components/list/list.view";
 import { useGlobalContext } from "src/contexts/global.context";
 import tokens from "src/assets/tokens/tokens.json";
-import { chains } from "src/assets/chains/chains";
+import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token } from "src/domain";
 
@@ -77,7 +77,7 @@ const Cards: FC = () => {
         <div className={`${classes.row} ${classes.middleRow}`}>
           <div className={classes.maxWrapper}>
             <button className={classes.tokenSelector} onClick={onTokenSelectorClick}>
-              <TokenIcon token={transaction.token.symbol} size={6} />
+              <TokenIcon token={transaction.token.symbol} size={24} />
               <Typography type="h2">{transaction.token.symbol}</Typography>
               <CaretDown className={classes.icons} />
             </button>
