@@ -3,6 +3,9 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useAmountInputStyles = createUseStyles((theme: Theme) => ({
+  form: {
+    margin: [theme.spacing(5), 0],
+  },
   card: {
     padding: [theme.spacing(2), theme.spacing(3)],
   },
@@ -97,6 +100,11 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     [theme.breakpoints.upSm]: {
       padding: theme.spacing(0.5),
     },
+  },
+  button: {
+    display: "flex",
+    justifyContent: "center",
+    margin: [theme.spacing(5), "auto"],
   },
 }));
 

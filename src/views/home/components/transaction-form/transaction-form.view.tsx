@@ -1,8 +1,8 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
-import useAmountInputStyles from "src/views/home/components/cards/cards.styles";
+import useTransactionFormtStyles from "src/views/home/components/transaction-form/transaction-form.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
@@ -12,24 +12,26 @@ import tokens from "src/assets/tokens/tokens.json";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token } from "src/domain";
+import Button from "src/views/shared/button/button.view";
 
-const Cards: FC = () => {
-  const classes = useAmountInputStyles();
+const TransactionForm: FC = () => {
+  const classes = useTransactionFormtStyles();
   const { openModal, closeModal } = useGlobalContext();
   const { transaction, setTransaction } = useTransactionContext();
-  const ChainFromIcon = transaction.chainFrom.icon;
-  const ChainToIcon = transaction.chainTo.icon;
+  const [localTransaction, setLocalTransaction] = useState(transaction);
+  const ChainFromIcon = localTransaction.chainFrom.icon;
+  const ChainToIcon = localTransaction.chainTo.icon;
 
   const onChainFromButtonClick = (chainFrom: Chain) => {
-    setTransaction({ ...transaction, chainFrom });
+    setLocalTransaction({ ...localTransaction, chainFrom });
     closeModal();
   };
   const onChainToButtonClick = (chainTo: Chain) => {
-    setTransaction({ ...transaction, chainTo });
+    setLocalTransaction({ ...localTransaction, chainTo });
     closeModal();
   };
   const onTokenClick = (token: Token) => {
-    setTransaction({ ...transaction, token });
+    setLocalTransaction({ ...localTransaction, token });
     closeModal();
   };
   const componentFromChain = () => (
@@ -59,29 +61,39 @@ const Cards: FC = () => {
   const onTokenSelectorClick = () => {
     openModal(componentToken);
   };
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setTransaction(localTransaction);
+  };
 
+  console.log(transaction);
   return (
-    <>
+    <form className={classes.form} onSubmit={onSubmit}>
       <Card className={classes.card}>
         <div className={classes.row}>
           <Typography type="body2">From</Typography>
           <Typography type="body2">Balance</Typography>
         </div>
         <div className={classes.row}>
-          <button className={classes.chainSelector} onClick={onChainFromSelectorClick}>
-            <ChainFromIcon /> <Typography type="body1">{transaction.chainFrom.name}</Typography>
+          <button
+            className={classes.chainSelector}
+            onClick={onChainFromSelectorClick}
+            type="button"
+          >
+            <ChainFromIcon />{" "}
+            <Typography type="body1">{localTransaction.chainFrom.name}</Typography>
             <CaretDown />
           </button>
           <Typography type="body1">2.0 ETH</Typography>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
           <div className={classes.maxWrapper}>
-            <button className={classes.tokenSelector} onClick={onTokenSelectorClick}>
-              <TokenIcon token={transaction.token.symbol} size={24} />
-              <Typography type="h2">{transaction.token.symbol}</Typography>
+            <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
+              <TokenIcon token={localTransaction.token.symbol} size={24} />
+              <Typography type="h2">{localTransaction.token.symbol}</Typography>
               <CaretDown className={classes.icons} />
             </button>
-            <button className={classes.maxButton}>
+            <button className={classes.maxButton} type="button">
               <Typography type="body2" className={classes.maxText}>
                 MAX
               </Typography>
@@ -101,15 +113,18 @@ const Cards: FC = () => {
           <Typography type="body2">Balance</Typography>
         </div>
         <div className={classes.row}>
-          <button className={classes.chainSelector} onClick={onChainToSelectorClick}>
-            <ChainToIcon /> <Typography type="body1">{transaction.chainTo.name}</Typography>
+          <button className={classes.chainSelector} onClick={onChainToSelectorClick} type="button">
+            <ChainToIcon /> <Typography type="body1">{localTransaction.chainTo.name}</Typography>
             <CaretDown />
           </button>
           <Typography type="body1">2.0 ETH</Typography>
         </div>
       </Card>
-    </>
+      <div className={classes.button}>
+        <Button type="submit">Continue</Button>
+      </div>
+    </form>
   );
 };
 
-export default Cards;
+export default TransactionForm;
