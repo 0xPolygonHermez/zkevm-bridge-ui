@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useAmountInputStyles = createUseStyles((theme: Theme) => ({
+const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   form: {
     margin: [theme.spacing(5), 0],
   },
@@ -108,4 +108,4 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useAmountInputStyles;
+export default useTransactionFormStyles;
