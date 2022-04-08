@@ -66,7 +66,6 @@ const TransactionForm: FC = () => {
     setTransaction(localTransaction);
   };
 
-  console.log(transaction);
   return (
     <form className={classes.form} onSubmit={onSubmit}>
       <Card className={classes.card}>
