@@ -3,6 +3,7 @@ import { createContext, FC, useContext, useMemo, useState } from "react";
 import { chains } from "src/constants";
 import tokens from "src/assets/tokens/tokens.json";
 import { Transaction } from "src/domain";
+import { BigNumber } from "ethers";
 
 interface TransactionContext {
   transaction: Transaction;
@@ -10,7 +11,12 @@ interface TransactionContext {
 }
 
 const transactionContextDefaultValue: TransactionContext = {
-  transaction: { chainFrom: chains[0], chainTo: chains[1], token: tokens[0], amount: 0 },
+  transaction: {
+    chainFrom: chains[0],
+    chainTo: chains[1],
+    token: tokens[0],
+    amount: BigNumber.from(0),
+  },
   setTransaction: () => {
     console.error("The transaction context is not yet ready");
   },

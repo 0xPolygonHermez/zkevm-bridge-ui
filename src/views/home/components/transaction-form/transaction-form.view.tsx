@@ -13,11 +13,15 @@ import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token } from "src/domain";
 import Button from "src/views/shared/button/button.view";
+import AmountInput from "src/views/home/components/amount-input/amount-input.view";
+import { BigNumber } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
   const { openModal, closeModal } = useGlobalContext();
   const { transaction, setTransaction } = useTransactionContext();
+  const [isInvalid, setIsInvalid] = useState(true);
   const [localTransaction, setLocalTransaction] = useState(transaction);
   const ChainFromIcon = localTransaction.chainFrom.icon;
   const ChainToIcon = localTransaction.chainTo.icon;
@@ -61,6 +65,10 @@ const TransactionForm: FC = () => {
   const onTokenSelectorClick = () => {
     openModal(componentToken);
   };
+  const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
+    setLocalTransaction({ ...localTransaction, amount });
+    setIsInvalid(isInvalid);
+  };
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setTransaction(localTransaction);
@@ -83,22 +91,20 @@ const TransactionForm: FC = () => {
             <Typography type="body1">{localTransaction.chainFrom.name}</Typography>
             <CaretDown />
           </button>
-          <Typography type="body1">2.0 ETH</Typography>
+          <Typography type="body1">2.0 {localTransaction.token.symbol}</Typography>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <div className={classes.maxWrapper}>
-            <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
-              <TokenIcon token={localTransaction.token.symbol} size={24} />
-              <Typography type="h2">{localTransaction.token.symbol}</Typography>
-              <CaretDown className={classes.icons} />
-            </button>
-            <button className={classes.maxButton} type="button">
-              <Typography type="body2" className={classes.maxText}>
-                MAX
-              </Typography>
-            </button>
-          </div>
-          <input className={classes.amountInput} placeholder="0.00" />
+          <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
+            <TokenIcon token={localTransaction.token.symbol} size={24} />
+            <Typography type="h2">{localTransaction.token.symbol}</Typography>
+            <CaretDown className={classes.icons} />
+          </button>
+          <AmountInput
+            token={localTransaction.token}
+            balance={BigNumber.from(parseUnits("2.0", localTransaction.token.decimals))}
+            fee={BigNumber.from(parseUnits("0.0001", localTransaction.token.decimals))}
+            onChange={onChange}
+          />
         </div>
       </Card>
       <div className={classes.arrowRow}>
@@ -116,11 +122,18 @@ const TransactionForm: FC = () => {
             <ChainToIcon /> <Typography type="body1">{localTransaction.chainTo.name}</Typography>
             <CaretDown />
           </button>
-          <Typography type="body1">2.0 ETH</Typography>
+          <Typography type="body1">1.0 {localTransaction.token.symbol}</Typography>
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit">Continue</Button>
+        <Button type="submit" disabled={isInvalid}>
+          Continue
+        </Button>
+        {isInvalid && !localTransaction.amount.isZero() && (
+          <Typography type="body1" className={classes.error}>
+            Insufficient balance
+          </Typography>
+        )}
       </div>
     </form>
   );
