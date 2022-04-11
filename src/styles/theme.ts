@@ -21,6 +21,7 @@ const theme = {
     },
     success: "#1ccc8d",
     disabled: "#78798d",
+    transparency: "rgba(8,17,50,0.5)",
   },
   hoverTransition: "all 100ms",
   breakpoints: {
