@@ -8,10 +8,10 @@ interface TokenIconProps {
   size?: number;
 }
 
-type Token = {
+interface Token {
   symbol: string;
   logoURI: string;
-};
+}
 
 const TokenIcon: FC<TokenIconProps> = ({ token, className, size }) => {
   const classes = useTokenIconStyles(size || 16);
