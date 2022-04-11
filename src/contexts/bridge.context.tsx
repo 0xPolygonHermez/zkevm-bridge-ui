@@ -6,6 +6,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
+import { Erc20__factory } from "src/types/contracts/erc-20";
 
 interface GetBridgesParams {
   ethereumAddress: string;
@@ -74,7 +75,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { connectedProvider } = useProvidersContext();
+  const { connectedProvider, account } = useProvidersContext();
   const [bridgeContract, setBridgeContract] = useState<BridgeContract>();
 
   const getBridges = useCallback(
@@ -122,7 +123,7 @@ const BridgeProvider: FC = (props) => {
   );
 
   const bridge = useCallback(
-    (
+    async (
       token: string,
       amount: BigNumber,
       destinationNetwork: number,
@@ -137,14 +138,30 @@ const BridgeProvider: FC = (props) => {
       }
 
       if (token !== ethersConstants.AddressZero) {
-        throw new Error("ERC-20 tokens are not yet supported");
+        if (connectedProvider === undefined) {
+          throw new Error("There is no Ethereum provider connected");
+        }
+
+        if (account.status !== "successful") {
+          throw new Error("The account address is not available");
+        }
+
+        const erc20Contract = Erc20__factory.connect(token, connectedProvider.getSigner());
+        const allowance = await erc20Contract.allowance(
+          account.data,
+          env.REACT_APP_BRIDGE_CONTRACT_ADDRESS
+        );
+
+        if (allowance.lt(amount)) {
+          await erc20Contract.approve(env.REACT_APP_BRIDGE_CONTRACT_ADDRESS, amount);
+        }
       }
 
       return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, {
         value: amount,
       });
     },
-    [bridgeContract, env]
+    [bridgeContract, env, connectedProvider, account]
   );
 
   const claim = useCallback(
