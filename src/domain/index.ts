@@ -4,6 +4,7 @@ export interface Env {
   REACT_APP_INFURA_API_KEY: string;
   REACT_APP_L1_PROVIDER_NETWORK: string;
   REACT_APP_L2_PROVIDER_URL: string;
+  REACT_APP_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
   REACT_APP_USDT_CONTRACT_ADDRESS: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
@@ -70,6 +71,26 @@ export interface Bridge {
   destinationNetwork: number;
   destinationAddress: string;
   depositCount: string;
+}
+
+export interface Claim {
+  index: string;
+  tokenAddress: string;
+  amount: string;
+  destinationNetwork: number;
+  destinationAddress: string;
+  blockNumber: string;
+}
+
+export interface ClaimStatus {
+  isReady: boolean;
+}
+
+export interface MerkleProof {
+  merkleProof: string[];
+  exitRootNumber: string;
+  mainExitRoot: string;
+  rollupExitRoot: string;
 }
 
 export interface Chain {
