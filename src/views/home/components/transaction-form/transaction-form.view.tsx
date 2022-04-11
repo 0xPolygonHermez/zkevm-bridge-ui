@@ -70,19 +70,21 @@ const TransactionForm: FC = () => {
     <form className={classes.form} onSubmit={onSubmit}>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <Typography type="body2">From</Typography>
-          <Typography type="body2">Balance</Typography>
-        </div>
-        <div className={classes.row}>
-          <button
-            className={classes.chainSelector}
-            onClick={onChainFromSelectorClick}
-            type="button"
-          >
-            <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
-            <CaretDown />
-          </button>
-          <Typography type="body1">2.0 ETH</Typography>
+          <div className={classes.box}>
+            <Typography type="body2">From</Typography>
+            <button
+              className={classes.chainSelector}
+              onClick={onChainFromSelectorClick}
+              type="button"
+            >
+              <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
+              <CaretDown />
+            </button>
+          </div>
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
+          </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
           <div className={classes.maxWrapper}>
@@ -107,15 +109,21 @@ const TransactionForm: FC = () => {
       </div>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <Typography type="body2">To</Typography>
-          <Typography type="body2">Balance</Typography>
-        </div>
-        <div className={classes.row}>
-          <button className={classes.chainSelector} onClick={onChainToSelectorClick} type="button">
-            <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
-            <CaretDown />
-          </button>
-          <Typography type="body1">2.0 ETH</Typography>
+          <div className={classes.box}>
+            <Typography type="body2">To</Typography>
+            <button
+              className={classes.chainSelector}
+              onClick={onChainToSelectorClick}
+              type="button"
+            >
+              <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
+              <CaretDown />
+            </button>
+          </div>
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
+          </div>
         </div>
       </Card>
       <div className={classes.button}>
