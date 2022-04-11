@@ -19,15 +19,15 @@ const TransactionForm: FC = () => {
   const { openModal, closeModal } = useUIContext();
   const { transaction, setTransaction } = useTransactionContext();
   const [localTransaction, setLocalTransaction] = useState(transaction);
-  const ChainFromIcon = localTransaction.chainFrom.icon;
-  const ChainToIcon = localTransaction.chainTo.icon;
+  const ChainFromIcon = localTransaction.from.icon;
+  const ChainToIcon = localTransaction.to.icon;
 
-  const onChainFromButtonClick = (chainFrom: Chain) => {
-    setLocalTransaction({ ...localTransaction, chainFrom });
+  const onChainFromButtonClick = (from: Chain) => {
+    setLocalTransaction({ ...localTransaction, from });
     closeModal();
   };
-  const onChainToButtonClick = (chainTo: Chain) => {
-    setLocalTransaction({ ...localTransaction, chainTo });
+  const onChainToButtonClick = (to: Chain) => {
+    setLocalTransaction({ ...localTransaction, to });
     closeModal();
   };
   const onTokenClick = (token: Token) => {
@@ -79,8 +79,7 @@ const TransactionForm: FC = () => {
             onClick={onChainFromSelectorClick}
             type="button"
           >
-            <ChainFromIcon />{" "}
-            <Typography type="body1">{localTransaction.chainFrom.name}</Typography>
+            <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
             <CaretDown />
           </button>
           <Typography type="body1">2.0 ETH</Typography>
@@ -113,7 +112,7 @@ const TransactionForm: FC = () => {
         </div>
         <div className={classes.row}>
           <button className={classes.chainSelector} onClick={onChainToSelectorClick} type="button">
-            <ChainToIcon /> <Typography type="body1">{localTransaction.chainTo.name}</Typography>
+            <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
             <CaretDown />
           </button>
           <Typography type="body1">2.0 ETH</Typography>

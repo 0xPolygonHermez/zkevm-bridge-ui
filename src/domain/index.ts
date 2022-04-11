@@ -88,8 +88,8 @@ export interface Token {
 }
 
 export interface Transaction {
-  chainFrom: Chain;
-  chainTo: Chain;
+  from: Chain;
+  to: Chain;
   token: Token;
   amount: number;
 }
