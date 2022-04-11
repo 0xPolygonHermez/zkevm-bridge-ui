@@ -7,7 +7,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import List from "src/views/home/components/list/list.view";
-import { useGlobalContext } from "src/contexts/global.context";
+import { useUIContext } from "src/contexts/ui.context";
 import tokens from "src/assets/tokens/tokens.json";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
@@ -19,19 +19,19 @@ import { parseUnits } from "ethers/lib/utils";
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
-  const { openModal, closeModal } = useGlobalContext();
+  const { openModal, closeModal } = useUIContext();
   const { transaction, setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
   const [localTransaction, setLocalTransaction] = useState(transaction);
-  const ChainFromIcon = localTransaction.chainFrom.icon;
-  const ChainToIcon = localTransaction.chainTo.icon;
+  const ChainFromIcon = localTransaction.from.icon;
+  const ChainToIcon = localTransaction.to.icon;
 
-  const onChainFromButtonClick = (chainFrom: Chain) => {
-    setLocalTransaction({ ...localTransaction, chainFrom });
+  const onChainFromButtonClick = (from: Chain) => {
+    setLocalTransaction({ ...localTransaction, from });
     closeModal();
   };
-  const onChainToButtonClick = (chainTo: Chain) => {
-    setLocalTransaction({ ...localTransaction, chainTo });
+  const onChainToButtonClick = (to: Chain) => {
+    setLocalTransaction({ ...localTransaction, to });
     closeModal();
   };
   const onTokenClick = (token: Token) => {
@@ -78,20 +78,21 @@ const TransactionForm: FC = () => {
     <form className={classes.form} onSubmit={onSubmit}>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <Typography type="body2">From</Typography>
-          <Typography type="body2">Balance</Typography>
-        </div>
-        <div className={classes.row}>
-          <button
-            className={classes.chainSelector}
-            onClick={onChainFromSelectorClick}
-            type="button"
-          >
-            <ChainFromIcon />{" "}
-            <Typography type="body1">{localTransaction.chainFrom.name}</Typography>
-            <CaretDown />
-          </button>
-          <Typography type="body1">2.0 {localTransaction.token.symbol}</Typography>
+          <div className={classes.box}>
+            <Typography type="body2">From</Typography>
+            <button
+              className={classes.chainSelector}
+              onClick={onChainFromSelectorClick}
+              type="button"
+            >
+              <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
+              <CaretDown />
+            </button>
+          </div>
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
+          </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
@@ -114,15 +115,21 @@ const TransactionForm: FC = () => {
       </div>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <Typography type="body2">To</Typography>
-          <Typography type="body2">Balance</Typography>
-        </div>
-        <div className={classes.row}>
-          <button className={classes.chainSelector} onClick={onChainToSelectorClick} type="button">
-            <ChainToIcon /> <Typography type="body1">{localTransaction.chainTo.name}</Typography>
-            <CaretDown />
-          </button>
-          <Typography type="body1">1.0 {localTransaction.token.symbol}</Typography>
+          <div className={classes.box}>
+            <Typography type="body2">To</Typography>
+            <button
+              className={classes.chainSelector}
+              onClick={onChainToSelectorClick}
+              type="button"
+            >
+              <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
+              <CaretDown />
+            </button>
+          </div>
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
+          </div>
         </div>
       </Card>
       <div className={classes.button}>

@@ -13,14 +13,15 @@ const theme = {
     },
     warning: {
       main: "#e17e26",
-      ligth: "rgba(225,126,38,0.1)",
+      light: "rgba(225,126,38,0.1)",
     },
     error: {
       main: "#e8430d",
-      ligth: "rgba(232,67,12,0.1)",
+      light: "rgba(232,67,12,0.1)",
     },
     success: "#1ccc8d",
     disabled: "#78798d",
+    transparency: "rgba(8,17,50,0.5)",
   },
   hoverTransition: "all 100ms",
   breakpoints: {

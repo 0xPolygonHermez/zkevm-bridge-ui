@@ -40,7 +40,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     fontSize: theme.spacing(1.75),
   },
   statusBox: {
-    backgroundColor: theme.palette.warning.ligth,
+    backgroundColor: theme.palette.warning.light,
     color: theme.palette.warning.main,
     fontSize: theme.spacing(1.75),
     padding: [theme.spacing(0.5), theme.spacing(1)],
@@ -49,7 +49,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   },
   redStatus: {
     color: theme.palette.error.main,
-    backgroundColor: theme.palette.error.ligth,
+    backgroundColor: theme.palette.error.light,
   },
   tokenColumn: {
     display: "flex",

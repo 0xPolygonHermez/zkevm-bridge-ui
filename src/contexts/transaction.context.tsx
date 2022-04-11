@@ -11,12 +11,7 @@ interface TransactionContext {
 }
 
 const transactionContextDefaultValue: TransactionContext = {
-  transaction: {
-    chainFrom: chains[0],
-    chainTo: chains[1],
-    token: tokens[0],
-    amount: BigNumber.from(0),
-  },
+  transaction: { from: chains[0], to: chains[1], token: tokens[0], amount: BigNumber.from(0) },
   setTransaction: () => {
     console.error("The transaction context is not yet ready");
   },

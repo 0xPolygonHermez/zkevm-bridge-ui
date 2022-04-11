@@ -10,7 +10,7 @@ import { PREFERRED_CURRENCY, USDT_DECIMALS } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/storage";
 import { parseError } from "src/adapters/error";
-import { useGlobalContext } from "src/contexts/global.context";
+import { useUIContext } from "src/contexts/ui.context";
 
 interface PriceOracleContext {
   preferredCurrency?: Currency;
@@ -33,7 +33,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
   const { l1Provider } = useProvidersContext();
-  const { openSnackbar } = useGlobalContext();
+  const { openSnackbar } = useUIContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
   const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();

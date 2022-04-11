@@ -12,8 +12,12 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   row: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
     paddingBottom: theme.spacing(0.5),
+  },
+  box: {
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "column",
   },
   chainSelector: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],

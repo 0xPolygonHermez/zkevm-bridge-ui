@@ -1,4 +1,4 @@
-import { GlobalProvider } from "src/contexts/global.context";
+import { UIProvider } from "src/contexts/ui.context";
 import { EnvProvider } from "src/contexts/env.context";
 import { ProvidersProvider } from "src/contexts/providers.context";
 import Layout from "src/views/core/layout/layout.view";
@@ -12,7 +12,7 @@ const App = (): JSX.Element => {
   useAppStyles();
 
   return (
-    <GlobalProvider>
+    <UIProvider>
       <EnvProvider>
         <ProvidersProvider>
           <BridgeProvider>
@@ -26,7 +26,7 @@ const App = (): JSX.Element => {
           </BridgeProvider>
         </ProvidersProvider>
       </EnvProvider>
-    </GlobalProvider>
+    </UIProvider>
   );
 };
 
