@@ -1,4 +1,6 @@
 import { FC, useState } from "react";
+import { BigNumber } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -7,15 +9,13 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import List from "src/views/home/components/list/list.view";
-import { useUIContext } from "src/contexts/ui.context";
 import tokens from "src/assets/tokens/tokens.json";
-import { chains } from "src/constants";
-import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token } from "src/domain";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { BigNumber } from "ethers";
-import { parseUnits } from "ethers/lib/utils";
+import { chains } from "src/constants";
+import { useUIContext } from "src/contexts/ui.context";
+import { useTransactionContext } from "src/contexts/transaction.context";
+import { Chain, Token } from "src/domain";
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();

@@ -2,10 +2,9 @@ import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useState } from "react";
 
-import { Token } from "src/domain";
-
 import useAmountInputtStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
+import { Token } from "src/domain";
 
 interface onChangeParams {
   amount: BigNumber;
