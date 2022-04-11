@@ -28,7 +28,7 @@ type ModalState =
       component: ComponentType;
     };
 
-interface GlobalContext {
+interface UIContext {
   snackbar: SnackbarState;
   openSnackbar: (message: Message) => void;
   closeSnackbar: () => void;
@@ -37,28 +37,28 @@ interface GlobalContext {
   closeModal: () => void;
 }
 
-const globalContextNotReadyErrorMsg = "The global context is not yet ready";
+const uiContextNotReadyErrorMsg = "The ui context is not yet ready";
 
-const globalContextDefaultValue: GlobalContext = {
+const uiContextDefaultValue: UIContext = {
   snackbar: { status: "closed" },
   openSnackbar: () => {
-    console.error(globalContextNotReadyErrorMsg);
+    console.error(uiContextNotReadyErrorMsg);
   },
   closeSnackbar: () => {
-    console.error(globalContextNotReadyErrorMsg);
+    console.error(uiContextNotReadyErrorMsg);
   },
   modal: { status: "closed" },
   openModal: () => {
-    console.error(globalContextNotReadyErrorMsg);
+    console.error(uiContextNotReadyErrorMsg);
   },
   closeModal: () => {
-    console.error(globalContextNotReadyErrorMsg);
+    console.error(uiContextNotReadyErrorMsg);
   },
 };
 
-const globalContext = createContext<GlobalContext>(globalContextDefaultValue);
+const uiContext = createContext<UIContext>(uiContextDefaultValue);
 
-const GlobalProvider: FC = (props) => {
+const UIProvider: FC = (props) => {
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     status: "closed",
   });
@@ -105,11 +105,11 @@ const GlobalProvider: FC = (props) => {
     [closeModal, closeSnackbar, modal, openModal, openSnackbar, snackbar]
   );
 
-  return <globalContext.Provider value={value} {...props} />;
+  return <uiContext.Provider value={value} {...props} />;
 };
 
-const useGlobalContext = (): GlobalContext => {
-  return useContext(globalContext);
+const useUIContext = (): UIContext => {
+  return useContext(uiContext);
 };
 
-export { GlobalProvider, useGlobalContext };
+export { UIProvider, useUIContext };

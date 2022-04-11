@@ -7,7 +7,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import List from "src/views/home/components/list/list.view";
-import { useGlobalContext } from "src/contexts/global.context";
+import { useUIContext } from "src/contexts/ui.context";
 import tokens from "src/assets/tokens/tokens.json";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
@@ -16,7 +16,7 @@ import Button from "src/views/shared/button/button.view";
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
-  const { openModal, closeModal } = useGlobalContext();
+  const { openModal, closeModal } = useUIContext();
   const { transaction, setTransaction } = useTransactionContext();
   const [localTransaction, setLocalTransaction] = useState(transaction);
   const ChainFromIcon = localTransaction.chainFrom.icon;
