@@ -7,32 +7,47 @@ import Typography from "src/views/shared/typography/typography.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import { Chain, Token } from "src/domain";
 
+interface ChainList {
+  type: "chain";
+  items: Chain[];
+  onClick: (chain: Chain) => void;
+}
+
+interface TokenList {
+  type: "token";
+  items: Token[];
+  onClick: (token: Token) => void;
+}
+
+type List = ChainList | TokenList;
+
 interface ListProps {
   placeholder: string;
-  list:
-    | { type: "chain"; items: Chain[]; onClick: (chain: Chain) => void }
-    | { type: "token"; items: Token[]; onClick: (token: Token) => void };
+  list: List;
 }
+
+const filterChainList = (chainList: ChainList, value: string): ChainList => ({
+  ...chainList,
+  items: chainList.items.filter((chain) => chain.name.toUpperCase().includes(value.toUpperCase())),
+});
+
+const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
+  ...tokenList,
+  items: tokenList.items.filter(
+    (token) =>
+      token.name.toUpperCase().includes(value.toUpperCase()) ||
+      token.symbol.toUpperCase().includes(value.toUpperCase())
+  ),
+});
 
 const List: FC<ListProps> = ({ placeholder, list }) => {
   const classes = useListStyles();
   const [values, setValues] = useState(list);
 
-  const filterChain = (chain: Chain, value: string) =>
-    chain.name.toUpperCase().includes(value.toUpperCase());
-  const filterToken = (token: Token, value: string) =>
-    token.name.toUpperCase().includes(value.toUpperCase()) ||
-    token.symbol.toUpperCase().includes(value.toUpperCase());
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    const filtered: ListProps["list"] =
-      list.type === "chain"
-        ? { ...list, type: "chain", items: list.items.filter((chain) => filterChain(chain, value)) }
-        : {
-            ...list,
-            type: "token",
-            items: list.items.filter((token) => filterToken(token, value)),
-          };
+    const value = event.target.value.trim();
+    const filtered: List =
+      list.type === "chain" ? filterChainList(list, value) : filterTokenList(list, value);
 
     setValues(filtered);
   };
