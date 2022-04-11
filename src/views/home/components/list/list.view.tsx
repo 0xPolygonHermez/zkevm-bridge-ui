@@ -69,7 +69,7 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
                   key={`${element.name}${element.chainId}`}
                   onClick={() => values.onClick(element)}
                 >
-                  {Icon && <Icon className={classes.icon} />}
+                  <Icon className={classes.icon} />
                   <Typography type="body1">{element.name}</Typography>
                 </button>
               );
@@ -81,7 +81,7 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
                   key={`${element.name}${element.address}`}
                   onClick={() => values.onClick(element)}
                 >
-                  {element.symbol && <TokenIcon token={element.symbol} size={24} />}
+                  <TokenIcon token={element.symbol} size={24} />
                   <Typography type="body1">{element.name}</Typography>
                 </button>
               );
