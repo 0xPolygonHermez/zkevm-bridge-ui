@@ -18,8 +18,9 @@ const TokenIcon: FC<TokenIconProps> = ({ token, className, size }) => {
   const tokenList = tokens;
   const wanted = token === "eth" ? "weth" : token;
   const icon: Token | undefined = tokenList.find((t) => {
-    return t.symbol === wanted.toUpperCase();
+    return t.symbol.toUpperCase() === wanted.toUpperCase();
   });
+
   return <img src={icon?.logoURI} className={`${classes.icon} ${className ? className : ""}`} />;
 };
 
