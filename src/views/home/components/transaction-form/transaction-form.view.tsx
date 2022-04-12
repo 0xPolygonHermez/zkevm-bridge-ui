@@ -11,14 +11,21 @@ import { useUIContext } from "src/contexts/ui.context";
 import tokens from "src/assets/tokens/tokens.json";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token } from "src/domain";
+import { Chain, Token, Transaction } from "src/domain";
 import Button from "src/views/shared/button/button.view";
+
+const defaultTransaction: Transaction = {
+  from: chains[0],
+  to: chains[1],
+  token: tokens[0],
+  amount: 0,
+};
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
   const { openModal, closeModal } = useUIContext();
-  const { transaction, setTransaction } = useTransactionContext();
-  const [localTransaction, setLocalTransaction] = useState(transaction);
+  const { setTransaction } = useTransactionContext();
+  const [localTransaction, setLocalTransaction] = useState(defaultTransaction);
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
 
