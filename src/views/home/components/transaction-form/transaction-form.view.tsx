@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
@@ -13,58 +13,70 @@ import tokens from "src/assets/tokens/tokens.json";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { chains } from "src/constants";
-import { useUIContext } from "src/contexts/ui.context";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token } from "src/domain";
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
-  const { openModal, closeModal } = useUIContext();
+  const [openList, onOpenList] = useState("");
   const { transaction, setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
   const [localTransaction, setLocalTransaction] = useState(transaction);
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
 
-  const onChainFromButtonClick = (from: Chain) => {
-    setLocalTransaction({ ...localTransaction, from });
-    closeModal();
-  };
-  const onChainToButtonClick = (to: Chain) => {
-    setLocalTransaction({ ...localTransaction, to });
-    closeModal();
-  };
-  const onTokenClick = (token: Token) => {
-    setLocalTransaction({ ...localTransaction, token });
-    closeModal();
-  };
-  const componentFromChain = () => (
-    <List
-      placeholder="Search Network"
-      list={{ type: "chain", items: chains, onClick: onChainFromButtonClick }}
-    />
+  const onChainFromButtonClick = useCallback(
+    (from: Chain) => {
+      setLocalTransaction({ ...localTransaction, from });
+      onOpenList("");
+    },
+    [localTransaction]
   );
-  const componentToChain = () => (
-    <List
-      placeholder="Search Network"
-      list={{ type: "chain", items: chains, onClick: onChainToButtonClick }}
-    />
+  const onChainToButtonClick = useCallback(
+    (to: Chain) => {
+      setLocalTransaction({ ...localTransaction, to });
+      onOpenList("");
+    },
+    [localTransaction]
   );
-  const componentToken = () => (
-    <List
-      placeholder="Search token"
-      list={{ type: "token", items: tokens, onClick: onTokenClick }}
-    />
+  const onTokenClick = useCallback(
+    (token: Token) => {
+      setLocalTransaction({ ...localTransaction, token });
+      onOpenList("");
+    },
+    [localTransaction]
   );
-  const onChainFromSelectorClick = () => {
-    openModal(componentFromChain);
-  };
-  const onChainToSelectorClick = () => {
-    openModal(componentToChain);
-  };
-  const onTokenSelectorClick = () => {
-    openModal(componentToken);
-  };
+  const showModal = useCallback(() => {
+    switch (openList) {
+      case "token":
+        return (
+          <List
+            placeholder="Search token"
+            list={{ type: "token", items: tokens, onClick: onTokenClick }}
+            onClose={() => onOpenList("")}
+          />
+        );
+      case "from":
+        return (
+          <List
+            placeholder="Search Network"
+            list={{ type: "chain", items: chains, onClick: onChainFromButtonClick }}
+            onClose={() => onOpenList("")}
+          />
+        );
+      case "to":
+        return (
+          <List
+            placeholder="Search Network"
+            list={{ type: "chain", items: chains, onClick: onChainToButtonClick }}
+            onClose={() => onOpenList("")}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [onChainFromButtonClick, onChainToButtonClick, onTokenClick, openList]);
+
   const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
     setIsInvalid(isInvalid);
@@ -82,7 +94,7 @@ const TransactionForm: FC = () => {
             <Typography type="body2">From</Typography>
             <button
               className={classes.chainSelector}
-              onClick={onChainFromSelectorClick}
+              onClick={() => onOpenList("from")}
               type="button"
             >
               <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
@@ -95,7 +107,11 @@ const TransactionForm: FC = () => {
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
+          <button
+            className={classes.tokenSelector}
+            onClick={() => onOpenList("token")}
+            type="button"
+          >
             <TokenIcon token={localTransaction.token.symbol} size={24} />
             <Typography type="h2">{localTransaction.token.symbol}</Typography>
             <CaretDown className={classes.icons} />
@@ -119,7 +135,7 @@ const TransactionForm: FC = () => {
             <Typography type="body2">To</Typography>
             <button
               className={classes.chainSelector}
-              onClick={onChainToSelectorClick}
+              onClick={() => onOpenList("to")}
               type="button"
             >
               <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
@@ -142,6 +158,7 @@ const TransactionForm: FC = () => {
           </Typography>
         )}
       </div>
+      {showModal()}
     </form>
   );
 };
