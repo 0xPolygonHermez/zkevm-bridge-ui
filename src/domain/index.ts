@@ -105,7 +105,7 @@ export interface Token {
   address: string;
   decimals: number;
   logoURI: string;
-  chainId?: number;
+  chainId: number;
 }
 
 export interface TransactionData {
