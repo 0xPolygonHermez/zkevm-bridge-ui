@@ -108,7 +108,7 @@ export interface Token {
   chainId?: number;
 }
 
-export interface Transaction {
+export interface TransactionData {
   from: Chain;
   to: Chain;
   token: Token;

@@ -11,10 +11,10 @@ import { useUIContext } from "src/contexts/ui.context";
 import tokens from "src/assets/tokens/tokens.json";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token, Transaction } from "src/domain";
+import { Chain, Token, TransactionData } from "src/domain";
 import Button from "src/views/shared/button/button.view";
 
-const defaultTransaction: Transaction = {
+const defaultTransaction: TransactionData = {
   from: chains[0],
   to: chains[1],
   token: tokens[0],

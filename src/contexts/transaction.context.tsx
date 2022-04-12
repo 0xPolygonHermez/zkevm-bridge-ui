@@ -1,10 +1,10 @@
 import { createContext, FC, useContext, useMemo, useState } from "react";
 
-import { Transaction } from "src/domain";
+import { TransactionData } from "src/domain";
 
 interface TransactionContext {
-  transaction?: Transaction;
-  setTransaction: (transaction: Transaction) => void;
+  transaction?: TransactionData;
+  setTransaction: (transaction: TransactionData) => void;
 }
 
 const transactionContextDefaultValue: TransactionContext = {
@@ -16,7 +16,7 @@ const transactionContextDefaultValue: TransactionContext = {
 const transactionContext = createContext<TransactionContext>(transactionContextDefaultValue);
 
 const TransactionProvider: FC = (props) => {
-  const [transaction, setTransaction] = useState<Transaction>();
+  const [transaction, setTransaction] = useState<TransactionData>();
 
   const value = useMemo(() => {
     return { transaction, setTransaction };
