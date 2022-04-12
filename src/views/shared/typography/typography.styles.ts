@@ -12,12 +12,16 @@ const useTypographyStyles = createUseStyles((theme: Theme) => ({
     marginBottom: 0,
   },
   h2: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 500,
-    lineHeight: "24px",
+    lineHeight: "20px",
     color: theme.palette.black,
     marginTop: 0,
     marginBottom: 0,
+    [theme.breakpoints.upSm]: {
+      fontSize: 20,
+      lineHeight: "24px",
+    },
   },
   body1: {
     fontSize: 16,

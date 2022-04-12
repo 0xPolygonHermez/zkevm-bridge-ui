@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 export interface Env {
   REACT_APP_INFURA_API_KEY: string;
   REACT_APP_L1_PROVIDER_NETWORK: string;
@@ -89,4 +91,26 @@ export interface MerkleProof {
   exitRootNumber: string;
   mainExitRoot: string;
   rollupExitRoot: string;
+}
+
+export interface Chain {
+  name: string;
+  chainId: number;
+  icon: FC<{ className?: string }>;
+}
+
+export interface Token {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoURI: string;
+  chainId: number;
+}
+
+export interface TransactionData {
+  from: Chain;
+  to: Chain;
+  token: Token;
+  amount: number;
 }
