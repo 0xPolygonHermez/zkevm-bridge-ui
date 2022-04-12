@@ -16,9 +16,11 @@ import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token } from "src/domain";
 
+type TransactionFormState = "from" | "to" | "token" | undefined;
+
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
-  const [openList, onOpenList] = useState("");
+  const [openList, onOpenList] = useState<TransactionFormState>();
   const { transaction, setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
   const [localTransaction, setLocalTransaction] = useState(transaction);
@@ -27,47 +29,16 @@ const TransactionForm: FC = () => {
 
   const onChainFromButtonClick = (from: Chain) => {
     setLocalTransaction({ ...localTransaction, from });
-    onOpenList("");
+    onOpenList(undefined);
   };
   const onChainToButtonClick = (to: Chain) => {
     setLocalTransaction({ ...localTransaction, to });
-    onOpenList("");
+    onOpenList(undefined);
   };
   const onTokenClick = (token: Token) => {
     setLocalTransaction({ ...localTransaction, token });
-    onOpenList("");
+    onOpenList(undefined);
   };
-  const showModal = () => {
-    switch (openList) {
-      case "token":
-        return (
-          <List
-            placeholder="Search token"
-            list={{ type: "token", items: tokens, onClick: onTokenClick }}
-            onClose={() => onOpenList("")}
-          />
-        );
-      case "from":
-        return (
-          <List
-            placeholder="Search Network"
-            list={{ type: "chain", items: chains, onClick: onChainFromButtonClick }}
-            onClose={() => onOpenList("")}
-          />
-        );
-      case "to":
-        return (
-          <List
-            placeholder="Search Network"
-            list={{ type: "chain", items: chains, onClick: onChainToButtonClick }}
-            onClose={() => onOpenList("")}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
     setIsInvalid(isInvalid);
@@ -149,7 +120,27 @@ const TransactionForm: FC = () => {
           </Typography>
         )}
       </div>
-      {showModal()}
+      {openList === "token" && (
+        <List
+          placeholder="Search token"
+          list={{ type: "token", items: tokens, onClick: onTokenClick }}
+          onClose={() => onOpenList(undefined)}
+        />
+      )}
+      {openList === "from" && (
+        <List
+          placeholder="Search Network"
+          list={{ type: "chain", items: chains, onClick: onChainFromButtonClick }}
+          onClose={() => onOpenList(undefined)}
+        />
+      )}
+      {openList === "to" && (
+        <List
+          placeholder="Search Network"
+          list={{ type: "chain", items: chains, onClick: onChainToButtonClick }}
+          onClose={() => onOpenList(undefined)}
+        />
+      )}
     </form>
   );
 };
