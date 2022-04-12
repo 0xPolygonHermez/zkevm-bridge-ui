@@ -137,7 +137,11 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      if (token !== ethersConstants.AddressZero) {
+      if (token === ethersConstants.AddressZero) {
+        return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, {
+          value: amount,
+        });
+      } else {
         if (connectedProvider === undefined) {
           throw new Error("There is no Ethereum provider connected");
         }
@@ -157,9 +161,7 @@ const BridgeProvider: FC = (props) => {
         }
       }
 
-      return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, {
-        value: amount,
-      });
+      return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress);
     },
     [bridgeContract, env, connectedProvider, account]
   );
