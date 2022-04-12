@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from "react";
+import { FC, useState } from "react";
 import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
@@ -25,28 +25,19 @@ const TransactionForm: FC = () => {
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
 
-  const onChainFromButtonClick = useCallback(
-    (from: Chain) => {
-      setLocalTransaction({ ...localTransaction, from });
-      onOpenList("");
-    },
-    [localTransaction]
-  );
-  const onChainToButtonClick = useCallback(
-    (to: Chain) => {
-      setLocalTransaction({ ...localTransaction, to });
-      onOpenList("");
-    },
-    [localTransaction]
-  );
-  const onTokenClick = useCallback(
-    (token: Token) => {
-      setLocalTransaction({ ...localTransaction, token });
-      onOpenList("");
-    },
-    [localTransaction]
-  );
-  const showModal = useCallback(() => {
+  const onChainFromButtonClick = (from: Chain) => {
+    setLocalTransaction({ ...localTransaction, from });
+    onOpenList("");
+  };
+  const onChainToButtonClick = (to: Chain) => {
+    setLocalTransaction({ ...localTransaction, to });
+    onOpenList("");
+  };
+  const onTokenClick = (token: Token) => {
+    setLocalTransaction({ ...localTransaction, token });
+    onOpenList("");
+  };
+  const showModal = () => {
     switch (openList) {
       case "token":
         return (
@@ -75,7 +66,7 @@ const TransactionForm: FC = () => {
       default:
         return null;
     }
-  }, [onChainFromButtonClick, onChainToButtonClick, onTokenClick, openList]);
+  };
 
   const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
