@@ -10,3 +10,6 @@ npx typechain --target ethers-v5 --out-dir $BASE_PATH/uniswap-quoter "abis/unisw
 
 # Generate Bridge contract types
 npx typechain --target ethers-v5 --out-dir $BASE_PATH/bridge "abis/bridge.json"
+
+# Generate ERC-20 contract types
+npx typechain --target ethers-v5 --out-dir $BASE_PATH/erc-20 "abis/erc-20.json"
