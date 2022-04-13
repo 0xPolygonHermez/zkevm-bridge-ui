@@ -17,11 +17,6 @@ import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token, TransactionData } from "src/domain";
 
-interface InputChangeParams {
-  amount: BigNumber;
-  isInvalid: boolean;
-}
-
 const defaultTransaction: TransactionData = {
   from: chains[0],
   to: chains[1],
@@ -50,7 +45,8 @@ const TransactionForm: FC = () => {
     setLocalTransaction({ ...localTransaction, token });
     setList(undefined);
   };
-  const onInputChange = ({ amount, isInvalid }: InputChangeParams) => {
+
+  const onInputChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
     setIsInvalid(isInvalid);
   };
