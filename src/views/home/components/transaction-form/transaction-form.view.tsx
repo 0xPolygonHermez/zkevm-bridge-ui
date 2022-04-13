@@ -13,7 +13,6 @@ import tokens from "src/assets/tokens/tokens.json";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { chains } from "src/constants";
-import { useUIContext } from "src/contexts/ui.context";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token, TransactionData } from "src/domain";
 
@@ -26,7 +25,7 @@ const defaultTransaction: TransactionData = {
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
-  const { openModal, closeModal } = useUIContext();
+  const [list, setList] = useState<List>();
   const { setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
   const [localTransaction, setLocalTransaction] = useState(defaultTransaction);
@@ -35,42 +34,15 @@ const TransactionForm: FC = () => {
 
   const onChainFromButtonClick = (from: Chain) => {
     setLocalTransaction({ ...localTransaction, from });
-    closeModal();
+    setList(undefined);
   };
   const onChainToButtonClick = (to: Chain) => {
     setLocalTransaction({ ...localTransaction, to });
-    closeModal();
+    setList(undefined);
   };
   const onTokenClick = (token: Token) => {
     setLocalTransaction({ ...localTransaction, token });
-    closeModal();
-  };
-  const componentFromChain = () => (
-    <List
-      placeholder="Search Network"
-      list={{ type: "chain", items: chains, onClick: onChainFromButtonClick }}
-    />
-  );
-  const componentToChain = () => (
-    <List
-      placeholder="Search Network"
-      list={{ type: "chain", items: chains, onClick: onChainToButtonClick }}
-    />
-  );
-  const componentToken = () => (
-    <List
-      placeholder="Search token"
-      list={{ type: "token", items: tokens, onClick: onTokenClick }}
-    />
-  );
-  const onChainFromSelectorClick = () => {
-    openModal(componentFromChain);
-  };
-  const onChainToSelectorClick = () => {
-    openModal(componentToChain);
-  };
-  const onTokenSelectorClick = () => {
-    openModal(componentToken);
+    setList(undefined);
   };
   const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
@@ -89,7 +61,9 @@ const TransactionForm: FC = () => {
             <Typography type="body2">From</Typography>
             <button
               className={classes.chainSelector}
-              onClick={onChainFromSelectorClick}
+              onClick={() =>
+                setList({ type: "chain", items: chains, onClick: onChainFromButtonClick })
+              }
               type="button"
             >
               <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
@@ -102,7 +76,11 @@ const TransactionForm: FC = () => {
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <button className={classes.tokenSelector} onClick={onTokenSelectorClick} type="button">
+          <button
+            className={classes.tokenSelector}
+            onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
+            type="button"
+          >
             <TokenIcon token={localTransaction.token.symbol} size={24} />
             <Typography type="h2">{localTransaction.token.symbol}</Typography>
             <CaretDown className={classes.icons} />
@@ -126,7 +104,9 @@ const TransactionForm: FC = () => {
             <Typography type="body2">To</Typography>
             <button
               className={classes.chainSelector}
-              onClick={onChainToSelectorClick}
+              onClick={() =>
+                setList({ type: "chain", items: chains, onClick: onChainToButtonClick })
+              }
               type="button"
             >
               <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
@@ -149,6 +129,13 @@ const TransactionForm: FC = () => {
           </Typography>
         )}
       </div>
+      {list && (
+        <List
+          placeholder={list.type === "chain" ? "Search network" : "Search token"}
+          list={list}
+          onClose={() => setList(undefined)}
+        />
+      )}
     </form>
   );
 };
