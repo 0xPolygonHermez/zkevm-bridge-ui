@@ -44,12 +44,10 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const decimals = token.decimals;
-    const regexToken = `^(?!0\\d)\\d*(?:\\.\\d{0,${decimals}})?$`;
+    const regexToken = `^(?!0\\d|\\.)\\d*(?:\\.\\d{0,${decimals}})?$`;
     const INPUT_REGEX = new RegExp(regexToken);
 
-    if (event.target.value === ".") {
-      setValue("0.");
-    } else if (INPUT_REGEX.test(event.target.value)) {
+    if (INPUT_REGEX.test(event.target.value)) {
       const tokensValue = event.target.value.length > 0 ? event.target.value : "0";
       const newAmountInTokens = parseUnits(tokensValue, token.decimals);
 
