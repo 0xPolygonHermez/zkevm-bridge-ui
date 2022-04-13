@@ -1,17 +1,13 @@
 import { createContext, FC, useContext, useMemo, useState } from "react";
 
-import { chains } from "src/constants";
-import tokens from "src/assets/tokens/tokens.json";
-import { Transaction } from "src/domain";
-import { BigNumber } from "ethers";
+import { TransactionData } from "src/domain";
 
 interface TransactionContext {
-  transaction: Transaction;
-  setTransaction: (transaction: Transaction) => void;
+  transaction?: TransactionData;
+  setTransaction: (transaction: TransactionData) => void;
 }
 
 const transactionContextDefaultValue: TransactionContext = {
-  transaction: { from: chains[0], to: chains[1], token: tokens[0], amount: BigNumber.from(0) },
   setTransaction: () => {
     console.error("The transaction context is not yet ready");
   },
@@ -20,9 +16,7 @@ const transactionContextDefaultValue: TransactionContext = {
 const transactionContext = createContext<TransactionContext>(transactionContextDefaultValue);
 
 const TransactionProvider: FC = (props) => {
-  const [transaction, setTransaction] = useState<Transaction>(
-    transactionContextDefaultValue.transaction
-  );
+  const [transaction, setTransaction] = useState<TransactionData>();
 
   const value = useMemo(() => {
     return { transaction, setTransaction };
