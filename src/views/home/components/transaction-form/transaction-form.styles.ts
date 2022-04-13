@@ -39,19 +39,6 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(1.25),
     borderTop: `1px solid ${theme.palette.grey.light}`,
   },
-  maxWrapper: {
-    display: "flex",
-    gap: theme.spacing(2.5),
-    alignItems: "center",
-  },
-  maxButton: {
-    background: "none",
-    border: "none",
-  },
-  maxText: {
-    color: theme.palette.black,
-    cursor: "pointer",
-  },
   tokenSelector: {
     display: "flex",
     gap: theme.spacing(1),
@@ -77,18 +64,6 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
       height: "24px",
     },
   },
-  amountInput: {
-    width: "50%",
-    textAlign: "right",
-    border: "none",
-    outline: "none",
-    fontSize: "20px",
-    lineHeight: "24px",
-    [theme.breakpoints.upSm]: {
-      fontSize: "40px",
-      lineHeight: "40px",
-    },
-  },
   arrowRow: {
     display: "flex",
     justifyContent: "center",
@@ -107,7 +82,9 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   },
   button: {
     display: "flex",
-    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: theme.spacing(2),
     margin: [theme.spacing(5), "auto"],
   },
 }));

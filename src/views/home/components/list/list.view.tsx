@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -6,6 +6,7 @@ import { ReactComponent as SearchIcon } from "src/assets/icons/search.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import { Chain, Token } from "src/domain";
+import Portal from "src/views/shared/portal/portal.view";
 
 interface ChainList {
   type: "chain";
@@ -24,6 +25,7 @@ type List = ChainList | TokenList;
 interface ListProps {
   placeholder: string;
   list: List;
+  onClose: () => void;
 }
 
 const filterChainList = (chainList: ChainList, value: string): ChainList => ({
@@ -40,7 +42,7 @@ const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
   ),
 });
 
-const List: FC<ListProps> = ({ placeholder, list }) => {
+const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
   const classes = useListStyles();
   const [values, setValues] = useState(list);
 
@@ -52,42 +54,51 @@ const List: FC<ListProps> = ({ placeholder, list }) => {
     setValues(filtered);
   };
 
-  return (
-    <Card className={classes.card}>
-      <div className={classes.search}>
-        <SearchIcon />
-        <input className={classes.input} placeholder={placeholder} onChange={onChange} />
-      </div>
-      <div className={classes.list}>
-        {values.type === "chain"
-          ? values.items.slice(0, 20).map((element) => {
-              const Icon = element.icon;
+  const onOutsideClick = (event: React.MouseEvent) => {
+    if (event.target !== event.currentTarget) return;
+    onClose();
+  };
 
-              return (
-                <button
-                  className={classes.button}
-                  key={`${element.name}${element.chainId}`}
-                  onClick={() => values.onClick(element)}
-                >
-                  <Icon className={classes.icon} />
-                  <Typography type="body1">{element.name}</Typography>
-                </button>
-              );
-            })
-          : values.items.slice(0, 20).map((element) => {
-              return (
-                <button
-                  className={classes.button}
-                  key={`${element.name}${element.address}`}
-                  onClick={() => values.onClick(element)}
-                >
-                  <TokenIcon token={element.symbol} size={24} />
-                  <Typography type="body1">{element.name}</Typography>
-                </button>
-              );
-            })}
+  return (
+    <Portal>
+      <div className={classes.background} onClick={onOutsideClick}>
+        <Card className={classes.card}>
+          <div className={classes.search}>
+            <SearchIcon />
+            <input className={classes.input} placeholder={placeholder} onChange={onChange} />
+          </div>
+          <div className={classes.list}>
+            {values.type === "chain"
+              ? values.items.slice(0, 20).map((element) => {
+                  const Icon = element.icon;
+
+                  return (
+                    <button
+                      className={classes.button}
+                      key={`${element.name}${element.chainId}`}
+                      onClick={() => values.onClick(element)}
+                    >
+                      <Icon className={classes.icon} />
+                      <Typography type="body1">{element.name}</Typography>
+                    </button>
+                  );
+                })
+              : values.items.slice(0, 20).map((element) => {
+                  return (
+                    <button
+                      className={classes.button}
+                      key={`${element.name}${element.address}`}
+                      onClick={() => values.onClick(element)}
+                    >
+                      <TokenIcon token={element.symbol} size={24} />
+                      <Typography type="body1">{element.name}</Typography>
+                    </button>
+                  );
+                })}
+          </div>
+        </Card>
       </div>
-    </Card>
+    </Portal>
   );
 };
 

@@ -1,3 +1,4 @@
+import { BigNumber } from "ethers";
 import { FC } from "react";
 
 export interface Env {
@@ -112,5 +113,5 @@ export interface TransactionData {
   from: Chain;
   to: Chain;
   token: Token;
-  amount: number;
+  amount: BigNumber;
 }
