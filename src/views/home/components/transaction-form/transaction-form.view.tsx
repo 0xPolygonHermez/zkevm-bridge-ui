@@ -15,14 +15,21 @@ import AmountInput from "src/views/home/components/amount-input/amount-input.vie
 import { chains } from "src/constants";
 import { useUIContext } from "src/contexts/ui.context";
 import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token } from "src/domain";
+import { Chain, Token, TransactionData } from "src/domain";
+
+const defaultTransaction: TransactionData = {
+  from: chains[0],
+  to: chains[1],
+  token: tokens[0],
+  amount: BigNumber.from(0),
+};
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
   const { openModal, closeModal } = useUIContext();
-  const { transaction, setTransaction } = useTransactionContext();
+  const { setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
-  const [localTransaction, setLocalTransaction] = useState(transaction);
+  const [localTransaction, setLocalTransaction] = useState(defaultTransaction);
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
 

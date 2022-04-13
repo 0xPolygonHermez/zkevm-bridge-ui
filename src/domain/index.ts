@@ -106,10 +106,10 @@ export interface Token {
   address: string;
   decimals: number;
   logoURI: string;
-  chainId?: number;
+  chainId: number;
 }
 
-export interface Transaction {
+export interface TransactionData {
   from: Chain;
   to: Chain;
   token: Token;
