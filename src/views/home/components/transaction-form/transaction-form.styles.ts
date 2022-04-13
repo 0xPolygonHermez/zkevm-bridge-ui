@@ -87,9 +87,6 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(2),
     margin: [theme.spacing(5), "auto"],
   },
-  error: {
-    color: theme.palette.error.main,
-  },
 }));
 
 export default useTransactionFormStyles;

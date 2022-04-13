@@ -7,6 +7,7 @@ import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
 import useTransactionFormtStyles from "src/views/home/components/transaction-form/transaction-form.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
+import Error from "src/views/shared/error/error.view";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import List from "src/views/home/components/list/list.view";
 import tokens from "src/assets/tokens/tokens.json";
@@ -15,6 +16,11 @@ import AmountInput from "src/views/home/components/amount-input/amount-input.vie
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token, TransactionData } from "src/domain";
+
+interface InputChangeParams {
+  amount: BigNumber;
+  isInvalid: boolean;
+}
 
 const defaultTransaction: TransactionData = {
   from: chains[0],
@@ -44,7 +50,7 @@ const TransactionForm: FC = () => {
     setLocalTransaction({ ...localTransaction, token });
     setList(undefined);
   };
-  const onChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
+  const onInputChange = ({ amount, isInvalid }: InputChangeParams) => {
     setLocalTransaction({ ...localTransaction, amount });
     setIsInvalid(isInvalid);
   };
@@ -89,7 +95,7 @@ const TransactionForm: FC = () => {
             token={localTransaction.token}
             balance={BigNumber.from(parseUnits("2.0", localTransaction.token.decimals))}
             fee={BigNumber.from(parseUnits("0.0001", localTransaction.token.decimals))}
-            onChange={onChange}
+            onChange={onInputChange}
           />
         </div>
       </Card>
@@ -123,11 +129,7 @@ const TransactionForm: FC = () => {
         <Button type="submit" disabled={isInvalid}>
           Continue
         </Button>
-        {isInvalid && !localTransaction.amount.isZero() && (
-          <Typography type="body1" className={classes.error}>
-            Insufficient balance
-          </Typography>
-        )}
+        {isInvalid && !localTransaction.amount.isZero() && <Error error="Insufficient balance" />}
       </div>
       {list && (
         <List

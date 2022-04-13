@@ -2,7 +2,7 @@ import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useState } from "react";
 
-import useAmountInputtStyles from "src/views/home/components/amount-input/amount-input.styles";
+import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import { Token } from "src/domain";
 
@@ -20,10 +20,10 @@ interface AmountInputProps {
 
 const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) => {
   const [value, setValue] = useState("");
-  const classes = useAmountInputtStyles(value.length);
-  const actualFee = token.symbol.includes("ETH") ? fee : BigNumber.from(0);
+  const classes = useAmountInputStyles(value.length);
+  const actualFee = token.symbol === "WETH" ? fee : BigNumber.from(0);
 
-  const getFixedTokenAmount = (amount: string, decimals = 18): string => {
+  const getFixedTokenAmount = (amount: string, decimals: number): string => {
     const amountWithDecimals = Number(amount) / Math.pow(10, decimals);
     return Number(amountWithDecimals.toFixed(decimals)).toString();
   };
@@ -31,10 +31,7 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
   const updateAmountInput = (amount: BigNumber) => {
     const newAmountWithFee = amount.add(actualFee);
     const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
-    const areFundsExceededDueToFee =
-      isNewAmountWithFeeMoreThanFunds && amount.lte(BigNumber.from(balance));
-    const isAmountInvalid =
-      isNewAmountWithFeeMoreThanFunds || areFundsExceededDueToFee || amount.isZero();
+    const isAmountInvalid = isNewAmountWithFeeMoreThanFunds || amount.isZero();
 
     onChange({
       amount,

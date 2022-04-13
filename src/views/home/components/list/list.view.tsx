@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -54,9 +54,14 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
     setValues(filtered);
   };
 
+  const onOutsideClick = (event: React.MouseEvent) => {
+    if (event.target !== event.currentTarget) return;
+    onClose();
+  };
+
   return (
     <Portal>
-      <div className={classes.background} onClick={onClose}>
+      <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.search}>
             <SearchIcon />
