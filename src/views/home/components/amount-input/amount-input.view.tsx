@@ -27,6 +27,7 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
     const amountWithDecimals = Number(amount) / Math.pow(10, decimals);
     return Number(amountWithDecimals.toFixed(decimals)).toString();
   };
+
   const updateAmountInput = (amount: BigNumber) => {
     const newAmountWithFee = amount.add(actualFee);
     const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
@@ -45,13 +46,12 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
     const decimals = token.decimals;
     const regexToken = `^(?!0\\d)\\d*(?:\\.\\d{0,${decimals}})?$`;
     const INPUT_REGEX = new RegExp(regexToken);
-    if (event.target.value === "") {
-      setValue(event.target.value);
-      updateAmountInput(BigNumber.from(0));
-    } else if (event.target.value === ".") {
+
+    if (event.target.value === ".") {
       setValue("0.");
     } else if (INPUT_REGEX.test(event.target.value)) {
-      const newAmountInTokens = parseUnits(event.target.value, token.decimals);
+      const tokensValue = event.target.value.length > 0 ? event.target.value : "0";
+      const newAmountInTokens = parseUnits(tokensValue, token.decimals);
 
       setValue(event.target.value);
       updateAmountInput(newAmountInTokens);
