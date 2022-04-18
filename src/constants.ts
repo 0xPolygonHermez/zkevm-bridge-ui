@@ -41,7 +41,8 @@ export const CHAINS: Record<SupportedNetwork, Chain[]> = {
 
 export const BRIDGE_CONFIGS: Record<SupportedNetwork, BridgeConfig> = {
   [SupportedNetwork.LOCAL]: {
-    smartContractAddress: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    l1ContractAddress: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    l2ContractAddress: "0x9d98deabc42dd696deb9e40b4f1cab7ddbf55988",
     apiUrl: "http://localhost:8080",
   },
 };

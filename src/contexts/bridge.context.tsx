@@ -161,11 +161,11 @@ const BridgeProvider: FC = (props) => {
         const erc20Contract = Erc20__factory.connect(token, connectedProvider.getSigner());
         const allowance = await erc20Contract.allowance(
           account.data,
-          env.bridgeConfig.smartContractAddress
+          env.bridgeConfig.l1ContractAddress
         );
 
         if (allowance.lt(amount)) {
-          await erc20Contract.approve(env.bridgeConfig.smartContractAddress, amount);
+          await erc20Contract.approve(env.bridgeConfig.l1ContractAddress, amount);
         }
       }
 
@@ -213,7 +213,7 @@ const BridgeProvider: FC = (props) => {
   useEffect(() => {
     if (env && connectedProvider) {
       const contract = Bridge__factory.connect(
-        env.bridgeConfig.smartContractAddress,
+        env.bridgeConfig.l1ContractAddress,
         connectedProvider.getSigner()
       );
 

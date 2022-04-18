@@ -21,7 +21,8 @@ export interface Token {
 }
 
 export interface BridgeConfig {
-  smartContractAddress: string;
+  l1ContractAddress: string;
+  l2ContractAddress: string;
   apiUrl: string;
 }
 
