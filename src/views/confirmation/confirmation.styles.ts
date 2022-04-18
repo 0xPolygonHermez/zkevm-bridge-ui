@@ -69,7 +69,10 @@ const useConfirmationStyles = createUseStyles((theme: Theme) => ({
   button: {
     margin: theme.spacing(3),
     display: "flex",
+    flexDirection: "column",
     justifyContent: "center",
+    alignItems: "center",
+    gap: theme.spacing(2),
     [theme.breakpoints.upSm]: {
       margin: theme.spacing(6),
     },

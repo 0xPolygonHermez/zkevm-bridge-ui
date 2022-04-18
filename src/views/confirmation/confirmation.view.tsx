@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useConfirmationStyles from "src/views/confirmation/confirmation.styles";
@@ -11,11 +11,17 @@ import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import { convertBigNumberToNumber, convertTokenAmountToFiat } from "src/utils/amounts";
 import Button from "src/views/shared/button/button.view";
+import Error from "src/views/shared/error/error.view";
 
 const Confirmation: FC = () => {
   const classes = useConfirmationStyles();
+  const [isDisabled, setIsDisabled] = useState(false);
   const navigate = useNavigate();
   const { transaction } = useTransactionContext();
+
+  useEffect(() => {
+    //TODO Check network connected
+  }, [setIsDisabled]);
 
   useEffect(() => {
     if (!transaction) {
@@ -76,7 +82,10 @@ const Confirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick}>Transfer</Button>
+        <Button onClick={onClick} disabled={isDisabled}>
+          Transfer
+        </Button>
+        {isDisabled && <Error error="Switch to Polygon Hermez chain to continue" />}
       </div>
     </>
   );
