@@ -5,10 +5,26 @@ import TransactionForm from "src/views/home/components/transaction-form/transact
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { useTransactionContext } from "src/contexts/transaction.context";
+import { TransactionData } from "src/domain";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
+  const { setTransaction } = useTransactionContext();
   const { account } = useProvidersContext();
+  const { bridge } = useBridgeContext();
+
+  const onFormSubmit = (transaction: TransactionData) => {
+    const { token, amount, to } = transaction;
+
+    setTransaction(transaction);
+    if (account.status === "successful") {
+      bridge(token.address, amount, to.chainId, account.data)
+        .then(console.log)
+        .catch(console.error);
+    }
+  };
 
   return (
     <>
@@ -19,7 +35,7 @@ const Home = (): JSX.Element => {
           <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
         </div>
       )}
-      <TransactionForm />
+      <TransactionForm onSubmit={onFormSubmit} />
     </>
   );
 };

@@ -84,7 +84,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getBridges({ env, ethereumAddress });
+      return bridgeApi.getBridges({ apiUrl: env.bridgeConfig.apiUrl, ethereumAddress });
     },
     [env]
   );
@@ -95,7 +95,11 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getClaimStatus({ env, originNetwork, depositCount });
+      return bridgeApi.getClaimStatus({
+        apiUrl: env.bridgeConfig.apiUrl,
+        originNetwork,
+        depositCount,
+      });
     },
     [env]
   );
@@ -106,7 +110,11 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getMerkleProof({ env, originNetwork, depositCount });
+      return bridgeApi.getMerkleProof({
+        apiUrl: env.bridgeConfig.apiUrl,
+        originNetwork,
+        depositCount,
+      });
     },
     [env]
   );
@@ -117,7 +125,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getClaims({ env, ethereumAddress });
+      return bridgeApi.getClaims({ apiUrl: env.bridgeConfig.apiUrl, ethereumAddress });
     },
     [env]
   );
@@ -153,17 +161,17 @@ const BridgeProvider: FC = (props) => {
         const erc20Contract = Erc20__factory.connect(token, connectedProvider.getSigner());
         const allowance = await erc20Contract.allowance(
           account.data,
-          env.REACT_APP_BRIDGE_CONTRACT_ADDRESS
+          env.bridgeConfig.smartContractAddress
         );
 
         if (allowance.lt(amount)) {
-          await erc20Contract.approve(env.REACT_APP_BRIDGE_CONTRACT_ADDRESS, amount);
+          await erc20Contract.approve(env.bridgeConfig.smartContractAddress, amount);
         }
       }
 
       return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress);
     },
-    [bridgeContract, env, connectedProvider, account]
+    [env, bridgeContract, connectedProvider, account]
   );
 
   const claim = useCallback(
@@ -178,10 +186,6 @@ const BridgeProvider: FC = (props) => {
       mainnetExitRoot: string,
       rollupExitRoot: string
     ): Promise<ContractTransaction> => {
-      if (env === undefined) {
-        throw new Error("Environment is not available");
-      }
-
       if (bridgeContract === undefined) {
         throw new Error("Bridge contract is not available");
       }
@@ -203,13 +207,13 @@ const BridgeProvider: FC = (props) => {
         rollupExitRoot
       );
     },
-    [bridgeContract, env]
+    [bridgeContract]
   );
 
   useEffect(() => {
     if (env && connectedProvider) {
       const contract = Bridge__factory.connect(
-        env.REACT_APP_BRIDGE_CONTRACT_ADDRESS,
+        env.bridgeConfig.smartContractAddress,
         connectedProvider.getSigner()
       );
 

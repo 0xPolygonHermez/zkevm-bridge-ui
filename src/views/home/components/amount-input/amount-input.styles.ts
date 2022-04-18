@@ -23,12 +23,11 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     },
   },
   maxButton: {
+    padding: theme.spacing(1),
     background: "none",
     border: "none",
-  },
-  maxText: {
-    color: theme.palette.black,
     cursor: "pointer",
+    color: theme.palette.black,
   },
 }));
 

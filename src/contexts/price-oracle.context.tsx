@@ -6,7 +6,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
-import { PREFERRED_CURRENCY, USDT_DECIMALS } from "src/constants";
+import { PREFERRED_CURRENCY } from "src/constants";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
 import * as storage from "src/adapters/storage";
 import { parseError } from "src/adapters/error";
@@ -59,12 +59,12 @@ const PriceOracleProvider: FC = (props) => {
 
       const rate = await quoterContract.callStatic.quoteExactInputSingle(
         tokenAddress,
-        env.REACT_APP_USDT_CONTRACT_ADDRESS,
+        env.usdtToken.address,
         UNISWAP_V3_POOL_FEE,
         parseUnits("1"),
         0
       );
-      const usdPrice = Number(formatUnits(rate, USDT_DECIMALS));
+      const usdPrice = Number(formatUnits(rate, env.usdtToken.decimals));
       const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
 
       if (!fiatExchangeRate) {
@@ -78,10 +78,7 @@ const PriceOracleProvider: FC = (props) => {
 
   useEffect(() => {
     if (env && l1Provider) {
-      const quoterContract = UniswapQuoter__factory.connect(
-        env.REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
-        l1Provider
-      );
+      const quoterContract = UniswapQuoter__factory.connect(env.uniswapQuoterAddress, l1Provider);
 
       setQuoterContract(quoterContract);
     }
@@ -89,7 +86,7 @@ const PriceOracleProvider: FC = (props) => {
 
   useEffect(() => {
     if (env) {
-      getFiatExchangeRates({ apiKey: env.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY })
+      getFiatExchangeRates({ apiKey: env.fiatExchangeRatesApiKey })
         .then(setFiatExchangeRates)
         .catch((error) => {
           void parseError(error).then((parsedError) =>

@@ -70,15 +70,13 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
           <div className={classes.list}>
             {values.type === "chain"
               ? values.items.slice(0, 20).map((element) => {
-                  const Icon = element.icon;
-
                   return (
                     <button
                       className={classes.button}
                       key={`${element.name}${element.chainId}`}
                       onClick={() => values.onClick(element)}
                     >
-                      <Icon className={classes.icon} />
+                      <element.Icon className={classes.icon} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );
@@ -90,7 +88,7 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
                       key={`${element.name}${element.address}`}
                       onClick={() => values.onClick(element)}
                     >
-                      <TokenIcon token={element.symbol} size={24} />
+                      <TokenIcon logoURI={element.logoURI} size={24} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );

@@ -18,6 +18,7 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
     },
     "&:disabled": {
       backgroundColor: theme.palette.grey.dark,
+      cursor: "default",
     },
   },
 }));
