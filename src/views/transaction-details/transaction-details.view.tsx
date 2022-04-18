@@ -26,7 +26,7 @@ const TransactionDetails: FC = () => {
   const { amount, token, timestamp, target, status } = data;
   return (
     <>
-      <Header title="Transaction Details" />
+      <Header title="Transaction Details" backTo="activity" />
       <Card className={classes.card}>
         <div className={classes.balance}>
           <TokenIcon token={token} className={classes.tokenIcon} size={48} />

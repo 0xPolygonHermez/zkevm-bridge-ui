@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -16,6 +17,7 @@ import AmountInput from "src/views/home/components/amount-input/amount-input.vie
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { Chain, Token, TransactionData } from "src/domain";
+import routes from "src/routes";
 
 const defaultTransaction: TransactionData = {
   from: chains[0],
@@ -29,6 +31,7 @@ const TransactionForm: FC = () => {
   const [list, setList] = useState<List>();
   const { setTransaction } = useTransactionContext();
   const [isInvalid, setIsInvalid] = useState(true);
+  const navigate = useNavigate();
   const [localTransaction, setLocalTransaction] = useState(defaultTransaction);
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
@@ -53,6 +56,7 @@ const TransactionForm: FC = () => {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setTransaction(localTransaction);
+    navigate(routes.confirmation.path);
   };
 
   return (
