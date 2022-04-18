@@ -24,7 +24,6 @@ const Confirmation: FC = () => {
   }, [navigate, transaction]);
 
   if (!transaction) {
-    console.log(transaction);
     return null;
   }
 
