@@ -16,23 +16,29 @@ import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { chains } from "src/constants";
 import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token, TransactionData } from "src/domain";
+import { Chain, Token } from "src/domain";
 import routes from "src/routes";
+
+export interface TransactionData {
+  from: Chain;
+  to: Chain;
+  token: Token;
+  amount?: BigNumber;
+}
 
 const defaultTransaction: TransactionData = {
   from: chains[0],
   to: chains[1],
   token: tokens[0],
-  amount: BigNumber.from(0),
 };
 
 const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
   const [list, setList] = useState<List>();
-  const { setTransaction } = useTransactionContext();
-  const [isInvalid, setIsInvalid] = useState(true);
+  const { transaction, setTransaction } = useTransactionContext();
+  const [isInvalid, setIsInvalid] = useState(false);
   const navigate = useNavigate();
-  const [localTransaction, setLocalTransaction] = useState(defaultTransaction);
+  const [localTransaction, setLocalTransaction] = useState(transaction || defaultTransaction);
   const ChainFromIcon = localTransaction.from.icon;
   const ChainToIcon = localTransaction.to.icon;
 
@@ -49,13 +55,18 @@ const TransactionForm: FC = () => {
     setList(undefined);
   };
 
-  const onInputChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
+  const onInputChange = ({ amount, isInvalid }: { amount?: BigNumber; isInvalid: boolean }) => {
     setLocalTransaction({ ...localTransaction, amount });
     setIsInvalid(isInvalid);
   };
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setTransaction(localTransaction);
+    if (localTransaction && localTransaction.amount) {
+      setTransaction({
+        ...localTransaction,
+        amount: localTransaction.amount,
+      });
+    }
     navigate(routes.confirmation.path);
   };
 
@@ -92,6 +103,7 @@ const TransactionForm: FC = () => {
             <CaretDown className={classes.icons} />
           </button>
           <AmountInput
+            value={localTransaction.amount}
             token={localTransaction.token}
             balance={BigNumber.from(parseUnits("2.0", localTransaction.token.decimals))}
             fee={BigNumber.from(parseUnits("0.0001", localTransaction.token.decimals))}
@@ -126,10 +138,10 @@ const TransactionForm: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={isInvalid}>
+        <Button type="submit" disabled={!localTransaction.amount || isInvalid}>
           Continue
         </Button>
-        {isInvalid && !localTransaction.amount.isZero() && <Error error="Insufficient balance" />}
+        {localTransaction.amount && isInvalid && <Error error="Insufficient balance" />}
       </div>
       {list && (
         <List
