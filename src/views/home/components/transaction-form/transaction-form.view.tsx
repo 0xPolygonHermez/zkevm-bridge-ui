@@ -8,7 +8,7 @@ import useTransactionFormtStyles from "src/views/home/components/transaction-for
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import Error from "src/views/shared/error/error.view";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
@@ -110,7 +110,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
               className={classes.tokenSelector}
               // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
             >
-              <TokenIcon logoURI={transactionData.token.logoURI} size={24} />
+              <Icon url={transactionData.token.logoURI} size={24} />
               <Typography type="h2">{transactionData.token.symbol}</Typography>
               {/* <CaretDown className={classes.icons} /> */}
             </div>

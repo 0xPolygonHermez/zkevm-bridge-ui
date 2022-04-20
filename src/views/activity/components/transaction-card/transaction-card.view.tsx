@@ -10,7 +10,7 @@ import { getTimeFromNow } from "src/utils/time";
 import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import { TransactionStatus, getTransactionStatusText } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 
@@ -23,6 +23,11 @@ export interface TransactionCardProps {
   amount: number;
 }
 
+const layerIcons = {
+  l1: TransferL1Icon,
+  l2: TransferL2Icon,
+};
+
 const TransactionCard: FC<TransactionCardProps> = ({
   id,
   target,
@@ -34,11 +39,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
-  const IconsLayer = {
-    l1: TransferL1Icon,
-    l2: TransferL2Icon,
-  };
-  const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[target];
+  const LayerIcon = status !== "completed" && status !== "failed" ? ReloadIcon : layerIcons[target];
   const actionText = target === "l1" ? "Transfer to L1" : "Transfer to L2";
 
   return (
@@ -50,7 +51,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
-          <Icon />
+          <LayerIcon />
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">{actionText}</Typography>
@@ -70,9 +71,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            {env && (
-              <TokenIcon logoURI={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />
-            )}
+            {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />}
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>
