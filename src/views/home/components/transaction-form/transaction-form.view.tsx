@@ -26,17 +26,6 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const [isInvalid, setIsInvalid] = useState(true);
   const [transactionData, setTransactionData] = useState<TransactionData>();
 
-  const onChainFromButtonClick = (from: Chain) => {
-    if (env && transactionData) {
-      const to = env.chains.find((chain) => chain.chainId !== from.chainId);
-
-      if (to) {
-        setTransactionData({ ...transactionData, from, to });
-        setList(undefined);
-      }
-    }
-  };
-
   // const onChainToButtonClick = (to: Chain) => {
   //   if (transactionData) {
   //     setTransactionData({ ...transactionData, to });
@@ -50,6 +39,17 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   //     setList(undefined);
   //   }
   // };
+
+  const onChainFromButtonClick = (from: Chain) => {
+    if (env && transactionData) {
+      const to = env.chains.find((chain) => chain.chainId !== from.chainId);
+
+      if (to) {
+        setTransactionData({ ...transactionData, from, to });
+        setList(undefined);
+      }
+    }
+  };
 
   const onInputChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
     if (transactionData) {
@@ -81,88 +81,85 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   }
 
   return (
-    env &&
-    transactionData && (
-      <form className={classes.form} onSubmit={onFormSubmit}>
-        <Card className={classes.card}>
-          <div className={classes.row}>
-            <div className={classes.box}>
-              <Typography type="body2">From</Typography>
-              <button
-                className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
-                onClick={() =>
-                  setList({ type: "chain", items: env.chains, onClick: onChainFromButtonClick })
-                }
-                type="button"
-              >
-                <transactionData.from.Icon />
-                <Typography type="body1">{transactionData.from.name}</Typography>
-                <CaretDown />
-              </button>
-            </div>
-            <div className={classes.box}>
-              <Typography type="body2">Balance</Typography>
-              <Typography type="body1">2.0 ETH</Typography>
-            </div>
-          </div>
-          <div className={`${classes.row} ${classes.middleRow}`}>
-            <div
-              className={classes.tokenSelector}
-              // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
+    <form className={classes.form} onSubmit={onFormSubmit}>
+      <Card className={classes.card}>
+        <div className={classes.row}>
+          <div className={classes.box}>
+            <Typography type="body2">From</Typography>
+            <button
+              className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
+              onClick={() =>
+                setList({ type: "chain", items: env.chains, onClick: onChainFromButtonClick })
+              }
+              type="button"
             >
-              <Icon url={transactionData.token.logoURI} size={24} />
-              <Typography type="h2">{transactionData.token.symbol}</Typography>
-              {/* <CaretDown className={classes.icons} /> */}
-            </div>
-            <AmountInput
-              token={transactionData.token}
-              balance={BigNumber.from(parseUnits("2.0", transactionData.token.decimals))}
-              fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
-              onChange={onInputChange}
-            />
+              <transactionData.from.Icon />
+              <Typography type="body1">{transactionData.from.name}</Typography>
+              <CaretDown />
+            </button>
           </div>
-        </Card>
-        <div className={classes.arrowRow}>
-          <div className={classes.arrowDownIcon}>
-            <ArrowDown />
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
           </div>
         </div>
-        <Card className={classes.card}>
-          <div className={classes.row}>
-            <div className={classes.box}>
-              <Typography type="body2">To</Typography>
-              <div
-                className={classes.chainSelector}
-                // onClick={() =>
-                //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
-                // }
-              >
-                <transactionData.to.Icon />
-                <Typography type="body1">{transactionData.to.name}</Typography>
-                {/* <CaretDown /> */}
-              </div>
-            </div>
-            <div className={classes.box}>
-              <Typography type="body2">Balance</Typography>
-              <Typography type="body1">2.0 ETH</Typography>
-            </div>
+        <div className={`${classes.row} ${classes.middleRow}`}>
+          <div
+            className={classes.tokenSelector}
+            // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
+          >
+            <Icon url={transactionData.token.logoURI} size={24} />
+            <Typography type="h2">{transactionData.token.symbol}</Typography>
+            {/* <CaretDown className={classes.icons} /> */}
           </div>
-        </Card>
-        <div className={classes.button}>
-          <Button type="submit" disabled={!transactionData || isInvalid}>
-            Continue
-          </Button>
-          {isInvalid && !transactionData.amount.isZero() && <Error error="Insufficient balance" />}
-        </div>
-        {list && (
-          <List
-            placeholder={list.type === "chain" ? "Search network" : "Search token"}
-            list={list}
-            onClose={() => setList(undefined)}
+          <AmountInput
+            token={transactionData.token}
+            balance={BigNumber.from(parseUnits("2.0", transactionData.token.decimals))}
+            fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
+            onChange={onInputChange}
           />
-        )}
-      </form>
-    )
+        </div>
+      </Card>
+      <div className={classes.arrowRow}>
+        <div className={classes.arrowDownIcon}>
+          <ArrowDown />
+        </div>
+      </div>
+      <Card className={classes.card}>
+        <div className={classes.row}>
+          <div className={classes.box}>
+            <Typography type="body2">To</Typography>
+            <div
+              className={classes.chainSelector}
+              // onClick={() =>
+              //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
+              // }
+            >
+              <transactionData.to.Icon />
+              <Typography type="body1">{transactionData.to.name}</Typography>
+              {/* <CaretDown /> */}
+            </div>
+          </div>
+          <div className={classes.box}>
+            <Typography type="body2">Balance</Typography>
+            <Typography type="body1">2.0 ETH</Typography>
+          </div>
+        </div>
+      </Card>
+      <div className={classes.button}>
+        <Button type="submit" disabled={!transactionData || isInvalid}>
+          Continue
+        </Button>
+        {isInvalid && !transactionData.amount.isZero() && <Error error="Insufficient balance" />}
+      </div>
+      {list && (
+        <List
+          placeholder={list.type === "chain" ? "Search network" : "Search token"}
+          list={list}
+          onClose={() => setList(undefined)}
+        />
+      )}
+    </form>
   );
 };
 
