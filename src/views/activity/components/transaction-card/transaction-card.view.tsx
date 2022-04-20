@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import { TransactionStatus, getTransactionStatusText } from "src/domain";
+import { useEnvContext } from "src/contexts/env.context";
 
 export interface TransactionCardProps {
   target: "l1" | "l2";
@@ -32,6 +33,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
 }) => {
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
+  const env = useEnvContext();
   const IconsLayer = {
     l1: TransferL1Icon,
     l2: TransferL2Icon,
@@ -68,7 +70,9 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <TokenIcon logoURI="" className={classes.tokenIcon} size={20} />
+            {env && (
+              <TokenIcon logoURI={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />
+            )}
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>
