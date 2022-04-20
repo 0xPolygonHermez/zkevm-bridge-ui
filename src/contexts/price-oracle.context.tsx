@@ -1,7 +1,7 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 
-import { useConfigContext } from "src/contexts/env.context";
+import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
@@ -31,7 +31,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 });
 
 const PriceOracleProvider: FC = (props) => {
-  const config = useConfigContext();
+  const env = useEnvContext();
   const { l1Provider } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
@@ -45,7 +45,7 @@ const PriceOracleProvider: FC = (props) => {
 
   const getTokenPrice = useCallback(
     async (tokenAddress: string): Promise<number> => {
-      if (config === undefined) {
+      if (env === undefined) {
         throw new Error("Environment is not available");
       }
 
@@ -59,12 +59,12 @@ const PriceOracleProvider: FC = (props) => {
 
       const rate = await quoterContract.callStatic.quoteExactInputSingle(
         tokenAddress,
-        config.tokens.USDT.address,
+        env.tokens.USDT.address,
         UNISWAP_V3_POOL_FEE,
         parseUnits("1"),
         0
       );
-      const usdPrice = Number(formatUnits(rate, config.tokens.USDT.decimals));
+      const usdPrice = Number(formatUnits(rate, env.tokens.USDT.decimals));
       const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
 
       if (!fiatExchangeRate) {
@@ -73,25 +73,25 @@ const PriceOracleProvider: FC = (props) => {
 
       return usdPrice * fiatExchangeRate;
     },
-    [config, fiatExchangeRates, quoterContract, preferredCurrency]
+    [env, fiatExchangeRates, quoterContract, preferredCurrency]
   );
 
   useEffect(() => {
-    if (config && l1Provider) {
+    if (env && l1Provider) {
       const quoterContract = UniswapQuoter__factory.connect(
-        config.tokenQuotes.uniswapQuoterContractAddress,
+        env.tokenQuotes.uniswapQuoterContractAddress,
         l1Provider
       );
 
       setQuoterContract(quoterContract);
     }
-  }, [config, l1Provider]);
+  }, [env, l1Provider]);
 
   useEffect(() => {
-    if (config) {
+    if (env) {
       getFiatExchangeRates({
-        apiUrl: config.fiatExchangeRates.apiUrl,
-        apiKey: config.fiatExchangeRates.apiKey,
+        apiUrl: env.fiatExchangeRates.apiUrl,
+        apiKey: env.fiatExchangeRates.apiKey,
       })
         .then(setFiatExchangeRates)
         .catch((error) => {
@@ -100,7 +100,7 @@ const PriceOracleProvider: FC = (props) => {
           );
         });
     }
-  }, [config, openSnackbar]);
+  }, [env, openSnackbar]);
 
   const value = useMemo(
     () => ({ preferredCurrency, getTokenPrice, changePreferredCurrency }),

@@ -1,20 +1,6 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 
-export interface Env {
-  l1RpcUrl: string;
-  l1ChainId: number;
-  l2RpcUrl: string;
-  l2ChainId: number;
-  bridgeApiUrl: string;
-  l1BridgeContractAddress: string;
-  l2BridgeContractAddress: string;
-  fiatExchangeRatesApiUrl: string;
-  fiatExchangeRatesApiKey: string;
-  usdtAddress: string;
-  uniswapQuoterContractAddress: string;
-}
-
 export interface Chain {
   name: string;
   chainId: number;
@@ -30,7 +16,7 @@ export interface Token {
   chainId: number;
 }
 
-export interface Config {
+export interface Env {
   l1Node: {
     rpcUrl: string;
     chainId: number;

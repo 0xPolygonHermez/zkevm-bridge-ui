@@ -1,5 +1,5 @@
 import { UIProvider } from "src/contexts/ui.context";
-import { ConfigProvider } from "src/contexts/env.context";
+import { EnvProvider } from "src/contexts/env.context";
 import { ProvidersProvider } from "src/contexts/providers.context";
 import Layout from "src/views/core/layout/layout.view";
 import Router from "src/views/core/router/router.view";
@@ -13,7 +13,7 @@ const App = (): JSX.Element => {
 
   return (
     <UIProvider>
-      <ConfigProvider>
+      <EnvProvider>
         <ProvidersProvider>
           <BridgeProvider>
             <PriceOracleProvider>
@@ -25,7 +25,7 @@ const App = (): JSX.Element => {
             </PriceOracleProvider>
           </BridgeProvider>
         </ProvidersProvider>
-      </ConfigProvider>
+      </EnvProvider>
     </UIProvider>
   );
 };

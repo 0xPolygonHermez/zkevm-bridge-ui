@@ -1,61 +1,28 @@
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
 
 import { loadEnv } from "src/adapters/env";
-import { getChains, getEthToken, getUsdtToken } from "src/constants";
-import { Config } from "src/domain";
+import { Env } from "src/domain";
 
-const configContext = createContext<Config | undefined>(undefined);
+const envContext = createContext<Env | undefined>(undefined);
 
-const ConfigProvider: FC = (props) => {
-  const [config, setConfig] = useState<Config>();
+const EnvProvider: FC = (props) => {
+  const [env, setEnv] = useState<Env>();
 
   useEffect(() => {
-    const env = loadEnv();
+    const parsedEnv = loadEnv();
 
-    setConfig({
-      l1Node: {
-        rpcUrl: env.l1RpcUrl,
-        chainId: env.l1ChainId,
-      },
-      l2Node: {
-        rpcUrl: env.l2RpcUrl,
-        chainId: env.l2ChainId,
-      },
-      bridge: {
-        apiUrl: env.bridgeApiUrl,
-        l1ContractAddress: env.l1BridgeContractAddress,
-        l2ContractAddress: env.l2BridgeContractAddress,
-      },
-      tokenQuotes: {
-        uniswapQuoterContractAddress: env.uniswapQuoterContractAddress,
-      },
-      fiatExchangeRates: {
-        apiUrl: env.fiatExchangeRatesApiUrl,
-        apiKey: env.fiatExchangeRatesApiKey,
-      },
-      chains: getChains({
-        ethereumChainId: env.l1ChainId,
-        polygonHermezChainId: env.l2ChainId,
-      }),
-      tokens: {
-        ETH: getEthToken({ chainId: env.l1ChainId }),
-        USDT: getUsdtToken({
-          address: env.usdtAddress,
-          chainId: env.l1ChainId,
-        }),
-      },
-    });
+    setEnv(parsedEnv);
   }, []);
 
   const value = useMemo(() => {
-    return config;
-  }, [config]);
+    return env;
+  }, [env]);
 
-  return <configContext.Provider value={value} {...props} />;
+  return <envContext.Provider value={value} {...props} />;
 };
 
-const useConfigContext = (): Config | undefined => {
-  return useContext(configContext);
+const useEnvContext = (): Env | undefined => {
+  return useContext(envContext);
 };
 
-export { ConfigProvider, useConfigContext };
+export { EnvProvider, useEnvContext };

@@ -7,7 +7,7 @@ import { EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
-import { useConfigContext } from "src/contexts/env.context";
+import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
 
@@ -38,7 +38,7 @@ const ProvidersProvider: FC = (props) => {
   const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
   const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
-  const env = useConfigContext();
+  const env = useEnvContext();
   const { openSnackbar } = useUIContext();
 
   const connectProvider = useCallback(
