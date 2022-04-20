@@ -9,7 +9,7 @@ import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
-import { convertBigNumberToNumber, convertTokenAmountToFiat } from "src/utils/amounts";
+import { tokenAmountToNumber, convertTokenAmountToFiat } from "src/utils/amounts";
 import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 
@@ -38,7 +38,7 @@ const Confirmation: FC = () => {
   const ChainFromIcon = transaction.from.icon;
   const ChainToIcon = transaction.to.icon;
   const { amount, token } = transaction;
-  const txAmount = convertBigNumberToNumber({ amount, token });
+  const txAmount = tokenAmountToNumber({ amount, token });
   return (
     <>
       <Header title="Confirm Transfer" backTo="home" />
