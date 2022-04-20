@@ -8,7 +8,7 @@ import { Token } from "src/domain";
 
 interface onChangeParams {
   amount?: BigNumber;
-  isInvalid: boolean;
+  error?: string;
 }
 
 interface AmountInputProps {
@@ -34,16 +34,14 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
     if (amount) {
       const newAmountWithFee = amount.add(actualFee);
       const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
-      const isAmountInvalid = isNewAmountWithFeeMoreThanFunds || amount.isZero();
-      onChange({
-        amount,
-        isInvalid: isAmountInvalid,
-      });
+      const error = isNewAmountWithFeeMoreThanFunds
+        ? "Insufficient balance"
+        : amount.isZero()
+        ? "The amount should be greater than 0"
+        : undefined;
+      onChange({ amount, error });
     } else {
-      onChange({
-        amount: undefined,
-        isInvalid: false,
-      });
+      onChange({});
     }
   };
 

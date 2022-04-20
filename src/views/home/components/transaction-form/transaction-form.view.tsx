@@ -36,7 +36,7 @@ const TransactionForm: FC = () => {
   const classes = useTransactionFormtStyles();
   const [list, setList] = useState<List>();
   const { transaction, setTransaction } = useTransactionContext();
-  const [isInvalid, setIsInvalid] = useState(false);
+  const [error, setError] = useState<string>();
   const navigate = useNavigate();
   const [localTransaction, setLocalTransaction] = useState(transaction || defaultTransaction);
   const ChainFromIcon = localTransaction.from.icon;
@@ -55,9 +55,9 @@ const TransactionForm: FC = () => {
     setList(undefined);
   };
 
-  const onInputChange = ({ amount, isInvalid }: { amount?: BigNumber; isInvalid: boolean }) => {
+  const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
     setLocalTransaction({ ...localTransaction, amount });
-    setIsInvalid(isInvalid);
+    setError(error);
   };
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,10 +138,10 @@ const TransactionForm: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={!localTransaction.amount || isInvalid}>
+        <Button type="submit" disabled={!localTransaction.amount || error !== undefined}>
           Continue
         </Button>
-        {localTransaction.amount && isInvalid && <Error error="Insufficient balance" />}
+        {localTransaction.amount && error && <Error error={error} />}
       </div>
       {list && (
         <List
