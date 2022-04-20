@@ -40,7 +40,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     padding: theme.spacing(1.5),
     backgroundColor: theme.palette.grey.light,
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     border: `1px solid ${theme.palette.white}`,
     cursor: "pointer",
     "&:hover": {
