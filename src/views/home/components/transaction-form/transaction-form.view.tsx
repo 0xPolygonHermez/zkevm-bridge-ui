@@ -56,7 +56,7 @@ const TransactionForm: FC = () => {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setTransaction(localTransaction);
-    navigate(routes.confirmation.path);
+    navigate(routes.transactionConfirmation.path);
   };
 
   return (

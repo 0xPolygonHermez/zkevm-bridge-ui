@@ -3,7 +3,7 @@ import Login from "src/views/login/login.view";
 import Settings from "src/views/settings/settings.view";
 import Activity from "src/views/activity/activity.view";
 import TransactionDetails from "src/views/transaction-details/transaction-details.view";
-import Confirmation from "src/views/confirmation/confirmation.view";
+import TransactionConfirmation from "src/views/transaction-confirmation/transaction-confirmation.view";
 
 const routes = {
   home: {
@@ -31,9 +31,9 @@ const routes = {
     Component: TransactionDetails,
     isPrivate: true,
   },
-  confirmation: {
-    path: "/confirmation",
-    Component: Confirmation,
+  transactionConfirmation: {
+    path: "/transaction-confirmation",
+    Component: TransactionConfirmation,
     isPrivate: true,
   },
 };
