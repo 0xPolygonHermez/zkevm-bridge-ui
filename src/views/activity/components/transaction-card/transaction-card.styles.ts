@@ -26,7 +26,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: theme.palette.grey.light,
-    borderRadius: theme.spacing(5),
+    borderRadius: "100%",
   },
   actionColumn: {
     flex: 1,
@@ -44,7 +44,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     color: theme.palette.warning.main,
     fontSize: theme.spacing(1.75),
     padding: [theme.spacing(0.5), theme.spacing(1)],
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     alignSelf: "flex-start",
   },
   redStatus: {
@@ -79,7 +79,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   finaliseButton: {
     border: "none",
     padding: [theme.spacing(0.75), theme.spacing(3)],
-    borderRadius: theme.spacing(4),
+    borderRadius: 32,
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.white,
     fontWeight: 700,

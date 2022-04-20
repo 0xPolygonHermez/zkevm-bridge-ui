@@ -9,7 +9,7 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     margin: [theme.spacing(3), "auto", 0],
     backgroundColor: theme.palette.grey.main,
     padding: [theme.spacing(1.25), theme.spacing(3)],
-    borderRadius: theme.spacing(7),
+    borderRadius: 56,
   },
   metaMaskIcon: {
     width: 20,

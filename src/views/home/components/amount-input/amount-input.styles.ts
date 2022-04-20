@@ -12,7 +12,7 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
   amountInput: {
     width: "100%",
     textAlign: "right",
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     border: "none",
     outline: "none",
     fontSize: "20px",
