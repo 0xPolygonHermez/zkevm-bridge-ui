@@ -41,7 +41,7 @@ const useConfirmationStyles = createUseStyles((theme: Theme) => ({
     backgroundColor: theme.palette.grey.light,
     justifyContent: "center",
     padding: theme.spacing(1.25),
-    borderRadius: theme.spacing(7),
+    borderRadius: 56,
   },
   arrow: {
     transform: `rotate(90deg)`,
