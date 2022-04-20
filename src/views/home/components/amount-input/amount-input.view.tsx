@@ -25,8 +25,8 @@ const getFixedTokenAmount = (amount: string, decimals: number): string => {
 };
 
 const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
-  const defaultValue = value ? getFixedTokenAmount(value.toString(), token.decimals) : "";
-  const [inputValue, setInputValue] = useState(defaultValue);
+  const defaultInputValue = value ? getFixedTokenAmount(value.toString(), token.decimals) : "";
+  const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
   const actualFee = token.symbol === "WETH" ? fee : BigNumber.from(0);
 
