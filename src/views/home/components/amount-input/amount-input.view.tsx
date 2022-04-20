@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber, constants as ethersConstants } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useState } from "react";
 
@@ -28,7 +28,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   const defaultInputValue = value ? getFixedTokenAmount(value.toString(), token.decimals) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
-  const actualFee = token.symbol === "WETH" ? fee : BigNumber.from(0);
+  const actualFee = token.address === ethersConstants.AddressZero ? fee : BigNumber.from(0);
 
   const updateAmountInput = (amount?: BigNumber) => {
     if (amount) {
