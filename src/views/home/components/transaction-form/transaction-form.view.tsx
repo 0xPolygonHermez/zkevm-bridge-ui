@@ -67,7 +67,7 @@ const TransactionForm: FC = () => {
         amount: localTransaction.amount,
       });
     }
-    navigate(routes.confirmation.path);
+    navigate(routes.transactionConfirmation.path);
   };
 
   return (

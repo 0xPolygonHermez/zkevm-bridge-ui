@@ -8,7 +8,7 @@ import Typography from "src/views/shared/typography/typography.view";
 
 interface HeaderProps {
   title: string;
-  backTo: "home" | "activity";
+  backTo: keyof typeof routes;
 }
 
 const Header: FC<HeaderProps> = ({ title, backTo }) => {

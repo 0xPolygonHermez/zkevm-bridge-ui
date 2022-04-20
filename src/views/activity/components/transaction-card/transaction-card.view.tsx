@@ -7,7 +7,6 @@ import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import { getTimeFromNow } from "src/utils/time";
-import { convertTokenAmountToFiat } from "src/utils/amounts";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import TokenIcon from "src/views/shared/token-icon/token-icon.view";
@@ -73,7 +72,6 @@ const TransactionCard: FC<TransactionCardProps> = ({
               {amount} {token.toUpperCase()}
             </Typography>
           </div>
-          <Typography type="body2">{convertTokenAmountToFiat({ amount, token })}</Typography>
         </div>
       </div>
       {status === "initiated" && (

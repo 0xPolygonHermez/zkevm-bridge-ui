@@ -17,7 +17,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     backgroundColor: ({ displayAll }: StylesProps) =>
       displayAll ? theme.palette.grey.light : theme.palette.grey.main,
     padding: [0, theme.spacing(1)],
-    borderRadius: theme.spacing(0.75),
+    borderRadius: 6,
     lineHeight: `${theme.spacing(1.75)}px`,
   },
   numberPendingBox: {
@@ -26,14 +26,14 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     backgroundColor: ({ displayAll }: StylesProps) =>
       !displayAll ? theme.palette.grey.light : theme.palette.grey.main,
     padding: [0, theme.spacing(1)],
-    borderRadius: theme.spacing(0.75),
+    borderRadius: 6,
     lineHeight: `${theme.spacing(1.75)}px`,
   },
   selectorBox: {
     display: "flex",
     padding: [[theme.spacing(0.75), theme.spacing(1)]],
     marginRight: theme.spacing(2),
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
   },
   allBox: ({ displayAll }: StylesProps) =>
     displayAll

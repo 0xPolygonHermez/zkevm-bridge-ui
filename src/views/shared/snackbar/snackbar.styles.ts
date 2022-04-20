@@ -16,7 +16,7 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "center",
     background: theme.palette.black,
     padding: theme.spacing(2),
-    borderRadius: theme.spacing(2),
+    borderRadius: 16,
     width: "90%",
     margin: "0 auto",
     maxWidth: "644px",
