@@ -29,6 +29,9 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     cursor: "pointer",
     color: theme.palette.black,
   },
+  maxText: {
+    color: theme.palette.black,
+  },
 }));
 
 export default useAmountInputStyles;

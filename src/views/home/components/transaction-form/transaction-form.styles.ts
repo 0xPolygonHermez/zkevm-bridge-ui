@@ -45,8 +45,7 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   tokenSelector: {
     display: "flex",
     gap: theme.spacing(1),
-    paddingLeft: theme.spacing(1.25),
-    paddingRight: theme.spacing(1.25),
+    padding: [theme.spacing(1.75), theme.spacing(1)],
     backgroundColor: theme.palette.grey.light,
     borderRadius: theme.spacing(1),
     // cursor: "pointer",

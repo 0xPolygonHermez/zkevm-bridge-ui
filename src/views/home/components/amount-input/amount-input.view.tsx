@@ -65,7 +65,9 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
   return (
     <div className={classes.wrapper}>
       <button className={classes.maxButton} type="button" onClick={handleSendAll}>
-        <Typography type="body2">MAX</Typography>
+        <Typography type="body2" className={classes.maxText}>
+          MAX
+        </Typography>
       </button>
       <input
         className={classes.amountInput}

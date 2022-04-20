@@ -3,6 +3,7 @@ import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
+import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
 import useTransactionFormtStyles from "src/views/home/components/transaction-form/transaction-form.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
@@ -96,7 +97,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
               >
                 <transactionData.from.Icon />
                 <Typography type="body1">{transactionData.from.name}</Typography>
-                {/* <CaretDown /> */}
+                <CaretDown />
               </button>
             </div>
             <div className={classes.box}>
