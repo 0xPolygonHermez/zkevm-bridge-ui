@@ -14,6 +14,7 @@ import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { ethers } from "ethers";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
@@ -38,9 +39,10 @@ const TransactionConfirmation: FC = () => {
   }
 
   const onClick = () => {
-    const { token, amount, to } = transaction;
+    const { amount, to } = transaction;
     if (account.status === "successful") {
-      bridge(token.address, amount, to.chainId, account.data)
+      console.log(to);
+      bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
         .then(console.log)
         .catch(console.error);
     }
