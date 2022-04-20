@@ -7,7 +7,7 @@ import { EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
-import { useEnvContext } from "src/contexts/env.context";
+import { useConfigContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
 
@@ -38,7 +38,7 @@ const ProvidersProvider: FC = (props) => {
   const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
   const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
-  const env = useEnvContext();
+  const env = useConfigContext();
   const { openSnackbar } = useUIContext();
 
   const connectProvider = useCallback(
@@ -75,7 +75,9 @@ const ProvidersProvider: FC = (props) => {
         case WalletName.WALLET_CONNECT: {
           if (env) {
             const walletConnectProvider = new WalletConnectProvider({
-              infuraId: env.infuraApiKey,
+              rpc: {
+                [env.l1Node.chainId]: env.l1Node.rpcUrl,
+              },
             });
             const web3Provider = new Web3Provider(walletConnectProvider);
 
@@ -176,8 +178,8 @@ const ProvidersProvider: FC = (props) => {
 
   useEffect(() => {
     if (env) {
-      setL1Provider(new JsonRpcProvider(`${env.l1ProviderUrl}/${env.infuraApiKey}`));
-      setL2Provider(new JsonRpcProvider(env.l2ProviderUrl));
+      setL1Provider(new JsonRpcProvider(env.l1Node.rpcUrl));
+      setL2Provider(new JsonRpcProvider(env.l2Node.rpcUrl));
     }
   }, [env]);
 

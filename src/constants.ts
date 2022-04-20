@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-import { BridgeConfig, Chain, Currency, SupportedNetwork, Token } from "src/domain";
+import { Chain, Currency, Token } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 
@@ -22,63 +22,47 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
-export const FIAT_EXCHANGE_RATES_API_URL = "https://api.exchangeratesapi.io/v1/latest";
-
-export const CHAINS: Record<SupportedNetwork, Chain[]> = {
-  [SupportedNetwork.LOCAL]: [
-    {
-      name: "Ethereum chain",
-      Icon: EthChainIcon,
-      chainId: 1337,
-    },
-    {
-      name: "Polygon Hermez chain",
-      Icon: PolygonHermezChainIcon,
-      chainId: 1001,
-    },
-  ],
-};
-
-export const BRIDGE_CONFIGS: Record<SupportedNetwork, BridgeConfig> = {
-  [SupportedNetwork.LOCAL]: {
-    l1ContractAddress: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    l2ContractAddress: "0x9d98deabc42dd696deb9e40b4f1cab7ddbf55988",
-    apiUrl: "http://localhost:8080",
+export const getChains = ({
+  ethereumChainId,
+  polygonHermezChainId,
+}: {
+  ethereumChainId: number;
+  polygonHermezChainId: number;
+}): Chain[] => [
+  {
+    name: "Ethereum chain",
+    chainId: ethereumChainId,
+    Icon: EthChainIcon,
   },
-};
-
-export const UNISWAP_QUOTER_ADDRESSES: Record<SupportedNetwork, string> = {
-  [SupportedNetwork.LOCAL]: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6",
-};
-
-export const L1_PROVIDERS: Record<SupportedNetwork, string> = {
-  [SupportedNetwork.LOCAL]: "http://localhost:8123",
-};
-
-export const L2_PROVIDERS: Record<SupportedNetwork, string> = {
-  [SupportedNetwork.LOCAL]: "http://localhost:8545",
-};
-
-export const ETH_TOKENS: Record<SupportedNetwork, Token> = {
-  [SupportedNetwork.LOCAL]: {
-    name: "Ether",
-    address: ethers.constants.AddressZero,
-    symbol: "ETH",
-    decimals: 18,
-    chainId: 1337,
-    logoURI:
-      "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
+  {
+    name: "Polygon Hermez chain",
+    chainId: polygonHermezChainId,
+    Icon: PolygonHermezChainIcon,
   },
-};
+];
 
-export const USDT_TOKENS: Record<SupportedNetwork, Token> = {
-  [SupportedNetwork.LOCAL]: {
-    name: "Tether USD",
-    address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-    symbol: "USDT",
-    decimals: 6,
-    chainId: 1,
-    logoURI:
-      "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
-  },
-};
+export const getEthToken = ({ chainId }: { chainId: number }): Token => ({
+  name: "Ether",
+  address: ethers.constants.AddressZero,
+  symbol: "ETH",
+  decimals: 18,
+  chainId,
+  logoURI:
+    "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
+});
+
+export const getUsdtToken = ({
+  address,
+  chainId,
+}: {
+  address: string;
+  chainId: number;
+}): Token => ({
+  name: "Tether USD",
+  address,
+  symbol: "USDT",
+  decimals: 6,
+  chainId,
+  logoURI:
+    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+});

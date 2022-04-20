@@ -1,47 +1,61 @@
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
 
 import { loadEnv } from "src/adapters/env";
-import {
-  BRIDGE_CONFIGS,
-  CHAINS,
-  ETH_TOKENS,
-  L1_PROVIDERS,
-  L2_PROVIDERS,
-  UNISWAP_QUOTER_ADDRESSES,
-  USDT_TOKENS,
-} from "src/constants";
-import { Env } from "src/domain";
+import { getChains, getEthToken, getUsdtToken } from "src/constants";
+import { Config } from "src/domain";
 
-const envContext = createContext<Env | undefined>(undefined);
+const configContext = createContext<Config | undefined>(undefined);
 
-const EnvProvider: FC = (props) => {
-  const [env, setEnv] = useState<Env>();
+const ConfigProvider: FC = (props) => {
+  const [config, setConfig] = useState<Config>();
 
   useEffect(() => {
     const env = loadEnv();
 
-    setEnv({
-      fiatExchangeRatesApiKey: env.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
-      infuraApiKey: env.REACT_APP_INFURA_API_KEY,
-      chains: CHAINS[env.REACT_APP_NETWORK],
-      bridgeConfig: BRIDGE_CONFIGS[env.REACT_APP_NETWORK],
-      l1ProviderUrl: L1_PROVIDERS[env.REACT_APP_NETWORK],
-      l2ProviderUrl: L2_PROVIDERS[env.REACT_APP_NETWORK],
-      uniswapQuoterAddress: UNISWAP_QUOTER_ADDRESSES[env.REACT_APP_NETWORK],
-      ethToken: ETH_TOKENS[env.REACT_APP_NETWORK],
-      usdtToken: USDT_TOKENS[env.REACT_APP_NETWORK],
+    setConfig({
+      l1Node: {
+        rpcUrl: env.l1RpcUrl,
+        chainId: env.l1ChainId,
+      },
+      l2Node: {
+        rpcUrl: env.l2RpcUrl,
+        chainId: env.l2ChainId,
+      },
+      bridge: {
+        apiUrl: env.bridgeApiUrl,
+        l1ContractAddress: env.l1BridgeContractAddress,
+        l2ContractAddress: env.l2BridgeContractAddress,
+      },
+      tokenQuotes: {
+        uniswapQuoterContractAddress: env.uniswapQuoterContractAddress,
+      },
+      fiatExchangeRates: {
+        apiUrl: env.fiatExchangeRatesApiUrl,
+        apiKey: env.fiatExchangeRatesApiKey,
+      },
+      chains: getChains({
+        ethereumChainId: env.l1ChainId,
+        polygonHermezChainId: env.l2ChainId,
+      }),
+      tokens: {
+        ETH: getEthToken({ chainId: env.l1ChainId }),
+        USDT: getUsdtToken({
+          address: env.usdtAddress,
+          chainId: env.l1ChainId,
+        }),
+      },
     });
   }, []);
 
   const value = useMemo(() => {
-    return env;
-  }, [env]);
+    return config;
+  }, [config]);
 
-  return <envContext.Provider value={value} {...props} />;
+  return <configContext.Provider value={value} {...props} />;
 };
 
-const useEnvContext = (): Env | undefined => {
-  return useContext(envContext);
+const useConfigContext = (): Config | undefined => {
+  return useContext(configContext);
 };
 
-export { EnvProvider, useEnvContext };
+export { ConfigProvider, useConfigContext };

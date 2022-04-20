@@ -3,7 +3,6 @@ import axios from "axios";
 
 import { Currency, FiatExchangeRates } from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
-import { FIAT_EXCHANGE_RATES_API_URL } from "src/constants";
 
 interface GetFiatExchangeRatesSuccessResponse {
   rates: FiatExchangeRates;
@@ -17,6 +16,7 @@ interface GetFiatExchangeRatesErrorResponse {
 }
 
 interface GetFiatExchangeRatesParams {
+  apiUrl: string;
   apiKey: string;
 }
 
@@ -44,6 +44,7 @@ const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesErrorRespo
 );
 
 const getFiatExchangeRates = ({
+  apiUrl,
   apiKey,
 }: GetFiatExchangeRatesParams): Promise<FiatExchangeRates> => {
   const params = {
@@ -54,7 +55,7 @@ const getFiatExchangeRates = ({
 
   return axios
     .request({
-      baseURL: FIAT_EXCHANGE_RATES_API_URL,
+      baseURL: apiUrl,
       params,
       method: "GET",
     })

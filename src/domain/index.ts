@@ -1,8 +1,18 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 
-export enum SupportedNetwork {
-  LOCAL = "local",
+export interface Env {
+  l1RpcUrl: string;
+  l1ChainId: number;
+  l2RpcUrl: string;
+  l2ChainId: number;
+  bridgeApiUrl: string;
+  l1BridgeContractAddress: string;
+  l2BridgeContractAddress: string;
+  fiatExchangeRatesApiUrl: string;
+  fiatExchangeRatesApiKey: string;
+  usdtAddress: string;
+  uniswapQuoterContractAddress: string;
 }
 
 export interface Chain {
@@ -20,22 +30,32 @@ export interface Token {
   chainId: number;
 }
 
-export interface BridgeConfig {
-  l1ContractAddress: string;
-  l2ContractAddress: string;
-  apiUrl: string;
-}
-
-export interface Env {
-  fiatExchangeRatesApiKey: string;
-  infuraApiKey: string;
-  bridgeConfig: BridgeConfig;
+export interface Config {
+  l1Node: {
+    rpcUrl: string;
+    chainId: number;
+  };
+  l2Node: {
+    rpcUrl: string;
+    chainId: number;
+  };
+  bridge: {
+    apiUrl: string;
+    l1ContractAddress: string;
+    l2ContractAddress: string;
+  };
+  tokenQuotes: {
+    uniswapQuoterContractAddress: string;
+  };
+  fiatExchangeRates: {
+    apiUrl: string;
+    apiKey: string;
+  };
   chains: Chain[];
-  l1ProviderUrl: string;
-  l2ProviderUrl: string;
-  uniswapQuoterAddress: string;
-  ethToken: Token;
-  usdtToken: Token;
+  tokens: {
+    ETH: Token;
+    USDT: Token;
+  };
 }
 
 export interface RouterState {

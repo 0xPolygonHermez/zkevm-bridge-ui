@@ -1,7 +1,7 @@
 import { BigNumber, ContractTransaction, constants as ethersConstants } from "ethers";
 import { createContext, FC, useContext, useEffect, useState, useCallback } from "react";
 
-import { useEnvContext } from "src/contexts/env.context";
+import { useConfigContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
@@ -74,60 +74,60 @@ const bridgeContext = createContext<BridgeContext>({
 });
 
 const BridgeProvider: FC = (props) => {
-  const env = useEnvContext();
+  const config = useConfigContext();
   const { connectedProvider, account } = useProvidersContext();
   const [bridgeContract, setBridgeContract] = useState<BridgeContract>();
 
   const getBridges = useCallback(
     ({ ethereumAddress }: GetBridgesParams) => {
-      if (env === undefined) {
+      if (config === undefined) {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getBridges({ apiUrl: env.bridgeConfig.apiUrl, ethereumAddress });
+      return bridgeApi.getBridges({ apiUrl: config.bridge.apiUrl, ethereumAddress });
     },
-    [env]
+    [config]
   );
 
   const getClaimStatus = useCallback(
     ({ originNetwork, depositCount }: GetClaimStatusParams) => {
-      if (env === undefined) {
+      if (config === undefined) {
         throw new Error("Env is not available");
       }
 
       return bridgeApi.getClaimStatus({
-        apiUrl: env.bridgeConfig.apiUrl,
+        apiUrl: config.bridge.apiUrl,
         originNetwork,
         depositCount,
       });
     },
-    [env]
+    [config]
   );
 
   const getMerkleProof = useCallback(
     ({ originNetwork, depositCount }: GetMerkleProofParams) => {
-      if (env === undefined) {
+      if (config === undefined) {
         throw new Error("Env is not available");
       }
 
       return bridgeApi.getMerkleProof({
-        apiUrl: env.bridgeConfig.apiUrl,
+        apiUrl: config.bridge.apiUrl,
         originNetwork,
         depositCount,
       });
     },
-    [env]
+    [config]
   );
 
   const getClaims = useCallback(
     ({ ethereumAddress }: GetClaimsParams) => {
-      if (env === undefined) {
+      if (config === undefined) {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getClaims({ apiUrl: env.bridgeConfig.apiUrl, ethereumAddress });
+      return bridgeApi.getClaims({ apiUrl: config.bridge.apiUrl, ethereumAddress });
     },
-    [env]
+    [config]
   );
 
   const bridge = useCallback(
@@ -137,7 +137,7 @@ const BridgeProvider: FC = (props) => {
       destinationNetwork: number,
       destinationAddress: string
     ): Promise<ContractTransaction> => {
-      if (env === undefined) {
+      if (config === undefined) {
         throw new Error("Environment is not available");
       }
 
@@ -161,17 +161,17 @@ const BridgeProvider: FC = (props) => {
         const erc20Contract = Erc20__factory.connect(token, connectedProvider.getSigner());
         const allowance = await erc20Contract.allowance(
           account.data,
-          env.bridgeConfig.l1ContractAddress
+          config.bridge.l1ContractAddress
         );
 
         if (allowance.lt(amount)) {
-          await erc20Contract.approve(env.bridgeConfig.l1ContractAddress, amount);
+          await erc20Contract.approve(config.bridge.l2ContractAddress, amount);
         }
       }
 
       return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress);
     },
-    [env, bridgeContract, connectedProvider, account]
+    [config, bridgeContract, connectedProvider, account]
   );
 
   const claim = useCallback(
@@ -211,15 +211,15 @@ const BridgeProvider: FC = (props) => {
   );
 
   useEffect(() => {
-    if (env && connectedProvider) {
+    if (config && connectedProvider) {
       const contract = Bridge__factory.connect(
-        env.bridgeConfig.l1ContractAddress,
+        config.bridge.l1ContractAddress,
         connectedProvider.getSigner()
       );
 
       setBridgeContract(contract);
     }
-  }, [env, connectedProvider]);
+  }, [config, connectedProvider]);
 
   return (
     <bridgeContext.Provider

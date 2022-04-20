@@ -12,7 +12,7 @@ import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { Chain, TransactionData } from "src/domain";
-import { useEnvContext } from "src/contexts/env.context";
+import { useConfigContext } from "src/contexts/env.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -20,7 +20,7 @@ interface TransactionFormProps {
 
 const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const classes = useTransactionFormtStyles();
-  const env = useEnvContext();
+  const env = useConfigContext();
   const [list, setList] = useState<List>();
   const [isInvalid, setIsInvalid] = useState(true);
   const [transactionData, setTransactionData] = useState<TransactionData>();
@@ -69,7 +69,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
       setTransactionData({
         from: env.chains[0],
         to: env.chains[1],
-        token: env.ethToken,
+        token: env.tokens.ETH,
         amount: BigNumber.from(0),
       });
     }
