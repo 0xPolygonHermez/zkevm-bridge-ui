@@ -9,7 +9,6 @@ import TokenIcon from "src/views/shared/token-icon/token-icon.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
-import { tokenAmountToNumber } from "src/utils/amounts";
 import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
@@ -50,8 +49,7 @@ const TransactionConfirmation: FC = () => {
 
   const ChainFromIcon = transaction.from.icon;
   const ChainToIcon = transaction.to.icon;
-  const { amount, token } = transaction;
-  const txAmount = tokenAmountToNumber({ amount, token });
+  const txAmount = ethers.utils.formatEther(transaction.amount);
   return (
     <>
       <Header title="Confirm Transfer" backTo="home" />
