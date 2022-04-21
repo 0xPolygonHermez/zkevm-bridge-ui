@@ -138,7 +138,7 @@ const TransactionForm: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={!localTransaction.amount || error !== undefined}>
+        <Button type="submit" disabled={!localTransaction.amount || localTransaction.amount.isZero() || error !== undefined}>
           Continue
         </Button>
         {localTransaction.amount && error && <Error error={error} />}

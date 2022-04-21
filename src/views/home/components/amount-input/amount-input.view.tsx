@@ -34,11 +34,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
     if (amount) {
       const newAmountWithFee = amount.add(actualFee);
       const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
-      const error = isNewAmountWithFeeMoreThanFunds
-        ? "Insufficient balance"
-        : amount.isZero()
-        ? "The amount should be greater than 0"
-        : undefined;
+      const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
       onChange({ amount, error });
     } else {
       onChange({});
@@ -46,16 +42,19 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
     const decimals = token.decimals;
     const regexToken = `^(?!0\\d|\\.)\\d*(?:\\.\\d{0,${decimals}})?$`;
     const INPUT_REGEX = new RegExp(regexToken);
+    const isInputValid = INPUT_REGEX.test(value);
 
     const newAmountInTokens =
-      INPUT_REGEX.test(event.target.value) && event.target.value.length > 0
-        ? parseUnits(event.target.value, token.decimals)
-        : undefined;
-    setInputValue(event.target.value);
-    updateAmountInput(newAmountInTokens);
+      value.length > 0 && isInputValid ? parseUnits(value, token.decimals) : undefined;
+
+    if (isInputValid) {
+      updateAmountInput(newAmountInTokens);
+      setInputValue(value);
+    }
   };
 
   const handleSendAll = () => {
