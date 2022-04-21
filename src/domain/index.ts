@@ -37,7 +37,7 @@ export interface Env {
     apiUrl: string;
     apiKey: string;
   };
-  chains: Chain[];
+  chains: [Chain, Chain];
   tokens: {
     ETH: Token;
     USDT: Token;
