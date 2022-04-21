@@ -1,15 +1,47 @@
 import { BigNumber } from "ethers";
-import { FC } from "react";
+import { ComponentType } from "react";
+
+export interface Chain {
+  name: string;
+  chainId: number;
+  Icon: ComponentType<{ className?: string }>;
+}
+
+export interface Token {
+  name: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoURI: string;
+  chainId: number;
+}
 
 export interface Env {
-  REACT_APP_INFURA_API_KEY: string;
-  REACT_APP_L1_PROVIDER_NETWORK: string;
-  REACT_APP_L2_PROVIDER_URL: string;
-  REACT_APP_BRIDGE_CONTRACT_ADDRESS: string;
-  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
-  REACT_APP_USDT_CONTRACT_ADDRESS: string;
-  REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
-  REACT_APP_BRIDGE_API_URL: string;
+  l1Node: {
+    rpcUrl: string;
+    chainId: number;
+  };
+  l2Node: {
+    rpcUrl: string;
+    chainId: number;
+  };
+  bridge: {
+    apiUrl: string;
+    l1ContractAddress: string;
+    l2ContractAddress: string;
+  };
+  tokenQuotes: {
+    uniswapQuoterContractAddress: string;
+  };
+  fiatExchangeRates: {
+    apiUrl: string;
+    apiKey: string;
+  };
+  chains: [Chain, Chain];
+  tokens: {
+    ETH: Token;
+    USDT: Token;
+  };
 }
 
 export interface RouterState {
@@ -92,21 +124,6 @@ export interface MerkleProof {
   exitRootNumber: string;
   mainExitRoot: string;
   rollupExitRoot: string;
-}
-
-export interface Chain {
-  name: string;
-  chainId: number;
-  icon: FC<{ className?: string }>;
-}
-
-export interface Token {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  logoURI: string;
-  chainId: number;
 }
 
 export interface TransactionData {

@@ -77,6 +77,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
         className={classes.amountInput}
         value={inputValue}
         placeholder="0.00"
+        autoFocus
         onChange={handleInputChange}
       />
     </div>

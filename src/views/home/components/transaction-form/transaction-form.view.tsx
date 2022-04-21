@@ -1,7 +1,6 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
-import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -9,81 +8,93 @@ import useTransactionFormtStyles from "src/views/home/components/transaction-for
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import Error from "src/views/shared/error/error.view";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
-import tokens from "src/assets/tokens/tokens.json";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { chains } from "src/constants";
-import { useTransactionContext } from "src/contexts/transaction.context";
-import { Chain, Token } from "src/domain";
-import routes from "src/routes";
+import { Chain, TransactionData } from "src/domain";
+import { useEnvContext } from "src/contexts/env.context";
 
-export interface TransactionData {
-  from: Chain;
-  to: Chain;
-  token: Token;
-  amount?: BigNumber;
+interface TransactionFormProps {
+  onSubmit: (transactionData: TransactionData) => void;
 }
 
-const defaultTransaction: TransactionData = {
-  from: chains[0],
-  to: chains[1],
-  token: tokens[0],
-};
-
-const TransactionForm: FC = () => {
+const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const classes = useTransactionFormtStyles();
+  const env = useEnvContext();
   const [list, setList] = useState<List>();
-  const { transaction, setTransaction } = useTransactionContext();
   const [error, setError] = useState<string>();
-  const navigate = useNavigate();
-  const [localTransaction, setLocalTransaction] = useState(transaction || defaultTransaction);
-  const ChainFromIcon = localTransaction.from.icon;
-  const ChainToIcon = localTransaction.to.icon;
+  const [transactionData, setTransactionData] = useState<TransactionData>();
+
+  // const onChainToButtonClick = (to: Chain) => {
+  //   if (transactionData) {
+  //     setTransactionData({ ...transactionData, to });
+  //     setList(undefined);
+  //   }
+  // };
+
+  // const onTokenClick = (token: Token) => {
+  //   if (transactionData) {
+  //     setTransactionData({ ...transactionData, token });
+  //     setList(undefined);
+  //   }
+  // };
 
   const onChainFromButtonClick = (from: Chain) => {
-    setLocalTransaction({ ...localTransaction, from });
-    setList(undefined);
-  };
-  const onChainToButtonClick = (to: Chain) => {
-    setLocalTransaction({ ...localTransaction, to });
-    setList(undefined);
-  };
-  const onTokenClick = (token: Token) => {
-    setLocalTransaction({ ...localTransaction, token });
-    setList(undefined);
+    if (env && transactionData) {
+      const to = env.chains.find((chain) => chain.chainId !== from.chainId);
+
+      if (to) {
+        setTransactionData({ ...transactionData, from, to });
+        setList(undefined);
+      }
+    }
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
-    setLocalTransaction({ ...localTransaction, amount });
-    setError(error);
-  };
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (localTransaction.amount) {
-      setTransaction({
-        ...localTransaction,
-        amount: localTransaction.amount,
-      });
+    if (transactionData && amount) {
+      setTransactionData({ ...transactionData, amount });
+      setError(error);
     }
-    navigate(routes.transactionConfirmation.path);
   };
 
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (transactionData) {
+      onSubmit(transactionData);
+    }
+  };
+
+  useEffect(() => {
+    if (env) {
+      setTransactionData({
+        from: env.chains[0],
+        to: env.chains[1],
+        token: env.tokens.ETH,
+        amount: BigNumber.from(0),
+      });
+    }
+  }, [env]);
+
+  if (!env || !transactionData) {
+    return null;
+  }
+
   return (
-    <form className={classes.form} onSubmit={onSubmit}>
+    <form className={classes.form} onSubmit={onFormSubmit}>
       <Card className={classes.card}>
         <div className={classes.row}>
           <div className={classes.box}>
             <Typography type="body2">From</Typography>
             <button
-              className={classes.chainSelector}
+              className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
               onClick={() =>
-                setList({ type: "chain", items: chains, onClick: onChainFromButtonClick })
+                setList({ type: "chain", items: env.chains, onClick: onChainFromButtonClick })
               }
               type="button"
             >
-              <ChainFromIcon /> <Typography type="body1">{localTransaction.from.name}</Typography>
+              <transactionData.from.Icon />
+              <Typography type="body1">{transactionData.from.name}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -93,20 +104,18 @@ const TransactionForm: FC = () => {
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <button
+          <div
             className={classes.tokenSelector}
-            onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
-            type="button"
+            // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
           >
-            <TokenIcon token={localTransaction.token.symbol} size={24} />
-            <Typography type="h2">{localTransaction.token.symbol}</Typography>
-            <CaretDown className={classes.icons} />
-          </button>
+            <Icon url={transactionData.token.logoURI} size={24} />
+            <Typography type="h2">{transactionData.token.symbol}</Typography>
+            {/* <CaretDown className={classes.icons} /> */}
+          </div>
           <AmountInput
-            value={localTransaction.amount}
-            token={localTransaction.token}
-            balance={BigNumber.from(parseUnits("2.0", localTransaction.token.decimals))}
-            fee={BigNumber.from(parseUnits("0.0001", localTransaction.token.decimals))}
+            token={transactionData.token}
+            balance={BigNumber.from(parseUnits("2.0", transactionData.token.decimals))}
+            fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
             onChange={onInputChange}
           />
         </div>
@@ -120,16 +129,16 @@ const TransactionForm: FC = () => {
         <div className={classes.row}>
           <div className={classes.box}>
             <Typography type="body2">To</Typography>
-            <button
+            <div
               className={classes.chainSelector}
-              onClick={() =>
-                setList({ type: "chain", items: chains, onClick: onChainToButtonClick })
-              }
-              type="button"
+              // onClick={() =>
+              //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
+              // }
             >
-              <ChainToIcon /> <Typography type="body1">{localTransaction.to.name}</Typography>
-              <CaretDown />
-            </button>
+              <transactionData.to.Icon />
+              <Typography type="body1">{transactionData.to.name}</Typography>
+              {/* <CaretDown /> */}
+            </div>
           </div>
           <div className={classes.box}>
             <Typography type="body2">Balance</Typography>
@@ -141,12 +150,12 @@ const TransactionForm: FC = () => {
         <Button
           type="submit"
           disabled={
-            !localTransaction.amount || localTransaction.amount.isZero() || error !== undefined
+            !transactionData.amount || transactionData.amount.isZero() || error !== undefined
           }
         >
           Continue
         </Button>
-        {localTransaction.amount && error && <Error error={error} />}
+        {transactionData.amount && error && <Error error={error} />}
       </div>
       {list && (
         <List

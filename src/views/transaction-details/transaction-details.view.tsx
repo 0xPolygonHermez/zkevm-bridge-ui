@@ -9,12 +9,14 @@ import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import { demoData } from "src/views/activity/demo-data";
 import { getTimeFromNow } from "src/utils/time";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
 import { getTransactionStatusText } from "src/domain";
+import { useEnvContext } from "src/contexts/env.context";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
+  const env = useEnvContext();
   const data = demoData.find((demo) => demo.id.toString() === transactionId);
   const classes = useTransactionDetailsStyles({ status: data?.status || "initiated" });
 
@@ -28,7 +30,7 @@ const TransactionDetails: FC = () => {
       <Header title="Transaction Details" backTo="activity" />
       <Card className={classes.card}>
         <div className={classes.balance}>
-          <TokenIcon token={token} className={classes.tokenIcon} size={48} />
+          {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={48} />}
           <Typography type="h2">{`${amount} ${token.toUpperCase()}`}</Typography>
         </div>
         <div className={classes.row}>
@@ -71,7 +73,7 @@ const TransactionDetails: FC = () => {
             L2 Fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" size={20} /> 0.01ETH
+            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
           </Typography>
         </div>
         <div className={classes.row}>
@@ -79,7 +81,7 @@ const TransactionDetails: FC = () => {
             L1 gas fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            <TokenIcon token="eth" size={20} /> 0.01ETH
+            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
           </Typography>
         </div>
         <div className={`${classes.row} ${classes.lastRow}`}>

@@ -29,24 +29,24 @@ interface MerkleProof {
 }
 
 interface GetBridgesParams {
-  env: domain.Env;
+  apiUrl: string;
   ethereumAddress: string;
 }
 
 interface GetClaimStatusParams {
-  env: domain.Env;
+  apiUrl: string;
   originNetwork: number;
   depositCount: number;
 }
 
 interface GetMerkleProofParams {
-  env: domain.Env;
+  apiUrl: string;
   originNetwork: number;
   depositCount: number;
 }
 
 interface GetClaimsParams {
-  env: domain.Env;
+  apiUrl: string;
   ethereumAddress: string;
 }
 
@@ -162,10 +162,10 @@ const apiClaimToDomain = ({
   blockNumber: block_num,
 });
 
-const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
+const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
   return axios
     .request({
-      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      baseURL: apiUrl,
       url: `/bridges/${ethereumAddress}`,
       method: "GET",
     })
@@ -183,13 +183,13 @@ const getBridges = ({ env, ethereumAddress }: GetBridgesParams): Promise<domain.
 };
 
 const getClaimStatus = ({
-  env,
+  apiUrl,
   originNetwork,
   depositCount,
 }: GetClaimStatusParams): Promise<domain.ClaimStatus> => {
   return axios
     .request({
-      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      baseURL: apiUrl,
       url: `/claim-status`,
       method: "GET",
       params: {
@@ -209,13 +209,13 @@ const getClaimStatus = ({
 };
 
 const getMerkleProof = ({
-  env,
+  apiUrl,
   originNetwork,
   depositCount,
 }: GetMerkleProofParams): Promise<domain.MerkleProof> => {
   return axios
     .request({
-      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      baseURL: apiUrl,
       url: `/merkle-proofs`,
       method: "GET",
       params: {
@@ -234,10 +234,10 @@ const getMerkleProof = ({
     });
 };
 
-const getClaims = ({ env, ethereumAddress }: GetClaimsParams): Promise<domain.Claim[]> => {
+const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<domain.Claim[]> => {
   return axios
     .request({
-      baseURL: env.REACT_APP_BRIDGE_API_URL,
+      baseURL: apiUrl,
       url: `/claims/${ethereumAddress}`,
       method: "GET",
     })

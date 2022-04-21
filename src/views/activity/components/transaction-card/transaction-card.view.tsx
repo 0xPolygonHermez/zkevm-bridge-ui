@@ -9,8 +9,9 @@ import Card from "src/views/shared/card/card.view";
 import { getTimeFromNow } from "src/utils/time";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import { TransactionStatus, getTransactionStatusText } from "src/domain";
+import { useEnvContext } from "src/contexts/env.context";
 
 export interface TransactionCardProps {
   target: "l1" | "l2";
@@ -20,6 +21,11 @@ export interface TransactionCardProps {
   status: TransactionStatus;
   amount: number;
 }
+
+const layerIcons = {
+  l1: TransferL1Icon,
+  l2: TransferL2Icon,
+};
 
 const TransactionCard: FC<TransactionCardProps> = ({
   id,
@@ -31,11 +37,8 @@ const TransactionCard: FC<TransactionCardProps> = ({
 }) => {
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const IconsLayer = {
-    l1: TransferL1Icon,
-    l2: TransferL2Icon,
-  };
-  const Icon = status !== "completed" && status !== "failed" ? ReloadIcon : IconsLayer[target];
+  const env = useEnvContext();
+  const LayerIcon = status !== "completed" && status !== "failed" ? ReloadIcon : layerIcons[target];
   const actionText = target === "l1" ? "Transfer to L1" : "Transfer to L2";
 
   return (
@@ -47,7 +50,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
-          <Icon />
+          <LayerIcon />
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">{actionText}</Typography>
@@ -67,7 +70,7 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <TokenIcon token={token} className={classes.tokenIcon} size={20} />
+            {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />}
             <Typography type="body1">
               {amount} {token.toUpperCase()}
             </Typography>

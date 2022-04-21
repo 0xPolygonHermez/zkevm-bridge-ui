@@ -1,14 +1,16 @@
-import { ZodSchema } from "zod";
+import { ZodSchema, ZodTypeDef } from "zod";
 
 import { Exact } from "src/utils/types";
 
-export const StrictSchema: <T>() => <U>(
-  u: Exact<ZodSchema<T>, ZodSchema<U>> extends true
-    ? Exact<Required<T>, Required<U>> extends true
-      ? ZodSchema<U>
+export const StrictSchema: <I, O = I>() => <UO, UI = UO>(
+  u: Exact<ZodSchema<O, ZodTypeDef, I>, ZodSchema<UO, ZodTypeDef, UI>> extends true
+    ? Exact<Required<O>, Required<UO>> extends true
+      ? Exact<Required<I>, Required<UI>> extends true
+        ? ZodSchema<UO, ZodTypeDef, UI>
+        : never
       : never
     : never
-) => ZodSchema<T> =
+) => ZodSchema<O, ZodTypeDef, I> =
   () =>
-  <T>(u: unknown) =>
-    u as ZodSchema<T>;
+  <O, I = O>(u: unknown) =>
+    u as ZodSchema<O, ZodTypeDef, I>;

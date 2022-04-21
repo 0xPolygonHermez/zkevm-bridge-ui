@@ -4,7 +4,7 @@ import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
 import { ReactComponent as SearchIcon } from "src/assets/icons/search.svg";
 import Typography from "src/views/shared/typography/typography.view";
-import TokenIcon from "src/views/shared/token-icon/token-icon.view";
+import Icon from "src/views/shared/icon/icon.view";
 import { Chain, Token } from "src/domain";
 import Portal from "src/views/shared/portal/portal.view";
 
@@ -70,15 +70,13 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
           <div className={classes.list}>
             {values.type === "chain"
               ? values.items.slice(0, 20).map((element) => {
-                  const Icon = element.icon;
-
                   return (
                     <button
                       className={classes.button}
                       key={`${element.name}${element.chainId}`}
                       onClick={() => values.onClick(element)}
                     >
-                      <Icon className={classes.icon} />
+                      <element.Icon className={classes.icon} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );
@@ -90,7 +88,7 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
                       key={`${element.name}${element.address}`}
                       onClick={() => values.onClick(element)}
                     >
-                      <TokenIcon token={element.symbol} size={24} />
+                      <Icon url={element.logoURI} size={24} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );

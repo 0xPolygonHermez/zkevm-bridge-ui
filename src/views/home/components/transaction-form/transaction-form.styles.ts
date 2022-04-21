@@ -22,14 +22,17 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   chainSelector: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],
     marginLeft: -theme.spacing(1.25),
+    marginTop: theme.spacing(0.5),
     marginBottom: -theme.spacing(0.75),
     borderRadius: 8,
     display: "flex",
     alignItems: "center",
     gap: 8,
-    cursor: "pointer",
     border: "none",
     background: "none",
+  },
+  chainSelectorButton: {
+    cursor: "pointer",
     "&:hover": {
       backgroundColor: theme.palette.grey.light,
     },
@@ -42,17 +45,16 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   tokenSelector: {
     display: "flex",
     gap: theme.spacing(1),
-    padding: [theme.spacing(2), theme.spacing(2)],
+    padding: [theme.spacing(1.75), theme.spacing(1)],
     backgroundColor: theme.palette.grey.light,
     borderRadius: 8,
-    cursor: "pointer",
+    // cursor: "pointer",
     border: "none",
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
+    // "&:hover": {
+    //   backgroundColor: theme.palette.grey.main,
+    // },
     [theme.breakpoints.upSm]: {
-      paddingLeft: theme.spacing(1.25),
-      paddingRight: theme.spacing(1.25),
+      padding: [theme.spacing(1.5), theme.spacing(2)],
       gap: theme.spacing(2),
     },
   },

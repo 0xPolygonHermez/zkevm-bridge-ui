@@ -1,8 +1,11 @@
-import { Chain, Currency } from "src/domain";
-import { ReactComponent as EthChainIcon } from "src/assets/chains/ethereum.svg";
-import { ReactComponent as PolygonHermezChainIcon } from "src/assets/chains/polygon-hermez-chain.svg";
+import { ethers } from "ethers";
+
+import { Chain, Currency, Token } from "src/domain";
+import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
+import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 
 export const PREFERRED_CURRENCY_KEY = "currency";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
@@ -17,13 +20,49 @@ export const REPORT_ERROR_FORM_ENTRIES = {
 export const REPORT_ERROR_FORM_URL =
   "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
 
-export const USDT_DECIMALS = 6;
-
 export const UNISWAP_V3_POOL_FEE = 3000;
 
-export const FIAT_EXCHANGE_RATES_API_URL = "https://api.exchangeratesapi.io/v1/latest";
-
-export const chains: Chain[] = [
-  { name: "Ethereum chain", icon: EthChainIcon, chainId: 1337 },
-  { name: "Polygon Hermez chain", icon: PolygonHermezChainIcon, chainId: 1001 },
+export const getChains = ({
+  ethereumChainId,
+  polygonHermezChainId,
+}: {
+  ethereumChainId: number;
+  polygonHermezChainId: number;
+}): [Chain, Chain] => [
+  {
+    name: "Ethereum chain",
+    chainId: ethereumChainId,
+    Icon: EthChainIcon,
+  },
+  {
+    name: "Polygon Hermez chain",
+    chainId: polygonHermezChainId,
+    Icon: PolygonHermezChainIcon,
+  },
 ];
+
+export const getEthToken = ({ chainId }: { chainId: number }): Token => ({
+  name: "Ether",
+  address: ethers.constants.AddressZero,
+  symbol: "ETH",
+  decimals: 18,
+  chainId,
+  logoURI:
+    "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
+});
+
+export const getUsdtToken = ({
+  address,
+  chainId,
+}: {
+  address: string;
+  chainId: number;
+}): Token => ({
+  name: "Tether USD",
+  address,
+  symbol: "USDT",
+  decimals: 6,
+  chainId,
+  logoURI:
+    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+});
