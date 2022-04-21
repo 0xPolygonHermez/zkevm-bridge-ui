@@ -24,7 +24,7 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
     marginLeft: -theme.spacing(1.25),
     marginTop: theme.spacing(0.5),
     marginBottom: -theme.spacing(0.75),
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     display: "flex",
     alignItems: "center",
     gap: 8,
@@ -47,7 +47,7 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(1),
     padding: [theme.spacing(1.75), theme.spacing(1)],
     backgroundColor: theme.palette.grey.light,
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     // cursor: "pointer",
     border: "none",
     // "&:hover": {

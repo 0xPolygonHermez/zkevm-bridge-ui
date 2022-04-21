@@ -11,7 +11,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     margin: "auto",
     padding: [theme.spacing(1.25), theme.spacing(4)],
     background: theme.palette.grey.main,
-    borderRadius: theme.spacing(7),
+    borderRadius: 56,
   },
   cardWrap: {
     margin: [theme.spacing(3), 0],

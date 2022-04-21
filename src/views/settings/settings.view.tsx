@@ -37,7 +37,7 @@ const Settings: FC = () => {
 
   return (
     <>
-      <Header title="Settings" />
+      <Header title="Settings" backTo="home" />
       <Typography type="body2" className={classes.subtitle}>
         Hermez Polygon Bridge v.01
       </Typography>

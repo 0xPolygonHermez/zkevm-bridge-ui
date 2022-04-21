@@ -19,7 +19,7 @@ const Activity: FC = () => {
 
   return (
     <>
-      <Header title="Activity" />
+      <Header title="Activity" backTo="home" />
       <div className={classes.selectorBoxes}>
         <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
           <Typography type="body1" className={classes.status}>

@@ -9,7 +9,7 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
     fontSize: "20px",
     lineHeight: "24px",
     padding: theme.spacing(2),
-    borderRadius: theme.spacing(10),
+    borderRadius: 80,
     border: "none",
     width: "260px",
     cursor: "pointer",

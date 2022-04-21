@@ -70,7 +70,7 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(1),
     alignItems: "center",
     border: "none",
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     backgroundColor: theme.palette.grey.light,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,

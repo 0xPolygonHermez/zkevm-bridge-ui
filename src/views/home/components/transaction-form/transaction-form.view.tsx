@@ -23,7 +23,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const classes = useTransactionFormtStyles();
   const env = useEnvContext();
   const [list, setList] = useState<List>();
-  const [isInvalid, setIsInvalid] = useState(true);
+  const [error, setError] = useState<string>();
   const [transactionData, setTransactionData] = useState<TransactionData>();
 
   // const onChainToButtonClick = (to: Chain) => {
@@ -51,10 +51,10 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
     }
   };
 
-  const onInputChange = ({ amount, isInvalid }: { amount: BigNumber; isInvalid: boolean }) => {
-    if (transactionData) {
+  const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
+    if (transactionData && amount) {
       setTransactionData({ ...transactionData, amount });
-      setIsInvalid(isInvalid);
+      setError(error);
     }
   };
 
@@ -147,10 +147,15 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={!transactionData || isInvalid}>
+        <Button
+          type="submit"
+          disabled={
+            !transactionData.amount || transactionData.amount.isZero() || error !== undefined
+          }
+        >
           Continue
         </Button>
-        {isInvalid && !transactionData.amount.isZero() && <Error error="Insufficient balance" />}
+        {transactionData.amount && error && <Error error={error} />}
       </div>
       {list && (
         <List

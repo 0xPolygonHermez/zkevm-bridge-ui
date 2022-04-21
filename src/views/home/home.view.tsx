@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import useHomeStyles from "src/views/home/home.styles";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import Header from "src/views/home/components/header/header.view";
@@ -7,14 +9,17 @@ import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import { TransactionData } from "src/domain";
+import routes from "src/routes";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
+  const navigate = useNavigate();
   const { setTransaction } = useTransactionContext();
   const { account } = useProvidersContext();
 
   const onFormSubmit = (transaction: TransactionData) => {
     setTransaction(transaction);
+    navigate(routes.transactionConfirmation.path);
   };
 
   return (

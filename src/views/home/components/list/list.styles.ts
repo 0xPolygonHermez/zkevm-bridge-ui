@@ -53,7 +53,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(1),
     padding: theme.spacing(2),
     marginTop: theme.spacing(1),
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     cursor: "pointer",
     alignItems: "center",
     "&:hover": {

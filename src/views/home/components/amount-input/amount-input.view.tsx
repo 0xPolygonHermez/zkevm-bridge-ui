@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber, constants as ethersConstants } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useState } from "react";
 
@@ -7,49 +7,53 @@ import Typography from "src/views/shared/typography/typography.view";
 import { Token } from "src/domain";
 
 interface onChangeParams {
-  amount: BigNumber;
-  isInvalid: boolean;
+  amount?: BigNumber;
+  error?: string;
 }
 
 interface AmountInputProps {
+  value?: BigNumber;
   token: Token;
   balance: BigNumber;
   fee: BigNumber;
   onChange: (params: onChangeParams) => void;
 }
 
-const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) => {
-  const [value, setValue] = useState("");
-  const classes = useAmountInputStyles(value.length);
-  const actualFee = token.symbol === "WETH" ? fee : BigNumber.from(0);
+const getFixedTokenAmount = (amount: string, decimals: number): string => {
+  const amountWithDecimals = Number(amount) / Math.pow(10, decimals);
+  return Number(amountWithDecimals.toFixed(decimals)).toString();
+};
 
-  const getFixedTokenAmount = (amount: string, decimals: number): string => {
-    const amountWithDecimals = Number(amount) / Math.pow(10, decimals);
-    return Number(amountWithDecimals.toFixed(decimals)).toString();
-  };
+const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
+  const defaultInputValue = value ? getFixedTokenAmount(value.toString(), token.decimals) : "";
+  const [inputValue, setInputValue] = useState(defaultInputValue);
+  const classes = useAmountInputStyles(inputValue.length);
+  const actualFee = token.address === ethersConstants.AddressZero ? fee : BigNumber.from(0);
 
-  const updateAmountInput = (amount: BigNumber) => {
-    const newAmountWithFee = amount.add(actualFee);
-    const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
-    const isAmountInvalid = isNewAmountWithFeeMoreThanFunds || amount.isZero();
-
-    onChange({
-      amount,
-      isInvalid: isAmountInvalid,
-    });
+  const updateAmountInput = (amount?: BigNumber) => {
+    if (amount) {
+      const newAmountWithFee = amount.add(actualFee);
+      const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
+      const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
+      onChange({ amount, error });
+    } else {
+      onChange({});
+    }
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
     const decimals = token.decimals;
     const regexToken = `^(?!0\\d|\\.)\\d*(?:\\.\\d{0,${decimals}})?$`;
     const INPUT_REGEX = new RegExp(regexToken);
+    const isInputValid = INPUT_REGEX.test(value);
 
-    if (INPUT_REGEX.test(event.target.value)) {
-      const tokensValue = event.target.value.length > 0 ? event.target.value : "0";
-      const newAmountInTokens = parseUnits(tokensValue, token.decimals);
+    const newAmountInTokens =
+      value.length > 0 && isInputValid ? parseUnits(value, token.decimals) : undefined;
 
-      setValue(event.target.value);
+    if (isInputValid) {
       updateAmountInput(newAmountInTokens);
+      setInputValue(value);
     }
   };
 
@@ -58,7 +62,7 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
     const maxAmountWithoutFee = maxPossibleAmount.sub(actualFee);
     const newValue = getFixedTokenAmount(maxAmountWithoutFee.toString(), token.decimals);
 
-    setValue(newValue);
+    setInputValue(newValue);
     updateAmountInput(maxAmountWithoutFee);
   };
 
@@ -71,7 +75,7 @@ const AmountInput: FC<AmountInputProps> = ({ token, balance, fee, onChange }) =>
       </button>
       <input
         className={classes.amountInput}
-        value={value}
+        value={inputValue}
         placeholder="0.00"
         autoFocus
         onChange={handleInputChange}
