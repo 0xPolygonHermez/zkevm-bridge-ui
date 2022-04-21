@@ -33,7 +33,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   const updateAmountInput = (amount?: BigNumber) => {
     if (amount) {
       const newAmountWithFee = amount.add(actualFee);
-      const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(BigNumber.from(balance));
+      const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
       const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
       onChange({ amount, error });
     } else {
