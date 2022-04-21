@@ -28,7 +28,7 @@ export const getChains = ({
 }: {
   ethereumChainId: number;
   polygonHermezChainId: number;
-}): Chain[] => [
+}): [Chain, Chain] => [
   {
     name: "Ethereum chain",
     chainId: ethereumChainId,
