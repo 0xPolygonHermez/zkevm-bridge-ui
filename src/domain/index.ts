@@ -23,7 +23,7 @@ export interface Env {
   };
   l2Node: {
     rpcUrl: string;
-    chainId: number;
+    chainId: string;
   };
   bridge: {
     apiUrl: string;

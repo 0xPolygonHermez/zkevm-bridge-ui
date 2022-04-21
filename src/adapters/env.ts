@@ -18,22 +18,6 @@ interface Env {
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
 }
 
-const envParser = StrictSchema<Env>()(
-  z.object({
-    REACT_APP_L1_RPC_URL: z.string(),
-    REACT_APP_L1_CHAIN_ID: z.string(),
-    REACT_APP_L2_RPC_URL: z.string(),
-    REACT_APP_L2_CHAIN_ID: z.string(),
-    REACT_APP_BRIDGE_API_URL: z.string(),
-    REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: z.string(),
-    REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: z.string(),
-    REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
-    REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
-    REACT_APP_USDT_ADDRESS: z.string(),
-    REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
-  })
-);
-
 const envToDomain = ({
   REACT_APP_L1_RPC_URL,
   REACT_APP_L1_CHAIN_ID,
@@ -47,8 +31,8 @@ const envToDomain = ({
   REACT_APP_USDT_ADDRESS,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
 }: Env): domain.Env => {
-  const l1ChainId = Number(REACT_APP_L1_CHAIN_ID);
-  const l2ChainId = Number(REACT_APP_L2_CHAIN_ID);
+  const l1ChainId = z.number().positive().parse(Number(REACT_APP_L1_CHAIN_ID));
+  const l2ChainId = z.number().positive().parse(Number(REACT_APP_L2_CHAIN_ID));
 
   return {
     l1Node: {
@@ -57,7 +41,7 @@ const envToDomain = ({
     },
     l2Node: {
       rpcUrl: REACT_APP_L2_RPC_URL,
-      chainId: l2ChainId,
+      chainId: REACT_APP_L2_CHAIN_ID,
     },
     bridge: {
       apiUrl: REACT_APP_BRIDGE_API_URL,
@@ -85,10 +69,28 @@ const envToDomain = ({
   };
 };
 
+const envParser = StrictSchema<Env, domain.Env>()(
+  z
+    .object({
+      REACT_APP_L1_RPC_URL: z.string(),
+      REACT_APP_L1_CHAIN_ID: z.string(),
+      REACT_APP_L2_RPC_URL: z.string(),
+      REACT_APP_L2_CHAIN_ID: z.string(),
+      REACT_APP_BRIDGE_API_URL: z.string(),
+      REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
+      REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
+      REACT_APP_USDT_ADDRESS: z.string(),
+      REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
+    })
+    .transform(envToDomain)
+);
+
 const loadEnv = (): domain.Env => {
   const parsedEnv = envParser.parse(process.env);
 
-  return envToDomain(parsedEnv);
+  return parsedEnv;
 };
 
 export { loadEnv };
