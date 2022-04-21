@@ -41,7 +41,7 @@ const envToDomain = ({
     },
     l2Node: {
       rpcUrl: REACT_APP_L2_RPC_URL,
-      chainId: REACT_APP_L2_CHAIN_ID,
+      chainId: l2ChainId,
     },
     bridge: {
       apiUrl: REACT_APP_BRIDGE_API_URL,
