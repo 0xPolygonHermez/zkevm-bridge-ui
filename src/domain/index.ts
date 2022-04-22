@@ -132,3 +132,8 @@ export interface TransactionData {
   token: Token;
   amount: BigNumber;
 }
+
+export interface NetworkData {
+  chainId: number;
+  balance: BigNumber;
+}

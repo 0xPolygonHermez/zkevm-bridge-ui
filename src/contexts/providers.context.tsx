@@ -3,7 +3,7 @@ import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { EthereumEvent, WalletName } from "src/domain";
+import { EthereumEvent, NetworkData, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
@@ -16,6 +16,7 @@ interface ProvidersContext {
   l1Provider?: JsonRpcProvider;
   l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
+  networks?: NetworkData[];
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -38,6 +39,7 @@ const ProvidersProvider: FC = (props) => {
   const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
   const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
+  const [networks, setNetworks] = useState<NetworkData[]>();
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
 
@@ -129,6 +131,17 @@ const ProvidersProvider: FC = (props) => {
   }, [connectedProvider]);
 
   useEffect(() => {
+    if (account.status === "successful" && l1Provider && l2Provider) {
+      const providers = [l1Provider, l2Provider].map(async (provider) => {
+        const { chainId } = await provider.getNetwork();
+        const balance = await provider.getBalance(account.data);
+        return { chainId, balance };
+      });
+      void Promise.all(providers).then((provider) => setNetworks(provider));
+    }
+  }, [account, l1Provider, l2Provider]);
+
+  useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
       connectedProvider?.provider;
     const onAccountsChanged = (accounts: unknown): void => {
@@ -189,10 +202,19 @@ const ProvidersProvider: FC = (props) => {
       account,
       l1Provider,
       l2Provider,
+      networks,
       connectProvider,
       disconnectProvider,
     }),
-    [account, connectProvider, connectedProvider, disconnectProvider, l1Provider, l2Provider]
+    [
+      account,
+      connectProvider,
+      connectedProvider,
+      disconnectProvider,
+      l1Provider,
+      l2Provider,
+      networks,
+    ]
   );
 
   return <providersContext.Provider value={value} {...props} />;

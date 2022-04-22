@@ -1,6 +1,6 @@
 import { BigNumber, constants as ethersConstants } from "ethers";
-import { parseUnits } from "ethers/lib/utils";
-import { ChangeEvent, FC, useState } from "react";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 
 import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -12,20 +12,15 @@ interface onChangeParams {
 }
 
 interface AmountInputProps {
-  value?: BigNumber;
+  value: BigNumber;
   token: Token;
   balance: BigNumber;
   fee: BigNumber;
   onChange: (params: onChangeParams) => void;
 }
 
-const getFixedTokenAmount = (amount: string, decimals: number): string => {
-  const amountWithDecimals = Number(amount) / Math.pow(10, decimals);
-  return Number(amountWithDecimals.toFixed(decimals)).toString();
-};
-
 const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
-  const defaultInputValue = value ? getFixedTokenAmount(value.toString(), token.decimals) : "";
+  const defaultInputValue = value && !value.isZero() ? formatUnits(value, token.decimals) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
   const actualFee = token.address === ethersConstants.AddressZero ? fee : BigNumber.from(0);
@@ -58,13 +53,24 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   const handleSendAll = () => {
-    const maxPossibleAmount = BigNumber.from(balance);
+    const maxPossibleAmount = balance;
     const maxAmountWithoutFee = maxPossibleAmount.sub(actualFee);
-    const newValue = getFixedTokenAmount(maxAmountWithoutFee.toString(), token.decimals);
 
-    setInputValue(newValue);
-    updateAmountInput(maxAmountWithoutFee);
+    if (maxAmountWithoutFee.gt(0)) {
+      const newValue = formatUnits(maxAmountWithoutFee, token.decimals);
+
+      setInputValue(newValue);
+      updateAmountInput(maxAmountWithoutFee);
+    }
   };
+
+  useEffect(() => {
+    console.log(balance);
+    if (inputValue.length > 0) {
+      updateAmountInput(parseUnits(inputValue, token.decimals));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balance]);
 
   return (
     <div className={classes.wrapper}>

@@ -23,7 +23,7 @@ const TransactionConfirmation: FC = () => {
   const { bridge } = useBridgeContext();
   const { account } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
 
   useEffect(() => {
     //TODO Check network connected
@@ -41,9 +41,12 @@ const TransactionConfirmation: FC = () => {
 
   const onClick = () => {
     const { amount, to } = transaction;
-    if (account.status === "successful") {
+    if (account.status === "successful" && amount) {
       bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
-        .then(console.log)
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
+        })
         .catch(console.error);
     }
   };

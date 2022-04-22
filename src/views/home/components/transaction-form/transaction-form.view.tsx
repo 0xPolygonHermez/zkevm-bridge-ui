@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
@@ -12,19 +12,21 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { Chain, TransactionData } from "src/domain";
+import { Chain, TransactionData, NetworkData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
+  networks?: NetworkData[];
+  transaction?: TransactionData;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
+const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transaction }) => {
   const classes = useTransactionFormtStyles();
   const env = useEnvContext();
   const [list, setList] = useState<List>();
   const [error, setError] = useState<string>();
-  const [transactionData, setTransactionData] = useState<TransactionData>();
+  const [transactionData, setTransactionData] = useState<TransactionData | undefined>(transaction);
 
   // const onChainToButtonClick = (to: Chain) => {
   //   if (transactionData) {
@@ -65,8 +67,13 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
     }
   };
 
+  const getBalance = (chain: Chain) => {
+    const balance = networks?.find((network) => network.chainId === chain.chainId);
+    return balance ? balance.balance : BigNumber.from(0);
+  };
+
   useEffect(() => {
-    if (env) {
+    if (env && !transaction) {
       setTransactionData({
         from: env.chains[0],
         to: env.chains[1],
@@ -74,7 +81,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
         amount: BigNumber.from(0),
       });
     }
-  }, [env]);
+  }, [env, transaction]);
 
   if (!env || !transactionData) {
     return null;
@@ -98,9 +105,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
               <CaretDown />
             </button>
           </div>
-          <div className={classes.box}>
+          <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">2.0 ETH</Typography>
+            <Typography type="body1">
+              {ethers.utils.formatEther(getBalance(transactionData.from))} ETH
+            </Typography>
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
@@ -113,8 +122,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
             {/* <CaretDown className={classes.icons} /> */}
           </div>
           <AmountInput
+            value={transactionData.amount}
             token={transactionData.token}
-            balance={BigNumber.from(parseUnits("2.0", transactionData.token.decimals))}
+            balance={getBalance(transactionData.from)}
             fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
             onChange={onInputChange}
           />
@@ -140,9 +150,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
               {/* <CaretDown /> */}
             </div>
           </div>
-          <div className={classes.box}>
+          <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">2.0 ETH</Typography>
+            <Typography type="body1">
+              {ethers.utils.formatEther(getBalance(transactionData.to))} ETH
+            </Typography>
           </div>
         </div>
       </Card>

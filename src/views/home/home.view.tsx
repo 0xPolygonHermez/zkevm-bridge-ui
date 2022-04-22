@@ -14,8 +14,8 @@ import routes from "src/routes";
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
-  const { setTransaction } = useTransactionContext();
-  const { account } = useProvidersContext();
+  const { transaction, setTransaction } = useTransactionContext();
+  const { account, networks } = useProvidersContext();
 
   const onFormSubmit = (transaction: TransactionData) => {
     setTransaction(transaction);
@@ -31,7 +31,7 @@ const Home = (): JSX.Element => {
           <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
         </div>
       )}
-      <TransactionForm onSubmit={onFormSubmit} />
+      <TransactionForm onSubmit={onFormSubmit} networks={networks} transaction={transaction} />
     </>
   );
 };
