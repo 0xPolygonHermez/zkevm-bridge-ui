@@ -65,7 +65,6 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   useEffect(() => {
-    console.log(balance);
     if (inputValue.length > 0) {
       updateAmountInput(parseUnits(inputValue, token.decimals));
     }

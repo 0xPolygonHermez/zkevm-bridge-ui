@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
@@ -67,9 +67,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transac
     }
   };
 
+  const zeroBalance = useMemo(() => BigNumber.from(0), []);
+
   const getBalance = (chain: Chain) => {
     const balance = networks?.find((network) => network.chainId === chain.chainId);
-    return balance ? balance.balance : BigNumber.from(0);
+    return balance ? balance.balance : zeroBalance;
   };
 
   useEffect(() => {
