@@ -41,7 +41,7 @@ const TransactionConfirmation: FC = () => {
 
   const onClick = () => {
     const { amount, to } = transaction;
-    if (account.status === "successful" && amount) {
+    if (account.status === "successful") {
       bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
         .then(() => {
           navigate(routes.activity.path);
