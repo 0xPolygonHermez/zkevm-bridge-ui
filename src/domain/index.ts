@@ -5,6 +5,7 @@ export interface Chain {
   name: string;
   chainId: number;
   Icon: ComponentType<{ className?: string }>;
+  bridgeNetworkId: number;
 }
 
 export interface Token {
@@ -131,4 +132,5 @@ export interface TransactionData {
   to: Chain;
   token: Token;
   amount: BigNumber;
+  estimatedFee?: BigNumber;
 }

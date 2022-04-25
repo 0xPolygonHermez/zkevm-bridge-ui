@@ -3,7 +3,7 @@ import { createContext, FC, useContext, useEffect, useState, useCallback } from 
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
+import { Bridge, Chain, Claim, ClaimStatus, MerkleProof, Token } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
@@ -26,28 +26,33 @@ interface GetClaimsParams {
   ethereumAddress: string;
 }
 
+interface BridgeParams {
+  token: Token;
+  amount: BigNumber;
+  destinationChain: Chain;
+  destinationAddress: string;
+}
+
+interface ClaimParams {
+  originalTokenAddress: string;
+  amount: BigNumber;
+  originalNetwork: string;
+  destinationNetwork: number;
+  destinationAddress: string;
+  smtProof: string[];
+  globalExitRootNum: number;
+  mainnetExitRoot: string;
+  rollupExitRoot: string;
+}
+
 interface BridgeContext {
   getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
   getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
   getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
-  bridge: (
-    token: string,
-    amount: BigNumber,
-    destinationNetwork: number,
-    destinationAddress: string
-  ) => Promise<ContractTransaction>;
-  claim: (
-    originalTokenAddress: string,
-    amount: BigNumber,
-    originalNetwork: string,
-    destinationNetwork: number,
-    destinationAddress: string,
-    smtProof: string[],
-    globalExitRootNum: number,
-    mainnetExitRoot: string,
-    rollupExitRoot: string
-  ) => Promise<ContractTransaction>;
+  estimateBridgeGas: (params: BridgeParams) => Promise<BigNumber>;
+  bridge: (params: BridgeParams) => Promise<ContractTransaction>;
+  claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
 
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
@@ -63,6 +68,9 @@ const bridgeContext = createContext<BridgeContext>({
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getClaims: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  estimateBridgeGas: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   bridge: () => {
@@ -130,13 +138,29 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
+  const estimateBridgeGas = useCallback(
+    ({ token, amount, destinationChain, destinationAddress }: BridgeParams) => {
+      if (bridgeContract === undefined) {
+        throw new Error("Bridge contract is not available");
+      }
+
+      return bridgeContract.estimateGas.bridge(
+        token.address,
+        amount,
+        destinationChain.bridgeNetworkId,
+        destinationAddress
+      );
+    },
+    [bridgeContract]
+  );
+
   const bridge = useCallback(
-    async (
-      token: string,
-      amount: BigNumber,
-      destinationNetwork: number,
-      destinationAddress: string
-    ): Promise<ContractTransaction> => {
+    async ({
+      token,
+      amount,
+      destinationChain,
+      destinationAddress,
+    }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
         throw new Error("Environment is not available");
       }
@@ -145,10 +169,14 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      if (token === ethersConstants.AddressZero) {
-        return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress, {
-          value: amount,
-        });
+      if (token.address === ethersConstants.AddressZero) {
+        return bridgeContract.bridge(
+          token.address,
+          amount,
+          destinationChain.bridgeNetworkId,
+          destinationAddress,
+          { value: amount }
+        );
       } else {
         if (connectedProvider === undefined) {
           throw new Error("There is no Ethereum provider connected");
@@ -158,7 +186,7 @@ const BridgeProvider: FC = (props) => {
           throw new Error("The account address is not available");
         }
 
-        const erc20Contract = Erc20__factory.connect(token, connectedProvider.getSigner());
+        const erc20Contract = Erc20__factory.connect(token.address, connectedProvider.getSigner());
         const allowance = await erc20Contract.allowance(account.data, env.bridge.l1ContractAddress);
 
         if (allowance.lt(amount)) {
@@ -166,23 +194,28 @@ const BridgeProvider: FC = (props) => {
         }
       }
 
-      return bridgeContract.bridge(token, amount, destinationNetwork, destinationAddress);
+      return bridgeContract.bridge(
+        token.address,
+        amount,
+        destinationChain.bridgeNetworkId,
+        destinationAddress
+      );
     },
     [env, bridgeContract, connectedProvider, account]
   );
 
   const claim = useCallback(
-    async (
-      originalTokenAddress: string,
-      amount: BigNumber,
-      originalNetwork: string,
-      destinationNetwork: number,
-      destinationAddress: string,
-      smtProof: string[],
-      globalExitRootNum: number,
-      mainnetExitRoot: string,
-      rollupExitRoot: string
-    ): Promise<ContractTransaction> => {
+    async ({
+      originalTokenAddress,
+      amount,
+      originalNetwork,
+      destinationNetwork,
+      destinationAddress,
+      smtProof,
+      globalExitRootNum,
+      mainnetExitRoot,
+      rollupExitRoot,
+    }: ClaimParams): Promise<ContractTransaction> => {
       if (bridgeContract === undefined) {
         throw new Error("Bridge contract is not available");
       }
@@ -220,7 +253,15 @@ const BridgeProvider: FC = (props) => {
 
   return (
     <bridgeContext.Provider
-      value={{ getBridges, getClaimStatus, getMerkleProof, getClaims, bridge, claim }}
+      value={{
+        getBridges,
+        getClaimStatus,
+        getMerkleProof,
+        getClaims,
+        estimateBridgeGas,
+        bridge,
+        claim,
+      }}
       {...props}
     />
   );

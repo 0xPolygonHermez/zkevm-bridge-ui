@@ -7,11 +7,12 @@ import { getChains, getEthToken, getUsdtToken } from "src/constants";
 interface Env {
   REACT_APP_L1_RPC_URL: string;
   REACT_APP_L1_CHAIN_ID: string;
-  REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_L2_RPC_URL: string;
   REACT_APP_L2_CHAIN_ID: string;
-  REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_BRIDGE_API_URL: string;
+  REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: string;
+  REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: string;
+  REACT_APP_BRIDGE_POLYGON_HERMEZ_NETWORK_ID: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
   REACT_APP_USDT_ADDRESS: string;
@@ -26,6 +27,7 @@ const envToDomain = ({
   REACT_APP_BRIDGE_API_URL,
   REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS,
   REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS,
+  REACT_APP_BRIDGE_POLYGON_HERMEZ_NETWORK_ID,
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
   REACT_APP_USDT_ADDRESS,
@@ -33,6 +35,10 @@ const envToDomain = ({
 }: Env): domain.Env => {
   const l1ChainId = z.number().positive().parse(Number(REACT_APP_L1_CHAIN_ID));
   const l2ChainId = z.number().positive().parse(Number(REACT_APP_L2_CHAIN_ID));
+  const bridgePolygonHermezNetworkId = z
+    .number()
+    .positive()
+    .parse(Number(REACT_APP_BRIDGE_POLYGON_HERMEZ_NETWORK_ID));
 
   return {
     l1Node: {
@@ -58,6 +64,7 @@ const envToDomain = ({
     chains: getChains({
       ethereumChainId: l1ChainId,
       polygonHermezChainId: l2ChainId,
+      bridgePolygonHermezNetworkId,
     }),
     tokens: {
       ETH: getEthToken({ chainId: l1ChainId }),
@@ -79,6 +86,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_BRIDGE_API_URL: z.string(),
       REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: z.string(),
       REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_BRIDGE_POLYGON_HERMEZ_NETWORK_ID: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
       REACT_APP_USDT_ADDRESS: z.string(),

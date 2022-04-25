@@ -22,22 +22,28 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
+export const BRIDGE_ETHEREUM_NETWORK_ID = 0;
+
 export const getChains = ({
   ethereumChainId,
   polygonHermezChainId,
+  bridgePolygonHermezNetworkId,
 }: {
   ethereumChainId: number;
   polygonHermezChainId: number;
+  bridgePolygonHermezNetworkId: number;
 }): [Chain, Chain] => [
   {
     name: "Ethereum chain",
     chainId: ethereumChainId,
     Icon: EthChainIcon,
+    bridgeNetworkId: 0,
   },
   {
     name: "Polygon Hermez chain",
     chainId: polygonHermezChainId,
     Icon: PolygonHermezChainIcon,
+    bridgeNetworkId: bridgePolygonHermezNetworkId,
   },
 ];
 
