@@ -13,6 +13,7 @@ import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { ethers } from "ethers";
+import { hexValue } from "ethers/lib/utils";
 import Icon from "src/views/shared/icon/icon.view";
 import { useEnvContext } from "src/contexts/env.context";
 
@@ -21,13 +22,17 @@ const TransactionConfirmation: FC = () => {
   const env = useEnvContext();
   const [isDisabled, setIsDisabled] = useState(false);
   const { bridge } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
   const { transaction } = useTransactionContext();
 
   useEffect(() => {
-    //TODO Check network connected
-  }, [setIsDisabled]);
+    if (connectedProvider && transaction) {
+      void connectedProvider.getNetwork().then((provider) => {
+        setIsDisabled(provider.chainId !== transaction.from.chainId);
+      });
+    }
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (!transaction) {
@@ -82,7 +87,15 @@ const TransactionConfirmation: FC = () => {
         <Button onClick={onClick} disabled={isDisabled}>
           Transfer
         </Button>
-        {isDisabled && <Error error="Switch to Polygon Hermez chain to continue" />}
+        {isDisabled && <Error error={`Switch to ${transaction.from.name} to continue`} />}
+        {isDisabled && connectedProvider?.connection.url === "metamask" && (
+          <button
+            onClick={() => changeNetwork(hexValue(transaction.from.chainId))}
+            className={classes.changeButton}
+          >
+            Change Network
+          </button>
+        )}
       </div>
     </>
   );

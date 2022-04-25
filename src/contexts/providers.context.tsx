@@ -4,7 +4,11 @@ import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
 import { EthereumEvent, WalletName } from "src/domain";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import {
+  AsyncTask,
+  isMetamaskUnknownChainError,
+  isMetamaskUserRejectedRequestError,
+} from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
@@ -16,6 +20,7 @@ interface ProvidersContext {
   l1Provider?: JsonRpcProvider;
   l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
+  changeNetwork: (chainId: string) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -24,6 +29,7 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
+  changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
@@ -128,6 +134,44 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
+  const changeNetwork = useCallback(
+    async (chainId: string) => {
+      if (window.ethereum && window.ethereum.request) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId }],
+          });
+        } catch (switchError) {
+          void parseError(switchError).then(async (errorMsg) => {
+            if (isMetamaskUnknownChainError(switchError)) {
+              try {
+                if (env && window.ethereum && window.ethereum.request) {
+                  await window.ethereum.request({
+                    method: "wallet_addEthereumChain",
+                    params: [
+                      {
+                        chainId: chainId,
+                        chainName: "Polygon Hermez",
+                        rpcUrls: [env.l2Node.rpcUrl],
+                      },
+                    ],
+                  });
+                }
+              } catch (addError) {
+                openSnackbar({
+                  type: "error",
+                  parsed: errorMsg,
+                });
+              }
+            }
+          });
+        }
+      }
+    },
+    [env, openSnackbar]
+  );
+
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
       connectedProvider?.provider;
@@ -144,7 +188,11 @@ const ProvidersProvider: FC = (props) => {
       }
     };
     const onChainChangedOrDisconnect = () => {
-      window.location.reload();
+      if (connectedProvider?.connection.url === "eip-1193:") {
+        void connectProvider(WalletName.WALLET_CONNECT);
+      } else {
+        void connectProvider(WalletName.METAMASK);
+      }
     };
 
     if (
@@ -174,7 +222,7 @@ const ProvidersProvider: FC = (props) => {
         );
       }
     };
-  }, [connectedProvider, navigate]);
+  }, [connectProvider, connectedProvider, navigate]);
 
   useEffect(() => {
     if (env) {
@@ -189,10 +237,19 @@ const ProvidersProvider: FC = (props) => {
       account,
       l1Provider,
       l2Provider,
+      changeNetwork,
       connectProvider,
       disconnectProvider,
     }),
-    [account, connectProvider, connectedProvider, disconnectProvider, l1Provider, l2Provider]
+    [
+      account,
+      changeNetwork,
+      connectProvider,
+      connectedProvider,
+      disconnectProvider,
+      l1Provider,
+      l2Provider,
+    ]
   );
 
   return <providersContext.Provider value={value} {...props} />;
