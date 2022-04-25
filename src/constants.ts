@@ -34,13 +34,15 @@ export const getChains = ({
   bridgePolygonHermezNetworkId: number;
 }): [Chain, Chain] => [
   {
-    name: "Ethereum chain",
+    name: "ethereum",
+    label: "Ethereum chain",
     chainId: ethereumChainId,
     Icon: EthChainIcon,
     bridgeNetworkId: 0,
   },
   {
-    name: "Polygon Hermez chain",
+    name: "polygon-hermez",
+    label: "Polygon Hermez chain",
     chainId: polygonHermezChainId,
     Icon: PolygonHermezChainIcon,
     bridgeNetworkId: bridgePolygonHermezNetworkId,

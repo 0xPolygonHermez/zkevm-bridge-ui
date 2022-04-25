@@ -28,10 +28,16 @@ const TransactionConfirmation: FC = () => {
 
   const onClick = () => {
     if (transaction) {
-      const { token, amount, to } = transaction;
+      const { token, amount, from, to } = transaction;
 
       if (account.status === "successful") {
-        bridge({ token, amount, destinationChain: to, destinationAddress: account.data })
+        bridge({
+          chain: from,
+          token,
+          amount,
+          destinationChain: to,
+          destinationAddress: account.data,
+        })
           .then(console.log)
           .catch(console.error);
       }
@@ -62,11 +68,11 @@ const TransactionConfirmation: FC = () => {
         }`}</Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <transaction.from.Icon /> {transaction.from.name}
+            <transaction.from.Icon /> {transaction.from.label}
           </div>
           <ArrowRightIcon className={classes.arrow} />
           <div className={classes.chainBox}>
-            <transaction.to.Icon /> {transaction.to.name}
+            <transaction.to.Icon /> {transaction.to.label}
           </div>
         </div>
         <div className={classes.fees}>

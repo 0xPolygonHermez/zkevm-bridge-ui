@@ -2,7 +2,8 @@ import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 
 export interface Chain {
-  name: string;
+  name: "ethereum" | "polygon-hermez";
+  label: string;
   chainId: number;
   Icon: ComponentType<{ className?: string }>;
   bridgeNetworkId: number;

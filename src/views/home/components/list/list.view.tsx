@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -30,7 +30,7 @@ interface ListProps {
 
 const filterChainList = (chainList: ChainList, value: string): ChainList => ({
   ...chainList,
-  items: chainList.items.filter((chain) => chain.name.toUpperCase().includes(value.toUpperCase())),
+  items: chainList.items.filter((chain) => chain.label.toUpperCase().includes(value.toUpperCase())),
 });
 
 const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
@@ -45,6 +45,7 @@ const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
 const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
   const classes = useListStyles();
   const [values, setValues] = useState(list);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value.trim();
@@ -59,13 +60,24 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
     onClose();
   };
 
+  useEffect(() => {
+    if (inputRef && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   return (
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.search}>
             <SearchIcon />
-            <input className={classes.input} placeholder={placeholder} onChange={onChange} />
+            <input
+              ref={inputRef}
+              className={classes.input}
+              placeholder={placeholder}
+              onChange={onChange}
+            />
           </div>
           <div className={classes.list}>
             {values.type === "chain"
@@ -73,11 +85,11 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
                   return (
                     <button
                       className={classes.button}
-                      key={`${element.name}${element.chainId}`}
+                      key={element.name}
                       onClick={() => values.onClick(element)}
                     >
                       <element.Icon className={classes.icon} />
-                      <Typography type="body1">{element.name}</Typography>
+                      <Typography type="body1">{element.label}</Typography>
                     </button>
                   );
                 })
@@ -85,7 +97,7 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
                   return (
                     <button
                       className={classes.button}
-                      key={`${element.name}${element.address}`}
+                      key={element.address}
                       onClick={() => values.onClick(element)}
                     >
                       <Icon url={element.logoURI} size={24} />

@@ -27,6 +27,7 @@ interface GetClaimsParams {
 }
 
 interface BridgeParams {
+  chain: Chain;
   token: Token;
   amount: BigNumber;
   destinationChain: Chain;
@@ -34,11 +35,13 @@ interface BridgeParams {
 }
 
 interface ClaimParams {
+  chain: Chain;
   originalTokenAddress: string;
   amount: BigNumber;
   originalNetwork: string;
   destinationNetwork: number;
   destinationAddress: string;
+  index: number;
   smtProof: string[];
   globalExitRootNum: number;
   mainnetExitRoot: string;
@@ -83,8 +86,9 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, account } = useProvidersContext();
-  const [bridgeContract, setBridgeContract] = useState<BridgeContract>();
+  const { l1Provider, l2Provider, connectedProvider, account } = useProvidersContext();
+  const [l1BridgeContract, setL1BridgeContract] = useState<BridgeContract>();
+  const [l2BridgeContract, setL2BridgeContract] = useState<BridgeContract>();
 
   const getBridges = useCallback(
     ({ ethereumAddress }: GetBridgesParams) => {
@@ -139,23 +143,26 @@ const BridgeProvider: FC = (props) => {
   );
 
   const estimateBridgeGas = useCallback(
-    ({ token, amount, destinationChain, destinationAddress }: BridgeParams) => {
-      if (bridgeContract === undefined) {
+    ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
+      const contract = chain.name === "ethereum" ? l1BridgeContract : l2BridgeContract;
+
+      if (contract === undefined) {
         throw new Error("Bridge contract is not available");
       }
 
-      return bridgeContract.estimateGas.bridge(
+      return contract.estimateGas.bridge(
         token.address,
         amount,
         destinationChain.bridgeNetworkId,
         destinationAddress
       );
     },
-    [bridgeContract]
+    [l1BridgeContract, l2BridgeContract]
   );
 
   const bridge = useCallback(
     async ({
+      chain,
       token,
       amount,
       destinationChain,
@@ -165,12 +172,17 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Environment is not available");
       }
 
-      if (bridgeContract === undefined) {
-        throw new Error("Bridge contract is not available");
+      if (connectedProvider === undefined) {
+        throw new Error("Connected provider is not available");
       }
 
+      const contract =
+        chain.name === "ethereum"
+          ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
+          : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
+
       if (token.address === ethersConstants.AddressZero) {
-        return bridgeContract.bridge(
+        return contract.bridge(
           token.address,
           amount,
           destinationChain.bridgeNetworkId,
@@ -178,10 +190,6 @@ const BridgeProvider: FC = (props) => {
           { value: amount }
         );
       } else {
-        if (connectedProvider === undefined) {
-          throw new Error("There is no Ethereum provider connected");
-        }
-
         if (account.status !== "successful") {
           throw new Error("The account address is not available");
         }
@@ -194,37 +202,44 @@ const BridgeProvider: FC = (props) => {
         }
       }
 
-      return bridgeContract.bridge(
+      return contract.bridge(
         token.address,
         amount,
         destinationChain.bridgeNetworkId,
         destinationAddress
       );
     },
-    [env, bridgeContract, connectedProvider, account]
+    [env, connectedProvider, account]
   );
 
   const claim = useCallback(
     async ({
+      chain,
       originalTokenAddress,
       amount,
       originalNetwork,
       destinationNetwork,
       destinationAddress,
+      index,
       smtProof,
       globalExitRootNum,
       mainnetExitRoot,
       rollupExitRoot,
     }: ClaimParams): Promise<ContractTransaction> => {
-      if (bridgeContract === undefined) {
-        throw new Error("Bridge contract is not available");
+      if (env === undefined) {
+        throw new Error("Environment is not available");
       }
 
-      const filter = bridgeContract.filters.ClaimEvent(null, null, null, null, null);
-      const events = await bridgeContract.queryFilter(filter, 0, "latest");
-      const index = events.length;
+      if (connectedProvider === undefined) {
+        throw new Error("Connected provider is not available");
+      }
 
-      return bridgeContract.claim(
+      const contract =
+        chain.name === "ethereum"
+          ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
+          : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
+
+      return contract.claim(
         originalTokenAddress,
         amount,
         originalNetwork,
@@ -237,19 +252,24 @@ const BridgeProvider: FC = (props) => {
         rollupExitRoot
       );
     },
-    [bridgeContract]
+    [env, connectedProvider]
   );
 
   useEffect(() => {
-    if (env && connectedProvider) {
-      const contract = Bridge__factory.connect(
-        env.bridge.l1ContractAddress,
-        connectedProvider.getSigner()
-      );
+    if (env && l1Provider) {
+      const contract = Bridge__factory.connect(env.bridge.l1ContractAddress, l1Provider);
 
-      setBridgeContract(contract);
+      setL1BridgeContract(contract);
     }
-  }, [env, connectedProvider]);
+  }, [env, l1Provider]);
+
+  useEffect(() => {
+    if (env && l2Provider) {
+      const contract = Bridge__factory.connect(env.bridge.l2ContractAddress, l2Provider);
+
+      setL2BridgeContract(contract);
+    }
+  }, [env, l2Provider]);
 
   return (
     <bridgeContext.Provider

@@ -16,6 +16,7 @@ import { Chain, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
 }
@@ -51,6 +52,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
       if (to) {
         setList(undefined);
         estimateBridgeGas({
+          chain: from,
           token: transactionData.token,
           amount: accountBalance,
           destinationChain: to,
@@ -91,6 +93,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
       };
 
       estimateBridgeGas({
+        chain: initialTransactionData.from,
         token: initialTransactionData.token,
         amount: accountBalance,
         destinationChain: initialTransactionData.to,
@@ -117,12 +120,16 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
             <button
               className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
               onClick={() =>
-                setList({ type: "chain", items: env.chains, onClick: onChainFromButtonClick })
+                setList({
+                  type: "chain",
+                  items: env.chains,
+                  onClick: onChainFromButtonClick,
+                })
               }
               type="button"
             >
               <transactionData.from.Icon />
-              <Typography type="body1">{transactionData.from.name}</Typography>
+              <Typography type="body1">{transactionData.from.label}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -164,7 +171,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
               // }
             >
               <transactionData.to.Icon />
-              <Typography type="body1">{transactionData.to.name}</Typography>
+              <Typography type="body1">{transactionData.to.label}</Typography>
               {/* <CaretDown /> */}
             </div>
           </div>
