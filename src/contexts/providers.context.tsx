@@ -159,11 +159,18 @@ const ProvidersProvider: FC = (props) => {
                   });
                 }
               } catch (addError) {
-                openSnackbar({
-                  type: "error",
-                  parsed: errorMsg,
+                void parseError(addError).then((errorMsg) => {
+                  openSnackbar({
+                    type: "error",
+                    parsed: errorMsg,
+                  });
                 });
               }
+            } else {
+              openSnackbar({
+                type: "error",
+                parsed: errorMsg,
+              });
             }
           });
         }
