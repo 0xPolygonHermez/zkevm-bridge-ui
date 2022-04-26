@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction, getTransactionStatusText } from "src/domain";
-import { useEnvContext } from "src/contexts/env.context";
 import { formatEther } from "ethers/lib/utils";
 
 export interface TransactionCardProps {
@@ -24,7 +23,6 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   const { status, destination, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const env = useEnvContext();
   const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destination.networkId];
   const actionText = destination.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
   const id = `${destination.networkId}-${depositCount}`;
@@ -50,7 +48,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />}
+            <Icon url={transaction.token.logoURI} className={classes.tokenIcon} size={20} />
             <Typography type="body1">{formatEther(amount)} ETH</Typography>
           </div>
         </div>
