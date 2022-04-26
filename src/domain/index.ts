@@ -59,23 +59,6 @@ export enum EthereumEvent {
   DISCONNECT = "disconnect",
 }
 
-export type TransactionStatus = "processing" | "initiated" | "on-hold" | "completed" | "failed";
-
-export function getTransactionStatusText(status: TransactionStatus): string {
-  switch (status) {
-    case "processing":
-      return "Processing";
-    case "initiated":
-      return "Initiated";
-    case "on-hold":
-      return "On Hold";
-    case "completed":
-      return "Completed";
-    case "failed":
-      return "Error";
-  }
-}
-
 export enum Currency {
   EUR = "EUR",
   USD = "USD",
@@ -109,6 +92,17 @@ export type Transaction =
   | ({
       status: "completed";
     } & ClaimedTransaction);
+
+export function getTransactionStatusText(status: Transaction["status"]): string {
+  switch (status) {
+    case "initiated":
+      return "Initiated";
+    case "on-hold":
+      return "On Hold";
+    case "completed":
+      return "Completed";
+  }
+}
 
 export type ClaimableTransaction = Bridge & MerkleProof;
 

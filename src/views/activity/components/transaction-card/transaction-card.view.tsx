@@ -9,24 +9,13 @@ import Card from "src/views/shared/card/card.view";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
-import { Transaction } from "src/domain";
+import { Transaction, getTransactionStatusText } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { formatEther } from "ethers/lib/utils";
 
 export interface TransactionCardProps {
   transaction: Transaction;
-}
-
-export function getTransactionStatusText(status: Transaction["status"]): string {
-  switch (status) {
-    case "initiated":
-      return "Initiated";
-    case "on-hold":
-      return "On Hold";
-    case "completed":
-      return "Completed";
-  }
 }
 
 const layerIcons = [TransferL1Icon, TransferL2Icon];
