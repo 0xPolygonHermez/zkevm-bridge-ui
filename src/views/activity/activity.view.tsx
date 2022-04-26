@@ -8,10 +8,11 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { Transaction } from "src/domain";
 
 const Activity: FC = () => {
-  const { getTransactions } = useBridgeContext();
+  const { getTransactions, claim } = useBridgeContext();
   const { account } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
@@ -20,6 +21,31 @@ const Activity: FC = () => {
 
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
+
+  const onClaim = (tx: Transaction) => {
+    if (tx.status === "on-hold") {
+      void claim(
+        tx.token.address,
+        tx.amount,
+        tx.origin.networkId.toString(),
+        tx.destination.networkId,
+        tx.destinationAddress,
+        tx.merkleProof,
+        tx.exitRootNumber,
+        tx.mainExitRoot,
+        tx.rollupExitRoot
+      ).catch((error) => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          void parseError(error).then((parsed) => {
+            openSnackbar({
+              type: "error",
+              parsed,
+            });
+          });
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     if (account.status === "successful") {
@@ -65,6 +91,7 @@ const Activity: FC = () => {
       {filteredList.map((transaction) => (
         <TransactionCard
           transaction={transaction}
+          onClaim={() => onClaim(transaction)}
           key={`${transaction.destination.networkId}-${transaction.depositCount}`}
         />
       ))}

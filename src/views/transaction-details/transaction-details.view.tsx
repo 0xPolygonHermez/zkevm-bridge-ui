@@ -15,7 +15,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
-import { AsyncTask } from "src/utils/types";
+import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { formatEther } from "ethers/lib/utils";
 
 const TransactionDetails: FC = () => {
@@ -31,32 +31,29 @@ const TransactionDetails: FC = () => {
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
 
-  // ToDo: parse the error
   const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
-      const {
-        amount,
-        destination,
-        destinationAddress,
-        exitRootNumber,
-        mainExitRoot,
-        merkleProof,
-        origin,
-        rollupExitRoot,
-        token,
-      } = transaction.data;
-
+      const tx = transaction.data;
       void claim(
-        token.address,
-        amount,
-        origin.networkId.toString(),
-        destination.networkId,
-        destinationAddress,
-        merkleProof,
-        exitRootNumber,
-        mainExitRoot,
-        rollupExitRoot
-      );
+        tx.token.address,
+        tx.amount,
+        tx.origin.networkId.toString(),
+        tx.destination.networkId,
+        tx.destinationAddress,
+        tx.merkleProof,
+        tx.exitRootNumber,
+        tx.mainExitRoot,
+        tx.rollupExitRoot
+      ).catch((error) => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          void parseError(error).then((parsed) => {
+            openSnackbar({
+              type: "error",
+              parsed,
+            });
+          });
+        }
+      });
     }
   };
 

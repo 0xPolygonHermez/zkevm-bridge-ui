@@ -11,50 +11,23 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction, getTransactionStatusText } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { formatEther } from "ethers/lib/utils";
 
 export interface TransactionCardProps {
   transaction: Transaction;
+  onClaim: () => void;
 }
 
 const layerIcons = [TransferL1Icon, TransferL2Icon];
 
-const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
-  const { status, origin, destination, depositCount, amount } = transaction;
+const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
+  const { status, destination, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
-  const { claim } = useBridgeContext();
   const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destination.networkId];
   const actionText = destination.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
   const id = `${destination.networkId}-${depositCount}`;
-
-  // ToDo: parse the error
-  const onClaim = () => {
-    if (transaction.status === "on-hold") {
-      const {
-        token,
-        destinationAddress,
-        merkleProof,
-        exitRootNumber,
-        mainExitRoot,
-        rollupExitRoot,
-      } = transaction;
-
-      void claim(
-        token.address,
-        amount,
-        origin.networkId.toString(),
-        destination.networkId,
-        destinationAddress,
-        merkleProof,
-        exitRootNumber,
-        mainExitRoot,
-        rollupExitRoot
-      );
-    }
-  };
 
   return (
     <Card
