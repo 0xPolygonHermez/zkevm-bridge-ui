@@ -293,4 +293,4 @@ const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<domain
     });
 };
 
-export { getTransactions as getBridges, getClaimStatus, getMerkleProof, getClaims };
+export { getTransactions };

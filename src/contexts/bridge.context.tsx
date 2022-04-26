@@ -3,34 +3,17 @@ import { createContext, FC, useContext, useEffect, useState, useCallback } from 
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Transaction, Claim, ClaimStatus, MerkleProof } from "src/domain";
+import { Transaction } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 
-interface GetBridgesParams {
-  ethereumAddress: string;
-}
-
-interface GetClaimStatusParams {
-  originNetwork: number;
-  depositCount: number;
-}
-
-interface GetMerkleProofParams {
-  originNetwork: number;
-  depositCount: number;
-}
-
-interface GetClaimsParams {
+interface GetTransactionsParams {
   ethereumAddress: string;
 }
 
 interface BridgeContext {
-  getBridges: (params: GetBridgesParams) => Promise<Transaction[]>;
-  getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
-  getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
-  getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
+  getTransactions: (params: GetTransactionsParams) => Promise<Transaction[]>;
   bridge: (
     token: string,
     amount: BigNumber,
@@ -53,16 +36,7 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
-  getBridges: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  getClaimStatus: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  getMerkleProof: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  getClaims: () => {
+  getTransactions: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   bridge: () => {
@@ -78,54 +52,13 @@ const BridgeProvider: FC = (props) => {
   const { connectedProvider, account } = useProvidersContext();
   const [bridgeContract, setBridgeContract] = useState<BridgeContract>();
 
-  const getBridges = useCallback(
-    ({ ethereumAddress }: GetBridgesParams) => {
+  const getTransactions = useCallback(
+    ({ ethereumAddress }: GetTransactionsParams) => {
       if (env === undefined) {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getBridges({ apiUrl: env.bridge.apiUrl, ethereumAddress });
-    },
-    [env]
-  );
-
-  const getClaimStatus = useCallback(
-    ({ originNetwork, depositCount }: GetClaimStatusParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
-      return bridgeApi.getClaimStatus({
-        apiUrl: env.bridge.apiUrl,
-        originNetwork,
-        depositCount,
-      });
-    },
-    [env]
-  );
-
-  const getMerkleProof = useCallback(
-    ({ originNetwork, depositCount }: GetMerkleProofParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
-      return bridgeApi.getMerkleProof({
-        apiUrl: env.bridge.apiUrl,
-        originNetwork,
-        depositCount,
-      });
-    },
-    [env]
-  );
-
-  const getClaims = useCallback(
-    ({ ethereumAddress }: GetClaimsParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
-      return bridgeApi.getClaims({ apiUrl: env.bridge.apiUrl, ethereumAddress });
+      return bridgeApi.getTransactions({ apiUrl: env.bridge.apiUrl, ethereumAddress });
     },
     [env]
   );
@@ -221,12 +154,7 @@ const BridgeProvider: FC = (props) => {
     }
   }, [env, connectedProvider]);
 
-  return (
-    <bridgeContext.Provider
-      value={{ getBridges, getClaimStatus, getMerkleProof, getClaims, bridge, claim }}
-      {...props}
-    />
-  );
+  return <bridgeContext.Provider value={{ getTransactions, bridge, claim }} {...props} />;
 };
 
 const useBridgeContext = (): BridgeContext => {
