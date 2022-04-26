@@ -10,7 +10,6 @@ import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
 import { getTransactionStatusText, Transaction } from "src/domain";
-import { useEnvContext } from "src/contexts/env.context";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
@@ -20,7 +19,6 @@ import { formatEther } from "ethers/lib/utils";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
-  const env = useEnvContext();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
   const { account } = useProvidersContext();
@@ -97,14 +95,14 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destination, status } = transaction.data;
+  const { amount, destination, status, token } = transaction.data;
 
   return (
     <>
       <Header title="Transaction Details" backTo="activity" />
       <Card className={classes.card}>
         <div className={classes.balance}>
-          {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={48} />}
+          <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
           <Typography type="h2">{`${formatEther(amount)} ETH`}</Typography>
         </div>
         <div className={classes.row}>
@@ -139,7 +137,7 @@ const TransactionDetails: FC = () => {
             L2 Fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
+            <Icon url={token.logoURI} size={20} /> 0.01ETH
           </Typography>
         </div>
         <div className={classes.row}>
@@ -147,7 +145,7 @@ const TransactionDetails: FC = () => {
             L1 gas fee
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
+            <Icon url={token.logoURI} size={20} /> 0.01ETH
           </Typography>
         </div> */}
         <div className={`${classes.row} ${classes.lastRow}`}>
