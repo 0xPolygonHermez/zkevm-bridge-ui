@@ -2,14 +2,20 @@ import { createContext, FC, useCallback, useContext, useEffect, useMemo, useStat
 import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
+import { BigNumber } from "ethers";
 
-import { EthereumEvent, WalletName } from "src/domain";
+import { Chain, EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
+
+interface EstimateGasPriceParams {
+  chain: Chain;
+  gasUnits: BigNumber;
+}
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
@@ -18,6 +24,7 @@ interface ProvidersContext {
   account: AsyncTask<string, string>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
+  estimateGasPrice: (params: EstimateGasPriceParams) => Promise<BigNumber | undefined>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -28,6 +35,9 @@ const providersContext = createContext<ProvidersContext>({
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
   disconnectProvider: () => {
+    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
+  },
+  estimateGasPrice: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
 });
@@ -144,6 +154,29 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
+  const estimateGasPrice = useCallback(
+    ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber | undefined> => {
+      const provider = chain.name === "ethereum" ? l1Provider : l2Provider;
+
+      if (provider === undefined) {
+        throw new Error("Provider is not available");
+      }
+
+      return provider.getFeeData().then((feeData) => {
+        if (feeData.maxFeePerGas !== null) {
+          return gasUnits.mul(feeData.maxFeePerGas);
+        }
+
+        if (feeData.gasPrice !== null) {
+          return gasUnits.mul(feeData.gasPrice);
+        }
+
+        return undefined;
+      });
+    },
+    [l1Provider, l2Provider]
+  );
+
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
       connectedProvider?.provider;
@@ -207,8 +240,17 @@ const ProvidersProvider: FC = (props) => {
       l2Provider,
       connectProvider,
       disconnectProvider,
+      estimateGasPrice,
     }),
-    [account, connectProvider, connectedProvider, disconnectProvider, l1Provider, l2Provider]
+    [
+      connectedProvider,
+      account,
+      l1Provider,
+      l2Provider,
+      connectProvider,
+      disconnectProvider,
+      estimateGasPrice,
+    ]
   );
 
   return <providersContext.Provider value={value} {...props} />;

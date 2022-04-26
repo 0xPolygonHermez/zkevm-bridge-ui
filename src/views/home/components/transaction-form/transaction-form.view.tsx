@@ -25,7 +25,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
   const { account } = useProvidersContext();
-  const { estimateBridgeGas } = useBridgeContext();
+  const { estimateBridgeGasPrice } = useBridgeContext();
   const [list, setList] = useState<List>();
   const [error, setError] = useState<string>();
   const [transactionData, setTransactionData] = useState<TransactionData>();
@@ -51,16 +51,16 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
 
       if (to) {
         setList(undefined);
-        estimateBridgeGas({
+        estimateBridgeGasPrice({
           chain: from,
           token: transactionData.token,
           amount: accountBalance,
           destinationChain: to,
           destinationAddress: account.data,
         })
-          .then((estimatedFee) =>
-            setTransactionData({ ...transactionData, from, to, estimatedFee })
-          )
+          .then((estimatedFee) => {
+            setTransactionData({ ...transactionData, from, to, estimatedFee });
+          })
           .catch((err) => {
             console.error(err);
             setTransactionData({ ...transactionData, from, to });
@@ -92,7 +92,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
         amount: BigNumber.from(0),
       };
 
-      estimateBridgeGas({
+      estimateBridgeGasPrice({
         chain: initialTransactionData.from,
         token: initialTransactionData.token,
         amount: accountBalance,
@@ -105,7 +105,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
           setTransactionData(initialTransactionData);
         });
     }
-  }, [env, account, accountBalance, estimateBridgeGas]);
+  }, [env, account, accountBalance, estimateBridgeGasPrice]);
 
   if (!env || !transactionData) {
     return null;

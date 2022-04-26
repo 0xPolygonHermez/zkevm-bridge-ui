@@ -53,7 +53,7 @@ interface BridgeContext {
   getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
   getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
-  estimateBridgeGas: (params: BridgeParams) => Promise<BigNumber>;
+  estimateBridgeGasPrice: (params: BridgeParams) => Promise<BigNumber | undefined>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
@@ -73,7 +73,7 @@ const bridgeContext = createContext<BridgeContext>({
   getClaims: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  estimateBridgeGas: () => {
+  estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   bridge: () => {
@@ -86,7 +86,8 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { l1Provider, l2Provider, connectedProvider, account } = useProvidersContext();
+  const { l1Provider, l2Provider, connectedProvider, account, estimateGasPrice } =
+    useProvidersContext();
   const [l1BridgeContract, setL1BridgeContract] = useState<BridgeContract>();
   const [l2BridgeContract, setL2BridgeContract] = useState<BridgeContract>();
 
@@ -142,7 +143,7 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
-  const estimateBridgeGas = useCallback(
+  const estimateBridgeGasPrice = useCallback(
     ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
       const contract = chain.name === "ethereum" ? l1BridgeContract : l2BridgeContract;
 
@@ -150,14 +151,11 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      return contract.estimateGas.bridge(
-        token.address,
-        amount,
-        destinationChain.bridgeNetworkId,
-        destinationAddress
-      );
+      return contract.estimateGas
+        .bridge(token.address, amount, destinationChain.bridgeNetworkId, destinationAddress)
+        .then((gasUnits) => estimateGasPrice({ chain, gasUnits }));
     },
-    [l1BridgeContract, l2BridgeContract]
+    [l1BridgeContract, l2BridgeContract, estimateGasPrice]
   );
 
   const bridge = useCallback(
@@ -278,7 +276,7 @@ const BridgeProvider: FC = (props) => {
         getClaimStatus,
         getMerkleProof,
         getClaims,
-        estimateBridgeGas,
+        estimateBridgeGasPrice,
         bridge,
         claim,
       }}
