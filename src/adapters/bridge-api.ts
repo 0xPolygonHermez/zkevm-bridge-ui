@@ -185,17 +185,17 @@ const getTransactions = async ({
               ...merkleProof,
               index: claim.index,
               blockNumber: claim.blockNumber,
-              status: "claimed",
+              status: "completed",
             }
           : {
               ...onHoldBridge,
               ...merkleProof,
-              status: "claimable",
+              status: "on-hold",
             };
       } else {
         return {
           ...onHoldBridge,
-          status: "on-hold",
+          status: "initiated",
         };
       }
     })

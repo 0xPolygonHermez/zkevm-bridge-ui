@@ -6,40 +6,67 @@ import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.s
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import { getTimeFromNow } from "src/utils/time";
 import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
-import { TransactionStatus, getTransactionStatusText } from "src/domain";
+import { Transaction } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { formatEther } from "ethers/lib/utils";
 
 export interface TransactionCardProps {
-  target: "l1" | "l2";
-  id: number;
-  timestamp: number;
-  token: "eth" | "dai";
-  status: TransactionStatus;
-  amount: number;
+  transaction: Transaction;
 }
 
-const layerIcons = {
-  l1: TransferL1Icon,
-  l2: TransferL2Icon,
-};
+export function getTransactionStatusText(status: Transaction["status"]): string {
+  switch (status) {
+    case "initiated":
+      return "Initiated";
+    case "on-hold":
+      return "On Hold";
+    case "completed":
+      return "Completed";
+  }
+}
 
-const TransactionCard: FC<TransactionCardProps> = ({
-  id,
-  target,
-  timestamp,
-  token,
-  amount,
-  status,
-}) => {
+const layerIcons = [TransferL1Icon, TransferL2Icon];
+
+const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
+  const { status, destinationNetwork, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
-  const LayerIcon = status !== "completed" && status !== "failed" ? ReloadIcon : layerIcons[target];
-  const actionText = target === "l1" ? "Transfer to L1" : "Transfer to L2";
+  const { claim } = useBridgeContext();
+  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destinationNetwork];
+  const actionText = destinationNetwork === 0 ? "Transfer to L1" : "Transfer to L2";
+  const id = `${destinationNetwork}-${depositCount}`;
+
+  // ToDo: parse the error
+  const onClaim = () => {
+    if (transaction.status === "on-hold") {
+      const {
+        tokenAddress,
+        destinationAddress,
+        merkleProof,
+        exitRootNumber,
+        mainExitRoot,
+        rollupExitRoot,
+      } = transaction;
+      const originNetwork = destinationNetwork === 0 ? 1 : 0;
+
+      void claim(
+        tokenAddress,
+        amount,
+        originNetwork.toString(),
+        destinationNetwork,
+        destinationAddress,
+        merkleProof,
+        exitRootNumber,
+        mainExitRoot,
+        rollupExitRoot
+      );
+    }
+  };
 
   return (
     <Card
@@ -54,34 +81,22 @@ const TransactionCard: FC<TransactionCardProps> = ({
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">{actionText}</Typography>
-          {status === "completed" ? (
-            <Typography type="body2" className={classes.time}>
-              {getTimeFromNow({ timestamp })}
-            </Typography>
-          ) : (
-            <span
-              className={`${classes.statusBox} ${
-                status === "on-hold" || status === "failed" ? classes.redStatus : ""
-              }`}
-            >
-              {getTransactionStatusText(status)}
-            </span>
-          )}
+          <span
+            className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
+          >
+            {getTransactionStatusText(status)}
+          </span>
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
             {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={20} />}
-            <Typography type="body1">
-              {amount} {token.toUpperCase()}
-            </Typography>
+            <Typography type="body1">{formatEther(amount)} ETH</Typography>
           </div>
         </div>
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">
-            Step 2 will require signature in {getTimeFromNow({ timestamp })}.
-          </Typography>
+          <Typography type="body2">Step 2 will require signature.</Typography>
           <button disabled className={classes.finaliseButton}>
             Finalise
           </button>
@@ -90,7 +105,9 @@ const TransactionCard: FC<TransactionCardProps> = ({
       {status === "on-hold" && (
         <div className={classes.bottom}>
           <Typography type="body2">Sign required to finalise transaction.</Typography>
-          <button className={classes.finaliseButton}>Finalise </button>
+          <button onClick={onClaim} className={classes.finaliseButton}>
+            Finalise
+          </button>
         </div>
       )}
     </Card>

@@ -98,15 +98,16 @@ export type Message =
       parsed: string;
     };
 
+// ToDo: Add the whole Token and destination Chain
 export type Transaction =
   | ({
-      status: "on-hold";
+      status: "initiated";
     } & Bridge)
   | ({
-      status: "claimable";
+      status: "on-hold";
     } & ClaimableTransaction)
   | ({
-      status: "claimed";
+      status: "completed";
     } & ClaimedTransaction);
 
 export type ClaimableTransaction = Bridge & MerkleProof;

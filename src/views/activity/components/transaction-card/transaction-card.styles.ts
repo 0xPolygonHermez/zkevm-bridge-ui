@@ -47,9 +47,9 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 8,
     alignSelf: "flex-start",
   },
-  redStatus: {
-    color: theme.palette.error.main,
-    backgroundColor: theme.palette.error.light,
+  greenStatus: {
+    color: theme.palette.success.main,
+    backgroundColor: theme.palette.success.light,
   },
   tokenColumn: {
     display: "flex",
