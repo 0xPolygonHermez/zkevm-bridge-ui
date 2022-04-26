@@ -124,7 +124,6 @@ export interface Bridge {
 }
 export interface Claim {
   index: number;
-  tokenAddress: string;
   blockNumber: string;
 }
 

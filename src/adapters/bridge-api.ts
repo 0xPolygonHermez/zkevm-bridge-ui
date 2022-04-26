@@ -15,7 +15,6 @@ interface Bridge {
 
 interface Claim {
   index: string;
-  token_addr: string;
   block_num: string;
 }
 
@@ -139,14 +138,12 @@ const getMerkleProofResponseParser = StrictSchema<
 const claimParser = StrictSchema<Claim>()(
   z.object({
     index: z.string(),
-    token_addr: z.string(),
     block_num: z.string(),
   })
 );
 
-const apiClaimToDomain = ({ index, token_addr, block_num }: Claim): domain.Claim => ({
+const apiClaimToDomain = ({ index, block_num }: Claim): domain.Claim => ({
   index: z.number().positive().parse(Number(index)),
-  tokenAddress: token_addr,
   blockNumber: block_num,
 });
 
