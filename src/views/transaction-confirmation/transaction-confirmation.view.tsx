@@ -40,11 +40,15 @@ const TransactionConfirmation: FC = () => {
   }
 
   const onClick = () => {
-    const { amount, to } = transaction;
-    if (account.status === "successful") {
-      bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
-        .then(console.log)
-        .catch(console.error);
+    if (env) {
+      const l1Chain = env.chains[0];
+      const { amount, to } = transaction;
+      const destinationNetwork = to.chainId === l1Chain.chainId ? 0 : 1;
+      if (account.status === "successful") {
+        bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
+          .then(console.log)
+          .catch(console.error);
+      }
     }
   };
 
