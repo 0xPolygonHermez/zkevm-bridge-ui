@@ -25,33 +25,6 @@ interface MerkleProof {
   rollup_exit_root: string;
 }
 
-interface GetBridgesParams {
-  apiUrl: string;
-  ethereumAddress: string;
-}
-
-interface GetTransactionsParams {
-  env: domain.Env;
-  ethereumAddress: string;
-}
-
-interface GetClaimStatusParams {
-  apiUrl: string;
-  originNetwork: number;
-  depositCount: number;
-}
-
-interface GetMerkleProofParams {
-  apiUrl: string;
-  originNetwork: number;
-  depositCount: number;
-}
-
-interface GetClaimsParams {
-  apiUrl: string;
-  ethereumAddress: string;
-}
-
 const apiBridgeToDomain = ({
   token_addr,
   amount,
@@ -160,6 +133,11 @@ const getClaimsResponseParser = StrictSchema<
   })
 );
 
+interface GetTransactionsParams {
+  env: domain.Env;
+  ethereumAddress: string;
+}
+
 const getTransactions = async ({
   env,
   ethereumAddress,
@@ -212,6 +190,11 @@ const getTransactions = async ({
   );
 };
 
+interface GetBridgesParams {
+  apiUrl: string;
+  ethereumAddress: string;
+}
+
 const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
   return axios
     .request({
@@ -229,6 +212,12 @@ const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<doma
       }
     });
 };
+
+interface GetClaimStatusParams {
+  apiUrl: string;
+  originNetwork: number;
+  depositCount: number;
+}
 
 const getClaimStatus = ({
   apiUrl,
@@ -256,6 +245,12 @@ const getClaimStatus = ({
     });
 };
 
+interface GetMerkleProofParams {
+  apiUrl: string;
+  originNetwork: number;
+  depositCount: number;
+}
+
 const getMerkleProof = ({
   apiUrl,
   originNetwork,
@@ -281,6 +276,11 @@ const getMerkleProof = ({
       }
     });
 };
+
+interface GetClaimsParams {
+  apiUrl: string;
+  ethereumAddress: string;
+}
 
 const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<domain.Claim[]> => {
   return axios
