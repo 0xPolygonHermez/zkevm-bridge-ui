@@ -171,21 +171,6 @@ const getTransactions = async ({
     getClaims({ apiUrl, ethereumAddress }),
   ]);
 
-  /**
-const apiBridgeToDomain = (
-  { amount, dest_addr, dest_net, deposit_cnt }: Bridge,
-  env: domain.Env
-): domain.Bridge => {
-  return {
-    token: env.tokens.ETH,
-    amount: BigNumber.from(amount),
-    destinationAddress: dest_addr,
-    destinationChain: dest_net === 0 ? env.chains[0] : env.chains[1],
-    depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
-  };
-};
- */
-
   return await Promise.all(
     bridges.map(async (bridge): Promise<domain.Transaction> => {
       const { depositCount, destinationNetwork, amount, destinationAddress } = bridge;
