@@ -4,7 +4,7 @@ import { TransactionData } from "src/domain";
 
 interface TransactionContext {
   transaction?: TransactionData;
-  setTransaction: (transaction: TransactionData | undefined) => void;
+  setTransaction: (transaction?: TransactionData) => void;
 }
 
 const transactionContextDefaultValue: TransactionContext = {

@@ -15,7 +15,7 @@ const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
   const { transaction, setTransaction } = useTransactionContext();
-  const { account, networks } = useProvidersContext();
+  const { account, getBalance } = useProvidersContext();
 
   const onFormSubmit = (transaction: TransactionData) => {
     setTransaction(transaction);
@@ -31,7 +31,12 @@ const Home = (): JSX.Element => {
           <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
         </div>
       )}
-      <TransactionForm onSubmit={onFormSubmit} networks={networks} transaction={transaction} />
+      <TransactionForm
+        onSubmit={onFormSubmit}
+        getBalance={getBalance}
+        transaction={transaction}
+        account={account}
+      />
     </>
   );
 };

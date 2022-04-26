@@ -1,9 +1,10 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
+import { BigNumber } from "ethers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { EthereumEvent, NetworkData, WalletName } from "src/domain";
+import { Chain, EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
@@ -16,9 +17,9 @@ interface ProvidersContext {
   l1Provider?: JsonRpcProvider;
   l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
-  networks?: NetworkData[];
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
+  getBalance: (chainId: Chain["chainId"]) => Promise<BigNumber>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -31,6 +32,7 @@ const providersContext = createContext<ProvidersContext>({
   disconnectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
+  getBalance: () => Promise.resolve(BigNumber.from(0)),
 });
 
 const ProvidersProvider: FC = (props) => {
@@ -39,7 +41,6 @@ const ProvidersProvider: FC = (props) => {
   const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
   const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
-  const [networks, setNetworks] = useState<NetworkData[]>();
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
 
@@ -130,16 +131,32 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
-  useEffect(() => {
-    if (account.status === "successful" && l1Provider && l2Provider) {
-      const providers = [l1Provider, l2Provider].map(async (provider) => {
-        const { chainId } = await provider.getNetwork();
-        const balance = await provider.getBalance(account.data);
-        return { chainId, balance };
-      });
-      void Promise.all(providers).then((provider) => setNetworks(provider));
-    }
-  }, [account, l1Provider, l2Provider]);
+  const getBalance = useCallback(
+    async (chainId: Chain["chainId"]) => {
+      try {
+        if (account.status === "successful" && l1Provider && l2Provider) {
+          const promises = [l1Provider, l2Provider].map(async (provider) => {
+            const { chainId } = await provider.getNetwork();
+            return { chainId, provider };
+          });
+          const providers = await Promise.all(promises);
+          const providerRequested = providers.find((provider) => provider.chainId === chainId);
+          if (providerRequested) {
+            return await providerRequested.provider.getBalance(account.data);
+          }
+        }
+      } catch (error) {
+        void parseError(error).then((errorMsg) => {
+          openSnackbar({
+            type: "error",
+            parsed: errorMsg,
+          });
+        });
+      }
+      return BigNumber.from(0);
+    },
+    [account, l1Provider, l2Provider, openSnackbar]
+  );
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
@@ -202,18 +219,18 @@ const ProvidersProvider: FC = (props) => {
       account,
       l1Provider,
       l2Provider,
-      networks,
       connectProvider,
       disconnectProvider,
+      getBalance,
     }),
     [
       account,
       connectProvider,
       connectedProvider,
       disconnectProvider,
+      getBalance,
       l1Provider,
       l2Provider,
-      networks,
     ]
   );
 

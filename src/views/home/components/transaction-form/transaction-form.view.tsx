@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 
@@ -12,20 +12,29 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { Chain, TransactionData, NetworkData } from "src/domain";
+import { Chain, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
+import { AsyncTask } from "src/utils/types";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
-  networks?: NetworkData[];
+  getBalance: (chainId: Chain["chainId"]) => Promise<BigNumber>;
   transaction?: TransactionData;
+  account: AsyncTask<string, string>;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transaction }) => {
+const TransactionForm: FC<TransactionFormProps> = ({
+  onSubmit,
+  getBalance,
+  transaction,
+  account,
+}) => {
   const classes = useTransactionFormtStyles();
   const env = useEnvContext();
   const [list, setList] = useState<List>();
   const [error, setError] = useState<string>();
+  const [balanceFrom, setBalanceFrom] = useState(BigNumber.from(0));
+  const [balanceTo, setBalanceTo] = useState(BigNumber.from(0));
   const [transactionData, setTransactionData] = useState<TransactionData | undefined>(transaction);
 
   // const onChainToButtonClick = (to: Chain) => {
@@ -67,12 +76,12 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transac
     }
   };
 
-  const zeroBalance = useMemo(() => BigNumber.from(0), []);
-
-  const getBalance = (chain: Chain) => {
-    const balance = networks?.find((network) => network.chainId === chain.chainId);
-    return balance ? balance.balance : zeroBalance;
-  };
+  useEffect(() => {
+    if (transactionData?.from) {
+      void getBalance(transactionData.from.chainId).then(setBalanceFrom);
+      void getBalance(transactionData.to.chainId).then(setBalanceTo);
+    }
+  }, [getBalance, transactionData?.from, transactionData?.to.chainId, account]);
 
   useEffect(() => {
     if (env && !transaction) {
@@ -109,9 +118,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transac
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">
-              {ethers.utils.formatEther(getBalance(transactionData.from))} ETH
-            </Typography>
+            <Typography type="body1">{ethers.utils.formatEther(balanceFrom)} ETH</Typography>
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
@@ -126,7 +133,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transac
           <AmountInput
             value={transactionData.amount}
             token={transactionData.token}
-            balance={getBalance(transactionData.from)}
+            balance={balanceFrom}
             fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
             onChange={onInputChange}
           />
@@ -154,9 +161,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, networks, transac
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">
-              {ethers.utils.formatEther(getBalance(transactionData.to))} ETH
-            </Typography>
+            <Typography type="body1">{ethers.utils.formatEther(balanceTo)} ETH</Typography>
           </div>
         </div>
       </Card>
