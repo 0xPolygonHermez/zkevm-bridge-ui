@@ -3,7 +3,7 @@ import { createContext, FC, useContext, useEffect, useState, useCallback } from 
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Bridge, Claim, ClaimStatus, MerkleProof } from "src/domain";
+import { Transaction, Claim, ClaimStatus, MerkleProof } from "src/domain";
 import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
@@ -27,7 +27,7 @@ interface GetClaimsParams {
 }
 
 interface BridgeContext {
-  getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
+  getBridges: (params: GetBridgesParams) => Promise<Transaction[]>;
   getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
   getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;

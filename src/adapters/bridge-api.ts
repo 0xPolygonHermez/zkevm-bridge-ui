@@ -31,6 +31,11 @@ interface GetBridgesParams {
   ethereumAddress: string;
 }
 
+interface GetTransactionsParams {
+  apiUrl: string;
+  ethereumAddress: string;
+}
+
 interface GetClaimStatusParams {
   apiUrl: string;
   originNetwork: number;
@@ -54,7 +59,7 @@ const apiBridgeToDomain = ({
   dest_addr,
   dest_net,
   deposit_cnt,
-}: Bridge): domain.OnHoldBridge => ({
+}: Bridge): domain.Bridge => ({
   tokenAddress: token_addr,
   amount: BigNumber.from(amount),
   destinationAddress: dest_addr,
@@ -62,7 +67,7 @@ const apiBridgeToDomain = ({
   depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
 });
 
-const bridgeParser = StrictSchema<Bridge, domain.OnHoldBridge>()(
+const bridgeParser = StrictSchema<Bridge, domain.Bridge>()(
   z
     .object({
       token_addr: z.string(),
@@ -79,7 +84,7 @@ const getBridgesResponseParser = StrictSchema<
     deposits?: Bridge[];
   },
   {
-    deposits?: domain.OnHoldBridge[];
+    deposits?: domain.Bridge[];
   }
 >()(
   z.object({
@@ -158,16 +163,16 @@ const getClaimsResponseParser = StrictSchema<
   })
 );
 
-const getBridges = async ({
+const getTransactions = async ({
   apiUrl,
   ethereumAddress,
-}: GetBridgesParams): Promise<domain.Bridge[]> => {
+}: GetTransactionsParams): Promise<domain.Transaction[]> => {
   const [onHoldBridges, claims] = await Promise.all([
-    getOnHoldBridges({ apiUrl, ethereumAddress }),
+    getBridges({ apiUrl, ethereumAddress }),
     getClaims({ apiUrl, ethereumAddress }),
   ]);
   return await Promise.all(
-    onHoldBridges.map(async (onHoldBridge): Promise<domain.Bridge> => {
+    onHoldBridges.map(async (onHoldBridge): Promise<domain.Transaction> => {
       const { depositCount, destinationNetwork } = onHoldBridge;
       const originNetwork = destinationNetwork === 0 ? 1 : 0;
       const [claimStatus, merkleProof]: [domain.ClaimStatus, domain.MerkleProof] =
@@ -200,10 +205,7 @@ const getBridges = async ({
   );
 };
 
-const getOnHoldBridges = ({
-  apiUrl,
-  ethereumAddress,
-}: GetBridgesParams): Promise<domain.OnHoldBridge[]> => {
+const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -291,4 +293,4 @@ const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<domain
     });
 };
 
-export { getBridges, getClaimStatus, getMerkleProof, getClaims };
+export { getTransactions as getBridges, getClaimStatus, getMerkleProof, getClaims };
