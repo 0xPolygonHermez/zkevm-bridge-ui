@@ -56,7 +56,7 @@ const TransactionConfirmation: FC = () => {
     <>
       <Header title="Confirm Transfer" backTo="home" />
       <Card className={classes.card}>
-        {env && <Icon url={env.tokens.ETH.logoURI} size={46} className={classes.icon} />}
+        <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">{`${ethers.utils.formatEther(transaction.amount)} ${
           transaction.token.symbol
         }`}</Typography>
@@ -72,13 +72,13 @@ const TransactionConfirmation: FC = () => {
         <div className={classes.fees}>
           <Typography type="body2">Estimated L2 fees</Typography>
           <Typography type="body1" className={classes.fee}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.0025 ETH
+            {env && <Icon url={transaction.token.logoURI} size={20} />} 0.0025 ETH
           </Typography>
           <Typography type="body2" className={classes.betweenFees}>
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.0545 ETH
+            {env && <Icon url={transaction.token.logoURI} size={20} />} 0.0545 ETH
           </Typography>
         </div>
       </Card>
