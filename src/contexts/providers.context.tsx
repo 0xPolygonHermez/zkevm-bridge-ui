@@ -48,23 +48,39 @@ const ProvidersProvider: FC = (props) => {
         case WalletName.METAMASK: {
           if (window.ethereum && window.ethereum.isMetaMask) {
             const web3Provider = new Web3Provider(window.ethereum);
-            return getConnectedAccounts(web3Provider)
-              .then((accounts) => {
-                setConnectedProvider(web3Provider);
-                setAccount({ status: "successful", data: accounts[0] });
-              })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (isMetamaskUserRejectedRequestError(error)) {
-                    setAccount({ status: "pending" });
-                  } else {
-                    openSnackbar({
-                      type: "error",
-                      parsed: errorMsg,
-                    });
-                  }
+
+            return web3Provider.getNetwork().then((network) => {
+              if (env === undefined) {
+                throw new Error("Env is not available");
+              }
+
+              const supportedChainIds = env.chains.map((chain) => chain.chainId);
+
+              if (!supportedChainIds.includes(network.chainId)) {
+                return setAccount({
+                  status: "failed",
+                  error: "Switch your network to Ethereum or Polygon Hermez to continue",
+                });
+              }
+
+              return getConnectedAccounts(web3Provider)
+                .then((accounts) => {
+                  setConnectedProvider(web3Provider);
+                  setAccount({ status: "successful", data: accounts[0] });
                 })
-              );
+                .catch((error) =>
+                  parseError(error).then((errorMsg) => {
+                    if (isMetamaskUserRejectedRequestError(error)) {
+                      setAccount({ status: "pending" });
+                    } else {
+                      openSnackbar({
+                        type: "error",
+                        parsed: errorMsg,
+                      });
+                    }
+                  })
+                );
+            });
           } else {
             return setAccount({
               status: "failed",
