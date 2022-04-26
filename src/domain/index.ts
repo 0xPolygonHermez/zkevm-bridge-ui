@@ -100,13 +100,13 @@ export type Message =
 
 export type Transaction =
   | ({
-      step: "on-hold";
+      status: "on-hold";
     } & Bridge)
   | ({
-      step: "claimable";
+      status: "claimable";
     } & ClaimableTransaction)
   | ({
-      step: "claimed";
+      status: "claimed";
     } & ClaimedTransaction);
 
 export type ClaimableTransaction = Bridge & MerkleProof;
