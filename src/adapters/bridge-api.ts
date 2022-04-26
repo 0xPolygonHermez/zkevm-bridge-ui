@@ -108,17 +108,19 @@ const getMerkleProofResponseParser = StrictSchema<
   })
 );
 
-const claimParser = StrictSchema<Claim>()(
-  z.object({
-    index: z.string(),
-    block_num: z.string(),
-  })
-);
-
 const apiClaimToDomain = ({ index, block_num }: Claim): domain.Claim => ({
   index: z.number().positive().parse(Number(index)),
   blockNumber: block_num,
 });
+
+const claimParser = StrictSchema<Claim, domain.Claim>()(
+  z
+    .object({
+      index: z.string(),
+      block_num: z.string(),
+    })
+    .transform(apiClaimToDomain)
+);
 
 const getClaimsResponseParser = StrictSchema<
   {
@@ -129,7 +131,7 @@ const getClaimsResponseParser = StrictSchema<
   }
 >()(
   z.object({
-    claims: z.optional(z.array(claimParser.transform(apiClaimToDomain))),
+    claims: z.optional(z.array(claimParser)),
   })
 );
 
