@@ -4,6 +4,7 @@ import { ComponentType } from "react";
 export interface Chain {
   name: string;
   chainId: number;
+  networkId: 0 | 1;
   Icon: ComponentType<{ className?: string }>;
 }
 
@@ -81,18 +82,6 @@ export type Message =
       parsed: string;
     };
 
-// ToDo: Add the whole Token and destination Chain
-export type Transaction =
-  | ({
-      status: "initiated";
-    } & Bridge)
-  | ({
-      status: "on-hold";
-    } & ClaimableTransaction)
-  | ({
-      status: "completed";
-    } & ClaimedTransaction);
-
 export function getTransactionStatusText(status: Transaction["status"]): string {
   switch (status) {
     case "initiated":
@@ -104,19 +93,37 @@ export function getTransactionStatusText(status: Transaction["status"]): string 
   }
 }
 
-export type ClaimableTransaction = Bridge & MerkleProof;
+export type Transaction =
+  | (InitiatedTransaction & {
+      status: "initiated";
+    })
+  | (InitiatedTransaction &
+      MerkleProof & {
+        status: "on-hold";
+      })
+  | (InitiatedTransaction &
+      MerkleProof &
+      Claim & {
+        status: "completed";
+      });
 
-export type ClaimedTransaction = ClaimableTransaction & {
-  index: number;
-  blockNumber: string;
-};
-export interface Bridge {
-  tokenAddress: string;
+export interface InitiatedTransaction {
+  token: Token;
   amount: BigNumber;
-  destinationNetwork: number;
+  origin: Chain;
+  destination: Chain;
   destinationAddress: string;
   depositCount: number;
 }
+
+export interface Bridge {
+  tokenAddress: string;
+  amount: BigNumber;
+  destinationNetwork: 0 | 1;
+  destinationAddress: string;
+  depositCount: number;
+}
+
 export interface Claim {
   index: number;
   blockNumber: string;

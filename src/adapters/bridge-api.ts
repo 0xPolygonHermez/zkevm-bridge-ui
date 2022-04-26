@@ -1,14 +1,14 @@
 import axios from "axios";
 import { z } from "zod";
+import { BigNumber } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import { BigNumber } from "ethers";
 
 interface Bridge {
   token_addr: string;
   amount: string;
-  dest_net: number;
+  dest_net: 0 | 1;
   dest_addr: string;
   deposit_cnt?: string;
 }
@@ -33,6 +33,7 @@ interface GetBridgesParams {
 interface GetTransactionsParams {
   apiUrl: string;
   ethereumAddress: string;
+  env: domain.Env;
 }
 
 interface GetClaimStatusParams {
@@ -71,7 +72,7 @@ const bridgeParser = StrictSchema<Bridge, domain.Bridge>()(
     .object({
       token_addr: z.string(),
       amount: z.string(),
-      dest_net: z.number(),
+      dest_net: z.union([z.literal(0), z.literal(1)]),
       dest_addr: z.string(),
       deposit_cnt: z.string().optional(),
     })
@@ -163,38 +164,63 @@ const getClaimsResponseParser = StrictSchema<
 const getTransactions = async ({
   apiUrl,
   ethereumAddress,
+  env,
 }: GetTransactionsParams): Promise<domain.Transaction[]> => {
-  const [onHoldBridges, claims] = await Promise.all([
+  const [bridges, claims] = await Promise.all([
     getBridges({ apiUrl, ethereumAddress }),
     getClaims({ apiUrl, ethereumAddress }),
   ]);
+
+  /**
+const apiBridgeToDomain = (
+  { amount, dest_addr, dest_net, deposit_cnt }: Bridge,
+  env: domain.Env
+): domain.Bridge => {
+  return {
+    token: env.tokens.ETH,
+    amount: BigNumber.from(amount),
+    destinationAddress: dest_addr,
+    destinationChain: dest_net === 0 ? env.chains[0] : env.chains[1],
+    depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
+  };
+};
+ */
+
   return await Promise.all(
-    onHoldBridges.map(async (onHoldBridge): Promise<domain.Transaction> => {
-      const { depositCount, destinationNetwork } = onHoldBridge;
+    bridges.map(async (bridge): Promise<domain.Transaction> => {
+      const { depositCount, destinationNetwork, amount, destinationAddress } = bridge;
       const originNetwork = destinationNetwork === 0 ? 1 : 0;
       const [claimStatus, merkleProof]: [domain.ClaimStatus, domain.MerkleProof] =
         await Promise.all([
           getClaimStatus({ apiUrl, originNetwork, depositCount }),
           getMerkleProof({ apiUrl, originNetwork, depositCount }),
         ]);
+      const initiatedTransaction: domain.InitiatedTransaction = {
+        token: env.tokens.ETH,
+        destination: env.chains[destinationNetwork],
+        origin: env.chains[originNetwork],
+        amount,
+        destinationAddress,
+        depositCount,
+      };
       if (claimStatus.isReady) {
-        const claim = claims.find((claim) => claim.index === onHoldBridge.depositCount);
+        const claim = claims.find((claim) => claim.index === bridge.depositCount);
         return claim
           ? {
-              ...onHoldBridge,
+              ...initiatedTransaction,
               ...merkleProof,
               index: claim.index,
               blockNumber: claim.blockNumber,
               status: "completed",
             }
           : {
-              ...onHoldBridge,
+              ...initiatedTransaction,
               ...merkleProof,
               status: "on-hold",
             };
       } else {
         return {
-          ...onHoldBridge,
+          ...initiatedTransaction,
           status: "initiated",
         };
       }

@@ -31,24 +31,26 @@ const TransactionDetails: FC = () => {
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
 
+  // ToDo: parse the error
   const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const {
-        tokenAddress,
+        amount,
+        destination,
         destinationAddress,
-        merkleProof,
         exitRootNumber,
         mainExitRoot,
+        merkleProof,
+        origin,
         rollupExitRoot,
+        token,
       } = transaction.data;
-      const originNetwork = destinationNetwork === 0 ? 1 : 0;
 
-      // ToDo: parse the error
       void claim(
-        tokenAddress,
+        token.address,
         amount,
-        originNetwork.toString(),
-        destinationNetwork,
+        origin.networkId.toString(),
+        destination.networkId,
         destinationAddress,
         merkleProof,
         exitRootNumber,
@@ -64,7 +66,7 @@ const TransactionDetails: FC = () => {
       void getTransactions({ ethereumAddress: account.data })
         .then((transactions) => {
           const foundTransaction = transactions.find((tx) => {
-            const id = `${tx.destinationNetwork}-${tx.depositCount}`;
+            const id = `${tx.destination.networkId}-${tx.depositCount}`;
             return id === transactionId;
           });
           if (foundTransaction) {
@@ -98,7 +100,7 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destinationNetwork, status } = transaction.data;
+  const { amount, destination, status } = transaction.data;
 
   return (
     <>
@@ -122,7 +124,7 @@ const TransactionDetails: FC = () => {
             From
           </Typography>
           <Chain
-            chain={destinationNetwork === 0 ? "polygon" : "ethereum"}
+            chain={destination.networkId === 0 ? "polygon" : "ethereum"}
             className={classes.alignRow}
           />
         </div>
@@ -131,7 +133,7 @@ const TransactionDetails: FC = () => {
             To
           </Typography>
           <Chain
-            chain={destinationNetwork === 0 ? "ethereum" : "polygon"}
+            chain={destination.networkId === 0 ? "ethereum" : "polygon"}
             className={classes.alignRow}
           />
         </div>
@@ -168,7 +170,7 @@ const TransactionDetails: FC = () => {
             disabled={status === "initiated"}
           >
             <Typography type="body1" className={classes.finaliseButtonText}>
-              Finalise
+              Finalize
             </Typography>
             {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
           </button>

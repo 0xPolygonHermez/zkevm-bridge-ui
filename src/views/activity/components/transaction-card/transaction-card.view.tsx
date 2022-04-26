@@ -21,33 +21,32 @@ export interface TransactionCardProps {
 const layerIcons = [TransferL1Icon, TransferL2Icon];
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
-  const { status, destinationNetwork, depositCount, amount } = transaction;
+  const { status, origin, destination, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
   const { claim } = useBridgeContext();
-  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destinationNetwork];
-  const actionText = destinationNetwork === 0 ? "Transfer to L1" : "Transfer to L2";
-  const id = `${destinationNetwork}-${depositCount}`;
+  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destination.networkId];
+  const actionText = destination.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
+  const id = `${destination.networkId}-${depositCount}`;
 
   // ToDo: parse the error
   const onClaim = () => {
     if (transaction.status === "on-hold") {
       const {
-        tokenAddress,
+        token,
         destinationAddress,
         merkleProof,
         exitRootNumber,
         mainExitRoot,
         rollupExitRoot,
       } = transaction;
-      const originNetwork = destinationNetwork === 0 ? 1 : 0;
 
       void claim(
-        tokenAddress,
+        token.address,
         amount,
-        originNetwork.toString(),
-        destinationNetwork,
+        origin.networkId.toString(),
+        destination.networkId,
         destinationAddress,
         merkleProof,
         exitRootNumber,
@@ -87,15 +86,15 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction }) => {
         <div className={classes.bottom}>
           <Typography type="body2">Step 2 will require signature.</Typography>
           <button disabled className={classes.finaliseButton}>
-            Finalise
+            Finalize
           </button>
         </div>
       )}
       {status === "on-hold" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Sign required to finalise transaction.</Typography>
+          <Typography type="body2">Signature required to finalize the transaction</Typography>
           <button onClick={onClaim} className={classes.finaliseButton}>
-            Finalise
+            Finalize
           </button>
         </div>
       )}

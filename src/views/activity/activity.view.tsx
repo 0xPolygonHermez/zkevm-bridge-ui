@@ -65,7 +65,7 @@ const Activity: FC = () => {
       {filteredList.map((transaction) => (
         <TransactionCard
           transaction={transaction}
-          key={`${transaction.destinationNetwork}-${transaction.depositCount}`}
+          key={`${transaction.destination.networkId}-${transaction.depositCount}`}
         />
       ))}
     </>

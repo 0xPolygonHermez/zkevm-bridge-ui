@@ -32,11 +32,13 @@ export const getChains = ({
   {
     name: "Ethereum chain",
     chainId: ethereumChainId,
+    networkId: 0,
     Icon: EthChainIcon,
   },
   {
     name: "Polygon Hermez chain",
     chainId: polygonHermezChainId,
+    networkId: 1,
     Icon: PolygonHermezChainIcon,
   },
 ];
