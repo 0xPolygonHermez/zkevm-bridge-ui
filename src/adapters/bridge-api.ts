@@ -31,9 +31,8 @@ interface GetBridgesParams {
 }
 
 interface GetTransactionsParams {
-  apiUrl: string;
-  ethereumAddress: string;
   env: domain.Env;
+  ethereumAddress: string;
 }
 
 interface GetClaimStatusParams {
@@ -162,10 +161,10 @@ const getClaimsResponseParser = StrictSchema<
 );
 
 const getTransactions = async ({
-  apiUrl,
-  ethereumAddress,
   env,
+  ethereumAddress,
 }: GetTransactionsParams): Promise<domain.Transaction[]> => {
+  const apiUrl = env.bridge.apiUrl;
   const [bridges, claims] = await Promise.all([
     getBridges({ apiUrl, ethereumAddress }),
     getClaims({ apiUrl, ethereumAddress }),

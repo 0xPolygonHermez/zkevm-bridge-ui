@@ -58,7 +58,7 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Env is not available");
       }
 
-      return bridgeApi.getTransactions({ apiUrl: env.bridge.apiUrl, ethereumAddress, env });
+      return bridgeApi.getTransactions({ env, ethereumAddress });
     },
     [env]
   );
