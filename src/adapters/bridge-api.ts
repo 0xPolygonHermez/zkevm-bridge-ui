@@ -3,21 +3,19 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
+import { BigNumber } from "ethers";
 
 interface Bridge {
   token_addr: string;
   amount: string;
   dest_net: number;
   dest_addr: string;
-  deposit_cnt: string;
+  deposit_cnt?: string;
 }
 
 interface Claim {
   index: string;
   token_addr: string;
-  amount: string;
-  dest_net: number;
-  dest_addr: string;
   block_num: string;
 }
 
@@ -50,54 +48,84 @@ interface GetClaimsParams {
   ethereumAddress: string;
 }
 
-interface GetBridgesResponse {
-  deposits?: Bridge[];
-}
+const apiBridgeToDomain = ({
+  token_addr,
+  amount,
+  dest_addr,
+  dest_net,
+  deposit_cnt,
+}: Bridge): domain.OnHoldBridge => ({
+  tokenAddress: token_addr,
+  amount: BigNumber.from(amount),
+  destinationAddress: dest_addr,
+  destinationNetwork: dest_net,
+  depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
+});
 
-interface GetClaimStatusResponse {
-  ready?: boolean;
-}
-
-interface GetMerkleProofResponse {
-  proof: MerkleProof;
-}
-
-interface GetClaimsResponse {
-  claims?: Claim[];
-}
-
-const bridgeParser = StrictSchema<Bridge>()(
-  z.object({
-    token_addr: z.string(),
-    amount: z.string(),
-    dest_net: z.number(),
-    dest_addr: z.string(),
-    deposit_cnt: z.string(),
-  })
+const bridgeParser = StrictSchema<Bridge, domain.OnHoldBridge>()(
+  z
+    .object({
+      token_addr: z.string(),
+      amount: z.string(),
+      dest_net: z.number(),
+      dest_addr: z.string(),
+      deposit_cnt: z.string().optional(),
+    })
+    .transform(apiBridgeToDomain)
 );
 
-const getBridgesResponseParser = StrictSchema<GetBridgesResponse>()(
+const getBridgesResponseParser = StrictSchema<
+  {
+    deposits?: Bridge[];
+  },
+  {
+    deposits?: domain.OnHoldBridge[];
+  }
+>()(
   z.object({
     deposits: z.optional(z.array(bridgeParser)),
   })
 );
 
-const getClaimStatusResponseParser = StrictSchema<GetClaimStatusResponse>()(
+const getClaimStatusResponseParser = StrictSchema<{
+  ready?: boolean;
+}>()(
   z.object({
     ready: z.optional(z.boolean()),
   })
 );
 
-const merkleProofParser = StrictSchema<MerkleProof>()(
-  z.object({
-    merkle_proof: z.array(z.string()),
-    exit_root_num: z.string(),
-    main_exit_root: z.string(),
-    rollup_exit_root: z.string(),
-  })
+const apiMerkleProofToDomain = ({
+  merkle_proof,
+  exit_root_num,
+  main_exit_root,
+  rollup_exit_root,
+}: MerkleProof): domain.MerkleProof => ({
+  merkleProof: merkle_proof.map((v) => `0x${v}`),
+  exitRootNumber: z.number().positive().parse(Number(exit_root_num)),
+  mainExitRoot: main_exit_root,
+  rollupExitRoot: rollup_exit_root,
+});
+
+const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
+  z
+    .object({
+      merkle_proof: z.array(z.string().length(64)),
+      exit_root_num: z.string(),
+      main_exit_root: z.string().length(66),
+      rollup_exit_root: z.string().length(66),
+    })
+    .transform(apiMerkleProofToDomain)
 );
 
-const getMerkleProofResponseParser = StrictSchema<GetMerkleProofResponse>()(
+const getMerkleProofResponseParser = StrictSchema<
+  {
+    proof: MerkleProof;
+  },
+  {
+    proof: domain.MerkleProof;
+  }
+>()(
   z.object({
     proof: merkleProofParser,
   })
@@ -107,62 +135,75 @@ const claimParser = StrictSchema<Claim>()(
   z.object({
     index: z.string(),
     token_addr: z.string(),
-    amount: z.string(),
-    dest_net: z.number(),
-    dest_addr: z.string(),
     block_num: z.string(),
   })
 );
 
-const getClaimsResponseParser = StrictSchema<GetClaimsResponse>()(
-  z.object({
-    claims: z.optional(z.array(claimParser)),
-  })
-);
-
-const apiBridgeToDomain = ({
-  token_addr,
-  amount,
-  dest_addr,
-  dest_net,
-  deposit_cnt,
-}: Bridge): domain.Bridge => ({
+const apiClaimToDomain = ({ index, token_addr, block_num }: Claim): domain.Claim => ({
+  index: z.number().positive().parse(Number(index)),
   tokenAddress: token_addr,
-  amount: amount,
-  destinationAddress: dest_addr,
-  destinationNetwork: dest_net,
-  depositCount: deposit_cnt,
-});
-
-const apiMerkleProofToDomain = ({
-  merkle_proof,
-  exit_root_num,
-  main_exit_root,
-  rollup_exit_root,
-}: MerkleProof): domain.MerkleProof => ({
-  merkleProof: merkle_proof,
-  exitRootNumber: exit_root_num,
-  mainExitRoot: main_exit_root,
-  rollupExitRoot: rollup_exit_root,
-});
-
-const apiClaimToDomain = ({
-  index,
-  token_addr,
-  amount,
-  dest_net,
-  dest_addr,
-  block_num,
-}: Claim): domain.Claim => ({
-  index,
-  tokenAddress: token_addr,
-  amount,
-  destinationNetwork: dest_net,
-  destinationAddress: dest_addr,
   blockNumber: block_num,
 });
 
-const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<domain.Bridge[]> => {
+const getClaimsResponseParser = StrictSchema<
+  {
+    claims?: Claim[];
+  },
+  {
+    claims?: domain.Claim[];
+  }
+>()(
+  z.object({
+    claims: z.optional(z.array(claimParser.transform(apiClaimToDomain))),
+  })
+);
+
+const getBridges = async ({
+  apiUrl,
+  ethereumAddress,
+}: GetBridgesParams): Promise<domain.Bridge[]> => {
+  const [onHoldBridges, claims] = await Promise.all([
+    getOnHoldBridges({ apiUrl, ethereumAddress }),
+    getClaims({ apiUrl, ethereumAddress }),
+  ]);
+  return await Promise.all(
+    onHoldBridges.map(async (onHoldBridge): Promise<domain.Bridge> => {
+      const { depositCount, destinationNetwork } = onHoldBridge;
+      const originNetwork = destinationNetwork === 0 ? 1 : 0;
+      const [claimStatus, merkleProof]: [domain.ClaimStatus, domain.MerkleProof] =
+        await Promise.all([
+          getClaimStatus({ apiUrl, originNetwork, depositCount }),
+          getMerkleProof({ apiUrl, originNetwork, depositCount }),
+        ]);
+      if (claimStatus.isReady) {
+        const claim = claims.find((claim) => claim.index === onHoldBridge.depositCount);
+        return claim
+          ? {
+              ...onHoldBridge,
+              ...merkleProof,
+              index: claim.index,
+              blockNumber: claim.blockNumber,
+              step: "claimed",
+            }
+          : {
+              ...onHoldBridge,
+              ...merkleProof,
+              step: "claimable",
+            };
+      } else {
+        return {
+          ...onHoldBridge,
+          step: "on-hold",
+        };
+      }
+    })
+  );
+};
+
+const getOnHoldBridges = ({
+  apiUrl,
+  ethereumAddress,
+}: GetBridgesParams): Promise<domain.OnHoldBridge[]> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -173,9 +214,7 @@ const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<doma
       const parsedData = getBridgesResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.deposits !== undefined
-          ? parsedData.data.deposits.map(apiBridgeToDomain)
-          : [];
+        return parsedData.data.deposits !== undefined ? parsedData.data.deposits : [];
       } else {
         throw parsedData.error;
       }
@@ -227,7 +266,7 @@ const getMerkleProof = ({
       const parsedData = getMerkleProofResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return apiMerkleProofToDomain(parsedData.data.proof);
+        return parsedData.data.proof;
       } else {
         throw parsedData.error;
       }
@@ -245,9 +284,7 @@ const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<domain
       const parsedData = getClaimsResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.claims !== undefined
-          ? parsedData.data.claims.map(apiClaimToDomain)
-          : [];
+        return parsedData.data.claims !== undefined ? parsedData.data.claims : [];
       } else {
         throw parsedData.error;
       }

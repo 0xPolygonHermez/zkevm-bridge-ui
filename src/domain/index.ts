@@ -98,20 +98,35 @@ export type Message =
       parsed: string;
     };
 
-export interface Bridge {
+export interface OnHoldBridge {
   tokenAddress: string;
-  amount: string;
+  amount: BigNumber;
   destinationNetwork: number;
   destinationAddress: string;
-  depositCount: string;
+  depositCount: number;
 }
 
+export type ClaimableBridge = OnHoldBridge & MerkleProof;
+
+export type ClaimedBridge = ClaimableBridge & {
+  index: number;
+  blockNumber: string;
+};
+
+export type Bridge =
+  | ({
+      step: "on-hold";
+    } & OnHoldBridge)
+  | ({
+      step: "claimable";
+    } & ClaimableBridge)
+  | ({
+      step: "claimed";
+    } & ClaimedBridge);
+
 export interface Claim {
-  index: string;
+  index: number;
   tokenAddress: string;
-  amount: string;
-  destinationNetwork: number;
-  destinationAddress: string;
   blockNumber: string;
 }
 
@@ -121,7 +136,7 @@ export interface ClaimStatus {
 
 export interface MerkleProof {
   merkleProof: string[];
-  exitRootNumber: string;
+  exitRootNumber: number;
   mainExitRoot: string;
   rollupExitRoot: string;
 }

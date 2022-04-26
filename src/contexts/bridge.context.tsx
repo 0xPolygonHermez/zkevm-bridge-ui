@@ -201,7 +201,8 @@ const BridgeProvider: FC = (props) => {
         index,
         globalExitRootNum,
         mainnetExitRoot,
-        rollupExitRoot
+        rollupExitRoot,
+        destinationNetwork === 1 ? { gasPrice: 0 } : undefined
       );
     },
     [bridgeContract]
