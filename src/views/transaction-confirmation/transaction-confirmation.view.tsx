@@ -72,13 +72,13 @@ const TransactionConfirmation: FC = () => {
         <div className={classes.fees}>
           <Typography type="body2">Estimated L2 fees</Typography>
           <Typography type="body1" className={classes.fee}>
-            {env && <Icon url={transaction.token.logoURI} size={20} />} 0.0025 ETH
+            <Icon url={transaction.token.logoURI} size={20} /> 0.0025 ETH
           </Typography>
           <Typography type="body2" className={classes.betweenFees}>
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            {env && <Icon url={transaction.token.logoURI} size={20} />} 0.0545 ETH
+            <Icon url={transaction.token.logoURI} size={20} /> 0.0545 ETH
           </Typography>
         </div>
       </Card>
