@@ -151,21 +151,18 @@ const BridgeProvider: FC = (props) => {
   const estimateBridgeGasPrice = useCallback(
     ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
       const contract = chain.name === "ethereum" ? l1BridgeContract : l2BridgeContract;
-      const overrides: PayableOverrides | undefined =
-        token.address === ethersConstants.AddressZero ? { value: amount } : undefined;
+      const overrides: PayableOverrides =
+        token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       if (contract === undefined) {
         throw new Error("Bridge contract is not available");
       }
 
       return contract.estimateGas
-        .bridge(
-          token.address,
-          amount,
-          destinationChain.bridgeNetworkId,
-          destinationAddress,
-          overrides
-        )
+        .bridge(token.address, amount, destinationChain.bridgeNetworkId, destinationAddress, {
+          ...overrides,
+          from: destinationAddress,
+        })
         .then((gasUnits) => estimateGasPrice({ chain, gasUnits }));
     },
     [l1BridgeContract, l2BridgeContract, estimateGasPrice]
@@ -191,8 +188,8 @@ const BridgeProvider: FC = (props) => {
         chain.name === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
           : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
-      const overrides: PayableOverrides | undefined =
-        token.address === ethersConstants.AddressZero ? { value: amount } : undefined;
+      const overrides: PayableOverrides =
+        token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       if (token.address !== ethersConstants.AddressZero) {
         if (account.status !== "successful") {
