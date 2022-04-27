@@ -12,7 +12,7 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { Chain, TransactionData } from "src/domain";
+import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { AsyncTask } from "src/utils/types";
 
@@ -21,6 +21,13 @@ interface TransactionFormProps {
   getBalance: (chainId: Chain["chainId"]) => Promise<BigNumber>;
   transaction?: TransactionData;
   account: AsyncTask<string, string>;
+}
+
+interface FormData {
+  from: Chain;
+  to: Chain;
+  token: Token;
+  amount?: BigNumber;
 }
 
 const TransactionForm: FC<TransactionFormProps> = ({
@@ -35,7 +42,7 @@ const TransactionForm: FC<TransactionFormProps> = ({
   const [error, setError] = useState<string>();
   const [balanceFrom, setBalanceFrom] = useState(BigNumber.from(0));
   const [balanceTo, setBalanceTo] = useState(BigNumber.from(0));
-  const [transactionData, setTransactionData] = useState<TransactionData | undefined>(transaction);
+  const [transactionData, setTransactionData] = useState<FormData | undefined>(transaction);
 
   // const onChainToButtonClick = (to: Chain) => {
   //   if (transactionData) {
@@ -56,7 +63,7 @@ const TransactionForm: FC<TransactionFormProps> = ({
       const to = env.chains.find((chain) => chain.chainId !== from.chainId);
 
       if (to) {
-        setTransactionData({ ...transactionData, from, to });
+        setTransactionData({ ...transactionData, from, to, amount: undefined });
         setList(undefined);
       }
     }
@@ -71,8 +78,11 @@ const TransactionForm: FC<TransactionFormProps> = ({
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (transactionData) {
-      onSubmit(transactionData);
+    if (transactionData && transactionData.amount) {
+      onSubmit({
+        ...transactionData,
+        amount: transactionData.amount,
+      });
     }
   };
 
@@ -89,7 +99,6 @@ const TransactionForm: FC<TransactionFormProps> = ({
         from: env.chains[0],
         to: env.chains[1],
         token: env.tokens.ETH,
-        amount: BigNumber.from(0),
       });
     }
   }, [env, transaction]);

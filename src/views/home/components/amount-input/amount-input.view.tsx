@@ -1,6 +1,6 @@
 import { BigNumber, constants as ethersConstants } from "ethers";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 
 import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -12,7 +12,7 @@ interface onChangeParams {
 }
 
 interface AmountInputProps {
-  value: BigNumber;
+  value?: BigNumber;
   token: Token;
   balance: BigNumber;
   fee: BigNumber;
@@ -20,21 +20,24 @@ interface AmountInputProps {
 }
 
 const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
-  const defaultInputValue = value && !value.isZero() ? formatUnits(value, token.decimals) : "";
+  const defaultInputValue = value ? formatUnits(value, token.decimals) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
   const actualFee = token.address === ethersConstants.AddressZero ? fee : BigNumber.from(0);
 
-  const updateAmountInput = (amount?: BigNumber) => {
-    if (amount) {
-      const newAmountWithFee = amount.add(actualFee);
-      const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
-      const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
-      onChange({ amount, error });
-    } else {
-      onChange({});
-    }
-  };
+  const updateAmountInput = useCallback(
+    (amount?: BigNumber) => {
+      if (amount) {
+        const newAmountWithFee = amount.add(actualFee);
+        const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
+        const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
+        onChange({ amount, error });
+      } else {
+        onChange({});
+      }
+    },
+    [actualFee, balance, onChange]
+  );
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -65,11 +68,11 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   useEffect(() => {
-    if (inputValue.length > 0) {
-      updateAmountInput(parseUnits(inputValue, token.decimals));
+    if (value === undefined) {
+      setInputValue("");
+      updateAmountInput();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balance]);
+  }, [value, updateAmountInput]);
 
   return (
     <div className={classes.wrapper}>
