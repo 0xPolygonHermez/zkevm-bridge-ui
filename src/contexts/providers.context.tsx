@@ -20,7 +20,7 @@ interface ProvidersContext {
   l1Provider?: JsonRpcProvider;
   l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
-  changeNetwork: (chainId: string) => Promise<void>;
+  changeNetwork: (chainId: string) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -29,7 +29,7 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
-  changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
+  changeNetwork: () => new Error(providersContextNotReadyErrorMsg),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
@@ -59,18 +59,22 @@ const ProvidersProvider: FC = (props) => {
                 setConnectedProvider(web3Provider);
                 setAccount({ status: "successful", data: accounts[0] });
               })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (isMetamaskUserRejectedRequestError(error)) {
-                    setAccount({ status: "pending" });
-                  } else {
-                    openSnackbar({
-                      type: "error",
-                      parsed: errorMsg,
-                    });
-                  }
-                })
-              );
+              .catch((error) => {
+                if (isMetamaskUserRejectedRequestError(error)) {
+                  setAccount({ status: "pending" });
+                } else {
+                  void parseError(error).then((errorMsg) => {
+                    if (isMetamaskUserRejectedRequestError(error)) {
+                      setAccount({ status: "pending" });
+                    } else {
+                      openSnackbar({
+                        type: "error",
+                        parsed: errorMsg,
+                      });
+                    }
+                  });
+                }
+              });
           } else {
             return setAccount({
               status: "failed",
@@ -135,48 +139,52 @@ const ProvidersProvider: FC = (props) => {
   }, [connectedProvider]);
 
   const changeNetwork = useCallback(
-    async (chainId: string) => {
-      if (window.ethereum && window.ethereum.request) {
-        try {
-          await window.ethereum.request({
+    (chainId: string) => {
+      if (
+        connectedProvider &&
+        connectedProvider.provider.isMetaMask &&
+        connectedProvider.provider.request
+      ) {
+        connectedProvider.provider
+          .request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId }],
-          });
-        } catch (switchError) {
-          void parseError(switchError).then(async (errorMsg) => {
+          })
+          .catch((switchError) => {
             if (isMetamaskUnknownChainError(switchError)) {
-              try {
-                if (env && window.ethereum && window.ethereum.request) {
-                  await window.ethereum.request({
+              if (env && connectedProvider && connectedProvider.provider.request) {
+                connectedProvider.provider
+                  .request({
                     method: "wallet_addEthereumChain",
                     params: [
                       {
-                        chainId: chainId,
+                        chainId,
                         chainName: "Polygon Hermez",
                         rpcUrls: [env.l2Node.rpcUrl],
                       },
                     ],
+                  })
+                  .catch((addError) => {
+                    void parseError(addError).then((errorMsg) => {
+                      openSnackbar({
+                        type: "error",
+                        parsed: errorMsg,
+                      });
+                    });
                   });
-                }
-              } catch (addError) {
-                void parseError(addError).then((errorMsg) => {
-                  openSnackbar({
-                    type: "error",
-                    parsed: errorMsg,
-                  });
-                });
               }
             } else {
-              openSnackbar({
-                type: "error",
-                parsed: errorMsg,
+              void parseError(switchError).then((errorMsg) => {
+                openSnackbar({
+                  type: "error",
+                  parsed: errorMsg,
+                });
               });
             }
           });
-        }
       }
     },
-    [env, openSnackbar]
+    [connectedProvider, env, openSnackbar]
   );
 
   useEffect(() => {
@@ -194,12 +202,18 @@ const ProvidersProvider: FC = (props) => {
         }
       }
     };
-    const onChainChangedOrDisconnect = () => {
-      if (connectedProvider?.connection.url === "eip-1193:") {
-        void connectProvider(WalletName.WALLET_CONNECT);
-      } else {
-        void connectProvider(WalletName.METAMASK);
+    const onChainChanged = () => {
+      if (connectedProvider) {
+        if (connectedProvider.provider.isMetaMask) {
+          void connectProvider(WalletName.METAMASK);
+        } else {
+          void connectProvider(WalletName.WALLET_CONNECT);
+        }
       }
+    };
+
+    const onDisconnect = () => {
+      window.location.reload();
     };
 
     if (
@@ -208,8 +222,8 @@ const ProvidersProvider: FC = (props) => {
       typeof internalConnectedProvider.on === "function"
     ) {
       internalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
+      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
     }
 
     return () => {
@@ -219,14 +233,8 @@ const ProvidersProvider: FC = (props) => {
         typeof internalConnectedProvider.removeListener === "function"
       ) {
         internalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        internalConnectedProvider.removeListener(
-          EthereumEvent.CHAIN_CHANGED,
-          onChainChangedOrDisconnect
-        );
-        internalConnectedProvider.removeListener(
-          EthereumEvent.DISCONNECT,
-          onChainChangedOrDisconnect
-        );
+        internalConnectedProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+        internalConnectedProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
   }, [connectProvider, connectedProvider, navigate]);
