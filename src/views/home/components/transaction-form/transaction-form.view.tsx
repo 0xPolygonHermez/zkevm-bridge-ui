@@ -39,20 +39,6 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   const [balanceTo, setBalanceTo] = useState(BigNumber.from(0));
   const [formData, setFormData] = useState<FormData | undefined>(transaction);
 
-  // const onChainToButtonClick = (to: Chain) => {
-  //   if (transactionData) {
-  //     setTransactionData({ ...transactionData, to });
-  //     setList(undefined);
-  //   }
-  // };
-
-  // const onTokenClick = (token: Token) => {
-  //   if (transactionData) {
-  //     setTransactionData({ ...transactionData, token });
-  //     setList(undefined);
-  //   }
-  // };
-
   const onChainFromButtonClick = (from: Chain) => {
     if (env && formData) {
       const to = env.chains.find((chain) => chain.key !== from.key);
