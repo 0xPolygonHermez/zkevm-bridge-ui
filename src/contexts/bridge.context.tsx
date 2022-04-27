@@ -1,4 +1,9 @@
-import { BigNumber, ContractTransaction, constants as ethersConstants } from "ethers";
+import {
+  BigNumber,
+  ContractTransaction,
+  constants as ethersConstants,
+  PayableOverrides,
+} from "ethers";
 import { createContext, FC, useContext, useEffect, useState, useCallback } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -146,13 +151,21 @@ const BridgeProvider: FC = (props) => {
   const estimateBridgeGasPrice = useCallback(
     ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
       const contract = chain.name === "ethereum" ? l1BridgeContract : l2BridgeContract;
+      const overrides: PayableOverrides | undefined =
+        token.address === ethersConstants.AddressZero ? { value: amount } : undefined;
 
       if (contract === undefined) {
         throw new Error("Bridge contract is not available");
       }
 
       return contract.estimateGas
-        .bridge(token.address, amount, destinationChain.bridgeNetworkId, destinationAddress)
+        .bridge(
+          token.address,
+          amount,
+          destinationChain.bridgeNetworkId,
+          destinationAddress,
+          overrides
+        )
         .then((gasUnits) => estimateGasPrice({ chain, gasUnits }));
     },
     [l1BridgeContract, l2BridgeContract, estimateGasPrice]
@@ -178,16 +191,10 @@ const BridgeProvider: FC = (props) => {
         chain.name === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
           : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
+      const overrides: PayableOverrides | undefined =
+        token.address === ethersConstants.AddressZero ? { value: amount } : undefined;
 
-      if (token.address === ethersConstants.AddressZero) {
-        return contract.bridge(
-          token.address,
-          amount,
-          destinationChain.bridgeNetworkId,
-          destinationAddress,
-          { value: amount }
-        );
-      } else {
+      if (token.address !== ethersConstants.AddressZero) {
         if (account.status !== "successful") {
           throw new Error("The account address is not available");
         }
@@ -204,7 +211,8 @@ const BridgeProvider: FC = (props) => {
         token.address,
         amount,
         destinationChain.bridgeNetworkId,
-        destinationAddress
+        destinationAddress,
+        overrides
       );
     },
     [env, connectedProvider, account]
