@@ -15,7 +15,6 @@ import AmountInput from "src/views/home/components/amount-input/amount-input.vie
 import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { AsyncTask } from "src/utils/types";
-import { getBalance } from "src/adapters/ethereum";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -67,9 +66,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   };
 
   useEffect(() => {
-    if (formData?.from && account.status === "successful") {
-      void getBalance(formData.from.provider, account.data).then(setBalanceFrom);
-      void getBalance(formData.to.provider, account.data).then(setBalanceTo);
+    if (account.status === "successful") {
+      void formData?.from.provider.getBalance(account.data).then(setBalanceFrom);
+      void formData?.to.provider.getBalance(account.data).then(setBalanceTo);
     }
   }, [formData?.from, formData?.to, account]);
 

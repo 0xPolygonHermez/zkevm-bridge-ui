@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { Web3Provider, Provider } from "@ethersproject/providers";
-import { BigNumber } from "ethers";
+import { Web3Provider } from "@ethersproject/providers";
 
 import { StrictSchema } from "src/utils/type-safety";
 
@@ -12,7 +11,4 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-const getBalance = (provider: Provider, account: string): Promise<BigNumber> =>
-  provider.getBalance(account);
-
-export { ethereumAccountsParser, getConnectedAccounts, getBalance };
+export { ethereumAccountsParser, getConnectedAccounts };
