@@ -22,8 +22,6 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
-export const BRIDGE_ETHEREUM_NETWORK_ID = 0;
-
 export const getChains = ({
   ethereumChainId,
   polygonHermezChainId,
