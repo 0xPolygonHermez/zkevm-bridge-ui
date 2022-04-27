@@ -15,10 +15,10 @@ import AmountInput from "src/views/home/components/amount-input/amount-input.vie
 import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { AsyncTask } from "src/utils/types";
+import { getBalance } from "src/adapters/ethereum";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
-  getBalance: (chainId: Chain["chainId"]) => Promise<BigNumber>;
   transaction?: TransactionData;
   account: AsyncTask<string, string>;
 }
@@ -30,19 +30,14 @@ interface FormData {
   amount?: BigNumber;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({
-  onSubmit,
-  getBalance,
-  transaction,
-  account,
-}) => {
+const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
   const classes = useTransactionFormtStyles();
   const env = useEnvContext();
   const [list, setList] = useState<List>();
   const [error, setError] = useState<string>();
   const [balanceFrom, setBalanceFrom] = useState(BigNumber.from(0));
   const [balanceTo, setBalanceTo] = useState(BigNumber.from(0));
-  const [transactionData, setTransactionData] = useState<FormData | undefined>(transaction);
+  const [formData, setFormData] = useState<FormData | undefined>(transaction);
 
   // const onChainToButtonClick = (to: Chain) => {
   //   if (transactionData) {
@@ -59,43 +54,44 @@ const TransactionForm: FC<TransactionFormProps> = ({
   // };
 
   const onChainFromButtonClick = (from: Chain) => {
-    if (env && transactionData) {
-      const to = env.chains.find((chain) => chain.chainId !== from.chainId);
-
+    if (env && formData) {
+      const to = env.chains.find((chain) => chain.key !== from.key);
       if (to) {
-        setTransactionData({ ...transactionData, from, to, amount: undefined });
+        setFormData({ ...formData, from, to, amount: undefined });
         setList(undefined);
       }
     }
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
-    if (transactionData && amount) {
-      setTransactionData({ ...transactionData, amount });
+    if (formData && amount) {
+      setFormData({ ...formData, amount });
       setError(error);
     }
   };
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (transactionData && transactionData.amount) {
+    if (formData && formData.amount) {
       onSubmit({
-        ...transactionData,
-        amount: transactionData.amount,
+        ...formData,
+        amount: formData.amount,
       });
     }
   };
 
   useEffect(() => {
-    if (transactionData?.from) {
-      void getBalance(transactionData.from.chainId).then(setBalanceFrom);
-      void getBalance(transactionData.to.chainId).then(setBalanceTo);
+    if (formData?.from && account.status === "successful") {
+      void getBalance(formData.from.provider, account.data).then(setBalanceFrom);
+      void getBalance(formData.to.provider, account.data).then((a) => {
+        setBalanceTo(a);
+      });
     }
-  }, [getBalance, transactionData?.from, transactionData?.to.chainId, account]);
+  }, [formData?.from, formData?.to, account]);
 
   useEffect(() => {
     if (env && !transaction) {
-      setTransactionData({
+      setFormData({
         from: env.chains[0],
         to: env.chains[1],
         token: env.tokens.ETH,
@@ -103,7 +99,7 @@ const TransactionForm: FC<TransactionFormProps> = ({
     }
   }, [env, transaction]);
 
-  if (!env || !transactionData) {
+  if (!env || !formData) {
     return null;
   }
 
@@ -120,8 +116,8 @@ const TransactionForm: FC<TransactionFormProps> = ({
               }
               type="button"
             >
-              <transactionData.from.Icon />
-              <Typography type="body1">{transactionData.from.name}</Typography>
+              <formData.from.Icon />
+              <Typography type="body1">{formData.from.name}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -135,15 +131,15 @@ const TransactionForm: FC<TransactionFormProps> = ({
             className={classes.tokenSelector}
             // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
           >
-            <Icon url={transactionData.token.logoURI} size={24} />
-            <Typography type="h2">{transactionData.token.symbol}</Typography>
+            <Icon url={formData.token.logoURI} size={24} />
+            <Typography type="h2">{formData.token.symbol}</Typography>
             {/* <CaretDown className={classes.icons} /> */}
           </div>
           <AmountInput
-            value={transactionData.amount}
-            token={transactionData.token}
+            value={formData.amount}
+            token={formData.token}
             balance={balanceFrom}
-            fee={BigNumber.from(parseUnits("0.0001", transactionData.token.decimals))}
+            fee={BigNumber.from(parseUnits("0.0001", formData.token.decimals))}
             onChange={onInputChange}
           />
         </div>
@@ -163,8 +159,8 @@ const TransactionForm: FC<TransactionFormProps> = ({
               //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
               // }
             >
-              <transactionData.to.Icon />
-              <Typography type="body1">{transactionData.to.name}</Typography>
+              <formData.to.Icon />
+              <Typography type="body1">{formData.to.name}</Typography>
               {/* <CaretDown /> */}
             </div>
           </div>
@@ -177,13 +173,11 @@ const TransactionForm: FC<TransactionFormProps> = ({
       <div className={classes.button}>
         <Button
           type="submit"
-          disabled={
-            !transactionData.amount || transactionData.amount.isZero() || error !== undefined
-          }
+          disabled={!formData.amount || formData.amount.isZero() || error !== undefined}
         >
           Continue
         </Button>
-        {transactionData.amount && error && <Error error={error} />}
+        {formData.amount && error && <Error error={error} />}
       </div>
       {list && (
         <List

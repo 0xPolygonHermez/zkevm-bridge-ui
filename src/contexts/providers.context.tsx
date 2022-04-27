@@ -1,10 +1,9 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
-import { BigNumber } from "ethers";
+import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { Chain, EthereumEvent, WalletName } from "src/domain";
+import { EthereumEvent, WalletName } from "src/domain";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
@@ -14,12 +13,9 @@ import routes from "src/routes";
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
-  l1Provider?: JsonRpcProvider;
-  l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
-  getBalance: (chainId: Chain["chainId"]) => Promise<BigNumber>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -32,14 +28,11 @@ const providersContext = createContext<ProvidersContext>({
   disconnectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
-  getBalance: () => Promise.resolve(BigNumber.from(0)),
 });
 
 const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
   const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
-  const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
-  const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -77,31 +70,40 @@ const ProvidersProvider: FC = (props) => {
         }
         case WalletName.WALLET_CONNECT: {
           if (env) {
-            const walletConnectProvider = new WalletConnectProvider({
-              rpc: {
-                [env.l1Node.chainId]: env.l1Node.rpcUrl,
-              },
-            });
-            const web3Provider = new Web3Provider(walletConnectProvider);
+            const ethProvider = env.chains.find((chain) => chain.key === "ethereum");
+            if (ethProvider) {
+              const { chainId } = await ethProvider.provider.getNetwork();
+              const walletConnectProvider = new WalletConnectProvider({
+                rpc: {
+                  [chainId]: ethProvider.provider.connection.url,
+                },
+              });
+              const web3Provider = new Web3Provider(walletConnectProvider);
 
-            return walletConnectProvider
-              .enable()
-              .then((accounts) => {
-                setConnectedProvider(web3Provider);
-                setAccount({ status: "successful", data: accounts[0] });
-              })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (error instanceof Error && error.message === "User closed modal") {
-                    setAccount({ status: "pending" });
-                  } else {
-                    openSnackbar({
-                      type: "error",
-                      parsed: errorMsg,
-                    });
-                  }
+              return walletConnectProvider
+                .enable()
+                .then((accounts) => {
+                  setConnectedProvider(web3Provider);
+                  setAccount({ status: "successful", data: accounts[0] });
                 })
-              );
+                .catch((error) =>
+                  parseError(error).then((errorMsg) => {
+                    if (error instanceof Error && error.message === "User closed modal") {
+                      setAccount({ status: "pending" });
+                    } else {
+                      openSnackbar({
+                        type: "error",
+                        parsed: errorMsg,
+                      });
+                    }
+                  })
+                );
+            } else {
+              return setAccount({
+                status: "failed",
+                error: "The provider has not been found.",
+              });
+            }
           } else
             return setAccount({
               status: "failed",
@@ -130,33 +132,6 @@ const ProvidersProvider: FC = (props) => {
       });
     }
   }, [connectedProvider]);
-
-  const getBalance = useCallback(
-    async (chainId: Chain["chainId"]) => {
-      try {
-        if (account.status === "successful" && l1Provider && l2Provider) {
-          const promises = [l1Provider, l2Provider].map(async (provider) => {
-            const { chainId } = await provider.getNetwork();
-            return { chainId, provider };
-          });
-          const providers = await Promise.all(promises);
-          const providerRequested = providers.find((provider) => provider.chainId === chainId);
-          if (providerRequested) {
-            return await providerRequested.provider.getBalance(account.data);
-          }
-        }
-      } catch (error) {
-        void parseError(error).then((errorMsg) => {
-          openSnackbar({
-            type: "error",
-            parsed: errorMsg,
-          });
-        });
-      }
-      return BigNumber.from(0);
-    },
-    [account, l1Provider, l2Provider, openSnackbar]
-  );
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
@@ -206,32 +181,14 @@ const ProvidersProvider: FC = (props) => {
     };
   }, [connectedProvider, navigate]);
 
-  useEffect(() => {
-    if (env) {
-      setL1Provider(new JsonRpcProvider(env.l1Node.rpcUrl));
-      setL2Provider(new JsonRpcProvider(env.l2Node.rpcUrl));
-    }
-  }, [env]);
-
   const value = useMemo(
     () => ({
       connectedProvider,
       account,
-      l1Provider,
-      l2Provider,
       connectProvider,
       disconnectProvider,
-      getBalance,
     }),
-    [
-      account,
-      connectProvider,
-      connectedProvider,
-      disconnectProvider,
-      getBalance,
-      l1Provider,
-      l2Provider,
-    ]
+    [account, connectProvider, connectedProvider, disconnectProvider]
   );
 
   return <providersContext.Provider value={value} {...props} />;

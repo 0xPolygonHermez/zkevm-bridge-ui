@@ -2,7 +2,6 @@ import { createContext, FC, useCallback, useContext, useEffect, useMemo, useStat
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 
 import { useEnvContext } from "src/contexts/env.context";
-import { useProvidersContext } from "src/contexts/providers.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { Currency, FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
@@ -32,7 +31,6 @@ const priceOracleContext = createContext<PriceOracleContext>({
 
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
-  const { l1Provider } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
@@ -77,15 +75,17 @@ const PriceOracleProvider: FC = (props) => {
   );
 
   useEffect(() => {
-    if (env && l1Provider) {
-      const quoterContract = UniswapQuoter__factory.connect(
-        env.tokenQuotes.uniswapQuoterContractAddress,
-        l1Provider
-      );
-
-      setQuoterContract(quoterContract);
+    if (env) {
+      const ethProvider = env.chains.find((chain) => chain.key === "ethereum");
+      if (ethProvider) {
+        const quoterContract = UniswapQuoter__factory.connect(
+          env.tokenQuotes.uniswapQuoterContractAddress,
+          ethProvider.provider
+        );
+        setQuoterContract(quoterContract);
+      }
     }
-  }, [env, l1Provider]);
+  }, [env]);
 
   useEffect(() => {
     if (env) {
