@@ -70,12 +70,12 @@ const ProvidersProvider: FC = (props) => {
         }
         case WalletName.WALLET_CONNECT: {
           if (env) {
-            const ethProvider = env.chains.find((chain) => chain.key === "ethereum");
-            if (ethProvider) {
-              const { chainId } = await ethProvider.provider.getNetwork();
+            const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+            if (ethereumChain) {
+              const { chainId } = await ethereumChain.provider.getNetwork();
               const walletConnectProvider = new WalletConnectProvider({
                 rpc: {
-                  [chainId]: ethProvider.provider.connection.url,
+                  [chainId]: ethereumChain.provider.connection.url,
                 },
               });
               const web3Provider = new Web3Provider(walletConnectProvider);

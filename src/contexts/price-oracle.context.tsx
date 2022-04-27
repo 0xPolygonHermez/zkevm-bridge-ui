@@ -76,11 +76,11 @@ const PriceOracleProvider: FC = (props) => {
 
   useEffect(() => {
     if (env) {
-      const ethProvider = env.chains.find((chain) => chain.key === "ethereum");
-      if (ethProvider) {
+      const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+      if (ethereumChain) {
         const quoterContract = UniswapQuoter__factory.connect(
           env.tokenQuotes.uniswapQuoterContractAddress,
-          ethProvider.provider
+          ethereumChain.provider
         );
         setQuoterContract(quoterContract);
       }
