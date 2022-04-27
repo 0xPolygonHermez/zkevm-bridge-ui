@@ -83,9 +83,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   useEffect(() => {
     if (formData?.from && account.status === "successful") {
       void getBalance(formData.from.provider, account.data).then(setBalanceFrom);
-      void getBalance(formData.to.provider, account.data).then((a) => {
-        setBalanceTo(a);
-      });
+      void getBalance(formData.to.provider, account.data).then(setBalanceTo);
     }
   }, [formData?.from, formData?.to, account]);
 
