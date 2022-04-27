@@ -1,4 +1,6 @@
 import { FC } from "react";
+import { formatEther } from "ethers/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
 import { ReactComponent as TransferL1Icon } from "src/assets/icons/l1-transfer.svg";
@@ -6,11 +8,9 @@ import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.s
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction, getTransactionStatusText } from "src/domain";
-import { formatEther } from "ethers/lib/utils";
 
 export interface TransactionCardProps {
   transaction: Transaction;
