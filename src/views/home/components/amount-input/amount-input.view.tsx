@@ -56,8 +56,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   const handleSendAll = () => {
-    const maxPossibleAmount = balance;
-    const maxAmountWithoutFee = maxPossibleAmount.sub(actualFee);
+    const maxAmountWithoutFee = balance.sub(actualFee);
 
     if (maxAmountWithoutFee.gt(0)) {
       const newValue = formatUnits(maxAmountWithoutFee, token.decimals);
