@@ -67,6 +67,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   useEffect(() => {
+    // TODO Find a way to react to this event without checking undefined
     if (value === undefined) {
       setInputValue("");
       updateAmountInput();
