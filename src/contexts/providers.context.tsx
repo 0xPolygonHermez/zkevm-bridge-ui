@@ -60,15 +60,11 @@ const ProvidersProvider: FC = (props) => {
                 if (isMetamaskUserRejectedRequestError(error)) {
                   setAccount({ status: "pending" });
                 } else {
-                  void parseError(error).then((errorMsg) => {
-                    if (isMetamaskUserRejectedRequestError(error)) {
-                      setAccount({ status: "pending" });
-                    } else {
-                      openSnackbar({
-                        type: "error",
-                        parsed: errorMsg,
-                      });
-                    }
+                  void parseError(error).then((parsed) => {
+                    openSnackbar({
+                      type: "error",
+                      parsed,
+                    });
                   });
                 }
               });
