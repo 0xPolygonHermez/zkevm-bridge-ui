@@ -12,6 +12,8 @@ import { Bridge, Chain, Claim, ClaimStatus, MerkleProof, Token } from "src/domai
 import { Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
+import { BRIDGE_CALL_GAS_INCREASE } from "src/constants";
+import { parseUnits } from "ethers/lib/utils";
 
 interface GetBridgesParams {
   ethereumAddress: string;
@@ -29,6 +31,13 @@ interface GetMerkleProofParams {
 
 interface GetClaimsParams {
   ethereumAddress: string;
+}
+
+interface EstimateBridgeGasPriceParams {
+  chain: Chain;
+  token: Token;
+  destinationChain: Chain;
+  destinationAddress: string;
 }
 
 interface BridgeParams {
@@ -58,7 +67,7 @@ interface BridgeContext {
   getClaimStatus: (params: GetClaimStatusParams) => Promise<ClaimStatus>;
   getMerkleProof: (params: GetMerkleProofParams) => Promise<MerkleProof>;
   getClaims: (params: GetClaimsParams) => Promise<Claim[]>;
-  estimateBridgeGasPrice: (params: BridgeParams) => Promise<BigNumber | undefined>;
+  estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
@@ -146,11 +155,12 @@ const BridgeProvider: FC = (props) => {
   );
 
   const estimateBridgeGasPrice = useCallback(
-    ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
+    ({ chain, token, destinationChain, destinationAddress }: EstimateBridgeGasPriceParams) => {
       if (env === undefined) {
         throw new Error("Env is not available");
       }
 
+      const amount = parseUnits("1", token.address);
       const contract =
         chain.name === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, chain.provider)
@@ -167,7 +177,12 @@ const BridgeProvider: FC = (props) => {
           ...overrides,
           from: destinationAddress,
         })
-        .then((gasUnits) => estimateGasPrice({ chain, gasUnits }));
+        .then((gasLimit) => {
+          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE).toNumber();
+          const safeGasUnits = gasLimit.add(gasIncrease);
+
+          return estimateGasPrice({ chain, gasUnits: safeGasUnits });
+        });
     },
     [env, estimateGasPrice]
   );

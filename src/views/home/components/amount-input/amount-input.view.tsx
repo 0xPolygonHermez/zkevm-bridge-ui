@@ -15,25 +15,28 @@ interface AmountInputProps {
   value?: BigNumber;
   token: Token;
   balance: BigNumber;
-  fee: BigNumber;
+  fee?: BigNumber;
   onChange: (params: onChangeParams) => void;
 }
 
 const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
   const defaultInputValue = value ? formatUnits(value, token.decimals) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
+  const [actualFee, setActualFee] = useState<BigNumber>();
   const classes = useAmountInputStyles(inputValue.length);
-  const actualFee = token.address === ethersConstants.AddressZero ? fee : BigNumber.from(0);
 
   const updateAmountInput = useCallback(
     (amount?: BigNumber) => {
       if (amount) {
-        const newAmountWithFee = amount.add(actualFee);
-        const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
-        const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
-        onChange({ amount, error });
-      } else {
-        onChange({});
+        if (actualFee) {
+          const newAmountWithFee = amount.add(actualFee);
+          const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
+          const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
+
+          return onChange({ amount, error });
+        } else {
+          return onChange({ amount, error: "Insufficient balance" });
+        }
       }
     },
     [actualFee, balance, onChange]
@@ -56,13 +59,15 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
   };
 
   const handleSendAll = () => {
-    const maxAmountWithoutFee = balance.sub(actualFee);
+    if (actualFee) {
+      const maxAmountWithoutFee = balance.sub(actualFee);
 
-    if (maxAmountWithoutFee.gt(0)) {
-      const newValue = formatUnits(maxAmountWithoutFee, token.decimals);
+      if (maxAmountWithoutFee.gt(0)) {
+        const newValue = formatUnits(maxAmountWithoutFee, token.decimals);
 
-      setInputValue(newValue);
-      updateAmountInput(maxAmountWithoutFee);
+        setInputValue(newValue);
+        updateAmountInput(maxAmountWithoutFee);
+      }
     }
   };
 
@@ -74,9 +79,24 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
     }
   }, [value, updateAmountInput]);
 
+  useEffect(() => {
+    if (fee !== undefined) {
+      if (token.address === ethersConstants.AddressZero) {
+        setActualFee(fee);
+      } else {
+        setActualFee(BigNumber.from(0));
+      }
+    }
+  }, [fee, token]);
+
   return (
     <div className={classes.wrapper}>
-      <button className={classes.maxButton} type="button" onClick={handleSendAll}>
+      <button
+        className={classes.maxButton}
+        type="button"
+        disabled={fee === undefined}
+        onClick={handleSendAll}
+      >
         <Typography type="body2" className={classes.maxText}>
           MAX
         </Typography>

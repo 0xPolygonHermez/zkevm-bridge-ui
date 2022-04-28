@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 import { BigNumber, ethers } from "ethers";
-import { parseUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -14,6 +13,10 @@ import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
+import { isEthersInsufficientFundsError } from "src/utils/types";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { parseError } from "src/adapters/error";
+import { useUIContext } from "src/contexts/ui.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -21,67 +24,96 @@ interface TransactionFormProps {
   account: string;
 }
 
-interface FormData {
+interface FormChains {
   from: Chain;
   to: Chain;
-  token: Token;
-  amount?: BigNumber;
 }
 
 const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
+  const { openSnackbar } = useUIContext();
+  const { estimateBridgeGasPrice } = useBridgeContext();
   const [list, setList] = useState<List>();
   const [error, setError] = useState<string>();
-  const [balanceFrom, setBalanceFrom] = useState(BigNumber.from(0));
-  const [balanceTo, setBalanceTo] = useState(BigNumber.from(0));
-  const [formData, setFormData] = useState<FormData | undefined>(transaction);
+  const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
+  const [balanceTo, setBalanceTo] = useState<BigNumber>();
+
+  const [chains, setChains] = useState<FormChains>();
+  const [token, setToken] = useState<Token>();
+  const [amount, setAmount] = useState<BigNumber>();
+  const [estimatedFee, setEstimatedFee] = useState<BigNumber>();
 
   const onChainFromButtonClick = (from: Chain) => {
-    if (env && formData) {
+    if (env && chains) {
       const to = env.chains.find((chain) => chain.key !== from.key);
 
       if (to) {
-        setFormData({ ...formData, from, to, amount: undefined });
+        setChains({ from, to });
         setList(undefined);
-        setFormData({ ...formData, from, to });
       }
     }
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
-    if (formData && amount) {
-      setFormData({ ...formData, amount });
-      setError(error);
-    }
+    setAmount(amount);
+    setError(error);
   };
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData && formData.amount) {
+    if (chains && token && amount && estimatedFee) {
       onSubmit({
-        ...formData,
-        amount: formData.amount,
+        token: token,
+        from: chains.from,
+        to: chains.to,
+        amount: amount,
+        estimatedFee: estimatedFee,
       });
     }
   };
 
   useEffect(() => {
-    void formData?.from.provider.getBalance(account).then(setBalanceFrom);
-    void formData?.to.provider.getBalance(account).then(setBalanceTo);
-  }, [formData?.from, formData?.to, account]);
-
-  useEffect(() => {
-    if (env && !transaction) {
-      setFormData({
-        from: env.chains[0],
-        to: env.chains[1],
-        token: env.tokens.ETH,
-      });
+    if (transaction !== undefined) {
+      setChains({ from: transaction.from, to: transaction.to });
+      setToken(transaction.token);
+      setAmount(transaction.amount);
+    } else if (env !== undefined) {
+      setChains({ from: env.chains[0], to: env.chains[1] });
+      setToken(env.tokens.ETH);
     }
   }, [env, transaction]);
 
-  if (!env || !formData) {
+  useEffect(() => {
+    setAmount(undefined);
+    if (chains) {
+      void chains.from.provider.getBalance(account).then(setBalanceFrom);
+      void chains.to.provider.getBalance(account).then(setBalanceTo);
+    }
+  }, [chains, account]);
+
+  useEffect(() => {
+    if (chains && token) {
+      estimateBridgeGasPrice({
+        chain: chains.from,
+        destinationChain: chains.to,
+        token,
+        destinationAddress: account,
+      })
+        .then(setEstimatedFee)
+        .catch((error) => {
+          if (isEthersInsufficientFundsError(error)) {
+            setEstimatedFee(undefined);
+          } else {
+            void parseError(error).then((errorMessage) => {
+              openSnackbar({ type: "error-msg", text: errorMessage });
+            });
+          }
+        });
+    }
+  }, [account, chains, token, estimateBridgeGasPrice, openSnackbar]);
+
+  if (!env || !chains || !token) {
     return null;
   }
 
@@ -102,30 +134,28 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
               }
               type="button"
             >
-              <formData.from.Icon />
-              <Typography type="body1">{formData.from.name}</Typography>
+              <chains.from.Icon />
+              <Typography type="body1">{chains.from.name}</Typography>
               <CaretDown />
             </button>
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">{ethers.utils.formatEther(balanceFrom)} ETH</Typography>
+            <Typography type="body1">
+              {balanceFrom ? ethers.utils.formatEther(balanceFrom) : "--"} ETH
+            </Typography>
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <div
-            className={classes.tokenSelector}
-            // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
-          >
-            <Icon url={formData.token.logoURI} size={24} />
-            <Typography type="h2">{formData.token.symbol}</Typography>
-            {/* <CaretDown className={classes.icons} /> */}
+          <div className={classes.tokenSelector}>
+            <Icon url={token.logoURI} size={24} />
+            <Typography type="h2">{token.symbol}</Typography>
           </div>
           <AmountInput
-            value={formData.amount}
-            token={formData.token}
-            balance={balanceFrom}
-            fee={BigNumber.from(parseUnits("0.0001", formData.token.decimals))}
+            value={amount}
+            token={token}
+            balance={balanceFrom || BigNumber.from(0)}
+            fee={estimatedFee}
             onChange={onInputChange}
           />
         </div>
@@ -139,31 +169,24 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
         <div className={classes.row}>
           <div className={classes.box}>
             <Typography type="body2">To</Typography>
-            <div
-              className={classes.chainSelector}
-              // onClick={() =>
-              //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
-              // }
-            >
-              <formData.to.Icon />
-              <Typography type="body1">{formData.to.name}</Typography>
-              {/* <CaretDown /> */}
+            <div className={classes.chainSelector}>
+              <chains.to.Icon />
+              <Typography type="body1">{chains.to.name}</Typography>
             </div>
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">{ethers.utils.formatEther(balanceTo)} ETH</Typography>
+            <Typography type="body1">
+              {balanceTo ? ethers.utils.formatEther(balanceTo) : "--"} ETH
+            </Typography>
           </div>
         </div>
       </Card>
       <div className={classes.button}>
-        <Button
-          type="submit"
-          disabled={!formData.amount || formData.amount.isZero() || error !== undefined}
-        >
+        <Button type="submit" disabled={!amount || amount.isZero() || error !== undefined}>
           Continue
         </Button>
-        {formData.amount && error && <Error error={error} />}
+        {amount && error && <Error error={error} />}
       </div>
       {list && (
         <List

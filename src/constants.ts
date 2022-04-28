@@ -23,6 +23,8 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
+export const BRIDGE_CALL_GAS_INCREASE = 10; // 10%
+
 export const ETH_TOKEN: Token = {
   name: "Ether",
   address: ethers.constants.AddressZero,

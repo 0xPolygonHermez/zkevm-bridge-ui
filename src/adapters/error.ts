@@ -27,6 +27,18 @@ export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejecte
   })
 );
 
+export interface EthersInsufficientFundsError {
+  code: "INSUFFICIENT_FUNDS";
+  reason: string;
+}
+
+export const ethersInsufficientFundsError = StrictSchema<EthersInsufficientFundsError>()(
+  z.object({
+    code: z.literal("INSUFFICIENT_FUNDS"),
+    reason: z.string(),
+  })
+);
+
 function sanitizeErrorMessage(errorMessage: string): string {
   try {
     return JSON.stringify(JSON.parse(errorMessage));

@@ -124,5 +124,5 @@ export interface TransactionData {
   to: Chain;
   token: Token;
   amount: BigNumber;
-  estimatedFee?: BigNumber;
+  estimatedFee: BigNumber;
 }

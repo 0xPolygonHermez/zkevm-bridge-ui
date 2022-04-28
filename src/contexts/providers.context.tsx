@@ -22,7 +22,7 @@ interface ProvidersContext {
   account: AsyncTask<string, string>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
-  estimateGasPrice: (params: EstimateGasPriceParams) => Promise<BigNumber | undefined>;
+  estimateGasPrice: (params: EstimateGasPriceParams) => Promise<BigNumber>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -166,21 +166,19 @@ const ProvidersProvider: FC = (props) => {
   }, [connectedProvider]);
 
   const estimateGasPrice = useCallback(
-    ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber | undefined> => {
+    ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber> => {
       if (chain.provider === undefined) {
         throw new Error("Provider is not available");
       }
 
       return chain.provider.getFeeData().then((feeData) => {
-        if (feeData.maxFeePerGas !== null) {
+        if (feeData.maxFeePerGas !== null && feeData.maxPriorityFeePerGas !== null) {
           return gasUnits.mul(feeData.maxFeePerGas);
-        }
-
-        if (feeData.gasPrice !== null) {
+        } else if (feeData.gasPrice !== null) {
           return gasUnits.mul(feeData.gasPrice);
+        } else {
+          throw new Error("Fee data is not available");
         }
-
-        return undefined;
       });
     },
     []

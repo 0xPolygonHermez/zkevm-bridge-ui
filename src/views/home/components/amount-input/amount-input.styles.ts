@@ -26,8 +26,10 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(1),
     background: "none",
     border: "none",
-    cursor: "pointer",
     color: theme.palette.black,
+    "&:not(:disabled)": {
+      cursor: "pointer",
+    },
   },
   maxText: {
     color: theme.palette.black,
