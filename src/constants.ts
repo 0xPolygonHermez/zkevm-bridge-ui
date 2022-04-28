@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
@@ -22,53 +23,45 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
-export const getChains = ({
-  ethereumChainId,
-  polygonHermezChainId,
-  bridgePolygonHermezNetworkId,
-}: {
-  ethereumChainId: number;
-  polygonHermezChainId: number;
-  bridgePolygonHermezNetworkId: number;
-}): [Chain, Chain] => [
-  {
-    name: "ethereum",
-    label: "Ethereum chain",
-    chainId: ethereumChainId,
-    Icon: EthChainIcon,
-    bridgeNetworkId: 0,
-  },
-  {
-    name: "polygon-hermez",
-    label: "Polygon Hermez chain",
-    chainId: polygonHermezChainId,
-    Icon: PolygonHermezChainIcon,
-    bridgeNetworkId: bridgePolygonHermezNetworkId,
-  },
-];
-
-export const getEthToken = ({ chainId }: { chainId: number }): Token => ({
+export const ETH_TOKEN: Token = {
   name: "Ether",
   address: ethers.constants.AddressZero,
   symbol: "ETH",
   decimals: 18,
-  chainId,
   logoURI:
     "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
-});
+};
 
-export const getUsdtToken = ({
-  address,
-  chainId,
+export const getChains = ({
+  ethereumRpcUrl,
+  polygonHermezRpcUrl,
+  bridgePolygonHermezNetworkId,
 }: {
-  address: string;
-  chainId: number;
-}): Token => ({
+  ethereumRpcUrl: string;
+  polygonHermezRpcUrl: string;
+  bridgePolygonHermezNetworkId: number;
+}): [Chain, Chain] => [
+  {
+    key: "ethereum",
+    name: "Ethereum chain",
+    Icon: EthChainIcon,
+    provider: new JsonRpcProvider(ethereumRpcUrl),
+    bridgeNetworkId: 0,
+  },
+  {
+    key: "polygon-hermez",
+    name: "Polygon Hermez chain",
+    Icon: PolygonHermezChainIcon,
+    provider: new JsonRpcProvider(polygonHermezRpcUrl),
+    bridgeNetworkId: bridgePolygonHermezNetworkId,
+  },
+];
+
+export const getUsdtToken = ({ address }: { address: string }): Token => ({
   name: "Tether USD",
   address,
   symbol: "USDT",
   decimals: 6,
-  chainId,
   logoURI:
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
 });

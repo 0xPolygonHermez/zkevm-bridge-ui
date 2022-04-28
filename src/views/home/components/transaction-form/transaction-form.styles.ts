@@ -19,6 +19,9 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "space-between",
     flexDirection: "column",
   },
+  alignRight: {
+    alignItems: "flex-end",
+  },
   chainSelector: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],
     marginLeft: -theme.spacing(1.25),

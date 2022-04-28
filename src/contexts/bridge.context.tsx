@@ -4,12 +4,12 @@ import {
   constants as ethersConstants,
   PayableOverrides,
 } from "ethers";
-import { createContext, FC, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, FC, useContext, useCallback } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge, Chain, Claim, ClaimStatus, MerkleProof, Token } from "src/domain";
-import { Bridge as BridgeContract, Bridge__factory } from "src/types/contracts/bridge";
+import { Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 
@@ -91,10 +91,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { l1Provider, l2Provider, connectedProvider, account, estimateGasPrice } =
-    useProvidersContext();
-  const [l1BridgeContract, setL1BridgeContract] = useState<BridgeContract>();
-  const [l2BridgeContract, setL2BridgeContract] = useState<BridgeContract>();
+  const { connectedProvider, account, estimateGasPrice } = useProvidersContext();
 
   const getBridges = useCallback(
     ({ ethereumAddress }: GetBridgesParams) => {
@@ -150,7 +147,14 @@ const BridgeProvider: FC = (props) => {
 
   const estimateBridgeGasPrice = useCallback(
     ({ chain, token, amount, destinationChain, destinationAddress }: BridgeParams) => {
-      const contract = chain.name === "ethereum" ? l1BridgeContract : l2BridgeContract;
+      if (env === undefined) {
+        throw new Error("Env is not available");
+      }
+
+      const contract =
+        chain.name === "ethereum"
+          ? Bridge__factory.connect(env.bridge.l1ContractAddress, chain.provider)
+          : Bridge__factory.connect(env.bridge.l2ContractAddress, chain.provider);
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -165,7 +169,7 @@ const BridgeProvider: FC = (props) => {
         })
         .then((gasUnits) => estimateGasPrice({ chain, gasUnits }));
     },
-    [l1BridgeContract, l2BridgeContract, estimateGasPrice]
+    [env, estimateGasPrice]
   );
 
   const bridge = useCallback(
@@ -257,22 +261,6 @@ const BridgeProvider: FC = (props) => {
     },
     [env, connectedProvider]
   );
-
-  useEffect(() => {
-    if (env && l1Provider) {
-      const contract = Bridge__factory.connect(env.bridge.l1ContractAddress, l1Provider);
-
-      setL1BridgeContract(contract);
-    }
-  }, [env, l1Provider]);
-
-  useEffect(() => {
-    if (env && l2Provider) {
-      const contract = Bridge__factory.connect(env.bridge.l2ContractAddress, l2Provider);
-
-      setL2BridgeContract(contract);
-    }
-  }, [env, l2Provider]);
 
   return (
     <bridgeContext.Provider

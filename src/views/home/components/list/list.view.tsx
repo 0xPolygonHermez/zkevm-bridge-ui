@@ -57,7 +57,7 @@ const List: FC<ListProps> = ({ list, onClose }) => {
                       onClick={() => values.onClick(element)}
                     >
                       <element.Icon className={classes.icon} />
-                      <Typography type="body1">{element.label}</Typography>
+                      <Typography type="body1">{element.name}</Typography>
                     </button>
                   );
                 })

@@ -68,11 +68,11 @@ const TransactionConfirmation: FC = () => {
         }`}</Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <transaction.from.Icon /> {transaction.from.label}
+            <transaction.from.Icon /> {transaction.from.name}
           </div>
           <ArrowRightIcon className={classes.arrow} />
           <div className={classes.chainBox}>
-            <transaction.to.Icon /> {transaction.to.label}
+            <transaction.to.Icon /> {transaction.to.name}
           </div>
         </div>
         <div className={classes.fees}>

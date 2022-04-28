@@ -1,5 +1,5 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
+import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 import { BigNumber } from "ethers";
@@ -19,8 +19,6 @@ interface EstimateGasPriceParams {
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
-  l1Provider?: JsonRpcProvider;
-  l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
@@ -45,8 +43,6 @@ const providersContext = createContext<ProvidersContext>({
 const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
   const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
-  const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
-  const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -57,30 +53,74 @@ const ProvidersProvider: FC = (props) => {
       switch (walletName) {
         case WalletName.METAMASK: {
           if (env === undefined) {
-            throw new Error("Env is not available");
+            return setAccount({
+              status: "failed",
+              error: "The env has not been initialized correctly",
+            });
           }
 
-          if (window.ethereum && window.ethereum.isMetaMask) {
-            const web3Provider = new Web3Provider(window.ethereum);
+          try {
+            if (window.ethereum && window.ethereum.isMetaMask) {
+              const web3Provider = new Web3Provider(window.ethereum);
+              const requestedNetwork = await web3Provider.getNetwork();
+              const supportedNetworks = await Promise.all(
+                env.chains.map((chain) => chain.provider.getNetwork())
+              );
+              const requestedChainId = requestedNetwork.chainId;
+              const supportedChainIds = supportedNetworks.map((network) => network.chainId);
 
-            return web3Provider.getNetwork().then((network) => {
-              const supportedChainIds = env.chains.map((chain) => chain.chainId);
-
-              if (!supportedChainIds.includes(network.chainId)) {
+              if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
                   status: "failed",
                   error: "Switch your network to Ethereum or Polygon Hermez to continue",
                 });
               }
 
-              return getConnectedAccounts(web3Provider)
+              const accounts = await getConnectedAccounts(web3Provider);
+
+              setConnectedProvider(web3Provider);
+              return setAccount({ status: "successful", data: accounts[0] });
+            } else {
+              return setAccount({
+                status: "failed",
+                error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser`,
+              });
+            }
+          } catch (error) {
+            const errorMessage = await parseError(error);
+
+            if (!isMetamaskUserRejectedRequestError(error)) {
+              openSnackbar({
+                type: "error",
+                parsed: errorMessage,
+              });
+            }
+
+            return setAccount({ status: "pending" });
+          }
+        }
+        case WalletName.WALLET_CONNECT: {
+          if (env) {
+            const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+
+            if (ethereumChain) {
+              const { chainId } = await ethereumChain.provider.getNetwork();
+              const walletConnectProvider = new WalletConnectProvider({
+                rpc: {
+                  [chainId]: ethereumChain.provider.connection.url,
+                },
+              });
+              const web3Provider = new Web3Provider(walletConnectProvider);
+
+              return walletConnectProvider
+                .enable()
                 .then((accounts) => {
                   setConnectedProvider(web3Provider);
                   setAccount({ status: "successful", data: accounts[0] });
                 })
                 .catch((error) =>
                   parseError(error).then((errorMsg) => {
-                    if (isMetamaskUserRejectedRequestError(error)) {
+                    if (error instanceof Error && error.message === "User closed modal") {
                       setAccount({ status: "pending" });
                     } else {
                       openSnackbar({
@@ -90,45 +130,16 @@ const ProvidersProvider: FC = (props) => {
                     }
                   })
                 );
-            });
-          } else {
-            return setAccount({
-              status: "failed",
-              error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser.`,
-            });
-          }
-        }
-        case WalletName.WALLET_CONNECT: {
-          if (env) {
-            const walletConnectProvider = new WalletConnectProvider({
-              rpc: {
-                [env.l1Node.chainId]: env.l1Node.rpcUrl,
-              },
-            });
-            const web3Provider = new Web3Provider(walletConnectProvider);
-
-            return walletConnectProvider
-              .enable()
-              .then((accounts) => {
-                setConnectedProvider(web3Provider);
-                setAccount({ status: "successful", data: accounts[0] });
-              })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (error instanceof Error && error.message === "User closed modal") {
-                    setAccount({ status: "pending" });
-                  } else {
-                    openSnackbar({
-                      type: "error",
-                      parsed: errorMsg,
-                    });
-                  }
-                })
-              );
+            } else {
+              return setAccount({
+                status: "failed",
+                error: "The provider has not been found",
+              });
+            }
           } else
             return setAccount({
               status: "failed",
-              error: "The env has not been initialized correctly.",
+              error: "The env has not been initialized correctly",
             });
         }
       }
@@ -156,13 +167,11 @@ const ProvidersProvider: FC = (props) => {
 
   const estimateGasPrice = useCallback(
     ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber | undefined> => {
-      const provider = chain.name === "ethereum" ? l1Provider : l2Provider;
-
-      if (provider === undefined) {
+      if (chain.provider === undefined) {
         throw new Error("Provider is not available");
       }
 
-      return provider.getFeeData().then((feeData) => {
+      return chain.provider.getFeeData().then((feeData) => {
         if (feeData.maxFeePerGas !== null) {
           return gasUnits.mul(feeData.maxFeePerGas);
         }
@@ -174,7 +183,7 @@ const ProvidersProvider: FC = (props) => {
         return undefined;
       });
     },
-    [l1Provider, l2Provider]
+    []
   );
 
   useEffect(() => {
@@ -225,32 +234,15 @@ const ProvidersProvider: FC = (props) => {
     };
   }, [connectedProvider, navigate]);
 
-  useEffect(() => {
-    if (env) {
-      setL1Provider(new JsonRpcProvider(env.l1Node.rpcUrl));
-      setL2Provider(new JsonRpcProvider(env.l2Node.rpcUrl));
-    }
-  }, [env]);
-
   const value = useMemo(
     () => ({
       connectedProvider,
       account,
-      l1Provider,
-      l2Provider,
       connectProvider,
       disconnectProvider,
       estimateGasPrice,
     }),
-    [
-      connectedProvider,
-      account,
-      l1Provider,
-      l2Provider,
-      connectProvider,
-      disconnectProvider,
-      estimateGasPrice,
-    ]
+    [account, connectedProvider, connectProvider, disconnectProvider, estimateGasPrice]
   );
 
   return <providersContext.Provider value={value} {...props} />;
