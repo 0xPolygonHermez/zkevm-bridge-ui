@@ -24,12 +24,14 @@ const TransactionConfirmation: FC = () => {
   const { bridge } = useBridgeContext();
   const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
 
   useEffect(() => {
     if (connectedProvider && transaction) {
       void connectedProvider.getNetwork().then((provider) => {
-        setIsDisabled(provider.chainId !== transaction.from.chainId);
+        void transaction.from.provider.getNetwork().then((providerFrom) => {
+          setIsDisabled(provider.chainId !== providerFrom.chainId);
+        });
       });
     }
   }, [connectedProvider, transaction]);
@@ -47,10 +49,20 @@ const TransactionConfirmation: FC = () => {
   const onClick = () => {
     const { amount, to } = transaction;
     if (account.status === "successful") {
-      bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
-        .then(console.log)
+      const destinationNetwork = to.key === "ethereum" ? 0 : 1;
+      bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
+        })
         .catch(console.error);
     }
+  };
+
+  const onChangeNetwork = () => {
+    void transaction.from.provider.getNetwork().then((network) => {
+      changeNetwork(hexValue(network.chainId));
+    });
   };
 
   return (
@@ -89,10 +101,7 @@ const TransactionConfirmation: FC = () => {
         </Button>
         {isDisabled && <Error error={`Switch to ${transaction.from.name} to continue`} />}
         {isDisabled && connectedProvider?.connection.url === "metamask" && (
-          <button
-            onClick={() => changeNetwork(hexValue(transaction.from.chainId))}
-            className={classes.changeButton}
-          >
+          <button onClick={onChangeNetwork} className={classes.changeButton}>
             Change Network
           </button>
         )}

@@ -1,5 +1,5 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
+import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
@@ -17,8 +17,6 @@ import routes from "src/routes";
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
-  l1Provider?: JsonRpcProvider;
-  l2Provider?: JsonRpcProvider;
   account: AsyncTask<string, string>;
   changeNetwork: (chainId: string) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
@@ -41,8 +39,6 @@ const providersContext = createContext<ProvidersContext>({
 const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
   const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
-  const [l1Provider, setL1Provider] = useState<JsonRpcProvider>();
-  const [l2Provider, setL2Provider] = useState<JsonRpcProvider>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -84,31 +80,40 @@ const ProvidersProvider: FC = (props) => {
         }
         case WalletName.WALLET_CONNECT: {
           if (env) {
-            const walletConnectProvider = new WalletConnectProvider({
-              rpc: {
-                [env.l1Node.chainId]: env.l1Node.rpcUrl,
-              },
-            });
-            const web3Provider = new Web3Provider(walletConnectProvider);
+            const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+            if (ethereumChain) {
+              const { chainId } = await ethereumChain.provider.getNetwork();
+              const walletConnectProvider = new WalletConnectProvider({
+                rpc: {
+                  [chainId]: ethereumChain.provider.connection.url,
+                },
+              });
+              const web3Provider = new Web3Provider(walletConnectProvider);
 
-            return walletConnectProvider
-              .enable()
-              .then((accounts) => {
-                setConnectedProvider(web3Provider);
-                setAccount({ status: "successful", data: accounts[0] });
-              })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (error instanceof Error && error.message === "User closed modal") {
-                    setAccount({ status: "pending" });
-                  } else {
-                    openSnackbar({
-                      type: "error",
-                      parsed: errorMsg,
-                    });
-                  }
+              return walletConnectProvider
+                .enable()
+                .then((accounts) => {
+                  setConnectedProvider(web3Provider);
+                  setAccount({ status: "successful", data: accounts[0] });
                 })
-              );
+                .catch((error) =>
+                  parseError(error).then((errorMsg) => {
+                    if (error instanceof Error && error.message === "User closed modal") {
+                      setAccount({ status: "pending" });
+                    } else {
+                      openSnackbar({
+                        type: "error",
+                        parsed: errorMsg,
+                      });
+                    }
+                  })
+                );
+            } else {
+              return setAccount({
+                status: "failed",
+                error: "The provider has not been found.",
+              });
+            }
           } else
             return setAccount({
               status: "failed",
@@ -153,25 +158,32 @@ const ProvidersProvider: FC = (props) => {
           .catch((switchError) => {
             if (isMetamaskUnknownChainError(switchError)) {
               if (env && connectedProvider && connectedProvider.provider.request) {
-                connectedProvider.provider
-                  .request({
-                    method: "wallet_addEthereumChain",
-                    params: [
-                      {
-                        chainId,
-                        chainName: "Polygon Hermez",
-                        rpcUrls: [env.l2Node.rpcUrl],
-                      },
-                    ],
-                  })
-                  .catch((addError) => {
-                    void parseError(addError).then((errorMsg) => {
-                      openSnackbar({
-                        type: "error",
-                        parsed: errorMsg,
+                const polygonHermezChain = env.chains.find(
+                  (chain) => chain.key === "polygon-hermez"
+                );
+                if (polygonHermezChain) {
+                  connectedProvider.provider
+                    .request({
+                      method: "wallet_addEthereumChain",
+                      params: [
+                        {
+                          chainId,
+                          chainName: "Polygon Hermez",
+                          rpcUrls: [polygonHermezChain.provider.connection.url],
+                        },
+                      ],
+                    })
+                    .catch((addError) => {
+                      void parseError(addError).then((errorMsg) => {
+                        openSnackbar({
+                          type: "error",
+                          parsed: errorMsg,
+                        });
                       });
                     });
-                  });
+                } else {
+                  throw new Error("PolygonHermez Chain is not available");
+                }
               }
             } else {
               void parseError(switchError).then((errorMsg) => {
@@ -239,32 +251,16 @@ const ProvidersProvider: FC = (props) => {
     };
   }, [connectProvider, connectedProvider, navigate]);
 
-  useEffect(() => {
-    if (env) {
-      setL1Provider(new JsonRpcProvider(env.l1Node.rpcUrl));
-      setL2Provider(new JsonRpcProvider(env.l2Node.rpcUrl));
-    }
-  }, [env]);
-
   const value = useMemo(
     () => ({
       connectedProvider,
       account,
-      l1Provider,
-      l2Provider,
       changeNetwork,
       connectProvider,
+
       disconnectProvider,
     }),
-    [
-      account,
-      changeNetwork,
-      connectProvider,
-      connectedProvider,
-      disconnectProvider,
-      l1Provider,
-      l2Provider,
-    ]
+    [account, changeNetwork, connectProvider, connectedProvider, disconnectProvider]
   );
 
   return <providersContext.Provider value={value} {...props} />;

@@ -14,7 +14,7 @@ import routes from "src/routes";
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
-  const { setTransaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
   const { account } = useProvidersContext();
 
   const onFormSubmit = (transaction: TransactionData) => {
@@ -26,12 +26,18 @@ const Home = (): JSX.Element => {
     <>
       <Header />
       {account.status === "successful" && (
-        <div className={classes.ethereumAddress}>
-          <MetaMaskIcon className={classes.metaMaskIcon} />
-          <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
-        </div>
+        <>
+          <div className={classes.ethereumAddress}>
+            <MetaMaskIcon className={classes.metaMaskIcon} />
+            <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
+          </div>
+          <TransactionForm
+            onSubmit={onFormSubmit}
+            transaction={transaction}
+            account={account.data}
+          />
+        </>
       )}
-      <TransactionForm onSubmit={onFormSubmit} />
     </>
   );
 };
