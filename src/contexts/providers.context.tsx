@@ -56,14 +56,14 @@ const ProvidersProvider: FC = (props) => {
       setAccount({ status: "loading" });
       switch (walletName) {
         case WalletName.METAMASK: {
+          if (env === undefined) {
+            throw new Error("Env is not available");
+          }
+
           if (window.ethereum && window.ethereum.isMetaMask) {
             const web3Provider = new Web3Provider(window.ethereum);
 
             return web3Provider.getNetwork().then((network) => {
-              if (env === undefined) {
-                throw new Error("Env is not available");
-              }
-
               const supportedChainIds = env.chains.map((chain) => chain.chainId);
 
               if (!supportedChainIds.includes(network.chainId)) {
