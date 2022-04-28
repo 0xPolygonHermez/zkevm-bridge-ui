@@ -3,7 +3,7 @@ import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { EthereumEvent, WalletName } from "src/domain";
+import { Chain, EthereumEvent, WalletName } from "src/domain";
 import {
   AsyncTask,
   isMetamaskUnknownChainError,
@@ -14,11 +14,12 @@ import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
+import { hexValue } from "ethers/lib/utils";
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
-  changeNetwork: (chainId: string) => void;
+  changeNetwork: (chain: Chain) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -144,56 +145,47 @@ const ProvidersProvider: FC = (props) => {
   }, [connectedProvider]);
 
   const changeNetwork = useCallback(
-    (chainId: string) => {
+    (chain: Chain) => {
       if (
+        env &&
         connectedProvider &&
         connectedProvider.provider.isMetaMask &&
         connectedProvider.provider.request
       ) {
-        connectedProvider.provider
-          .request({
+        const request = connectedProvider.provider.request;
+        void chain.provider.getNetwork().then((network) => {
+          request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId }],
-          })
-          .catch((switchError) => {
-            if (isMetamaskUnknownChainError(switchError)) {
-              if (env && connectedProvider && connectedProvider.provider.request) {
-                const polygonHermezChain = env.chains.find(
-                  (chain) => chain.key === "polygon-hermez"
-                );
-                if (polygonHermezChain) {
-                  connectedProvider.provider
-                    .request({
-                      method: "wallet_addEthereumChain",
-                      params: [
-                        {
-                          chainId,
-                          chainName: "Polygon Hermez",
-                          rpcUrls: [polygonHermezChain.provider.connection.url],
-                        },
-                      ],
-                    })
-                    .catch((addError) => {
-                      void parseError(addError).then((errorMsg) => {
-                        openSnackbar({
-                          type: "error",
-                          parsed: errorMsg,
-                        });
-                      });
-                    });
-                } else {
-                  throw new Error("PolygonHermez Chain is not available");
-                }
-              }
+            params: [{ chainId: hexValue(network.chainId) }],
+          }).catch((error) => {
+            if (isMetamaskUnknownChainError(error)) {
+              request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: hexValue(network.chainId),
+                    chainName: chain.name,
+                    rpcUrls: [chain.provider.connection.url],
+                  },
+                ],
+              }).catch((error) => {
+                void parseError(error).then((parsed) => {
+                  openSnackbar({
+                    type: "error",
+                    parsed,
+                  });
+                });
+              });
             } else {
-              void parseError(switchError).then((errorMsg) => {
+              void parseError(error).then((parsed) => {
                 openSnackbar({
                   type: "error",
-                  parsed: errorMsg,
+                  parsed,
                 });
               });
             }
           });
+        });
       }
     },
     [connectedProvider, env, openSnackbar]

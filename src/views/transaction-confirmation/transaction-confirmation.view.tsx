@@ -13,14 +13,13 @@ import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { ethers } from "ethers";
-import { hexValue } from "ethers/lib/utils";
 import Icon from "src/views/shared/icon/icon.view";
 import { useEnvContext } from "src/contexts/env.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
   const env = useEnvContext();
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
   const { bridge } = useBridgeContext();
   const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
@@ -28,9 +27,9 @@ const TransactionConfirmation: FC = () => {
 
   useEffect(() => {
     if (connectedProvider && transaction) {
-      void connectedProvider.getNetwork().then((provider) => {
-        void transaction.from.provider.getNetwork().then((providerFrom) => {
-          setIsDisabled(provider.chainId !== providerFrom.chainId);
+      void connectedProvider.getNetwork().then((network) => {
+        void transaction.from.provider.getNetwork().then((networkFrom) => {
+          setIsNetworkIncorrect(network.chainId !== networkFrom.chainId);
         });
       });
     }
@@ -57,12 +56,6 @@ const TransactionConfirmation: FC = () => {
         })
         .catch(console.error);
     }
-  };
-
-  const onChangeNetwork = () => {
-    void transaction.from.provider.getNetwork().then((network) => {
-      changeNetwork(hexValue(network.chainId));
-    });
   };
 
   return (
@@ -96,12 +89,12 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick} disabled={isDisabled}>
+        <Button onClick={onClick} disabled={isNetworkIncorrect}>
           Transfer
         </Button>
-        {isDisabled && <Error error={`Switch to ${transaction.from.name} to continue`} />}
-        {isDisabled && connectedProvider?.connection.url === "metamask" && (
-          <button onClick={onChangeNetwork} className={classes.changeButton}>
+        {isNetworkIncorrect && <Error error={`Switch to ${transaction.from.name} to continue`} />}
+        {isNetworkIncorrect && connectedProvider?.provider.isMetaMask && (
+          <button onClick={() => changeNetwork(transaction.from)} className={classes.changeButton}>
             Change Network
           </button>
         )}
