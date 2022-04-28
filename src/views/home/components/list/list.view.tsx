@@ -2,7 +2,7 @@ import React, { FC, useEffect, useRef, useState } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
-import { ReactComponent as SearchIcon } from "src/assets/icons/search.svg";
+// import { ReactComponent as SearchIcon } from "src/assets/icons/search.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { Chain, Token } from "src/domain";
@@ -28,32 +28,32 @@ interface ListProps {
   onClose: () => void;
 }
 
-const filterChainList = (chainList: ChainList, value: string): ChainList => ({
-  ...chainList,
-  items: chainList.items.filter((chain) => chain.label.toUpperCase().includes(value.toUpperCase())),
-});
+// const filterChainList = (chainList: ChainList, value: string): ChainList => ({
+//   ...chainList,
+//   items: chainList.items.filter((chain) => chain.label.toUpperCase().includes(value.toUpperCase())),
+// });
 
-const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
-  ...tokenList,
-  items: tokenList.items.filter(
-    (token) =>
-      token.name.toUpperCase().includes(value.toUpperCase()) ||
-      token.symbol.toUpperCase().includes(value.toUpperCase())
-  ),
-});
+// const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
+//   ...tokenList,
+//   items: tokenList.items.filter(
+//     (token) =>
+//       token.name.toUpperCase().includes(value.toUpperCase()) ||
+//       token.symbol.toUpperCase().includes(value.toUpperCase())
+//   ),
+// });
 
-const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
+const List: FC<ListProps> = ({ list, onClose }) => {
   const classes = useListStyles();
-  const [values, setValues] = useState(list);
+  const [values] = useState(list);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.trim();
-    const filtered: List =
-      list.type === "chain" ? filterChainList(list, value) : filterTokenList(list, value);
+  // const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = event.target.value.trim();
+  //   const filtered: List =
+  //     list.type === "chain" ? filterChainList(list, value) : filterTokenList(list, value);
 
-    setValues(filtered);
-  };
+  //   setValues(filtered);
+  // };
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
@@ -70,7 +70,7 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.search}>
+          {/* <div className={classes.search}>
             <SearchIcon />
             <input
               ref={inputRef}
@@ -78,7 +78,7 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
               placeholder={placeholder}
               onChange={onChange}
             />
-          </div>
+          </div> */}
           <div className={classes.list}>
             {values.type === "chain"
               ? values.items.slice(0, 20).map((element) => {
