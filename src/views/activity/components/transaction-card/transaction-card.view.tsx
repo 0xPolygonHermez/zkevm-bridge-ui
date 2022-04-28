@@ -55,7 +55,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Step 2 will require signature.</Typography>
+          <Typography type="body2">Step 2 will require signature</Typography>
           <button disabled className={classes.finaliseButton}>
             Finalize
           </button>

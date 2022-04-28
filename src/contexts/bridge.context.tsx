@@ -143,14 +143,12 @@ const BridgeProvider: FC = (props) => {
 
   useEffect(() => {
     if (env && connectedProvider) {
-      void connectedProvider.getNetwork().then(({ chainId }) => {
-        const l1Chain = env.chains[0];
-        const contractAddress =
-          chainId === l1Chain.chainId ? env.bridge.l1ContractAddress : env.bridge.l2ContractAddress;
-        const contract = Bridge__factory.connect(contractAddress, connectedProvider.getSigner());
+      const contract = Bridge__factory.connect(
+        env.bridge.l1ContractAddress,
+        connectedProvider.getSigner()
+      );
 
-        setBridgeContract(contract);
-      });
+      setBridgeContract(contract);
     }
   }, [env, connectedProvider]);
 

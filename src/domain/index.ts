@@ -1,31 +1,23 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 export interface Chain {
+  key: "ethereum" | "polygon-hermez";
   name: string;
-  chainId: number;
   networkId: 0 | 1;
   Icon: ComponentType<{ className?: string }>;
+  provider: JsonRpcProvider;
 }
-
 export interface Token {
   name: string;
   symbol: string;
   address: string;
   decimals: number;
   logoURI: string;
-  chainId: number;
 }
 
 export interface Env {
-  l1Node: {
-    rpcUrl: string;
-    chainId: number;
-  };
-  l2Node: {
-    rpcUrl: string;
-    chainId: number;
-  };
   bridge: {
     apiUrl: string;
     l1ContractAddress: string;

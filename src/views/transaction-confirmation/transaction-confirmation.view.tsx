@@ -14,16 +14,14 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { ethers } from "ethers";
 import Icon from "src/views/shared/icon/icon.view";
-import { useEnvContext } from "src/contexts/env.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
-  const env = useEnvContext();
   const [isDisabled, setIsDisabled] = useState(false);
   const { bridge } = useBridgeContext();
   const { account } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
 
   useEffect(() => {
     //TODO Check network connected
@@ -40,15 +38,15 @@ const TransactionConfirmation: FC = () => {
   }
 
   const onClick = () => {
-    if (env) {
-      const l1Chain = env.chains[0];
-      const { amount, to } = transaction;
-      const destinationNetwork = to.chainId === l1Chain.chainId ? 0 : 1;
-      if (account.status === "successful") {
-        bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
-          .then(console.log)
-          .catch(console.error);
-      }
+    const { amount, to } = transaction;
+    if (account.status === "successful") {
+      const destinationNetwork = to.key === "ethereum" ? 0 : 1;
+      bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
+        })
+        .catch(console.error);
     }
   };
 
