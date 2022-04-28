@@ -14,12 +14,11 @@ import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
-import { AsyncTask } from "src/utils/types";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
   transaction?: TransactionData;
-  account: AsyncTask<string, string>;
+  account: string;
 }
 
 interface FormData {
@@ -66,10 +65,8 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   };
 
   useEffect(() => {
-    if (account.status === "successful") {
-      void formData?.from.provider.getBalance(account.data).then(setBalanceFrom);
-      void formData?.to.provider.getBalance(account.data).then(setBalanceTo);
-    }
+    void formData?.from.provider.getBalance(account).then(setBalanceFrom);
+    void formData?.to.provider.getBalance(account).then(setBalanceTo);
   }, [formData?.from, formData?.to, account]);
 
   useEffect(() => {

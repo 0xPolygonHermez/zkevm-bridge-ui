@@ -26,12 +26,18 @@ const Home = (): JSX.Element => {
     <>
       <Header />
       {account.status === "successful" && (
-        <div className={classes.ethereumAddress}>
-          <MetaMaskIcon className={classes.metaMaskIcon} />
-          <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
-        </div>
+        <>
+          <div className={classes.ethereumAddress}>
+            <MetaMaskIcon className={classes.metaMaskIcon} />
+            <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
+          </div>
+          <TransactionForm
+            onSubmit={onFormSubmit}
+            transaction={transaction}
+            account={account.data}
+          />
+        </>
       )}
-      <TransactionForm onSubmit={onFormSubmit} transaction={transaction} account={account} />
     </>
   );
 };
