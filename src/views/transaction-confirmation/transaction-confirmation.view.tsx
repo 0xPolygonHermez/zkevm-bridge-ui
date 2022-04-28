@@ -23,7 +23,7 @@ const TransactionConfirmation: FC = () => {
   const { bridge } = useBridgeContext();
   const { account } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
 
   useEffect(() => {
     //TODO Check network connected
@@ -42,8 +42,12 @@ const TransactionConfirmation: FC = () => {
   const onClick = () => {
     const { amount, to } = transaction;
     if (account.status === "successful") {
-      bridge(ethers.constants.AddressZero, amount, to.chainId, account.data)
-        .then(console.log)
+      const destinationNetwork = to.key === "ethereum" ? 0 : 1;
+      bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
+        })
         .catch(console.error);
     }
   };
