@@ -29,9 +29,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     outline: "none",
   },
   list: {
-    // marginTop: theme.spacing(1),
-    // borderTop: `1px solid ${theme.palette.grey.light}`,
-    // paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(0.5),
     display: "flex",
     flexDirection: "column",

@@ -76,10 +76,6 @@ const TransactionConfirmation: FC = () => {
           </div>
         </div>
         <div className={classes.fees}>
-          {/* <Typography type="body2">Estimated L2 fees</Typography>
-          <Typography type="body1" className={classes.fee}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.0025 ETH
-          </Typography> */}
           <Typography type="body2" className={classes.betweenFees}>
             Estimated gas fee
           </Typography>

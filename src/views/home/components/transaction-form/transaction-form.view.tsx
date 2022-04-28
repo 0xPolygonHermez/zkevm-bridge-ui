@@ -31,20 +31,6 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
   const [transactionData, setTransactionData] = useState<TransactionData>();
   const [accountBalance] = useState(parseEther("2"));
 
-  // const onChainToButtonClick = (to: Chain) => {
-  //   if (transactionData) {
-  //     setTransactionData({ ...transactionData, to });
-  //     setList(undefined);
-  //   }
-  // };
-
-  // const onTokenClick = (token: Token) => {
-  //   if (transactionData) {
-  //     setTransactionData({ ...transactionData, token });
-  //     setList(undefined);
-  //   }
-  // };
-
   const onChainFromButtonClick = (from: Chain) => {
     if (env && transactionData && account.status === "successful") {
       const to = env.chains.find((chain) => chain.chainId !== from.chainId);
@@ -139,13 +125,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <div
-            className={classes.tokenSelector}
-            // onClick={() => setList({ type: "token", items: tokens, onClick: onTokenClick })}
-          >
+          <div className={classes.tokenSelector}>
             <Icon url={transactionData.token.logoURI} size={24} />
             <Typography type="h2">{transactionData.token.symbol}</Typography>
-            {/* <CaretDown className={classes.icons} /> */}
           </div>
           <AmountInput
             token={transactionData.token}
@@ -164,15 +146,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit }) => {
         <div className={classes.row}>
           <div className={classes.box}>
             <Typography type="body2">To</Typography>
-            <div
-              className={classes.chainSelector}
-              // onClick={() =>
-              //   setList({ type: "chain", items: env.chains, onClick: onChainToButtonClick })
-              // }
-            >
+            <div className={classes.chainSelector}>
               <transactionData.to.Icon />
               <Typography type="body1">{transactionData.to.label}</Typography>
-              {/* <CaretDown /> */}
             </div>
           </div>
           <div className={classes.box}>
