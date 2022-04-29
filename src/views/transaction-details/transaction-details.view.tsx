@@ -132,22 +132,6 @@ const TransactionDetails: FC = () => {
             className={classes.alignRow}
           />
         </div>
-        {/* <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            L2 Fee
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            <Icon url={token.logoURI} size={20} /> 0.01ETH
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            L1 gas fee
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            <Icon url={token.logoURI} size={20} /> 0.01ETH
-          </Typography>
-        </div> */}
         <div className={`${classes.row} ${classes.lastRow}`}>
           <Typography type="body2" className={classes.alignRow}>
             Track transaction
