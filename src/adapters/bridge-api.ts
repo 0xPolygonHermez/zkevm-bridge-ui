@@ -81,6 +81,8 @@ const apiMerkleProofToDomain = ({
   main_exit_root,
   rollup_exit_root,
 }: MerkleProof): domain.MerkleProof => ({
+  // ToDo: Remove the prepend of "0x" to the members of the merkle_proof
+  // when the API fixes the current issue of missing the prefix
   merkleProof: merkle_proof.map((v) => `0x${v}`),
   exitRootNumber: z.number().positive().parse(Number(exit_root_num)),
   mainExitRoot: main_exit_root,
