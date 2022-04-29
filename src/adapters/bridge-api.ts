@@ -10,6 +10,8 @@ interface Bridge {
   amount: string;
   dest_net: 0 | 1;
   dest_addr: string;
+  // ToDo: Remove the optional modifier when API fixes the issue
+  // of deposit_cnt not being included for the index "0". 
   deposit_cnt?: string;
 }
 
@@ -36,6 +38,7 @@ const apiBridgeToDomain = ({
   amount: BigNumber.from(amount),
   destinationAddress: dest_addr,
   destinationNetwork: dest_net,
+  // ToDo: Remove this hack along with the fix of Bridge.deposit_cnt?
   depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
 });
 
