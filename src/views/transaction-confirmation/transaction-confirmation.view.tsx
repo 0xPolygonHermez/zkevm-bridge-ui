@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { formatEther } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
@@ -14,17 +15,16 @@ import Error from "src/views/shared/error/error.view";
 import { useProvidersContext } from "src/contexts/providers.context";
 import Icon from "src/views/shared/icon/icon.view";
 import { useEnvContext } from "src/contexts/env.context";
-import { formatEther } from "ethers/lib/utils";
 import { useBridgeContext } from "src/contexts/bridge.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
   const env = useEnvContext();
+  const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
   const { bridge } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const navigate = useNavigate();
   const { transaction } = useTransactionContext();
-  const [isDisabled, setIsDisabled] = useState(false);
 
   const onClick = () => {
     if (transaction) {
@@ -45,8 +45,14 @@ const TransactionConfirmation: FC = () => {
   };
 
   useEffect(() => {
-    //TODO Check network connected
-  }, [setIsDisabled]);
+    if (connectedProvider && transaction) {
+      void connectedProvider.getNetwork().then((network) => {
+        void transaction.from.provider.getNetwork().then((networkFrom) => {
+          setIsNetworkIncorrect(network.chainId !== networkFrom.chainId);
+        });
+      });
+    }
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (!transaction) {
@@ -86,10 +92,10 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick} disabled={isDisabled}>
+        <Button onClick={onClick} disabled={isNetworkIncorrect}>
           Transfer
         </Button>
-        {isDisabled && <Error error="Switch to Polygon Hermez chain to continue" />}
+        {isNetworkIncorrect && <Error error={`Switch to ${transaction.from.name} to continue`} />}
       </div>
     </>
   );

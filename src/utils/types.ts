@@ -49,3 +49,9 @@ export function isEthersInsufficientFundsError(
 ): error is errorAdapter.EthersInsufficientFundsError {
   return errorAdapter.ethersInsufficientFundsError.safeParse(error).success;
 }
+
+export function isMetamaskUnknownChainError(
+  error: unknown
+): error is errorAdapter.MetamaskUnknownChainError {
+  return errorAdapter.metamaskUnknownChainError.safeParse(error).success;
+}
