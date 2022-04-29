@@ -3,17 +3,23 @@ import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { EthereumEvent, WalletName } from "src/domain";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { Chain, EthereumEvent, WalletName } from "src/domain";
+import {
+  AsyncTask,
+  isMetamaskUnknownChainError,
+  isMetamaskUserRejectedRequestError,
+} from "src/utils/types";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
+import { hexValue } from "ethers/lib/utils";
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
+  changeNetwork: (chain: Chain) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -22,6 +28,7 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
+  changeNetwork: () => new Error(providersContextNotReadyErrorMsg),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
@@ -49,18 +56,18 @@ const ProvidersProvider: FC = (props) => {
                 setConnectedProvider(web3Provider);
                 setAccount({ status: "successful", data: accounts[0] });
               })
-              .catch((error) =>
-                parseError(error).then((errorMsg) => {
-                  if (isMetamaskUserRejectedRequestError(error)) {
-                    setAccount({ status: "pending" });
-                  } else {
+              .catch((error) => {
+                if (isMetamaskUserRejectedRequestError(error)) {
+                  setAccount({ status: "pending" });
+                } else {
+                  void parseError(error).then((parsed) => {
                     openSnackbar({
                       type: "error",
-                      parsed: errorMsg,
+                      parsed,
                     });
-                  }
-                })
-              );
+                  });
+                }
+              });
           } else {
             return setAccount({
               status: "failed",
@@ -133,6 +140,53 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
+  const changeNetwork = useCallback(
+    (chain: Chain) => {
+      if (
+        env &&
+        connectedProvider &&
+        connectedProvider.provider.isMetaMask &&
+        connectedProvider.provider.request
+      ) {
+        const request = connectedProvider.provider.request;
+        void chain.provider.getNetwork().then((network) => {
+          request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: hexValue(network.chainId) }],
+          }).catch((error) => {
+            if (isMetamaskUnknownChainError(error)) {
+              request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: hexValue(network.chainId),
+                    chainName: chain.name,
+                    rpcUrls: [chain.provider.connection.url],
+                  },
+                ],
+              }).catch((error) => {
+                void parseError(error).then((parsed) => {
+                  openSnackbar({
+                    type: "error",
+                    parsed,
+                  });
+                });
+              });
+            } else {
+              void parseError(error).then((parsed) => {
+                openSnackbar({
+                  type: "error",
+                  parsed,
+                });
+              });
+            }
+          });
+        });
+      }
+    },
+    [connectedProvider, env, openSnackbar]
+  );
+
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
       connectedProvider?.provider;
@@ -148,7 +202,17 @@ const ProvidersProvider: FC = (props) => {
         }
       }
     };
-    const onChainChangedOrDisconnect = () => {
+    const onChainChanged = () => {
+      if (connectedProvider) {
+        if (connectedProvider.provider.isMetaMask) {
+          void connectProvider(WalletName.METAMASK);
+        } else {
+          void connectProvider(WalletName.WALLET_CONNECT);
+        }
+      }
+    };
+
+    const onDisconnect = () => {
       window.location.reload();
     };
 
@@ -158,8 +222,8 @@ const ProvidersProvider: FC = (props) => {
       typeof internalConnectedProvider.on === "function"
     ) {
       internalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChangedOrDisconnect);
-      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onChainChangedOrDisconnect);
+      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
     }
 
     return () => {
@@ -169,26 +233,22 @@ const ProvidersProvider: FC = (props) => {
         typeof internalConnectedProvider.removeListener === "function"
       ) {
         internalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        internalConnectedProvider.removeListener(
-          EthereumEvent.CHAIN_CHANGED,
-          onChainChangedOrDisconnect
-        );
-        internalConnectedProvider.removeListener(
-          EthereumEvent.DISCONNECT,
-          onChainChangedOrDisconnect
-        );
+        internalConnectedProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+        internalConnectedProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
-  }, [connectedProvider, navigate]);
+  }, [connectProvider, connectedProvider, navigate]);
 
   const value = useMemo(
     () => ({
       connectedProvider,
       account,
+      changeNetwork,
       connectProvider,
+
       disconnectProvider,
     }),
-    [account, connectProvider, connectedProvider, disconnectProvider]
+    [account, changeNetwork, connectProvider, connectedProvider, disconnectProvider]
   );
 
   return <providersContext.Provider value={value} {...props} />;

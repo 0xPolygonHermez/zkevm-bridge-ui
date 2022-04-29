@@ -43,3 +43,9 @@ export function isMetamaskUserRejectedRequestError(
 ): error is errorAdapter.MetamaskUserRejectedRequestError {
   return errorAdapter.metamaskUserRejectedRequestError.safeParse(error).success;
 }
+
+export function isMetamaskUnknownChainError(
+  error: unknown
+): error is errorAdapter.MetamaskUnknownChainError {
+  return errorAdapter.metamaskUnknownChainError.safeParse(error).success;
+}
