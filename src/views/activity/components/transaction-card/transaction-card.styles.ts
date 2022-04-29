@@ -76,7 +76,7 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  finaliseButton: {
+  finalizeButton: {
     border: "none",
     padding: [theme.spacing(0.75), theme.spacing(3)],
     borderRadius: 32,
