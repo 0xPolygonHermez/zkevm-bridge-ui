@@ -27,8 +27,8 @@ const Activity: FC = () => {
       void claim(
         tx.token.address,
         tx.amount,
-        tx.origin.networkId.toString(),
-        tx.destination.networkId,
+        tx.originNetwork.networkId.toString(),
+        tx.destinationNetwork.networkId,
         tx.destinationAddress,
         tx.merkleProof,
         tx.exitRootNumber,
@@ -92,7 +92,7 @@ const Activity: FC = () => {
         <TransactionCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
-          key={`${transaction.destination.networkId}-${transaction.depositCount}`}
+          key={`${transaction.destinationNetwork.networkId}-${transaction.depositCount}`}
         />
       ))}
     </>

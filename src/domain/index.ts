@@ -102,8 +102,9 @@ export type Transaction =
 export interface InitiatedTransaction {
   token: Token;
   amount: BigNumber;
-  origin: Chain;
-  destination: Chain;
+  networkId: number;
+  originNetwork: Chain;
+  destinationNetwork: Chain;
   destinationAddress: string;
   depositCount: number;
 }
@@ -111,6 +112,8 @@ export interface InitiatedTransaction {
 export interface Bridge {
   tokenAddress: string;
   amount: BigNumber;
+  networkId: 0 | 1;
+  originNetwork: 0 | 1;
   destinationNetwork: 0 | 1;
   destinationAddress: string;
   depositCount: number;

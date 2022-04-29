@@ -35,8 +35,8 @@ const TransactionDetails: FC = () => {
       void claim(
         tx.token.address,
         tx.amount,
-        tx.origin.networkId.toString(),
-        tx.destination.networkId,
+        tx.originNetwork.networkId.toString(),
+        tx.destinationNetwork.networkId,
         tx.destinationAddress,
         tx.merkleProof,
         tx.exitRootNumber,
@@ -61,7 +61,7 @@ const TransactionDetails: FC = () => {
       void getTransactions({ ethereumAddress: account.data })
         .then((transactions) => {
           const foundTransaction = transactions.find((tx) => {
-            const id = `${tx.destination.networkId}-${tx.depositCount}`;
+            const id = `${tx.destinationNetwork.networkId}-${tx.depositCount}`;
             return id === transactionId;
           });
           if (foundTransaction) {
@@ -95,7 +95,7 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destination, status, token } = transaction.data;
+  const { amount, destinationNetwork, status, token } = transaction.data;
 
   return (
     <>
@@ -119,7 +119,7 @@ const TransactionDetails: FC = () => {
             From
           </Typography>
           <Chain
-            chain={destination.networkId === 0 ? "polygon" : "ethereum"}
+            chain={destinationNetwork.networkId === 0 ? "polygon" : "ethereum"}
             className={classes.alignRow}
           />
         </div>
@@ -128,7 +128,7 @@ const TransactionDetails: FC = () => {
             To
           </Typography>
           <Chain
-            chain={destination.networkId === 0 ? "ethereum" : "polygon"}
+            chain={destinationNetwork.networkId === 0 ? "ethereum" : "polygon"}
             className={classes.alignRow}
           />
         </div>

@@ -8,11 +8,11 @@ import * as domain from "src/domain";
 interface Bridge {
   token_addr: string;
   amount: string;
+  network_id: 0 | 1;
+  orig_net: 0 | 1;
   dest_net: 0 | 1;
   dest_addr: string;
-  // ToDo: Remove the optional modifier when API fixes the issue
-  // of deposit_cnt not being included for the index "0". 
-  deposit_cnt?: string;
+  deposit_cnt: string;
 }
 
 interface Claim {
@@ -30,16 +30,19 @@ interface MerkleProof {
 const apiBridgeToDomain = ({
   token_addr,
   amount,
-  dest_addr,
+  network_id,
+  orig_net,
   dest_net,
+  dest_addr,
   deposit_cnt,
 }: Bridge): domain.Bridge => ({
   tokenAddress: token_addr,
   amount: BigNumber.from(amount),
-  destinationAddress: dest_addr,
+  networkId: network_id,
+  originNetwork: orig_net,
   destinationNetwork: dest_net,
-  // ToDo: Remove this hack along with the fix of Bridge.deposit_cnt?
-  depositCount: deposit_cnt ? z.number().positive().parse(Number(deposit_cnt)) : 0,
+  destinationAddress: dest_addr,
+  depositCount: z.number().nonnegative().parse(Number(deposit_cnt)),
 });
 
 const bridgeParser = StrictSchema<Bridge, domain.Bridge>()(
@@ -47,9 +50,11 @@ const bridgeParser = StrictSchema<Bridge, domain.Bridge>()(
     .object({
       token_addr: z.string(),
       amount: z.string(),
+      network_id: z.union([z.literal(0), z.literal(1)]),
+      orig_net: z.union([z.literal(0), z.literal(1)]),
       dest_net: z.union([z.literal(0), z.literal(1)]),
       dest_addr: z.string(),
-      deposit_cnt: z.string().optional(),
+      deposit_cnt: z.string(),
     })
     .transform(apiBridgeToDomain)
 );
@@ -81,10 +86,8 @@ const apiMerkleProofToDomain = ({
   main_exit_root,
   rollup_exit_root,
 }: MerkleProof): domain.MerkleProof => ({
-  // ToDo: Remove the prepend of "0x" to the members of the merkle_proof
-  // when the API fixes the current issue of missing the prefix
-  merkleProof: merkle_proof.map((v) => `0x${v}`),
-  exitRootNumber: z.number().positive().parse(Number(exit_root_num)),
+  merkleProof: merkle_proof,
+  exitRootNumber: z.number().nonnegative().parse(Number(exit_root_num)),
   mainExitRoot: main_exit_root,
   rollupExitRoot: rollup_exit_root,
 });
@@ -92,7 +95,7 @@ const apiMerkleProofToDomain = ({
 const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
   z
     .object({
-      merkle_proof: z.array(z.string().length(64)),
+      merkle_proof: z.array(z.string().length(66)),
       exit_root_num: z.string(),
       main_exit_root: z.string().length(66),
       rollup_exit_root: z.string().length(66),
@@ -114,7 +117,7 @@ const getMerkleProofResponseParser = StrictSchema<
 );
 
 const apiClaimToDomain = ({ index, block_num }: Claim): domain.Claim => ({
-  index: z.number().positive().parse(Number(index)),
+  index: z.number().nonnegative().parse(Number(index)),
   blockNumber: block_num,
 });
 
@@ -157,17 +160,24 @@ const getTransactions = async ({
 
   return await Promise.all(
     bridges.map(async (bridge): Promise<domain.Transaction> => {
-      const { depositCount, destinationNetwork, amount, destinationAddress } = bridge;
-      const originNetwork = destinationNetwork === 0 ? 1 : 0;
+      const {
+        originNetwork,
+        destinationNetwork,
+        networkId,
+        amount,
+        destinationAddress,
+        depositCount,
+      } = bridge;
       const [claimStatus, merkleProof]: [domain.ClaimStatus, domain.MerkleProof] =
         await Promise.all([
-          getClaimStatus({ apiUrl, originNetwork, depositCount }),
-          getMerkleProof({ apiUrl, originNetwork, depositCount }),
+          getClaimStatus({ apiUrl, networkId, depositCount }),
+          getMerkleProof({ apiUrl, networkId, depositCount }),
         ]);
       const initiatedTransaction: domain.InitiatedTransaction = {
         token: env.tokens.ETH,
-        destination: env.chains[destinationNetwork],
-        origin: env.chains[originNetwork],
+        originNetwork: env.chains[originNetwork],
+        destinationNetwork: env.chains[destinationNetwork],
+        networkId,
         amount,
         destinationAddress,
         depositCount,
@@ -222,13 +232,13 @@ const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<doma
 
 interface GetClaimStatusParams {
   apiUrl: string;
-  originNetwork: number;
+  networkId: number;
   depositCount: number;
 }
 
 const getClaimStatus = ({
   apiUrl,
-  originNetwork,
+  networkId,
   depositCount,
 }: GetClaimStatusParams): Promise<domain.ClaimStatus> => {
   return axios
@@ -237,7 +247,7 @@ const getClaimStatus = ({
       url: `/claim-status`,
       method: "GET",
       params: {
-        origin_net: originNetwork,
+        net_id: networkId,
         deposit_cnt: depositCount,
       },
     })
@@ -254,13 +264,13 @@ const getClaimStatus = ({
 
 interface GetMerkleProofParams {
   apiUrl: string;
-  originNetwork: number;
+  networkId: number;
   depositCount: number;
 }
 
 const getMerkleProof = ({
   apiUrl,
-  originNetwork,
+  networkId,
   depositCount,
 }: GetMerkleProofParams): Promise<domain.MerkleProof> => {
   return axios
@@ -269,7 +279,7 @@ const getMerkleProof = ({
       url: `/merkle-proofs`,
       method: "GET",
       params: {
-        origin_net: originNetwork,
+        net_id: networkId,
         deposit_cnt: depositCount,
       },
     })
