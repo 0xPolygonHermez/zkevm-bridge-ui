@@ -34,17 +34,17 @@ interface GetClaimsParams {
 }
 
 interface EstimateBridgeGasPriceParams {
-  chain: Chain;
+  from: Chain;
   token: Token;
-  destinationChain: Chain;
+  to: Chain;
   destinationAddress: string;
 }
 
 interface BridgeParams {
-  chain: Chain;
+  from: Chain;
   token: Token;
   amount: BigNumber;
-  destinationChain: Chain;
+  to: Chain;
   destinationAddress: string;
 }
 
@@ -155,16 +155,16 @@ const BridgeProvider: FC = (props) => {
   );
 
   const estimateBridgeGasPrice = useCallback(
-    ({ chain, token, destinationChain, destinationAddress }: EstimateBridgeGasPriceParams) => {
+    ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
       if (env === undefined) {
         throw new Error("Env is not available");
       }
 
       const amount = parseUnits("1", token.address);
       const contract =
-        chain.name === "ethereum"
-          ? Bridge__factory.connect(env.bridge.l1ContractAddress, chain.provider)
-          : Bridge__factory.connect(env.bridge.l2ContractAddress, chain.provider);
+        from.name === "ethereum"
+          ? Bridge__factory.connect(env.bridge.l1ContractAddress, from.provider)
+          : Bridge__factory.connect(env.bridge.l2ContractAddress, from.provider);
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -173,7 +173,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       return contract.estimateGas
-        .bridge(token.address, amount, destinationChain.bridgeNetworkId, destinationAddress, {
+        .bridge(token.address, amount, to.bridgeNetworkId, destinationAddress, {
           ...overrides,
           from: destinationAddress,
         })
@@ -181,7 +181,7 @@ const BridgeProvider: FC = (props) => {
           const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE).toNumber();
           const safeGasUnits = gasLimit.add(gasIncrease);
 
-          return estimateGasPrice({ chain, gasUnits: safeGasUnits });
+          return estimateGasPrice({ chain: from, gasUnits: safeGasUnits });
         });
     },
     [env, estimateGasPrice]
@@ -189,10 +189,10 @@ const BridgeProvider: FC = (props) => {
 
   const bridge = useCallback(
     async ({
-      chain,
+      from,
       token,
       amount,
-      destinationChain,
+      to,
       destinationAddress,
     }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
@@ -204,7 +204,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       const contract =
-        chain.name === "ethereum"
+        from.name === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
           : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
       const overrides: PayableOverrides =
@@ -226,7 +226,7 @@ const BridgeProvider: FC = (props) => {
       return contract.bridge(
         token.address,
         amount,
-        destinationChain.bridgeNetworkId,
+        to.bridgeNetworkId,
         destinationAddress,
         overrides
       );

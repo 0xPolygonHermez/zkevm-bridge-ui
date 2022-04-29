@@ -95,8 +95,8 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   useEffect(() => {
     if (chains && token) {
       estimateBridgeGasPrice({
-        chain: chains.from,
-        destinationChain: chains.to,
+        from: chains.from,
+        to: chains.to,
         token,
         destinationAddress: account,
       })

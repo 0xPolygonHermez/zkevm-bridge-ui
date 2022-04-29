@@ -32,10 +32,10 @@ const TransactionConfirmation: FC = () => {
 
       if (account.status === "successful") {
         bridge({
-          chain: from,
+          from,
           token,
           amount,
-          destinationChain: to,
+          to,
           destinationAddress: account.data,
         })
           .then(console.log)
