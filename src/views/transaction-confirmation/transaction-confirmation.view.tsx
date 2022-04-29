@@ -17,15 +17,21 @@ import Icon from "src/views/shared/icon/icon.view";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
   const { bridge } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
   const { transaction, setTransaction } = useTransactionContext();
 
   useEffect(() => {
-    //TODO Check network connected
-  }, [setIsDisabled]);
+    if (connectedProvider && transaction) {
+      void connectedProvider.getNetwork().then((network) => {
+        void transaction.from.provider.getNetwork().then((networkFrom) => {
+          setIsNetworkIncorrect(network.chainId !== networkFrom.chainId);
+        });
+      });
+    }
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (!transaction) {
@@ -81,10 +87,15 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick} disabled={isDisabled}>
+        <Button onClick={onClick} disabled={isNetworkIncorrect}>
           Transfer
         </Button>
-        {isDisabled && <Error error="Switch to Polygon Hermez chain to continue" />}
+        {isNetworkIncorrect && <Error error={`Switch to ${transaction.from.name} to continue`} />}
+        {isNetworkIncorrect && connectedProvider?.provider.isMetaMask && (
+          <button onClick={() => changeNetwork(transaction.from)} className={classes.changeButton}>
+            Change Network
+          </button>
+        )}
       </div>
     </>
   );

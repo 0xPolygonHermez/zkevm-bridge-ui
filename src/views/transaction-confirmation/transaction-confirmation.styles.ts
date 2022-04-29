@@ -77,6 +77,15 @@ const useConfirmationStyles = createUseStyles((theme: Theme) => ({
       margin: theme.spacing(6),
     },
   },
+  changeButton: {
+    borderRadius: 16,
+    border: `${theme.palette.error.main} 1px solid`,
+    backgroundColor: theme.palette.white,
+    padding: [theme.spacing(1), theme.spacing(4)],
+    color: theme.palette.error.main,
+    fontSize: 14,
+    cursor: "pointer",
+  },
 }));
 
 export default useConfirmationStyles;

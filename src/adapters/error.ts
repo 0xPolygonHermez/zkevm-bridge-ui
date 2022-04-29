@@ -27,6 +27,18 @@ export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejecte
   })
 );
 
+export interface MetamaskUnknownChainError {
+  code: 4902;
+  message: string;
+}
+
+export const metamaskUnknownChainError = StrictSchema<MetamaskUnknownChainError>()(
+  z.object({
+    code: z.literal(4902),
+    message: z.string(),
+  })
+);
+
 function sanitizeErrorMessage(errorMessage: string): string {
   try {
     return JSON.stringify(JSON.parse(errorMessage));
