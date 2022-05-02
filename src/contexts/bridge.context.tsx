@@ -178,7 +178,7 @@ const BridgeProvider: FC = (props) => {
           from: destinationAddress,
         })
         .then((gasLimit) => {
-          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE).toNumber();
+          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE);
           const safeGasUnits = gasLimit.add(gasIncrease);
 
           return estimateGasPrice({ chain: from, gasUnits: safeGasUnits });
