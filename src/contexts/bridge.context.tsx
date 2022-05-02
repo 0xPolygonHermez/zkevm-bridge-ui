@@ -196,7 +196,7 @@ const BridgeProvider: FC = (props) => {
       destinationAddress,
     }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
-        throw new Error("Environment is not available");
+        throw new Error("Env is not available");
       }
 
       if (connectedProvider === undefined) {
@@ -249,7 +249,7 @@ const BridgeProvider: FC = (props) => {
       rollupExitRoot,
     }: ClaimParams): Promise<ContractTransaction> => {
       if (env === undefined) {
-        throw new Error("Environment is not available");
+        throw new Error("Env is not available");
       }
 
       if (connectedProvider === undefined) {
