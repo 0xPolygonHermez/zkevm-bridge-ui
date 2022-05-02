@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -29,7 +29,6 @@ interface ListProps {
 
 const List: FC<ListProps> = ({ list, onClose }) => {
   const classes = useListStyles();
-  const [values] = useState(list);
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
@@ -41,25 +40,25 @@ const List: FC<ListProps> = ({ list, onClose }) => {
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.list}>
-            {values.type === "chain"
-              ? values.items.slice(0, 20).map((element) => {
+            {list.type === "chain"
+              ? list.items.slice(0, 20).map((element) => {
                   return (
                     <button
                       className={classes.button}
                       key={element.name}
-                      onClick={() => values.onClick(element)}
+                      onClick={() => list.onClick(element)}
                     >
                       <element.Icon className={classes.icon} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );
                 })
-              : values.items.slice(0, 20).map((element) => {
+              : list.items.slice(0, 20).map((element) => {
                   return (
                     <button
                       className={classes.button}
                       key={element.address}
-                      onClick={() => values.onClick(element)}
+                      onClick={() => list.onClick(element)}
                     >
                       <Icon url={element.logoURI} size={24} />
                       <Typography type="body1">{element.name}</Typography>
