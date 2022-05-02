@@ -29,7 +29,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     outline: "none",
   },
   list: {
-    paddingRight: theme.spacing(0.5),
     display: "flex",
     flexDirection: "column",
     overflowY: "auto",
@@ -49,10 +48,12 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     gap: theme.spacing(1),
     padding: theme.spacing(2),
-    marginTop: theme.spacing(1),
     borderRadius: 8,
     cursor: "pointer",
     alignItems: "center",
+    "&:not(:first-of-type)": {
+      marginTop: theme.spacing(1),
+    },
     "&:hover": {
       background: theme.palette.grey.main,
     },
