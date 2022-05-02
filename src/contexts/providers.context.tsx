@@ -202,7 +202,7 @@ const ProvidersProvider: FC = (props) => {
           const connectedProviderNetwork = await connectedProvider.getNetwork();
           const chainProviderNetwork = await chain.provider.getNetwork();
 
-          return connectedProviderNetwork === chainProviderNetwork;
+          return connectedProviderNetwork.chainId === chainProviderNetwork.chainId;
         } catch (error) {
           return false;
         }
