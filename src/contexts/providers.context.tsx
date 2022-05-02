@@ -176,12 +176,8 @@ const ProvidersProvider: FC = (props) => {
 
   const estimateGasPrice = useCallback(
     ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber> => {
-      if (chain.provider === undefined) {
-        throw new Error("Provider is not available");
-      }
-
       return chain.provider.getFeeData().then((feeData) => {
-        if (feeData.maxFeePerGas !== null && feeData.maxPriorityFeePerGas !== null) {
+        if (feeData.maxFeePerGas !== null) {
           return gasUnits.mul(feeData.maxFeePerGas);
         } else if (feeData.gasPrice !== null) {
           return gasUnits.mul(feeData.gasPrice);
