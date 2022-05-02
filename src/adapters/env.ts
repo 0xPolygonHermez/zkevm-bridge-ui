@@ -29,7 +29,7 @@ const envToDomain = ({
   REACT_APP_USDT_ADDRESS,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
 }: Env): domain.Env => {
-  const bridgePolygonHermezNetworkId = z
+  const polygonHermezNetworkId = z
     .number()
     .positive()
     .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
@@ -48,7 +48,7 @@ const envToDomain = ({
       apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
     },
     chains: getChains({
-      bridgePolygonHermezNetworkId,
+      polygonHermezNetworkId,
       ethereumRpcUrl: REACT_APP_L1_RPC_URL,
       polygonHermezRpcUrl: REACT_APP_L2_RPC_URL,
     }),

@@ -37,11 +37,11 @@ export const ETH_TOKEN: Token = {
 export const getChains = ({
   ethereumRpcUrl,
   polygonHermezRpcUrl,
-  bridgePolygonHermezNetworkId,
+  polygonHermezNetworkId,
 }: {
   ethereumRpcUrl: string;
   polygonHermezRpcUrl: string;
-  bridgePolygonHermezNetworkId: number;
+  polygonHermezNetworkId: number;
 }): [Chain, Chain] => [
   {
     key: "ethereum",
@@ -55,7 +55,7 @@ export const getChains = ({
     name: "Polygon Hermez chain",
     Icon: PolygonHermezChainIcon,
     provider: new JsonRpcProvider(polygonHermezRpcUrl),
-    networkId: bridgePolygonHermezNetworkId,
+    networkId: polygonHermezNetworkId,
   },
 ];
 
