@@ -27,16 +27,14 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
 
   const updateAmountInput = useCallback(
     (amount?: BigNumber) => {
-      if (amount) {
-        if (actualFee) {
-          const newAmountWithFee = amount.add(actualFee);
-          const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
-          const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
+      if (amount && actualFee) {
+        const newAmountWithFee = amount.add(actualFee);
+        const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
+        const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
 
-          return onChange({ amount, error });
-        } else {
-          return onChange({ amount, error: "Insufficient balance" });
-        }
+        return onChange({ amount, error });
+      } else {
+        return onChange({});
       }
     },
     [actualFee, balance, onChange]
@@ -104,6 +102,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
       <input
         className={classes.amountInput}
         value={inputValue}
+        disabled={fee === undefined}
         placeholder="0.00"
         autoFocus
         onChange={handleInputChange}

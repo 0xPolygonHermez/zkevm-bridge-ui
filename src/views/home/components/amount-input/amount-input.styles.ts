@@ -17,6 +17,9 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     outline: "none",
     fontSize: "20px",
     lineHeight: "24px",
+    "&:disabled": {
+      backgroundColor: "transparent",
+    },
     [theme.breakpoints.upSm]: {
       fontSize: (value: number) => (value < 16 ? "40px" : "30px"),
       lineHeight: "40px",

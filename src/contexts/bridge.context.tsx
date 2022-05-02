@@ -100,7 +100,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, account, estimateGasPrice } = useProvidersContext();
+  const { connectedProvider, account } = useProvidersContext();
 
   const getBridges = useCallback(
     ({ ethereumAddress }: GetBridgesParams) => {
@@ -154,6 +154,21 @@ const BridgeProvider: FC = (props) => {
     [env]
   );
 
+  const estimateGasPrice = useCallback(
+    ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
+      return chain.provider.getFeeData().then((feeData) => {
+        if (feeData.maxFeePerGas !== null) {
+          return gasLimit.mul(feeData.maxFeePerGas);
+        } else if (feeData.gasPrice !== null) {
+          return gasLimit.mul(feeData.gasPrice);
+        } else {
+          throw new Error("Fee data is not available");
+        }
+      });
+    },
+    []
+  );
+
   const estimateBridgeGasPrice = useCallback(
     ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
       if (env === undefined) {
@@ -179,9 +194,9 @@ const BridgeProvider: FC = (props) => {
         })
         .then((gasLimit) => {
           const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
-          const safeGasUnits = gasLimit.add(gasIncrease);
+          const safeGasLimit = gasLimit.add(gasIncrease);
 
-          return estimateGasPrice({ chain: from, gasUnits: safeGasUnits });
+          return estimateGasPrice({ chain: from, gasLimit: safeGasLimit });
         });
     },
     [env, estimateGasPrice]

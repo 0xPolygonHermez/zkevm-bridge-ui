@@ -2,7 +2,6 @@ import { createContext, FC, useCallback, useContext, useEffect, useMemo, useStat
 import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
-import { BigNumber } from "ethers";
 
 import { Chain, EthereumEvent, WalletName } from "src/domain";
 import {
@@ -17,11 +16,6 @@ import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
 import { hexValue } from "ethers/lib/utils";
 
-interface EstimateGasPriceParams {
-  chain: Chain;
-  gasUnits: BigNumber;
-}
-
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
@@ -29,7 +23,6 @@ interface ProvidersContext {
   changeNetwork: (chain: Chain) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
-  estimateGasPrice: (params: EstimateGasPriceParams) => Promise<BigNumber>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -42,9 +35,6 @@ const providersContext = createContext<ProvidersContext>({
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
   disconnectProvider: () => {
-    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
-  },
-  estimateGasPrice: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
 });
@@ -174,21 +164,6 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
-  const estimateGasPrice = useCallback(
-    ({ chain, gasUnits }: EstimateGasPriceParams): Promise<BigNumber> => {
-      return chain.provider.getFeeData().then((feeData) => {
-        if (feeData.maxFeePerGas !== null) {
-          return gasUnits.mul(feeData.maxFeePerGas);
-        } else if (feeData.gasPrice !== null) {
-          return gasUnits.mul(feeData.gasPrice);
-        } else {
-          throw new Error("Fee data is not available");
-        }
-      });
-    },
-    []
-  );
-
   const isConnectedProviderChainOk = useCallback(
     async (chain: Chain): Promise<boolean> => {
       if (connectedProvider === undefined) {
@@ -315,7 +290,6 @@ const ProvidersProvider: FC = (props) => {
       changeNetwork,
       connectProvider,
       disconnectProvider,
-      estimateGasPrice,
     }),
     [
       account,
@@ -323,7 +297,6 @@ const ProvidersProvider: FC = (props) => {
       isConnectedProviderChainOk,
       connectProvider,
       disconnectProvider,
-      estimateGasPrice,
       changeNetwork,
     ]
   );

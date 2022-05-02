@@ -13,7 +13,11 @@ import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
-import { isEthersInsufficientFundsError } from "src/utils/types";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isEthersInsufficientFundsError,
+} from "src/utils/types";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
@@ -35,14 +39,16 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   const { openSnackbar } = useUIContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
   const [list, setList] = useState<List>();
-  const [error, setError] = useState<string>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
+  const [inputError, setInputError] = useState<string>();
 
   const [chains, setChains] = useState<FormChains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
-  const [estimatedFee, setEstimatedFee] = useState<BigNumber>();
+  const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
 
   const onChainFromButtonClick = (from: Chain) => {
     if (env && chains) {
@@ -57,18 +63,18 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
     setAmount(amount);
-    setError(error);
+    setInputError(error);
   };
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (chains && token && amount && estimatedFee) {
+    if (chains && token && amount && estimatedFee.status === "successful") {
       onSubmit({
         token: token,
         from: chains.from,
         to: chains.to,
         amount: amount,
-        estimatedFee: estimatedFee,
+        estimatedFee: estimatedFee.data,
       });
     }
   };
@@ -100,10 +106,15 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
         token,
         destinationAddress: account,
       })
-        .then(setEstimatedFee)
+        .then((estimatedFee) => {
+          setEstimatedFee({ status: "successful", data: estimatedFee });
+        })
         .catch((error) => {
           if (isEthersInsufficientFundsError(error)) {
-            setEstimatedFee(undefined);
+            setEstimatedFee({
+              status: "failed",
+              error: "You don't have enough ETH to pay for the fees",
+            });
           } else {
             void parseError(error).then((errorMessage) => {
               openSnackbar({ type: "error-msg", text: errorMessage });
@@ -155,7 +166,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
             value={amount}
             token={token}
             balance={balanceFrom || BigNumber.from(0)}
-            fee={estimatedFee}
+            fee={isAsyncTaskDataAvailable(estimatedFee) ? estimatedFee.data : undefined}
             onChange={onInputChange}
           />
         </div>
@@ -183,10 +194,19 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={!amount || amount.isZero() || error !== undefined}>
+        <Button
+          type="submit"
+          disabled={
+            !amount ||
+            amount.isZero() ||
+            inputError !== undefined ||
+            estimatedFee.status === "failed"
+          }
+        >
           Continue
         </Button>
-        {amount && error && <Error error={error} />}
+        {amount && inputError && estimatedFee.status !== "failed" && <Error error={inputError} />}
+        {estimatedFee.status === "failed" && <Error error={estimatedFee.error} />}
       </div>
       {list && (
         <List
