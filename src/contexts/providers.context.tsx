@@ -96,9 +96,9 @@ const ProvidersProvider: FC = (props) => {
               });
             }
           } catch (error) {
-            const errorMessage = await parseError(error);
-
             if (!isMetamaskUserRejectedRequestError(error)) {
+              const errorMessage = await parseError(error);
+
               openSnackbar({
                 type: "error",
                 parsed: errorMessage,
