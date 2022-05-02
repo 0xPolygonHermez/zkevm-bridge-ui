@@ -12,7 +12,7 @@ import { Bridge, Chain, Claim, ClaimStatus, MerkleProof, Token } from "src/domai
 import { Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { BRIDGE_CALL_GAS_INCREASE } from "src/constants";
+import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { parseUnits } from "ethers/lib/utils";
 
 interface GetBridgesParams {
@@ -178,7 +178,7 @@ const BridgeProvider: FC = (props) => {
           from: destinationAddress,
         })
         .then((gasLimit) => {
-          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE);
+          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
           const safeGasUnits = gasLimit.add(gasIncrease);
 
           return estimateGasPrice({ chain: from, gasUnits: safeGasUnits });
