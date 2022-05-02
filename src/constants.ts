@@ -48,14 +48,14 @@ export const getChains = ({
     name: "Ethereum chain",
     Icon: EthChainIcon,
     provider: new JsonRpcProvider(ethereumRpcUrl),
-    bridgeNetworkId: 0,
+    networkId: 0,
   },
   {
     key: "polygon-hermez",
     name: "Polygon Hermez chain",
     Icon: PolygonHermezChainIcon,
     provider: new JsonRpcProvider(polygonHermezRpcUrl),
-    bridgeNetworkId: bridgePolygonHermezNetworkId,
+    networkId: bridgePolygonHermezNetworkId,
   },
 ];
 

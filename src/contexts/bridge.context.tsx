@@ -188,7 +188,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       return contract.estimateGas
-        .bridge(token.address, amount, to.bridgeNetworkId, destinationAddress, {
+        .bridge(token.address, amount, to.networkId, destinationAddress, {
           ...overrides,
           from: destinationAddress,
         })
@@ -238,13 +238,7 @@ const BridgeProvider: FC = (props) => {
         }
       }
 
-      return contract.bridge(
-        token.address,
-        amount,
-        to.bridgeNetworkId,
-        destinationAddress,
-        overrides
-      );
+      return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
     },
     [env, connectedProvider, account]
   );
