@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useState } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -30,18 +30,11 @@ interface ListProps {
 const List: FC<ListProps> = ({ list, onClose }) => {
   const classes = useListStyles();
   const [values] = useState(list);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
     onClose();
   };
-
-  useEffect(() => {
-    if (inputRef && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
 
   return (
     <Portal>
