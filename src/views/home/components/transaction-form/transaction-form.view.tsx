@@ -21,6 +21,7 @@ import {
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
+import { trimDecimals } from "src/utils/amounts";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -153,7 +154,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {balanceFrom ? ethers.utils.formatEther(balanceFrom) : "--"} ETH
+              {balanceFrom ? trimDecimals(balanceFrom) : "--"} ETH
             </Typography>
           </div>
         </div>
@@ -187,9 +188,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">
-              {balanceTo ? ethers.utils.formatEther(balanceTo) : "--"} ETH
-            </Typography>
+            <Typography type="body1">{balanceTo ? trimDecimals(balanceTo) : "--"} ETH</Typography>
           </div>
         </div>
       </Card>
