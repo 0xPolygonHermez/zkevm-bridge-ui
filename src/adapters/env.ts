@@ -35,11 +35,7 @@ const envToDomain = ({
     .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
 
   return {
-    bridge: {
-      apiUrl: REACT_APP_BRIDGE_API_URL,
-      l1ContractAddress: REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS,
-      l2ContractAddress: REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS,
-    },
+    bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
     tokenQuotes: {
       uniswapQuoterContractAddress: REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
     },
@@ -48,9 +44,15 @@ const envToDomain = ({
       apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
     },
     chains: getChains({
-      polygonHermezNetworkId,
-      ethereumRpcUrl: REACT_APP_L1_RPC_URL,
-      polygonHermezRpcUrl: REACT_APP_L2_RPC_URL,
+      ethereum: {
+        rpcUrl: REACT_APP_L1_RPC_URL,
+        contractAddress: REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS,
+      },
+      polygonHermez: {
+        networkId: polygonHermezNetworkId,
+        rpcUrl: REACT_APP_L2_RPC_URL,
+        contractAddress: REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS,
+      },
     }),
     tokens: {
       ETH: ETH_TOKEN,

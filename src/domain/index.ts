@@ -8,6 +8,7 @@ export interface Chain {
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
+  contractAddress: string;
 }
 export interface Token {
   name: string;
@@ -18,11 +19,7 @@ export interface Token {
 }
 
 export interface Env {
-  bridge: {
-    apiUrl: string;
-    l1ContractAddress: string;
-    l2ContractAddress: string;
-  };
+  bridgeApiUrl: string;
   tokenQuotes: {
     uniswapQuoterContractAddress: string;
   };
