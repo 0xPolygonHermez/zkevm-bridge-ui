@@ -24,10 +24,10 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   const LayerIcon =
     status !== "completed"
       ? ReloadIcon
-      : destinationNetwork.key === "polygon-hermez"
-      ? TransferL2Icon
-      : TransferL1Icon;
-  const actionText = destinationNetwork.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
+      : destinationNetwork.key === "ethereum"
+      ? TransferL1Icon
+      : TransferL2Icon;
+  const actionText = destinationNetwork.key === "ethereum" ? "Transfer to L1" : "Transfer to L2";
   const id = `${destinationNetwork.networkId}-${depositCount}`;
 
   return (
