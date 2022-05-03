@@ -4,3 +4,6 @@
 # Except these files
 !src
 !*.json
+
+# And then ignore
+src/types
