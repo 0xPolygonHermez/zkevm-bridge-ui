@@ -5,9 +5,7 @@
 node_modules/
 
 # Environment
-.env*
-!.env.example
-!.env.integration
+.env
 
 # Artifacts
 build/
