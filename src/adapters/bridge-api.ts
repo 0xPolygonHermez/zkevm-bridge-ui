@@ -173,10 +173,25 @@ const getTransactions = async ({
           getClaimStatus({ apiUrl, networkId, depositCount }),
           getMerkleProof({ apiUrl, networkId, depositCount }),
         ]);
+
+      const originChain = env.chains.find((chain) => chain.networkId === originNetwork);
+      if (originChain === undefined) {
+        throw new Error(
+          "The specified origin network can not be found in the list of supported Chains"
+        );
+      }
+
+      const destinationChain = env.chains.find((chain) => chain.networkId === destinationNetwork);
+      if (destinationChain === undefined) {
+        throw new Error(
+          "The specified destination network can not be found in the list of supported Chains"
+        );
+      }
+
       const initiatedTransaction: domain.InitiatedTransaction = {
         token: env.tokens.ETH,
-        originNetwork: env.chains[originNetwork],
-        destinationNetwork: env.chains[destinationNetwork],
+        originNetwork: originChain,
+        destinationNetwork: destinationChain,
         networkId,
         amount,
         destinationAddress,
