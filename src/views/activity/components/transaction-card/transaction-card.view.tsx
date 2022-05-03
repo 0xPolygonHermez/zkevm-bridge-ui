@@ -17,13 +17,12 @@ export interface TransactionCardProps {
   onClaim: () => void;
 }
 
-const layerIcons = [TransferL1Icon, TransferL2Icon];
-
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
   const { status, destinationNetwork, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcons[destinationNetwork.networkId];
+  const layerIcon = destinationNetwork.key === "polygon-hermez" ? TransferL2Icon : TransferL1Icon;
+  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcon;
   const actionText = destinationNetwork.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
   const id = `${destinationNetwork.networkId}-${depositCount}`;
 
