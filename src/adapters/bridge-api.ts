@@ -152,7 +152,7 @@ const getTransactions = async ({
   env,
   ethereumAddress,
 }: GetTransactionsParams): Promise<domain.Transaction[]> => {
-  const apiUrl = env.bridge.apiUrl;
+  const apiUrl = env.bridgeApiUrl;
   const [bridges, claims] = await Promise.all([
     getBridges({ apiUrl, ethereumAddress }),
     getClaims({ apiUrl, ethereumAddress }),

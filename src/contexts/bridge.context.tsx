@@ -4,6 +4,7 @@ import {
   constants as ethersConstants,
   PayableOverrides,
 } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
 import { createContext, FC, useContext, useCallback } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -13,7 +14,6 @@ import { Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
-import { parseUnits } from "ethers/lib/utils";
 
 interface GetTransactionsParams {
   ethereumAddress: string;
@@ -103,15 +103,8 @@ const BridgeProvider: FC = (props) => {
 
   const estimateBridgeGasPrice = useCallback(
     ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       const amount = parseUnits("1", token.address);
-      const contract =
-        from.key === "ethereum"
-          ? Bridge__factory.connect(env.bridge.l1ContractAddress, from.provider)
-          : Bridge__factory.connect(env.bridge.l2ContractAddress, from.provider);
+      const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -131,7 +124,7 @@ const BridgeProvider: FC = (props) => {
           return estimateGasPrice({ chain: from, gasLimit: safeGasLimit });
         });
     },
-    [env, estimateGasPrice]
+    [estimateGasPrice]
   );
 
   const bridge = useCallback(
@@ -142,18 +135,11 @@ const BridgeProvider: FC = (props) => {
       to,
       destinationAddress,
     }: BridgeParams): Promise<ContractTransaction> => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
 
-      const contract =
-        from.key === "ethereum"
-          ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
-          : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
+      const contract = Bridge__factory.connect(from.contractAddress, connectedProvider.getSigner());
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -163,16 +149,16 @@ const BridgeProvider: FC = (props) => {
         }
 
         const erc20Contract = Erc20__factory.connect(token.address, connectedProvider.getSigner());
-        const allowance = await erc20Contract.allowance(account.data, env.bridge.l1ContractAddress);
+        const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
 
         if (allowance.lt(amount)) {
-          await erc20Contract.approve(env.bridge.l2ContractAddress, amount);
+          await erc20Contract.approve(from.contractAddress, amount);
         }
       }
 
       return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
     },
-    [env, connectedProvider, account]
+    [connectedProvider, account]
   );
 
   const claim = useCallback(
@@ -188,18 +174,14 @@ const BridgeProvider: FC = (props) => {
       mainnetExitRoot,
       rollupExitRoot,
     }: ClaimParams): Promise<ContractTransaction> => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
 
-      const contract =
-        destinationNetwork.key === "ethereum"
-          ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
-          : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
+      const contract = Bridge__factory.connect(
+        destinationNetwork.contractAddress,
+        connectedProvider.getSigner()
+      );
 
       return contract.claim(
         originalTokenAddress,
@@ -215,7 +197,7 @@ const BridgeProvider: FC = (props) => {
         destinationNetwork.key === "polygon-hermez" ? { gasPrice: 0 } : undefined
       );
     },
-    [env, connectedProvider]
+    [connectedProvider]
   );
 
   return (
