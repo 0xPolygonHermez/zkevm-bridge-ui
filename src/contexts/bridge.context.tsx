@@ -171,10 +171,6 @@ const BridgeProvider: FC = (props) => {
 
   const estimateBridgeGasPrice = useCallback(
     ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       const amount = parseUnits("1", token.address);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -196,7 +192,7 @@ const BridgeProvider: FC = (props) => {
           return estimateGasPrice({ chain: from, gasLimit: safeGasLimit });
         });
     },
-    [env, estimateGasPrice]
+    [estimateGasPrice]
   );
 
   const bridge = useCallback(
@@ -207,10 +203,6 @@ const BridgeProvider: FC = (props) => {
       to,
       destinationAddress,
     }: BridgeParams): Promise<ContractTransaction> => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
@@ -234,7 +226,7 @@ const BridgeProvider: FC = (props) => {
 
       return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
     },
-    [env, connectedProvider, account]
+    [connectedProvider, account]
   );
 
   const claim = useCallback(
@@ -251,10 +243,6 @@ const BridgeProvider: FC = (props) => {
       mainnetExitRoot,
       rollupExitRoot,
     }: ClaimParams): Promise<ContractTransaction> => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
@@ -277,7 +265,7 @@ const BridgeProvider: FC = (props) => {
         rollupExitRoot
       );
     },
-    [env, connectedProvider]
+    [connectedProvider]
   );
 
   return (
