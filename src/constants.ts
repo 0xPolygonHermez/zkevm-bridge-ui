@@ -35,27 +35,34 @@ export const ETH_TOKEN: Token = {
 };
 
 export const getChains = ({
-  ethereumRpcUrl,
-  polygonHermezRpcUrl,
-  polygonHermezNetworkId,
+  ethereum,
+  polygonHermez,
 }: {
-  ethereumRpcUrl: string;
-  polygonHermezRpcUrl: string;
-  polygonHermezNetworkId: number;
+  polygonHermez: {
+    rpcUrl: string;
+    contractAddress: string;
+    networkId: number;
+  };
+  ethereum: {
+    rpcUrl: string;
+    contractAddress: string;
+  };
 }): [Chain, Chain] => [
   {
     key: "ethereum",
     name: "Ethereum chain",
     Icon: EthChainIcon,
-    provider: new JsonRpcProvider(ethereumRpcUrl),
+    provider: new JsonRpcProvider(ethereum.rpcUrl),
     networkId: 0,
+    contractAddress: ethereum.contractAddress,
   },
   {
     key: "polygon-hermez",
     name: "Polygon Hermez chain",
     Icon: PolygonHermezChainIcon,
-    provider: new JsonRpcProvider(polygonHermezRpcUrl),
-    networkId: polygonHermezNetworkId,
+    provider: new JsonRpcProvider(polygonHermez.rpcUrl),
+    networkId: polygonHermez.networkId,
+    contractAddress: polygonHermez.contractAddress,
   },
 ];
 
