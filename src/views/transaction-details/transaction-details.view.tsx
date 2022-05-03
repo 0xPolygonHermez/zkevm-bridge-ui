@@ -96,7 +96,7 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destinationNetwork, status, token } = transaction.data;
+  const { amount, destinationNetwork, originNetwork, status, token } = transaction.data;
 
   return (
     <>
@@ -119,19 +119,13 @@ const TransactionDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Chain
-            chain={destinationNetwork.networkId === 0 ? "polygon" : "ethereum"}
-            className={classes.alignRow}
-          />
+          <Chain chain={originNetwork} className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             To
           </Typography>
-          <Chain
-            chain={destinationNetwork.networkId === 0 ? "ethereum" : "polygon"}
-            className={classes.alignRow}
-          />
+          <Chain chain={destinationNetwork} className={classes.alignRow} />
         </div>
         <div className={`${classes.row} ${classes.lastRow}`}>
           <Typography type="body2" className={classes.alignRow}>
