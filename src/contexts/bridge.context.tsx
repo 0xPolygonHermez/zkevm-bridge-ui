@@ -109,7 +109,7 @@ const BridgeProvider: FC = (props) => {
 
       const amount = parseUnits("1", token.address);
       const contract =
-        from.name === "ethereum"
+        from.key === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, from.provider)
           : Bridge__factory.connect(env.bridge.l2ContractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -151,7 +151,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       const contract =
-        from.name === "ethereum"
+        from.key === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
           : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
       const overrides: PayableOverrides =
@@ -197,7 +197,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       const contract =
-        destinationNetwork.name === "ethereum"
+        destinationNetwork.key === "ethereum"
           ? Bridge__factory.connect(env.bridge.l1ContractAddress, connectedProvider.getSigner())
           : Bridge__factory.connect(env.bridge.l2ContractAddress, connectedProvider.getSigner());
 
