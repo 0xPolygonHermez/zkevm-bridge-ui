@@ -23,6 +23,8 @@ export const REPORT_ERROR_FORM_URL =
 
 export const UNISWAP_V3_POOL_FEE = 3000;
 
+export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
+
 export const ETH_TOKEN: Token = {
   name: "Ether",
   address: ethers.constants.AddressZero,
@@ -35,21 +37,25 @@ export const ETH_TOKEN: Token = {
 export const getChains = ({
   ethereumRpcUrl,
   polygonHermezRpcUrl,
+  polygonHermezNetworkId,
 }: {
   ethereumRpcUrl: string;
   polygonHermezRpcUrl: string;
+  polygonHermezNetworkId: number;
 }): [Chain, Chain] => [
   {
     key: "ethereum",
     name: "Ethereum chain",
     Icon: EthChainIcon,
     provider: new JsonRpcProvider(ethereumRpcUrl),
+    networkId: 0,
   },
   {
     key: "polygon-hermez",
     name: "Polygon Hermez chain",
     Icon: PolygonHermezChainIcon,
     provider: new JsonRpcProvider(polygonHermezRpcUrl),
+    networkId: polygonHermezNetworkId,
   },
 ];
 

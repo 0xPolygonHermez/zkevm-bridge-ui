@@ -7,6 +7,7 @@ export interface Chain {
   name: string;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
+  networkId: number;
 }
 export interface Token {
   name: string;
@@ -123,4 +124,5 @@ export interface TransactionData {
   to: Chain;
   token: Token;
   amount: BigNumber;
+  estimatedFee: BigNumber;
 }

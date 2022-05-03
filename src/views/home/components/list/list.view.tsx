@@ -1,8 +1,7 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 
 import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
-import { ReactComponent as SearchIcon } from "src/assets/icons/search.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { Chain, Token } from "src/domain";
@@ -28,31 +27,8 @@ interface ListProps {
   onClose: () => void;
 }
 
-const filterChainList = (chainList: ChainList, value: string): ChainList => ({
-  ...chainList,
-  items: chainList.items.filter((chain) => chain.name.toUpperCase().includes(value.toUpperCase())),
-});
-
-const filterTokenList = (tokenList: TokenList, value: string): TokenList => ({
-  ...tokenList,
-  items: tokenList.items.filter(
-    (token) =>
-      token.name.toUpperCase().includes(value.toUpperCase()) ||
-      token.symbol.toUpperCase().includes(value.toUpperCase())
-  ),
-});
-
-const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
+const List: FC<ListProps> = ({ list, onClose }) => {
   const classes = useListStyles();
-  const [values, setValues] = useState(list);
-
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.trim();
-    const filtered: List =
-      list.type === "chain" ? filterChainList(list, value) : filterTokenList(list, value);
-
-    setValues(filtered);
-  };
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
@@ -63,30 +39,26 @@ const List: FC<ListProps> = ({ placeholder, list, onClose }) => {
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.search}>
-            <SearchIcon />
-            <input className={classes.input} placeholder={placeholder} onChange={onChange} />
-          </div>
           <div className={classes.list}>
-            {values.type === "chain"
-              ? values.items.slice(0, 20).map((element) => {
+            {list.type === "chain"
+              ? list.items.slice(0, 20).map((element) => {
                   return (
                     <button
                       className={classes.button}
                       key={element.name}
-                      onClick={() => values.onClick(element)}
+                      onClick={() => list.onClick(element)}
                     >
                       <element.Icon className={classes.icon} />
                       <Typography type="body1">{element.name}</Typography>
                     </button>
                   );
                 })
-              : values.items.slice(0, 20).map((element) => {
+              : list.items.slice(0, 20).map((element) => {
                   return (
                     <button
                       className={classes.button}
-                      key={`${element.name}${element.address}`}
-                      onClick={() => values.onClick(element)}
+                      key={element.address}
+                      onClick={() => list.onClick(element)}
                     >
                       <Icon url={element.logoURI} size={24} />
                       <Typography type="body1">{element.name}</Typography>

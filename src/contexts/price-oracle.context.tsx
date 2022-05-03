@@ -44,7 +44,7 @@ const PriceOracleProvider: FC = (props) => {
   const getTokenPrice = useCallback(
     async (tokenAddress: string): Promise<number> => {
       if (env === undefined) {
-        throw new Error("Environment is not available");
+        throw new Error("Env is not available");
       }
 
       if (quoterContract === undefined) {
