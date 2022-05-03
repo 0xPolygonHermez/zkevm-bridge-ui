@@ -15,6 +15,7 @@ import Error from "src/views/shared/error/error.view";
 import { useProvidersContext } from "src/contexts/providers.context";
 import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
+import { getChainName } from "src/domain";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
@@ -72,11 +73,11 @@ const TransactionConfirmation: FC = () => {
         }`}</Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <transaction.from.Icon /> {transaction.from.name}
+            <transaction.from.Icon /> {getChainName(transaction.from)}
           </div>
           <ArrowRightIcon className={classes.arrow} />
           <div className={classes.chainBox}>
-            <transaction.to.Icon /> {transaction.to.name}
+            <transaction.to.Icon /> {getChainName(transaction.to)}
           </div>
         </div>
         <div className={classes.fees}>
@@ -93,7 +94,9 @@ const TransactionConfirmation: FC = () => {
         <Button onClick={onClick} disabled={isNetworkIncorrect}>
           Transfer
         </Button>
-        {isNetworkIncorrect && <Error error={`Switch to ${transaction.from.name} to continue`} />}
+        {isNetworkIncorrect && (
+          <Error error={`Switch to ${getChainName(transaction.from)} to continue`} />
+        )}
       </div>
     </>
   );

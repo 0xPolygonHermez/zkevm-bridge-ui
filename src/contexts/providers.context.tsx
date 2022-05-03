@@ -3,7 +3,7 @@ import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
 
-import { Chain, EthereumEvent, WalletName } from "src/domain";
+import { Chain, EthereumEvent, WalletName, getChainName } from "src/domain";
 import {
   AsyncTask,
   isMetamaskUnknownChainError,
@@ -203,7 +203,7 @@ const ProvidersProvider: FC = (props) => {
                 params: [
                   {
                     chainId: hexValue(network.chainId),
-                    chainName: chain.name,
+                    chainName: getChainName(chain),
                     rpcUrls: [chain.provider.connection.url],
                   },
                 ],

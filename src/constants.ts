@@ -45,14 +45,12 @@ export const getChains = ({
 }): [Chain, Chain] => [
   {
     key: "ethereum",
-    name: "Ethereum chain",
     networkId: 0,
     Icon: EthChainIcon,
     provider: new JsonRpcProvider(ethereumRpcUrl),
   },
   {
     key: "polygon-hermez",
-    name: "Polygon Hermez chain",
     networkId: polygonHermezNetworkId,
     Icon: PolygonHermezChainIcon,
     provider: new JsonRpcProvider(polygonHermezRpcUrl),

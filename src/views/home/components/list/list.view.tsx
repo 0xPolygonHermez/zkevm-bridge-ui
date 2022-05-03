@@ -4,7 +4,7 @@ import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { Chain, Token } from "src/domain";
+import { getChainName, Chain, Token } from "src/domain";
 import Portal from "src/views/shared/portal/portal.view";
 
 interface ChainList {
@@ -45,11 +45,11 @@ const List: FC<ListProps> = ({ list, onClose }) => {
                   return (
                     <button
                       className={classes.button}
-                      key={chain.name}
+                      key={getChainName(chain)}
                       onClick={() => list.onClick(chain)}
                     >
                       <chain.Icon className={classes.icon} />
-                      <Typography type="body1">{chain.name}</Typography>
+                      <Typography type="body1">{getChainName(chain)}</Typography>
                     </button>
                   );
                 })

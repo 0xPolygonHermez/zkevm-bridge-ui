@@ -4,11 +4,11 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 
 export interface Chain {
   key: "ethereum" | "polygon-hermez";
-  name: string;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
 }
+
 export interface Token {
   name: string;
   symbol: string;
@@ -82,6 +82,15 @@ export function getTransactionStatusText(status: Transaction["status"]): string 
       return "On Hold";
     case "completed":
       return "Completed";
+  }
+}
+
+export function getChainName(chain: Chain): string {
+  switch (chain.key) {
+    case "ethereum":
+      return "Ethereum";
+    case "polygon-hermez":
+      return "Polygon Hermez";
   }
 }
 

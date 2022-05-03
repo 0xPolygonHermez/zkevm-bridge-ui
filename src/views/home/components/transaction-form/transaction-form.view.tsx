@@ -11,7 +11,7 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { Chain, Token, TransactionData } from "src/domain";
+import { getChainName, Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import {
   AsyncTask,
@@ -146,7 +146,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
               type="button"
             >
               <chains.from.Icon />
-              <Typography type="body1">{chains.from.name}</Typography>
+              <Typography type="body1">{getChainName(chains.from)}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -182,7 +182,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
             <Typography type="body2">To</Typography>
             <div className={classes.chainSelector}>
               <chains.to.Icon />
-              <Typography type="body1">{chains.to.name}</Typography>
+              <Typography type="body1">{getChainName(chains.to)}</Typography>
             </div>
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
