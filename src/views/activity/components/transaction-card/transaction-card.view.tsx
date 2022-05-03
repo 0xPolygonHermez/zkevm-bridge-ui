@@ -21,8 +21,12 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   const { status, destinationNetwork, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const layerIcon = destinationNetwork.key === "polygon-hermez" ? TransferL2Icon : TransferL1Icon;
-  const LayerIcon = status !== "completed" ? ReloadIcon : layerIcon;
+  const LayerIcon =
+    status !== "completed"
+      ? ReloadIcon
+      : destinationNetwork.key === "polygon-hermez"
+      ? TransferL2Icon
+      : TransferL1Icon;
   const actionText = destinationNetwork.networkId === 0 ? "Transfer to L1" : "Transfer to L2";
   const id = `${destinationNetwork.networkId}-${depositCount}`;
 
