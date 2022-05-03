@@ -5,9 +5,9 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 export interface Chain {
   key: "ethereum" | "polygon-hermez";
   name: string;
-  networkId: 0 | 1;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
+  networkId: number;
 }
 export interface Token {
   name: string;
@@ -112,9 +112,9 @@ export interface InitiatedTransaction {
 export interface Bridge {
   tokenAddress: string;
   amount: BigNumber;
-  networkId: 0 | 1;
-  originNetwork: 0 | 1;
-  destinationNetwork: 0 | 1;
+  networkId: number;
+  originNetwork: number;
+  destinationNetwork: number;
   destinationAddress: string;
   depositCount: number;
 }
@@ -140,4 +140,5 @@ export interface TransactionData {
   to: Chain;
   token: Token;
   amount: BigNumber;
+  estimatedFee: BigNumber;
 }

@@ -32,17 +32,18 @@ const TransactionDetails: FC = () => {
   const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
-      void claim(
-        tx.token.address,
-        tx.amount,
-        tx.originNetwork.networkId.toString(),
-        tx.destinationNetwork.networkId,
-        tx.destinationAddress,
-        tx.merkleProof,
-        tx.exitRootNumber,
-        tx.mainExitRoot,
-        tx.rollupExitRoot
-      ).catch((error) => {
+      void claim({
+        originalTokenAddress: tx.token.address,
+        amount: tx.amount,
+        originalNetwork: tx.originNetwork.networkId.toString(),
+        destinationNetwork: tx.destinationNetwork,
+        destinationAddress: tx.destinationAddress,
+        index: tx.depositCount,
+        smtProof: tx.merkleProof,
+        globalExitRootNum: tx.exitRootNumber,
+        mainnetExitRoot: tx.mainExitRoot,
+        rollupExitRoot: tx.rollupExitRoot,
+      }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             openSnackbar({

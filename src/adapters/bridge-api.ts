@@ -8,9 +8,9 @@ import * as domain from "src/domain";
 interface Bridge {
   token_addr: string;
   amount: string;
-  network_id: 0 | 1;
-  orig_net: 0 | 1;
-  dest_net: 0 | 1;
+  network_id: number;
+  orig_net: number;
+  dest_net: number;
   dest_addr: string;
   deposit_cnt: string;
 }
@@ -50,9 +50,9 @@ const bridgeParser = StrictSchema<Bridge, domain.Bridge>()(
     .object({
       token_addr: z.string(),
       amount: z.string(),
-      network_id: z.union([z.literal(0), z.literal(1)]),
-      orig_net: z.union([z.literal(0), z.literal(1)]),
-      dest_net: z.union([z.literal(0), z.literal(1)]),
+      network_id: z.number(),
+      orig_net: z.number(),
+      dest_net: z.number(),
       dest_addr: z.string(),
       deposit_cnt: z.string(),
     })

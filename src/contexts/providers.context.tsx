@@ -19,6 +19,7 @@ import { hexValue } from "ethers/lib/utils";
 interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
+  isConnectedProviderChainOk: (chain: Chain) => Promise<boolean>;
   changeNetwork: (chain: Chain) => void;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
@@ -28,6 +29,7 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
+  isConnectedProviderChainOk: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => new Error(providersContextNotReadyErrorMsg),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
@@ -49,35 +51,57 @@ const ProvidersProvider: FC = (props) => {
       setAccount({ status: "loading" });
       switch (walletName) {
         case WalletName.METAMASK: {
-          if (window.ethereum && window.ethereum.isMetaMask) {
-            const web3Provider = new Web3Provider(window.ethereum);
-            return getConnectedAccounts(web3Provider)
-              .then((accounts) => {
-                setConnectedProvider(web3Provider);
-                setAccount({ status: "successful", data: accounts[0] });
-              })
-              .catch((error) => {
-                if (isMetamaskUserRejectedRequestError(error)) {
-                  setAccount({ status: "pending" });
-                } else {
-                  void parseError(error).then((parsed) => {
-                    openSnackbar({
-                      type: "error",
-                      parsed,
-                    });
-                  });
-                }
-              });
-          } else {
+          if (env === undefined) {
             return setAccount({
               status: "failed",
-              error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser.`,
+              error: "The env has not been initialized correctly",
             });
+          }
+
+          try {
+            if (window.ethereum && window.ethereum.isMetaMask) {
+              const web3Provider = new Web3Provider(window.ethereum);
+              const requestedNetwork = await web3Provider.getNetwork();
+              const supportedNetworks = await Promise.all(
+                env.chains.map((chain) => chain.provider.getNetwork())
+              );
+              const requestedChainId = requestedNetwork.chainId;
+              const supportedChainIds = supportedNetworks.map((network) => network.chainId);
+
+              if (!supportedChainIds.includes(requestedChainId)) {
+                return setAccount({
+                  status: "failed",
+                  error: "Switch your network to Ethereum or Polygon Hermez to continue",
+                });
+              }
+
+              const accounts = await getConnectedAccounts(web3Provider);
+
+              setConnectedProvider(web3Provider);
+              return setAccount({ status: "successful", data: accounts[0] });
+            } else {
+              return setAccount({
+                status: "failed",
+                error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser`,
+              });
+            }
+          } catch (error) {
+            if (!isMetamaskUserRejectedRequestError(error)) {
+              const errorMessage = await parseError(error);
+
+              openSnackbar({
+                type: "error",
+                parsed: errorMessage,
+              });
+            }
+
+            return setAccount({ status: "pending" });
           }
         }
         case WalletName.WALLET_CONNECT: {
           if (env) {
             const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+
             if (ethereumChain) {
               const { chainId } = await ethereumChain.provider.getNetwork();
               const walletConnectProvider = new WalletConnectProvider({
@@ -108,13 +132,13 @@ const ProvidersProvider: FC = (props) => {
             } else {
               return setAccount({
                 status: "failed",
-                error: "The provider has not been found.",
+                error: "The provider has not been found",
               });
             }
           } else
             return setAccount({
               status: "failed",
-              error: "The env has not been initialized correctly.",
+              error: "The env has not been initialized correctly",
             });
         }
       }
@@ -140,6 +164,24 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
+  const isConnectedProviderChainOk = useCallback(
+    async (chain: Chain): Promise<boolean> => {
+      if (connectedProvider === undefined) {
+        return false;
+      } else {
+        try {
+          const connectedProviderNetwork = await connectedProvider.getNetwork();
+          const chainProviderNetwork = await chain.provider.getNetwork();
+
+          return connectedProviderNetwork.chainId === chainProviderNetwork.chainId;
+        } catch (error) {
+          return false;
+        }
+      }
+    },
+    [connectedProvider]
+  );
+
   const changeNetwork = useCallback(
     (chain: Chain) => {
       if (
@@ -149,6 +191,7 @@ const ProvidersProvider: FC = (props) => {
         connectedProvider.provider.request
       ) {
         const request = connectedProvider.provider.request;
+
         void chain.provider.getNetwork().then((network) => {
           request({
             method: "wallet_switchEthereumChain",
@@ -243,12 +286,19 @@ const ProvidersProvider: FC = (props) => {
     () => ({
       connectedProvider,
       account,
+      isConnectedProviderChainOk,
       changeNetwork,
       connectProvider,
-
       disconnectProvider,
     }),
-    [account, changeNetwork, connectProvider, connectedProvider, disconnectProvider]
+    [
+      account,
+      connectedProvider,
+      isConnectedProviderChainOk,
+      connectProvider,
+      disconnectProvider,
+      changeNetwork,
+    ]
   );
 
   return <providersContext.Provider value={value} {...props} />;

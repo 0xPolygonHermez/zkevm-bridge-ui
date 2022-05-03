@@ -44,6 +44,12 @@ export function isMetamaskUserRejectedRequestError(
   return errorAdapter.metamaskUserRejectedRequestError.safeParse(error).success;
 }
 
+export function isEthersInsufficientFundsError(
+  error: unknown
+): error is errorAdapter.EthersInsufficientFundsError {
+  return errorAdapter.ethersInsufficientFundsError.safeParse(error).success;
+}
+
 export function isMetamaskUnknownChainError(
   error: unknown
 ): error is errorAdapter.MetamaskUnknownChainError {

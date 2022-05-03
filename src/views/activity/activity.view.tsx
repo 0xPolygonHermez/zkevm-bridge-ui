@@ -24,17 +24,18 @@ const Activity: FC = () => {
 
   const onClaim = (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      void claim(
-        tx.token.address,
-        tx.amount,
-        tx.originNetwork.networkId.toString(),
-        tx.destinationNetwork.networkId,
-        tx.destinationAddress,
-        tx.merkleProof,
-        tx.exitRootNumber,
-        tx.mainExitRoot,
-        tx.rollupExitRoot
-      ).catch((error) => {
+      void claim({
+        originalTokenAddress: tx.token.address,
+        amount: tx.amount,
+        originalNetwork: tx.originNetwork.networkId.toString(),
+        destinationNetwork: tx.destinationNetwork,
+        destinationAddress: tx.destinationAddress,
+        index: tx.depositCount,
+        smtProof: tx.merkleProof,
+        globalExitRootNum: tx.exitRootNumber,
+        mainnetExitRoot: tx.mainExitRoot,
+        rollupExitRoot: tx.rollupExitRoot,
+      }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             openSnackbar({

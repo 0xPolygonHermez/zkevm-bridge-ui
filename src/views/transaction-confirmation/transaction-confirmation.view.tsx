@@ -1,4 +1,6 @@
 import { FC, useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { formatEther } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
@@ -10,18 +12,35 @@ import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { ethers } from "ethers";
 import Icon from "src/views/shared/icon/icon.view";
+import { useBridgeContext } from "src/contexts/bridge.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
   const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
   const { bridge } = useBridgeContext();
-  const { account, connectedProvider, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction, setTransaction } = useTransactionContext();
+  const { transaction } = useTransactionContext();
+
+  const onClick = () => {
+    if (transaction) {
+      const { token, amount, from, to } = transaction;
+
+      if (account.status === "successful") {
+        bridge({
+          from,
+          token,
+          amount,
+          to,
+          destinationAddress: account.data,
+        })
+          .then(console.log)
+          .catch(console.error);
+      }
+    }
+  };
 
   useEffect(() => {
     if (connectedProvider && transaction) {
@@ -43,19 +62,6 @@ const TransactionConfirmation: FC = () => {
     return null;
   }
 
-  const onClick = () => {
-    const { amount, to } = transaction;
-    if (account.status === "successful") {
-      const destinationNetwork = to.key === "ethereum" ? 0 : 1;
-      bridge(ethers.constants.AddressZero, amount, destinationNetwork, account.data)
-        .then(() => {
-          navigate(routes.activity.path);
-          setTransaction(undefined);
-        })
-        .catch(console.error);
-    }
-  };
-
   return (
     <>
       <Header title="Confirm Transfer" backTo="home" />
@@ -74,15 +80,12 @@ const TransactionConfirmation: FC = () => {
           </div>
         </div>
         <div className={classes.fees}>
-          <Typography type="body2">Estimated L2 fees</Typography>
-          <Typography type="body1" className={classes.fee}>
-            <Icon url={transaction.token.logoURI} size={20} /> 0.0025 ETH
-          </Typography>
           <Typography type="body2" className={classes.betweenFees}>
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            <Icon url={transaction.token.logoURI} size={20} /> 0.0545 ETH
+            <Icon url={transaction.token.logoURI} size={20} />
+            {transaction?.estimatedFee ? formatEther(transaction.estimatedFee) : "--"} ETH
           </Typography>
         </div>
       </Card>
@@ -91,11 +94,6 @@ const TransactionConfirmation: FC = () => {
           Transfer
         </Button>
         {isNetworkIncorrect && <Error error={`Switch to ${transaction.from.name} to continue`} />}
-        {isNetworkIncorrect && connectedProvider?.provider.isMetaMask && (
-          <button onClick={() => changeNetwork(transaction.from)} className={classes.changeButton}>
-            Change Network
-          </button>
-        )}
       </div>
     </>
   );

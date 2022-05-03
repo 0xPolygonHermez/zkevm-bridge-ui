@@ -6,10 +6,11 @@ import { getChains, ETH_TOKEN, getUsdtToken } from "src/constants";
 
 interface Env {
   REACT_APP_L1_RPC_URL: string;
-  REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_L2_RPC_URL: string;
-  REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_BRIDGE_API_URL: string;
+  REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: string;
+  REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: string;
+  REACT_APP_POLYGON_HERMEZ_NETWORK_ID: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
   REACT_APP_USDT_ADDRESS: string;
@@ -22,11 +23,17 @@ const envToDomain = ({
   REACT_APP_BRIDGE_API_URL,
   REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS,
   REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS,
+  REACT_APP_POLYGON_HERMEZ_NETWORK_ID,
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
   REACT_APP_USDT_ADDRESS,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
 }: Env): domain.Env => {
+  const polygonHermezNetworkId = z
+    .number()
+    .positive()
+    .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
+
   return {
     bridge: {
       apiUrl: REACT_APP_BRIDGE_API_URL,
@@ -41,6 +48,7 @@ const envToDomain = ({
       apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
     },
     chains: getChains({
+      polygonHermezNetworkId,
       ethereumRpcUrl: REACT_APP_L1_RPC_URL,
       polygonHermezRpcUrl: REACT_APP_L2_RPC_URL,
     }),
@@ -61,6 +69,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_BRIDGE_API_URL: z.string(),
       REACT_APP_L1_BRIDGE_CONTRACT_ADDRESS: z.string(),
       REACT_APP_L2_BRIDGE_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_POLYGON_HERMEZ_NETWORK_ID: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
       REACT_APP_USDT_ADDRESS: z.string(),
