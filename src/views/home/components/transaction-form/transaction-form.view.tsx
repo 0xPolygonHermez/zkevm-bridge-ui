@@ -57,6 +57,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
       if (to) {
         setChains({ from, to });
         setList(undefined);
+        setAmount(undefined);
       }
     }
   };
@@ -91,7 +92,6 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   }, [env, transaction]);
 
   useEffect(() => {
-    setAmount(undefined);
     if (chains) {
       void chains.from.provider.getBalance(account).then(setBalanceFrom);
       void chains.to.provider.getBalance(account).then(setBalanceTo);
