@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { formatUnits } from "ethers/lib/utils";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -17,6 +16,7 @@ import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getTransactionStatus } from "src/utils/labels";
 import { Transaction } from "src/domain";
+import { trimDecimals } from "src/utils/amounts";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -106,7 +106,7 @@ const TransactionDetails: FC = () => {
         <div className={classes.balance}>
           <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
           <Typography type="h2">
-            {`${formatUnits(amount, token.decimals)} ${token.symbol}`}
+            {`${trimDecimals(amount, token.decimals)} ${token.symbol}`}
           </Typography>
         </div>
         <div className={classes.row}>
