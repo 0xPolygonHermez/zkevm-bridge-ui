@@ -108,6 +108,7 @@ export interface Bridge {
 export interface Claim {
   index: number;
   blockNumber: string;
+  networkId: number;
 }
 
 export interface ClaimStatus {

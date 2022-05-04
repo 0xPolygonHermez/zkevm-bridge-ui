@@ -18,6 +18,7 @@ interface Bridge {
 interface Claim {
   index: string;
   block_num: string;
+  network_id: number;
 }
 
 interface MerkleProof {
@@ -120,9 +121,10 @@ const getMerkleProofResponseParser = StrictSchema<
   })
 );
 
-const apiClaimToDomain = ({ index, block_num }: Claim): domain.Claim => ({
+const apiClaimToDomain = ({ index, block_num, network_id }: Claim): domain.Claim => ({
   index: z.number().nonnegative().parse(Number(index)),
   blockNumber: block_num,
+  networkId: network_id,
 });
 
 const claimParser = StrictSchema<Claim, domain.Claim>()(
@@ -130,6 +132,7 @@ const claimParser = StrictSchema<Claim, domain.Claim>()(
     .object({
       index: z.string(),
       block_num: z.string(),
+      network_id: z.number(),
     })
     .transform(apiClaimToDomain)
 );
@@ -198,7 +201,11 @@ const getTransactions = async ({
         depositCount,
       };
 
-      const claim = claims.find((claim) => claim.index === bridge.depositCount);
+      const claim = claims.find(
+        (claim) =>
+          claim.index === bridge.depositCount && claim.networkId === bridge.destinationNetwork
+      );
+
       if (claim) {
         return {
           ...initiatedTransaction,
