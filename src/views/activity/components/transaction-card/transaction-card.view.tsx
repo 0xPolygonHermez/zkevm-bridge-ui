@@ -10,7 +10,8 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
-import { Transaction, getTransactionStatusText } from "src/domain";
+import { Transaction } from "src/domain";
+import { getTransactionStatus } from "src/utils/labels";
 
 export interface TransactionCardProps {
   transaction: Transaction;
@@ -46,7 +47,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
           >
-            {getTransactionStatusText(status)}
+            {getTransactionStatus(status)}
           </span>
         </div>
         <div className={classes.tokenColumn}>

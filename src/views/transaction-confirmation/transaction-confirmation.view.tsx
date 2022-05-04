@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
@@ -7,14 +8,13 @@ import Header from "src/views/shared/header/header.view";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
-import { useNavigate } from "react-router-dom";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import { useProvidersContext } from "src/contexts/providers.context";
 import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
-import { getChainName } from "src/domain";
+import { getChainName } from "src/utils/labels";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();

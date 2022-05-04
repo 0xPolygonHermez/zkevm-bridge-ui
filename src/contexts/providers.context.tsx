@@ -2,19 +2,20 @@ import { createContext, FC, useCallback, useContext, useEffect, useMemo, useStat
 import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
+import { hexValue } from "ethers/lib/utils";
 
-import { Chain, EthereumEvent, WalletName, getChainName } from "src/domain";
 import {
   AsyncTask,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
+import { getChainName } from "src/utils/labels";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import routes from "src/routes";
-import { hexValue } from "ethers/lib/utils";
+import { Chain, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
   connectedProvider?: Web3Provider;

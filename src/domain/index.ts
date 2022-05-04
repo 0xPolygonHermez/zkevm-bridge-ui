@@ -71,26 +71,6 @@ export type Message =
       parsed: string;
     };
 
-export function getTransactionStatusText(status: Transaction["status"]): string {
-  switch (status) {
-    case "initiated":
-      return "Initiated";
-    case "on-hold":
-      return "On Hold";
-    case "completed":
-      return "Completed";
-  }
-}
-
-export function getChainName(chain: Chain): string {
-  switch (chain.key) {
-    case "ethereum":
-      return "Ethereum";
-    case "polygon-hermez":
-      return "Polygon Hermez";
-  }
-}
-
 export type Transaction =
   | (InitiatedTransaction & {
       status: "initiated";

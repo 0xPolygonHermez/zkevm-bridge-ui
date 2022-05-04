@@ -11,16 +11,17 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { getChainName, Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
   isEthersInsufficientFundsError,
 } from "src/utils/types";
+import { getChainName } from "src/utils/labels";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
+import { Chain, Token, TransactionData } from "src/domain";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;

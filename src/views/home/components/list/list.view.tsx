@@ -4,8 +4,9 @@ import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { getChainName, Chain, Token } from "src/domain";
 import Portal from "src/views/shared/portal/portal.view";
+import { Chain, Token } from "src/domain";
+import { getChainName } from "src/utils/labels";
 
 interface ChainList {
   type: "chain";

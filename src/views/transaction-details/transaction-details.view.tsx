@@ -10,12 +10,13 @@ import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
-import { getTransactionStatusText, Transaction } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { getTransactionStatus } from "src/utils/labels";
+import { Transaction } from "src/domain";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -114,7 +115,7 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {getTransactionStatusText(status)}
+            {getTransactionStatus(status)}
           </Typography>
         </div>
         <div className={classes.row}>
