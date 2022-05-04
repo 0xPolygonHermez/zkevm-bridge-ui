@@ -153,7 +153,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {balanceFrom ? ethers.utils.formatEther(balanceFrom) : "--"} ETH
+              {`${balanceFrom ? ethers.utils.formatUnits(balanceFrom, token.decimals) : "--"} ${
+                token.symbol
+              }`}
             </Typography>
           </div>
         </div>
@@ -188,7 +190,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {balanceTo ? ethers.utils.formatEther(balanceTo) : "--"} ETH
+              {`${balanceTo ? ethers.utils.formatUnits(balanceTo, token.decimals) : "--"} ${
+                token.symbol
+              }`}
             </Typography>
           </div>
         </div>

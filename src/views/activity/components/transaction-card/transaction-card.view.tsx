@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { formatEther } from "ethers/lib/utils";
+import { formatUnits } from "ethers/lib/utils";
 import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
@@ -52,7 +52,9 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
             <Icon url={transaction.token.logoURI} className={classes.tokenIcon} size={20} />
-            <Typography type="body1">{formatEther(amount)} ETH</Typography>
+            <Typography type="body1">
+              {`${formatUnits(amount, transaction.token.decimals)} ${transaction.token.symbol}`}
+            </Typography>
           </div>
         </div>
       </div>

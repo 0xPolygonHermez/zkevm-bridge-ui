@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { formatEther } from "ethers/lib/utils";
+import { formatUnits } from "ethers/lib/utils";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -104,7 +104,9 @@ const TransactionDetails: FC = () => {
       <Card className={classes.card}>
         <div className={classes.balance}>
           <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
-          <Typography type="h2">{`${formatEther(amount)} ETH`}</Typography>
+          <Typography type="h2">
+            {`${formatUnits(amount, token.decimals)} ${token.symbol}`}
+          </Typography>
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>

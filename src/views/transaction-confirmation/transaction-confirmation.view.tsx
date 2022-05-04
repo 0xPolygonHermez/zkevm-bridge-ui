@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { ethers } from "ethers";
-import { formatEther } from "ethers/lib/utils";
+import { formatUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
@@ -68,9 +67,11 @@ const TransactionConfirmation: FC = () => {
       <Header title="Confirm Transfer" backTo="home" />
       <Card className={classes.card}>
         <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
-        <Typography type="h1">{`${ethers.utils.formatEther(transaction.amount)} ${
-          transaction.token.symbol
-        }`}</Typography>
+        <Typography type="h1">
+          {`${formatUnits(transaction.amount, transaction.token.decimals)} ${
+            transaction.token.symbol
+          }`}
+        </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <transaction.from.Icon /> {getChainName(transaction.from)}
@@ -86,7 +87,9 @@ const TransactionConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={transaction.token.logoURI} size={20} />
-            {transaction?.estimatedFee ? formatEther(transaction.estimatedFee) : "--"} ETH
+            {`${formatUnits(transaction.estimatedFee, transaction.token.decimals)} ${
+              transaction.token.symbol
+            }`}
           </Typography>
         </div>
       </Card>
