@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -11,16 +11,18 @@ import Icon from "src/views/shared/icon/icon.view";
 import List from "src/views/home/components/list/list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import { Chain, Token, TransactionData } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
   isEthersInsufficientFundsError,
 } from "src/utils/types";
+import { getChainName } from "src/utils/labels";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
+import { Chain, Token, TransactionData } from "src/domain";
+import { trimDecimals } from "src/utils/amounts";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -146,14 +148,14 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
               type="button"
             >
               <chains.from.Icon />
-              <Typography type="body1">{chains.from.name}</Typography>
+              <Typography type="body1">{getChainName(chains.from)}</Typography>
               <CaretDown />
             </button>
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {balanceFrom ? ethers.utils.formatEther(balanceFrom) : "--"} ETH
+              {`${balanceFrom ? trimDecimals(balanceFrom, token.decimals) : "--"} ${token.symbol}`}
             </Typography>
           </div>
         </div>
@@ -182,13 +184,13 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
             <Typography type="body2">To</Typography>
             <div className={classes.chainSelector}>
               <chains.to.Icon />
-              <Typography type="body1">{chains.to.name}</Typography>
+              <Typography type="body1">{getChainName(chains.to)}</Typography>
             </div>
           </div>
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {balanceTo ? ethers.utils.formatEther(balanceTo) : "--"} ETH
+              {`${balanceTo ? trimDecimals(balanceTo, token.decimals) : "--"} ${token.symbol}`}
             </Typography>
           </div>
         </div>

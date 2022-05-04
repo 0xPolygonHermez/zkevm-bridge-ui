@@ -1,10 +1,10 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
-import { TransactionStatus } from "src/domain";
+import { Transaction } from "src/domain";
 
 interface StylesProps {
-  status: TransactionStatus;
+  status?: Transaction["status"];
 }
 
 const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
@@ -17,9 +17,8 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
     backgroundColor: ({ status }: StylesProps) => {
       switch (status) {
         case "completed":
-          return theme.palette.success;
+          return theme.palette.success.main;
         case "on-hold":
-        case "failed":
           return theme.palette.error.main;
         default:
           return theme.palette.warning.main;

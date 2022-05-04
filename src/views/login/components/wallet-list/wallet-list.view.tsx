@@ -15,27 +15,20 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
 
   return (
     <ul className={classes.walletList}>
-      {Object.values(WalletName).map((walletName) => (
-        <li
-          key={walletName}
-          className={classes.wallet}
-          role="button"
-          onClick={() => onSelectWallet(walletName)}
-        >
-          <WalletIcon walletName={walletName} size="sm" className={classes.walletIcon} />
-          <div className={classes.walletInfo}>
-            <Typography type="body1" className={classes.walletName}>
-              {walletName}
-            </Typography>
-            {walletName === WalletName.METAMASK ? (
-              <Typography type="body2">Connect using web wallet</Typography>
-            ) : (
-              <Typography type="body2">Connect using mobile wallet</Typography>
-            )}
-          </div>
-          <CaretRightIcon />
-        </li>
-      ))}
+      <li
+        className={classes.wallet}
+        role="button"
+        onClick={() => onSelectWallet(WalletName.METAMASK)}
+      >
+        <WalletIcon walletName={WalletName.METAMASK} size="sm" className={classes.walletIcon} />
+        <div className={classes.walletInfo}>
+          <Typography type="body1" className={classes.walletName}>
+            {WalletName.METAMASK}
+          </Typography>
+          <Typography type="body2">Connect using web wallet</Typography>
+        </div>
+        <CaretRightIcon />
+      </li>
     </ul>
   );
 };

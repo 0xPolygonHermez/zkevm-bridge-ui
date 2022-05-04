@@ -4,11 +4,12 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 
 export interface Chain {
   key: "ethereum" | "polygon-hermez";
-  name: string;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
+  contractAddress: string;
 }
+
 export interface Token {
   name: string;
   symbol: string;
@@ -18,11 +19,7 @@ export interface Token {
 }
 
 export interface Env {
-  bridge: {
-    apiUrl: string;
-    l1ContractAddress: string;
-    l2ContractAddress: string;
-  };
+  bridgeApiUrl: string;
   tokenQuotes: {
     uniswapQuoterContractAddress: string;
   };
@@ -52,23 +49,6 @@ export enum EthereumEvent {
   DISCONNECT = "disconnect",
 }
 
-export type TransactionStatus = "processing" | "initiated" | "on-hold" | "completed" | "failed";
-
-export function getTransactionStatusText(status: TransactionStatus): string {
-  switch (status) {
-    case "processing":
-      return "Processing";
-    case "initiated":
-      return "Initiated";
-    case "on-hold":
-      return "On Hold";
-    case "completed":
-      return "Completed";
-    case "failed":
-      return "Error";
-  }
-}
-
 export enum Currency {
   EUR = "EUR",
   USD = "USD",
@@ -91,21 +71,44 @@ export type Message =
       parsed: string;
     };
 
+export type Transaction =
+  | (InitiatedTransaction & {
+      status: "initiated";
+    })
+  | (InitiatedTransaction &
+      MerkleProof & {
+        status: "on-hold";
+      })
+  | (InitiatedTransaction &
+      Claim & {
+        status: "completed";
+      });
+
+export interface InitiatedTransaction {
+  id: string;
+  token: Token;
+  amount: BigNumber;
+  networkId: number;
+  originNetwork: Chain;
+  destinationNetwork: Chain;
+  destinationAddress: string;
+  depositCount: number;
+}
+
 export interface Bridge {
   tokenAddress: string;
-  amount: string;
+  amount: BigNumber;
+  networkId: number;
+  originNetwork: number;
   destinationNetwork: number;
   destinationAddress: string;
-  depositCount: string;
+  depositCount: number;
 }
 
 export interface Claim {
-  index: string;
-  tokenAddress: string;
-  amount: string;
-  destinationNetwork: number;
-  destinationAddress: string;
+  index: number;
   blockNumber: string;
+  networkId: number;
 }
 
 export interface ClaimStatus {
@@ -114,7 +117,8 @@ export interface ClaimStatus {
 
 export interface MerkleProof {
   merkleProof: string[];
-  exitRootNumber: string;
+  exitRootNumber: number;
+  l2ExitRootNumber: number;
   mainExitRoot: string;
   rollupExitRoot: string;
 }
