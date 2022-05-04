@@ -19,6 +19,9 @@ const Activity: FC = () => {
   const [displayAll, setDisplayAll] = useState(true);
   const classes = useActivityStyles({ displayAll });
 
+  const pendingTransactions = transactionList.filter((data) => data.status !== "completed");
+  const filteredList = displayAll ? transactionList : pendingTransactions;
+
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
 
@@ -64,9 +67,6 @@ const Activity: FC = () => {
         });
     }
   }, [account, getTransactions, openSnackbar]);
-
-  const pendingTransactions = transactionList.filter((data) => data.status !== "completed");
-  const filteredList = displayAll ? transactionList : pendingTransactions;
 
   return (
     <>
