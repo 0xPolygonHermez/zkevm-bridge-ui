@@ -21,13 +21,6 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   const { status, destinationNetwork, depositCount, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const LayerIcon =
-    status !== "completed"
-      ? ReloadIcon
-      : destinationNetwork.key === "ethereum"
-      ? TransferL1Icon
-      : TransferL2Icon;
-  const actionText = destinationNetwork.key === "ethereum" ? "Transfer to L1" : "Transfer to L2";
   const id = `${destinationNetwork.networkId}-${depositCount}`;
 
   return (
@@ -39,10 +32,16 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
-          <LayerIcon />
+          {status !== "completed"
+            ? ReloadIcon
+            : destinationNetwork.key === "ethereum"
+            ? TransferL1Icon
+            : TransferL2Icon}
         </div>
         <div className={classes.actionColumn}>
-          <Typography type="body1">{actionText}</Typography>
+          <Typography type="body1">
+            {destinationNetwork.key === "ethereum" ? "Transfer to L1" : "Transfer to L2"}
+          </Typography>
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
           >
