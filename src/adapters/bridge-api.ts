@@ -172,11 +172,6 @@ const getTransactions = async ({
         destinationAddress,
         depositCount,
       } = bridge;
-      const [claimStatus, merkleProof]: [domain.ClaimStatus, domain.MerkleProof] =
-        await Promise.all([
-          getClaimStatus({ apiUrl, networkId, depositCount }),
-          getMerkleProof({ apiUrl, networkId, depositCount }),
-        ]);
 
       const originChain = env.chains.find((chain) => chain.networkId === originNetwork);
       if (originChain === undefined) {
@@ -202,27 +197,31 @@ const getTransactions = async ({
         destinationAddress,
         depositCount,
       };
-      if (claimStatus.isReady) {
-        const claim = claims.find((claim) => claim.index === bridge.depositCount);
-        return claim
-          ? {
-              ...initiatedTransaction,
-              ...merkleProof,
-              index: claim.index,
-              blockNumber: claim.blockNumber,
-              status: "completed",
-            }
-          : {
-              ...initiatedTransaction,
-              ...merkleProof,
-              status: "on-hold",
-            };
-      } else {
+
+      const claim = claims.find((claim) => claim.index === bridge.depositCount);
+      if (claim) {
+        return {
+          ...initiatedTransaction,
+          index: claim.index,
+          blockNumber: claim.blockNumber,
+          status: "completed",
+        };
+      }
+
+      const claimStatus = await getClaimStatus({ apiUrl, networkId, depositCount });
+      if (claimStatus.isReady === false) {
         return {
           ...initiatedTransaction,
           status: "initiated",
         };
       }
+
+      const merkleProof = await getMerkleProof({ apiUrl, networkId, depositCount });
+      return {
+        ...initiatedTransaction,
+        ...merkleProof,
+        status: "on-hold",
+      };
     })
   );
 };

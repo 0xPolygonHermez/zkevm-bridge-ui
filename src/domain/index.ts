@@ -80,7 +80,6 @@ export type Transaction =
         status: "on-hold";
       })
   | (InitiatedTransaction &
-      MerkleProof &
       Claim & {
         status: "completed";
       });
