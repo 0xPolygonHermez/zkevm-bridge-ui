@@ -4,16 +4,17 @@ import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum
 import { ReactComponent as HermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import useChainStyles from "src/views/transaction-details/components/chain/chain.styles";
+import * as domain from "src/domain";
 
 interface ChainProps {
-  chain: "ethereum" | "polygon";
+  chain: domain.Chain;
   className?: string;
 }
 
 const Chain: FC<ChainProps> = ({ chain, className }) => {
   const classes = useChainStyles();
 
-  if (chain === "ethereum") {
+  if (chain.key === "ethereum") {
     return (
       <Typography type="body1" className={className}>
         <EthChainIcon /> Ethereum chain
