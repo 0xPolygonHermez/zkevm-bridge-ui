@@ -144,7 +144,7 @@ const TransactionDetails: FC = () => {
             disabled={status === "initiated"}
           >
             <Typography type="body1" className={classes.finaliseButtonText}>
-              Finalize
+              Finalise
             </Typography>
             {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
           </button>
