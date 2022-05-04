@@ -31,11 +31,13 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
-          {status !== "completed"
-            ? ReloadIcon
-            : destinationNetwork.key === "ethereum"
-            ? TransferL1Icon
-            : TransferL2Icon}
+          {status !== "completed" ? (
+            <ReloadIcon />
+          ) : destinationNetwork.key === "ethereum" ? (
+            <TransferL1Icon />
+          ) : (
+            <TransferL2Icon />
+          )}
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">
