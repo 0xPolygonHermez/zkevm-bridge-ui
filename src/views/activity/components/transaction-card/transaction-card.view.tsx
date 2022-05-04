@@ -18,10 +18,9 @@ export interface TransactionCardProps {
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
-  const { status, destinationNetwork, depositCount, amount } = transaction;
+  const { status, destinationNetwork, id, amount } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const id = `${destinationNetwork.networkId}-${depositCount}`;
 
   return (
     <Card

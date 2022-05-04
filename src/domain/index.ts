@@ -106,6 +106,7 @@ export type Transaction =
       });
 
 export interface InitiatedTransaction {
+  id: string;
   token: Token;
   amount: BigNumber;
   networkId: number;

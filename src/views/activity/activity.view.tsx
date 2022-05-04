@@ -94,7 +94,7 @@ const Activity: FC = () => {
         <TransactionCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
-          key={`${transaction.destinationNetwork.networkId}-${transaction.depositCount}`}
+          key={transaction.id}
         />
       ))}
     </>

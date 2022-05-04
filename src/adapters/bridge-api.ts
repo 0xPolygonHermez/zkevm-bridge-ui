@@ -193,6 +193,7 @@ const getTransactions = async ({
       }
 
       const initiatedTransaction: domain.InitiatedTransaction = {
+        id: `${destinationChain.networkId}-${depositCount}`,
         token: env.tokens.ETH,
         originNetwork: originChain,
         destinationNetwork: destinationChain,

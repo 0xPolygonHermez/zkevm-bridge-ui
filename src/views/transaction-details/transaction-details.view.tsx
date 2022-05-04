@@ -63,8 +63,7 @@ const TransactionDetails: FC = () => {
       void getTransactions({ ethereumAddress: account.data })
         .then((transactions) => {
           const foundTransaction = transactions.find((tx) => {
-            const id = `${tx.destinationNetwork.networkId}-${tx.depositCount}`;
-            return id === transactionId;
+            return tx.id === transactionId;
           });
           if (foundTransaction) {
             setTransaction({
