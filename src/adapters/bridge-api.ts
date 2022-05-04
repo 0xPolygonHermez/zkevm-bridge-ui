@@ -23,6 +23,7 @@ interface Claim {
 interface MerkleProof {
   merkle_proof: string[];
   exit_root_num: string;
+  l2_exit_root_num: string;
   main_exit_root: string;
   rollup_exit_root: string;
 }
@@ -83,10 +84,12 @@ const getClaimStatusResponseParser = StrictSchema<{
 const apiMerkleProofToDomain = ({
   merkle_proof,
   exit_root_num,
+  l2_exit_root_num,
   main_exit_root,
   rollup_exit_root,
 }: MerkleProof): domain.MerkleProof => ({
   merkleProof: merkle_proof,
+  l2ExitRootNumber: z.number().nonnegative().parse(Number(l2_exit_root_num)),
   exitRootNumber: z.number().nonnegative().parse(Number(exit_root_num)),
   mainExitRoot: main_exit_root,
   rollupExitRoot: rollup_exit_root,
@@ -97,6 +100,7 @@ const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
     .object({
       merkle_proof: z.array(z.string().length(66)),
       exit_root_num: z.string(),
+      l2_exit_root_num: z.string(),
       main_exit_root: z.string().length(66),
       rollup_exit_root: z.string().length(66),
     })

@@ -30,12 +30,13 @@ const Activity: FC = () => {
       void claim({
         originalTokenAddress: tx.token.address,
         amount: tx.amount,
-        originalNetwork: tx.originNetwork.networkId.toString(),
+        originalNetwork: tx.originNetwork,
         destinationNetwork: tx.destinationNetwork,
         destinationAddress: tx.destinationAddress,
         index: tx.depositCount,
         smtProof: tx.merkleProof,
         globalExitRootNum: tx.exitRootNumber,
+        l2GlobalExitRootNum: tx.l2ExitRootNumber,
         mainnetExitRoot: tx.mainExitRoot,
         rollupExitRoot: tx.rollupExitRoot,
       }).catch((error) => {

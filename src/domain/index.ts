@@ -137,6 +137,7 @@ export interface ClaimStatus {
 export interface MerkleProof {
   merkleProof: string[];
   exitRootNumber: number;
+  l2ExitRootNumber: number;
   mainExitRoot: string;
   rollupExitRoot: string;
 }

@@ -37,12 +37,13 @@ interface BridgeParams {
 interface ClaimParams {
   originalTokenAddress: string;
   amount: BigNumber;
-  originalNetwork: string;
+  originalNetwork: Chain;
   destinationNetwork: Chain;
   destinationAddress: string;
   index: number;
   smtProof: string[];
   globalExitRootNum: number;
+  l2GlobalExitRootNum: number;
   mainnetExitRoot: string;
   rollupExitRoot: string;
 }
@@ -171,6 +172,7 @@ const BridgeProvider: FC = (props) => {
       index,
       smtProof,
       globalExitRootNum,
+      l2GlobalExitRootNum,
       mainnetExitRoot,
       rollupExitRoot,
     }: ClaimParams): Promise<ContractTransaction> => {
@@ -183,18 +185,20 @@ const BridgeProvider: FC = (props) => {
         connectedProvider.getSigner()
       );
 
+      const isL2Claim = destinationNetwork.key === "polygon-hermez";
+
       return contract.claim(
         originalTokenAddress,
         amount,
-        originalNetwork,
+        originalNetwork.networkId,
         destinationNetwork.networkId,
         destinationAddress,
         smtProof,
         index,
-        globalExitRootNum,
+        isL2Claim ? l2GlobalExitRootNum : globalExitRootNum,
         mainnetExitRoot,
         rollupExitRoot,
-        destinationNetwork.key === "polygon-hermez" ? { gasPrice: 0 } : undefined
+        isL2Claim ? { gasPrice: 0 } : {}
       );
     },
     [connectedProvider]
