@@ -13,24 +13,5 @@ RUN mv .env.${ENVIRONMENT} .env && \
 
 FROM nginx:1.19 as production
 
+COPY --from=build /app/deployment/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/build /usr/share/nginx/html
-
-SHELL ["/bin/bash", "-c"]
-RUN echo $'\n\
-server { \n\
-    listen 80 default; \n\
-    server_name localhost _; \n\
-\n\
-    location / { \n\
-        root   /usr/share/nginx/html; \n\
-        index  index.html; \n\
-        # Redirect all requests to index.html \n\
-        try_files $uri /index.html =404; \n\
-    } \n\
-\n\
-    error_page   500 502 503 504  /50x.html; \n\
-    location = /50x.html { \n\
-        root   /usr/share/nginx/html; \n\
-    } \n\
-} \n\
-' > /etc/nginx/conf.d/default.conf
