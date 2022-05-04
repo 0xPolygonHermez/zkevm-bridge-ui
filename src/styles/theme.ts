@@ -19,7 +19,10 @@ const theme = {
       main: "#e8430d",
       light: "rgba(232,67,12,0.1)",
     },
-    success: "#1ccc8d",
+    success: {
+      main: "#1ccc8d",
+      light: "rgba(0,255,0,0.1)",
+    },
     disabled: "#78798d",
     transparency: "rgba(8,17,50,0.5)",
   },

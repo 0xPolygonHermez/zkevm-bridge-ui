@@ -1,5 +1,6 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import { formatUnits } from "ethers/lib/utils";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -7,31 +8,106 @@ import Header from "src/views/shared/header/header.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
-import { demoData } from "src/views/activity/demo-data";
-import { getTimeFromNow } from "src/utils/time";
 import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
-import { getTransactionStatusText } from "src/domain";
-import { useEnvContext } from "src/contexts/env.context";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { useProvidersContext } from "src/contexts/providers.context";
+import { useUIContext } from "src/contexts/ui.context";
+import { parseError } from "src/adapters/error";
+import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { getTransactionStatus } from "src/utils/labels";
+import { Transaction } from "src/domain";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
-  const env = useEnvContext();
-  const data = demoData.find((demo) => demo.id.toString() === transactionId);
-  const classes = useTransactionDetailsStyles({ status: data?.status || "initiated" });
+  const { openSnackbar } = useUIContext();
+  const { getTransactions, claim } = useBridgeContext();
+  const { account } = useProvidersContext();
+  const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
+    status: "pending",
+  });
+  const classes = useTransactionDetailsStyles({
+    status: transaction.status === "successful" ? transaction.data.status : undefined,
+  });
 
-  if (!data) {
+  const onClaim = () => {
+    if (transaction.status === "successful" && transaction.data.status === "on-hold") {
+      const tx = transaction.data;
+      void claim({
+        originalTokenAddress: tx.token.address,
+        amount: tx.amount,
+        originalNetwork: tx.originNetwork,
+        destinationNetwork: tx.destinationNetwork,
+        destinationAddress: tx.destinationAddress,
+        index: tx.depositCount,
+        smtProof: tx.merkleProof,
+        globalExitRootNum: tx.exitRootNumber,
+        l2GlobalExitRootNum: tx.l2ExitRootNumber,
+        mainnetExitRoot: tx.mainExitRoot,
+        rollupExitRoot: tx.rollupExitRoot,
+      }).catch((error) => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          void parseError(error).then((parsed) => {
+            openSnackbar({
+              type: "error",
+              parsed,
+            });
+          });
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (account.status === "successful") {
+      // ToDo: Get all the data only for the right bridge
+      void getTransactions({ ethereumAddress: account.data })
+        .then((transactions) => {
+          const foundTransaction = transactions.find((tx) => {
+            return tx.id === transactionId;
+          });
+          if (foundTransaction) {
+            setTransaction({
+              status: "successful",
+              data: foundTransaction,
+            });
+          } else {
+            setTransaction({
+              status: "failed",
+              error: "Transaction not found",
+            });
+          }
+        })
+        .catch((error) => {
+          void parseError(error).then((parsed) => {
+            openSnackbar({
+              type: "error",
+              parsed,
+            });
+          });
+        });
+    }
+  }, [getTransactions, openSnackbar, transactionId, account]);
+
+  if (transaction.status === "pending" || transaction.status === "loading") {
+    return <SpinnerIcon />;
+  }
+
+  if (transaction.status === "failed") {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, token, timestamp, target, status } = data;
+  const { amount, destinationNetwork, originNetwork, status, token } = transaction.data;
+
   return (
     <>
       <Header title="Transaction Details" backTo="activity" />
       <Card className={classes.card}>
         <div className={classes.balance}>
-          {env && <Icon url={env.tokens.ETH.logoURI} className={classes.tokenIcon} size={48} />}
-          <Typography type="h2">{`${amount} ${token.toUpperCase()}`}</Typography>
+          <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
+          <Typography type="h2">
+            {`${formatUnits(amount, token.decimals)} ${token.symbol}`}
+          </Typography>
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
@@ -39,50 +115,20 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {getTransactionStatusText(status)}
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            {status === "initiated" ? "Confirmation expected in" : "Date"}
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            {status === "initiated" ? (
-              <>
-                Estimating Time <SpinnerIcon />
-              </>
-            ) : (
-              getTimeFromNow({ timestamp })
-            )}
+            {getTransactionStatus(status)}
           </Typography>
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Chain chain={target === "l1" ? "polygon" : "ethereum"} className={classes.alignRow} />
+          <Chain chain={originNetwork} className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             To
           </Typography>
-          <Chain chain={target === "l1" ? "ethereum" : "polygon"} className={classes.alignRow} />
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            L2 Fee
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            L1 gas fee
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            {env && <Icon url={env.tokens.ETH.logoURI} size={20} />} 0.01ETH
-          </Typography>
+          <Chain chain={destinationNetwork} className={classes.alignRow} />
         </div>
         <div className={`${classes.row} ${classes.lastRow}`}>
           <Typography type="body2" className={classes.alignRow}>
@@ -95,7 +141,11 @@ const TransactionDetails: FC = () => {
       </Card>
       {(status === "initiated" || status === "on-hold") && (
         <div className={classes.finaliseRow}>
-          <button className={classes.finaliseButton} disabled={status === "initiated"}>
+          <button
+            onClick={onClaim}
+            className={classes.finaliseButton}
+            disabled={status === "initiated"}
+          >
             <Typography type="body1" className={classes.finaliseButtonText}>
               Finalise
             </Typography>

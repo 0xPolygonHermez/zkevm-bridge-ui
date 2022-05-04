@@ -4,8 +4,9 @@ import useListStyles from "src/views/home/components/list/list.styles";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { Chain, Token } from "src/domain";
 import Portal from "src/views/shared/portal/portal.view";
+import { Chain, Token } from "src/domain";
+import { getChainName } from "src/utils/labels";
 
 interface ChainList {
   type: "chain";
@@ -41,27 +42,27 @@ const List: FC<ListProps> = ({ list, onClose }) => {
         <Card className={classes.card}>
           <div className={classes.list}>
             {list.type === "chain"
-              ? list.items.slice(0, 20).map((element) => {
+              ? list.items.slice(0, 20).map((chain) => {
                   return (
                     <button
                       className={classes.button}
-                      key={element.name}
-                      onClick={() => list.onClick(element)}
+                      key={chain.key}
+                      onClick={() => list.onClick(chain)}
                     >
-                      <element.Icon className={classes.icon} />
-                      <Typography type="body1">{element.name}</Typography>
+                      <chain.Icon className={classes.icon} />
+                      <Typography type="body1">{getChainName(chain)}</Typography>
                     </button>
                   );
                 })
-              : list.items.slice(0, 20).map((element) => {
+              : list.items.slice(0, 20).map((token) => {
                   return (
                     <button
                       className={classes.button}
-                      key={element.address}
-                      onClick={() => list.onClick(element)}
+                      key={token.address}
+                      onClick={() => list.onClick(token)}
                     >
-                      <Icon url={element.logoURI} size={24} />
-                      <Typography type="body1">{element.name}</Typography>
+                      <Icon url={token.logoURI} size={24} />
+                      <Typography type="body1">{token.name}</Typography>
                     </button>
                   );
                 })}
