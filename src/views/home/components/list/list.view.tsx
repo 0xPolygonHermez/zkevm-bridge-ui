@@ -45,7 +45,7 @@ const List: FC<ListProps> = ({ list, onClose }) => {
                   return (
                     <button
                       className={classes.button}
-                      key={getChainName(chain)}
+                      key={chain.key}
                       onClick={() => list.onClick(chain)}
                     >
                       <chain.Icon className={classes.icon} />
