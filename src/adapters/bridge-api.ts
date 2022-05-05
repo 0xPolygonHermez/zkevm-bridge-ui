@@ -43,27 +43,6 @@ interface MerkleProof {
   rollup_exit_root: string;
 }
 
-const apiBridgeToDomain = ({
-  bridge: { amount, dest_addr, deposit_cnt },
-  token,
-  networkId,
-  destinationNetwork,
-}: {
-  bridge: BridgeOutput;
-  token: domain.Token;
-  networkId: domain.Chain;
-  destinationNetwork: domain.Chain;
-}): domain.Bridge => {
-  return {
-    amount: BigNumber.from(amount),
-    destinationAddress: dest_addr,
-    depositCount: deposit_cnt,
-    networkId,
-    token,
-    destinationNetwork,
-  };
-};
-
 const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
   z.object({
     token_addr: z.string(),
@@ -156,15 +135,13 @@ const getClaimsResponseParser = StrictSchema<
   })
 );
 
-interface GetTransactionsParams {
-  env: domain.Env;
-  ethereumAddress: string;
-}
-
 const getTransactions = async ({
   env,
   ethereumAddress,
-}: GetTransactionsParams): Promise<domain.Transaction[]> => {
+}: {
+  env: domain.Env;
+  ethereumAddress: string;
+}): Promise<domain.Transaction[]> => {
   const apiUrl = env.bridgeApiUrl;
   const [bridges, claims] = await Promise.all([
     getBridges({ apiUrl, ethereumAddress }),
@@ -179,28 +156,30 @@ const getTransactions = async ({
           apiBridge.orig_net === env.tokens.ETH.network
       )
       .map(async (apiBridge): Promise<domain.Transaction> => {
-        const networkId = env.chains.find((chain) => chain.networkId === apiBridge.network_id);
+        const { network_id, dest_net, amount, dest_addr, deposit_cnt } = apiBridge;
+
+        const networkId = env.chains.find((chain) => chain.networkId === network_id);
         if (networkId === undefined) {
           throw new Error(
-            `The specified network_id "${apiBridge.network_id}" can not be found in the list of supported Chains`
+            `The specified network_id "${network_id}" can not be found in the list of supported Chains`
           );
         }
 
-        const destinationNetwork = env.chains.find(
-          (chain) => chain.networkId === apiBridge.dest_net
-        );
+        const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
         if (destinationNetwork === undefined) {
           throw new Error(
-            `The specified dest_net "${apiBridge.dest_net}" can not be found in the list of supported Chains`
+            `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
           );
         }
 
-        const bridge = apiBridgeToDomain({
-          bridge: apiBridge,
+        const bridge: domain.Bridge = {
           token: env.tokens.ETH,
+          amount: BigNumber.from(amount),
+          destinationAddress: dest_addr,
+          depositCount: deposit_cnt,
           networkId,
           destinationNetwork,
-        });
+        };
 
         const claim = claims.find(
           (claim) =>
