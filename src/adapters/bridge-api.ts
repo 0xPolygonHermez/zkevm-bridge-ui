@@ -13,6 +13,7 @@ interface BridgeInput {
   dest_net: number;
   dest_addr: string;
   deposit_cnt: string;
+  tx_hash: string;
 }
 
 interface BridgeOutput {
@@ -23,16 +24,19 @@ interface BridgeOutput {
   dest_net: number;
   dest_addr: string;
   deposit_cnt: number;
+  tx_hash: string;
 }
 
 interface ClaimInput {
   index: string;
   network_id: number;
+  tx_hash: string;
 }
 
 interface ClaimOutput {
   index: number;
   network_id: number;
+  tx_hash: string;
 }
 
 interface MerkleProof {
@@ -52,6 +56,7 @@ const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
     dest_net: z.number(),
     dest_addr: z.string(),
     deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
+    tx_hash: z.string(),
   })
 );
 
@@ -119,6 +124,7 @@ const claimParser = StrictSchema<ClaimInput, ClaimOutput>()(
   z.object({
     index: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
     network_id: z.number(),
+    tx_hash: z.string(),
   })
 );
 
@@ -156,7 +162,7 @@ const getTransactions = async ({
           apiBridge.orig_net === env.tokens.ETH.network
       )
       .map(async (apiBridge): Promise<domain.Transaction> => {
-        const { network_id, dest_net, amount, dest_addr, deposit_cnt } = apiBridge;
+        const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash } = apiBridge;
 
         const networkId = env.chains.find((chain) => chain.networkId === network_id);
         if (networkId === undefined) {
@@ -177,6 +183,7 @@ const getTransactions = async ({
           amount: BigNumber.from(amount),
           destinationAddress: dest_addr,
           depositCount: deposit_cnt,
+          txHash: tx_hash,
           networkId,
           destinationNetwork,
         };
@@ -194,6 +201,9 @@ const getTransactions = async ({
             status: "completed",
             id,
             bridge,
+            claim: {
+              txHash: claim.tx_hash,
+            },
           };
         }
 

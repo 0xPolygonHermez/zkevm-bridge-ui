@@ -88,6 +88,7 @@ export type Transaction =
       status: "completed";
       id: string;
       bridge: Bridge;
+      claim: Claim;
     };
 
 export interface Bridge {
@@ -97,6 +98,11 @@ export interface Bridge {
   destinationNetwork: Chain;
   destinationAddress: string;
   depositCount: number;
+  txHash: string;
+}
+
+export interface Claim {
+  txHash: string;
 }
 
 export interface MerkleProof {
