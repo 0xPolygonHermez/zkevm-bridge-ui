@@ -19,7 +19,11 @@ export interface TransactionCardProps {
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
-  const { status, destinationNetwork, id, amount } = transaction;
+  const {
+    status,
+    id,
+    bridge: { destinationNetwork, amount, token },
+  } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
 
@@ -52,9 +56,9 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <Icon url={transaction.token.logoURI} className={classes.tokenIcon} size={20} />
+            <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
             <Typography type="body1">
-              {`${formatTokenAmount(amount, transaction.token)} ${transaction.token.symbol}`}
+              {`${formatTokenAmount(amount, token)} ${token.symbol}`}
             </Typography>
           </div>
         </div>

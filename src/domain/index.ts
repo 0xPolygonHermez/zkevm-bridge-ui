@@ -8,12 +8,14 @@ export interface Chain {
   provider: JsonRpcProvider;
   networkId: number;
   contractAddress: string;
+  explorerUrl: string;
 }
 
 export interface Token {
   name: string;
   symbol: string;
   address: string;
+  network: number;
   decimals: number;
   logoURI: string;
 }
@@ -72,47 +74,36 @@ export type Message =
     };
 
 export type Transaction =
-  | (InitiatedTransaction & {
+  | {
       status: "initiated";
-    })
-  | (InitiatedTransaction &
-      MerkleProof & {
-        status: "on-hold";
-      })
-  | (InitiatedTransaction &
-      Claim & {
-        status: "completed";
-      });
+      id: string;
+      bridge: Bridge;
+    }
+  | {
+      status: "on-hold";
+      id: string;
+      bridge: Bridge;
+      merkleProof: MerkleProof;
+    }
+  | {
+      status: "completed";
+      id: string;
+      bridge: Bridge;
+      claim: Claim;
+    };
 
-export interface InitiatedTransaction {
-  id: string;
+export interface Bridge {
   token: Token;
   amount: BigNumber;
-  networkId: number;
-  originNetwork: Chain;
+  networkId: Chain;
   destinationNetwork: Chain;
   destinationAddress: string;
   depositCount: number;
-}
-
-export interface Bridge {
-  tokenAddress: string;
-  amount: BigNumber;
-  networkId: number;
-  originNetwork: number;
-  destinationNetwork: number;
-  destinationAddress: string;
-  depositCount: number;
+  txHash: string;
 }
 
 export interface Claim {
-  index: number;
-  blockNumber: string;
-  networkId: number;
-}
-
-export interface ClaimStatus {
-  isReady: boolean;
+  txHash: string;
 }
 
 export interface MerkleProof {
