@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { formatUnits } from "ethers/lib/utils";
 import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
@@ -12,6 +11,7 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction } from "src/domain";
 import { getTransactionStatus } from "src/utils/labels";
+import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
@@ -58,7 +58,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
           <div className={classes.token}>
             <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
             <Typography type="body1">
-              {`${formatUnits(amount, token.decimals)} ${token.symbol}`}
+              {`${formatTokenAmount(amount, token)} ${token.symbol}`}
             </Typography>
           </div>
         </div>

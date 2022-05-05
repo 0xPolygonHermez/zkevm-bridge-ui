@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatUnits } from "ethers/lib/utils";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
@@ -15,6 +14,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getChainName } from "src/utils/labels";
+import { formatTokenAmount } from "src/utils/amounts";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
@@ -68,7 +68,7 @@ const TransactionConfirmation: FC = () => {
       <Card className={classes.card}>
         <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">
-          {`${formatUnits(transaction.amount, transaction.token.decimals)} ${
+          {`${formatTokenAmount(transaction.amount, transaction.token)} ${
             transaction.token.symbol
           }`}
         </Typography>
@@ -87,7 +87,7 @@ const TransactionConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={transaction.token.logoURI} size={20} />
-            {`${formatUnits(transaction.estimatedFee, transaction.token.decimals)} ${
+            {`~ ${formatTokenAmount(transaction.estimatedFee, transaction.token)} ${
               transaction.token.symbol
             }`}
           </Typography>

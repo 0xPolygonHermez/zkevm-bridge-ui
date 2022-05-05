@@ -5,6 +5,7 @@ import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import { Token } from "src/domain";
+import { formatTokenAmount } from "src/utils/amounts";
 
 interface onChangeParams {
   amount?: BigNumber;
@@ -20,7 +21,7 @@ interface AmountInputProps {
 }
 
 const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
-  const defaultInputValue = value ? formatUnits(value, token.decimals) : "";
+  const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const [actualFee, setActualFee] = useState<BigNumber>();
   const classes = useAmountInputStyles(inputValue.length);
