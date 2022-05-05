@@ -14,6 +14,7 @@ interface Env {
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
   REACT_APP_USDT_ADDRESS: string;
+  REACT_APP_USDT_NETWORK: string;
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
 }
 
@@ -27,12 +28,15 @@ const envToDomain = ({
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
   REACT_APP_USDT_ADDRESS,
+  REACT_APP_USDT_NETWORK,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
 }: Env): domain.Env => {
   const polygonHermezNetworkId = z
     .number()
     .positive()
     .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
+
+  const usdtNetwork = z.number().nonnegative().parse(Number(REACT_APP_USDT_NETWORK));
 
   return {
     bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
@@ -58,6 +62,7 @@ const envToDomain = ({
       ETH: ETH_TOKEN,
       USDT: getUsdtToken({
         address: REACT_APP_USDT_ADDRESS,
+        originNetwork: usdtNetwork,
       }),
     },
   };
@@ -75,6 +80,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
       REACT_APP_USDT_ADDRESS: z.string(),
+      REACT_APP_USDT_NETWORK: z.string(),
       REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
     })
     .transform(envToDomain)

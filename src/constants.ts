@@ -28,6 +28,7 @@ export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 export const ETH_TOKEN: Token = {
   name: "Ether",
   address: ethers.constants.AddressZero,
+  network: 0,
   symbol: "ETH",
   decimals: 18,
   logoURI:
@@ -64,9 +65,16 @@ export const getChains = ({
   },
 ];
 
-export const getUsdtToken = ({ address }: { address: string }): Token => ({
+export const getUsdtToken = ({
+  address,
+  originNetwork,
+}: {
+  address: string;
+  originNetwork: number;
+}): Token => ({
   name: "Tether USD",
   address,
+  network: originNetwork,
   symbol: "USDT",
   decimals: 6,
   logoURI:

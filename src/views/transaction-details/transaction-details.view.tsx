@@ -34,17 +34,16 @@ const TransactionDetails: FC = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
       void claim({
-        originalTokenAddress: tx.token.address,
-        amount: tx.amount,
-        originalNetwork: tx.originNetwork,
-        destinationNetwork: tx.destinationNetwork,
-        destinationAddress: tx.destinationAddress,
-        index: tx.depositCount,
-        smtProof: tx.merkleProof,
-        globalExitRootNum: tx.exitRootNumber,
-        l2GlobalExitRootNum: tx.l2ExitRootNumber,
-        mainnetExitRoot: tx.mainExitRoot,
-        rollupExitRoot: tx.rollupExitRoot,
+        token: tx.bridge.token,
+        amount: tx.bridge.amount,
+        destinationNetwork: tx.bridge.destinationNetwork,
+        destinationAddress: tx.bridge.destinationAddress,
+        index: tx.bridge.depositCount,
+        smtProof: tx.merkleProof.merkleProof,
+        globalExitRootNum: tx.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: tx.merkleProof.mainExitRoot,
+        rollupExitRoot: tx.merkleProof.rollupExitRoot,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
@@ -97,7 +96,10 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destinationNetwork, originNetwork, status, token } = transaction.data;
+  const {
+    status,
+    bridge: { amount, destinationNetwork, networkId, token },
+  } = transaction.data;
 
   return (
     <>
@@ -122,7 +124,7 @@ const TransactionDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Chain chain={originNetwork} className={classes.alignRow} />
+          <Chain chain={networkId} className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
