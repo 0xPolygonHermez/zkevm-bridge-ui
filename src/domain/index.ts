@@ -8,6 +8,7 @@ export interface Chain {
   provider: JsonRpcProvider;
   networkId: number;
   contractAddress: string;
+  explorerUrl: string;
 }
 
 export interface Token {

@@ -6,8 +6,10 @@ import { getChains, ETH_TOKEN, getUsdtToken } from "src/constants";
 
 interface Env {
   REACT_APP_ETHEREUM_RPC_URL: string;
+  REACT_APP_ETHEREUM_EXPLORER_URL: string;
   REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_POLYGON_HERMEZ_RPC_URL: string;
+  REACT_APP_POLYGON_EXPLORER_URL: string;
   REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS: string;
   REACT_APP_POLYGON_HERMEZ_NETWORK_ID: string;
   REACT_APP_BRIDGE_API_URL: string;
@@ -20,8 +22,10 @@ interface Env {
 
 const envToDomain = ({
   REACT_APP_ETHEREUM_RPC_URL,
+  REACT_APP_ETHEREUM_EXPLORER_URL,
   REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
   REACT_APP_POLYGON_HERMEZ_RPC_URL,
+  REACT_APP_POLYGON_EXPLORER_URL,
   REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
   REACT_APP_POLYGON_HERMEZ_NETWORK_ID,
   REACT_APP_BRIDGE_API_URL,
@@ -50,11 +54,13 @@ const envToDomain = ({
     chains: getChains({
       ethereum: {
         rpcUrl: REACT_APP_ETHEREUM_RPC_URL,
+        explorerUrl: REACT_APP_ETHEREUM_EXPLORER_URL,
         contractAddress: REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
       },
       polygonHermez: {
         networkId: polygonHermezNetworkId,
         rpcUrl: REACT_APP_POLYGON_HERMEZ_RPC_URL,
+        explorerUrl: REACT_APP_POLYGON_EXPLORER_URL,
         contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
       },
     }),
@@ -72,8 +78,10 @@ const envParser = StrictSchema<Env, domain.Env>()(
   z
     .object({
       REACT_APP_ETHEREUM_RPC_URL: z.string(),
+      REACT_APP_ETHEREUM_EXPLORER_URL: z.string(),
       REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string(),
       REACT_APP_POLYGON_HERMEZ_RPC_URL: z.string(),
+      REACT_APP_POLYGON_EXPLORER_URL: z.string(),
       REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS: z.string(),
       REACT_APP_POLYGON_HERMEZ_NETWORK_ID: z.string(),
       REACT_APP_BRIDGE_API_URL: z.string(),
