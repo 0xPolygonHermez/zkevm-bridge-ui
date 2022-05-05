@@ -28,17 +28,16 @@ const Activity: FC = () => {
   const onClaim = (tx: Transaction) => {
     if (tx.status === "on-hold") {
       void claim({
-        originalTokenAddress: tx.token.address,
-        amount: tx.amount,
-        originalNetwork: tx.originNetwork,
-        destinationNetwork: tx.destinationNetwork,
-        destinationAddress: tx.destinationAddress,
-        index: tx.depositCount,
-        smtProof: tx.merkleProof,
-        globalExitRootNum: tx.exitRootNumber,
-        l2GlobalExitRootNum: tx.l2ExitRootNumber,
-        mainnetExitRoot: tx.mainExitRoot,
-        rollupExitRoot: tx.rollupExitRoot,
+        token: tx.bridge.token,
+        amount: tx.bridge.amount,
+        destinationNetwork: tx.bridge.destinationNetwork,
+        destinationAddress: tx.bridge.destinationAddress,
+        index: tx.bridge.depositCount,
+        smtProof: tx.merkleProof.merkleProof,
+        globalExitRootNum: tx.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: tx.merkleProof.mainExitRoot,
+        rollupExitRoot: tx.merkleProof.rollupExitRoot,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {

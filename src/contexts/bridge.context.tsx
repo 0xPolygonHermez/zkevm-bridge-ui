@@ -35,9 +35,8 @@ interface BridgeParams {
 }
 
 interface ClaimParams {
-  originalTokenAddress: string;
+  token: Token;
   amount: BigNumber;
-  originalNetwork: Chain;
   destinationNetwork: Chain;
   destinationAddress: string;
   index: number;
@@ -164,9 +163,8 @@ const BridgeProvider: FC = (props) => {
 
   const claim = useCallback(
     async ({
-      originalTokenAddress,
+      token,
       amount,
-      originalNetwork,
       destinationNetwork,
       destinationAddress,
       index,
@@ -188,9 +186,9 @@ const BridgeProvider: FC = (props) => {
       const isL2Claim = destinationNetwork.key === "polygon-hermez";
 
       return contract.claim(
-        originalTokenAddress,
+        token.address,
         amount,
-        originalNetwork.networkId,
+        token.network,
         destinationNetwork.networkId,
         destinationAddress,
         smtProof,
