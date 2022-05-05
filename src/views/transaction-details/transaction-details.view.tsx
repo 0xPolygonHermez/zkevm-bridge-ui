@@ -16,7 +16,7 @@ import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getTransactionStatus } from "src/utils/labels";
 import { Transaction } from "src/domain";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -105,9 +105,7 @@ const TransactionDetails: FC = () => {
       <Card className={classes.card}>
         <div className={classes.balance}>
           <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
-          <Typography type="h2">
-            {`${trimDecimals(amount, token.decimals)} ${token.symbol}`}
-          </Typography>
+          <Typography type="h2">{`${formatTokenAmount(amount, token)} ${token.symbol}`}</Typography>
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>

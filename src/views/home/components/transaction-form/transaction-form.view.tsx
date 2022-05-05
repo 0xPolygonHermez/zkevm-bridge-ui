@@ -22,7 +22,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
 import { Chain, Token, TransactionData } from "src/domain";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -155,7 +155,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {`${balanceFrom ? trimDecimals(balanceFrom, token.decimals) : "--"} ${token.symbol}`}
+              {`${balanceFrom ? formatTokenAmount(balanceFrom, token) : "--"} ${token.symbol}`}
             </Typography>
           </div>
         </div>
@@ -190,7 +190,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           <div className={`${classes.box} ${classes.alignRight}`}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {`${balanceTo ? trimDecimals(balanceTo, token.decimals) : "--"} ${token.symbol}`}
+              {`${balanceTo ? formatTokenAmount(balanceTo, token) : "--"} ${token.symbol}`}
             </Typography>
           </div>
         </div>

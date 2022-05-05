@@ -11,7 +11,7 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction } from "src/domain";
 import { getTransactionStatus } from "src/utils/labels";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
@@ -54,7 +54,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
           <div className={classes.token}>
             <Icon url={transaction.token.logoURI} className={classes.tokenIcon} size={20} />
             <Typography type="body1">
-              {`${trimDecimals(amount, transaction.token.decimals)} ${transaction.token.symbol}`}
+              {`${formatTokenAmount(amount, transaction.token)} ${transaction.token.symbol}`}
             </Typography>
           </div>
         </div>

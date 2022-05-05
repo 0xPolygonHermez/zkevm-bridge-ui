@@ -1,8 +1,9 @@
 import { BigNumber, ethers } from "ethers";
+import { Token } from "src/domain";
 
-export const trimDecimals = (value: BigNumber, decimalsToken: number): string => {
-  const amount = ethers.utils.formatUnits(value, decimalsToken);
-  const decimals = amount.split(".")[1];
+export const formatTokenAmount = (value: BigNumber, token: Token): string => {
+  const amount = ethers.utils.formatUnits(value, token.decimals);
+  const [whole, decimals] = amount.split(".");
   const trimed = decimals.length > 5 ? decimals.slice(0, 6) : decimals;
-  return `${amount.split(".")[0]}.${trimed}`;
+  return trimed === "0" ? whole : `${whole}.${trimed}`;
 };
