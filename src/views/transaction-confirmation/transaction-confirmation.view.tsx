@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
@@ -18,16 +18,32 @@ import { trimDecimals } from "src/utils/amounts";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
-  const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
+  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
   const { bridge } = useBridgeContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { transaction, setTransaction } = useTransactionContext();
 
-  const onClick = () => {
+  const checkCorrectNetwork = useCallback(async () => {
+    if (transaction && connectedProvider) {
+      const networkFrom = await transaction.from.provider.getNetwork();
+      const connectedProviderNetwork = await connectedProvider.getNetwork();
+      return connectedProviderNetwork.chainId === networkFrom.chainId;
+    }
+  }, [connectedProvider, transaction]);
+
+  const onClick = async () => {
     if (transaction) {
       const { token, amount, from, to } = transaction;
-
+      if (!(await checkCorrectNetwork())) {
+        try {
+          await changeNetwork(from);
+        } catch (error) {
+          setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
+          return;
+        }
+        setIncorrectMessageNetwork(undefined);
+      }
       if (account.status === "successful") {
         bridge({
           from,
@@ -36,21 +52,22 @@ const TransactionConfirmation: FC = () => {
           to,
           destinationAddress: account.data,
         })
-          .then(console.log)
+          .then(() => {
+            navigate(routes.activity.path);
+            setTransaction(undefined);
+          })
           .catch(console.error);
       }
     }
   };
 
   useEffect(() => {
-    if (connectedProvider && transaction) {
-      void connectedProvider.getNetwork().then((network) => {
-        void transaction.from.provider.getNetwork().then((networkFrom) => {
-          setIsNetworkIncorrect(network.chainId !== networkFrom.chainId);
-        });
-      });
-    }
-  }, [connectedProvider, transaction]);
+    void checkCorrectNetwork().then((checked) => {
+      if (checked) {
+        setIncorrectMessageNetwork(undefined);
+      }
+    });
+  }, [checkCorrectNetwork, connectedProvider]);
 
   useEffect(() => {
     if (!transaction) {
@@ -94,12 +111,8 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick} disabled={isNetworkIncorrect}>
-          Transfer
-        </Button>
-        {isNetworkIncorrect && (
-          <Error error={`Switch to ${getChainName(transaction.from)} to continue`} />
-        )}
+        <Button onClick={onClick}>Transfer</Button>
+        {incorrectMessageNetwork && <Error error={incorrectMessageNetwork} />}
       </div>
     </>
   );

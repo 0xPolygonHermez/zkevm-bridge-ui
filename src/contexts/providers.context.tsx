@@ -21,7 +21,7 @@ interface ProvidersContext {
   connectedProvider?: Web3Provider;
   account: AsyncTask<string, string>;
   isConnectedProviderChainOk: (chain: Chain) => Promise<boolean>;
-  changeNetwork: (chain: Chain) => void;
+  changeNetwork: (chain: Chain) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -31,7 +31,7 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
   isConnectedProviderChainOk: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
-  changeNetwork: () => new Error(providersContextNotReadyErrorMsg),
+  changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
@@ -61,7 +61,7 @@ const ProvidersProvider: FC = (props) => {
 
           try {
             if (window.ethereum && window.ethereum.isMetaMask) {
-              const web3Provider = new Web3Provider(window.ethereum);
+              const web3Provider = new Web3Provider(window.ethereum, "any");
               const requestedNetwork = await web3Provider.getNetwork();
               const supportedNetworks = await Promise.all(
                 env.chains.map((chain) => chain.provider.getNetwork())
@@ -184,7 +184,7 @@ const ProvidersProvider: FC = (props) => {
   );
 
   const changeNetwork = useCallback(
-    (chain: Chain) => {
+    async (chain: Chain) => {
       if (
         env &&
         connectedProvider &&
@@ -192,14 +192,17 @@ const ProvidersProvider: FC = (props) => {
         connectedProvider.provider.request
       ) {
         const request = connectedProvider.provider.request;
-
-        void chain.provider.getNetwork().then((network) => {
-          request({
+        try {
+          const network = await chain.provider.getNetwork();
+          await request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: hexValue(network.chainId) }],
-          }).catch((error) => {
+          });
+        } catch (error) {
+          try {
+            const network = await chain.provider.getNetwork();
             if (isMetamaskUnknownChainError(error)) {
-              request({
+              await request({
                 method: "wallet_addEthereumChain",
                 params: [
                   {
@@ -208,27 +211,22 @@ const ProvidersProvider: FC = (props) => {
                     rpcUrls: [chain.provider.connection.url],
                   },
                 ],
-              }).catch((error) => {
-                void parseError(error).then((parsed) => {
-                  openSnackbar({
-                    type: "error",
-                    parsed,
-                  });
-                });
               });
             } else {
-              void parseError(error).then((parsed) => {
-                openSnackbar({
-                  type: "error",
-                  parsed,
-                });
-              });
+              throw error;
             }
-          });
-        });
+          } catch (error) {
+            if (isMetamaskUserRejectedRequestError(error)) {
+              throw new Error("User rejected the request.");
+            }
+            throw new Error("Unknown error from Metamask");
+          }
+        }
+      } else {
+        return Promise.reject(new Error(providersContextNotReadyErrorMsg));
       }
     },
-    [connectedProvider, env, openSnackbar]
+    [connectedProvider, env]
   );
 
   useEffect(() => {
