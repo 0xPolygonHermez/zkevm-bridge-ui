@@ -43,12 +43,17 @@ interface MerkleProof {
   rollup_exit_root: string;
 }
 
-const apiBridgeToDomain = (
-  { amount, dest_addr, deposit_cnt }: BridgeOutput,
-  token: domain.Token,
-  networkId: domain.Chain,
-  destinationNetwork: domain.Chain
-): domain.Bridge => {
+const apiBridgeToDomain = ({
+  bridge: { amount, dest_addr, deposit_cnt },
+  token,
+  networkId,
+  destinationNetwork,
+}: {
+  bridge: BridgeOutput;
+  token: domain.Token;
+  networkId: domain.Chain;
+  destinationNetwork: domain.Chain;
+}): domain.Bridge => {
   return {
     amount: BigNumber.from(amount),
     destinationAddress: dest_addr,
@@ -190,7 +195,12 @@ const getTransactions = async ({
           );
         }
 
-        const bridge = apiBridgeToDomain(apiBridge, env.tokens.ETH, networkId, destinationNetwork);
+        const bridge = apiBridgeToDomain({
+          bridge: apiBridge,
+          token: env.tokens.ETH,
+          networkId,
+          destinationNetwork,
+        });
 
         const claim = claims.find(
           (claim) =>
