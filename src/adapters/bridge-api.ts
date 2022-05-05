@@ -182,7 +182,7 @@ const getTransactions = async ({
         const networkId = env.chains.find((chain) => chain.networkId === apiBridge.network_id);
         if (networkId === undefined) {
           throw new Error(
-            "The specified network_id can not be found in the list of supported Chains"
+            `The specified network_id "${apiBridge.network_id}" can not be found in the list of supported Chains`
           );
         }
 
@@ -191,7 +191,7 @@ const getTransactions = async ({
         );
         if (destinationNetwork === undefined) {
           throw new Error(
-            "The specified dest_net can not be found in the list of supported Chains"
+            `The specified dest_net "${apiBridge.dest_net}" can not be found in the list of supported Chains`
           );
         }
 
