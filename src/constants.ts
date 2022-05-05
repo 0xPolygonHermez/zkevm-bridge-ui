@@ -67,14 +67,14 @@ export const getChains = ({
 
 export const getUsdtToken = ({
   address,
-  originNetwork,
+  network,
 }: {
   address: string;
-  originNetwork: number;
+  network: number;
 }): Token => ({
   name: "Tether USD",
   address,
-  network: originNetwork,
+  network,
   symbol: "USDT",
   decimals: 6,
   logoURI:

@@ -62,7 +62,7 @@ const envToDomain = ({
       ETH: ETH_TOKEN,
       USDT: getUsdtToken({
         address: REACT_APP_USDT_ADDRESS,
-        originNetwork: usdtNetwork,
+        network: usdtNetwork,
       }),
     },
   };
