@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { formatUnits } from "ethers/lib/utils";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
@@ -98,8 +98,14 @@ const TransactionDetails: FC = () => {
 
   const {
     status,
-    bridge: { amount, destinationNetwork, networkId, token },
+    bridge: { amount, destinationNetwork, networkId, token, txHash },
   } = transaction.data;
+
+  const bridgeTxUrl = `${networkId.explorerUrl}/tx/${txHash}`;
+  const claimTxUrl =
+    transaction.data.status === "completed"
+      ? `${destinationNetwork.explorerUrl}/tx/${transaction.data.claim.txHash}`
+      : undefined;
 
   return (
     <>
@@ -132,14 +138,29 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Chain chain={destinationNetwork} className={classes.alignRow} />
         </div>
-        <div className={`${classes.row} ${classes.lastRow}`}>
+        <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
-            Track transaction
+            Step 1/2
           </Typography>
-          <Link to="#" target="_blank" className={classes.explorerButton}>
+          <a href={bridgeTxUrl} target="_blank" className={classes.explorerButton} rel="noreferrer">
             <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
-          </Link>
+          </a>
         </div>
+        {claimTxUrl && (
+          <div className={`${classes.row} ${classes.lastRow}`}>
+            <Typography type="body2" className={classes.alignRow}>
+              Step 2/2
+            </Typography>
+            <a
+              href={claimTxUrl}
+              target="_blank"
+              className={classes.explorerButton}
+              rel="noreferrer"
+            >
+              <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
+            </a>
+          </div>
+        )}
       </Card>
       {(status === "initiated" || status === "on-hold") && (
         <div className={classes.finaliseRow}>
