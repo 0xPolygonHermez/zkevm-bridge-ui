@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
@@ -9,13 +9,14 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
+import Error from "src/views/shared/error/error.view";
 import { Transaction } from "src/domain";
 import { getTransactionStatus } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
-  onClaim: () => void;
+  onClaim: () => Promise<string | undefined>;
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
@@ -26,6 +27,13 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
+  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
+
+  const onClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    const error = await onClaim();
+    setIncorrectMessageNetwork(error);
+  };
 
   return (
     <Card
@@ -73,14 +81,12 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       )}
       {status === "on-hold" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Signature required to finalise the transaction</Typography>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClaim();
-            }}
-            className={classes.finaliseButton}
-          >
+          {incorrectMessageNetwork === undefined ? (
+            <Typography type="body2">Signature required to finalise the transaction</Typography>
+          ) : (
+            <Error error={incorrectMessageNetwork} />
+          )}
+          <button onClick={onClick} className={classes.finaliseButton}>
             Finalise
           </button>
         </div>

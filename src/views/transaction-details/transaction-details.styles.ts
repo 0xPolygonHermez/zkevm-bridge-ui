@@ -77,7 +77,10 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   },
   finaliseRow: {
     display: "flex",
+    flexDirection: "column",
     justifyContent: "center",
+    alignItems: "center",
+    gap: theme.spacing(1),
     margin: [theme.spacing(3), 0],
     [theme.breakpoints.upSm]: {
       margin: [theme.spacing(6), 0],

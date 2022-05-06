@@ -15,6 +15,7 @@ const useLayoutStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
     maxWidth: 644,
     margin: [0, "auto"],
+    paddingBottom: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
   },

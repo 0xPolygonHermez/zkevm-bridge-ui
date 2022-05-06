@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -19,9 +19,11 @@ import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { Transaction } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import Button from "src/views/shared/button/button.view";
+import routes from "src/routes";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
+  const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
   const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
@@ -36,6 +38,7 @@ const TransactionDetails: FC = () => {
   const onClaim = async () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
+
       if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
@@ -57,16 +60,20 @@ const TransactionDetails: FC = () => {
         l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
         mainnetExitRoot: tx.merkleProof.mainExitRoot,
         rollupExitRoot: tx.merkleProof.rollupExitRoot,
-      }).catch((error) => {
-        if (isMetamaskUserRejectedRequestError(error) === false) {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
+      })
+        .then(() => {
+          navigate(routes.activity.path);
+        })
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              openSnackbar({
+                type: "error",
+                parsed,
+              });
             });
-          });
-        }
-      });
+          }
+        });
     }
   };
 
@@ -118,7 +125,7 @@ const TransactionDetails: FC = () => {
   }
 
   if (transaction.status === "failed") {
-    return <Navigate to="/activity" replace />;
+    return <Navigate to={routes.activity.path} replace />;
   }
 
   const {
