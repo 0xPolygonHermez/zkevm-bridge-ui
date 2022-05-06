@@ -84,7 +84,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
           {incorrectMessageNetwork === undefined ? (
             <Typography type="body2">Signature required to finalise the transaction</Typography>
           ) : (
-            <Error error={incorrectMessageNetwork} />
+            <Error error={incorrectMessageNetwork} type="body2" />
           )}
           <button onClick={onClick} className={classes.finaliseButton}>
             Finalise
