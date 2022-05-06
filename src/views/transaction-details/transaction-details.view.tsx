@@ -36,12 +36,12 @@ const TransactionDetails: FC = () => {
   const onClaim = async () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
-      if (!(await isConnectedProviderChainOk(tx.destinationNetwork))) {
+      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
-          await changeNetwork(tx.destinationNetwork);
+          await changeNetwork(tx.bridge.destinationNetwork);
         } catch (error) {
           setIncorrectMessageNetwork(
-            `Switch to ${getChainName(tx.destinationNetwork)} to continue`
+            `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
           );
           return;
         }
@@ -72,11 +72,13 @@ const TransactionDetails: FC = () => {
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      void isConnectedProviderChainOk(transaction.data.destinationNetwork).then((checked) => {
-        if (checked) {
-          setIncorrectMessageNetwork(undefined);
+      void isConnectedProviderChainOk(transaction.data.bridge.destinationNetwork).then(
+        (checked) => {
+          if (checked) {
+            setIncorrectMessageNetwork(undefined);
+          }
         }
-      });
+      );
     }
   }, [isConnectedProviderChainOk, transaction]);
 

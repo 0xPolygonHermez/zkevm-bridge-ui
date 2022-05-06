@@ -28,11 +28,11 @@ const Activity: FC = () => {
 
   const onClaim = async (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      if (!(await isConnectedProviderChainOk(tx.destinationNetwork))) {
+      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
-          await changeNetwork(tx.destinationNetwork);
+          await changeNetwork(tx.bridge.destinationNetwork);
         } catch (error) {
-          return `Switch to ${getChainName(tx.destinationNetwork)} to continue`;
+          return `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
         }
       }
       void claim({
