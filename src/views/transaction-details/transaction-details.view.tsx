@@ -80,8 +80,8 @@ const TransactionDetails: FC = () => {
   useEffect(() => {
     if (transaction.status === "successful") {
       void isConnectedProviderChainOk(transaction.data.bridge.destinationNetwork).then(
-        (checked) => {
-          if (checked) {
+        (chainOk) => {
+          if (chainOk) {
             setIncorrectMessageNetwork(undefined);
           }
         }
