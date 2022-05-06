@@ -31,6 +31,11 @@ const Activity: FC = () => {
       if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
+          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
+            return `Switch manually to ${getChainName(
+              tx.bridge.destinationNetwork
+            )} inside of MetaMask to continue`;
+          }
         } catch (error) {
           return `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
         }

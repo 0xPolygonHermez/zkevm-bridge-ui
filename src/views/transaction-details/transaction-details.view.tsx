@@ -42,6 +42,14 @@ const TransactionDetails: FC = () => {
       if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
+          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
+            setIncorrectMessageNetwork(
+              `Switch manually to ${getChainName(
+                tx.bridge.destinationNetwork
+              )} inside of MetaMask to continue`
+            );
+            return;
+          }
         } catch (error) {
           setIncorrectMessageNetwork(
             `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
@@ -65,6 +73,7 @@ const TransactionDetails: FC = () => {
           navigate(routes.activity.path);
         })
         .catch((error) => {
+          console.log(error);
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               openSnackbar({

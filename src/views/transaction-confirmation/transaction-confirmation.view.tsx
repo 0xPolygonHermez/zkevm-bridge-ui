@@ -30,6 +30,12 @@ const TransactionConfirmation: FC = () => {
       if (!(await isConnectedProviderChainOk(from))) {
         try {
           await changeNetwork(from);
+          if (!(await isConnectedProviderChainOk(from))) {
+            setIncorrectMessageNetwork(
+              `Switch manually to ${getChainName(from)} inside of MetaMask to continue`
+            );
+            return;
+          }
         } catch (error) {
           setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
           return;
