@@ -18,7 +18,7 @@ import routes from "src/routes";
 import { Chain, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
-  connectedProvider?: Web3Provider;
+  connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
   isConnectedProviderChainOk: (chain: Chain) => Promise<boolean>;
   changeNetwork: (chain: Chain) => Promise<void>;
@@ -42,7 +42,8 @@ const providersContext = createContext<ProvidersContext>({
 
 const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
-  const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
+  const [connectedProvider, setConnectedProvider] =
+    useState<{ provider: Web3Provider; chainId: number }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -63,11 +64,8 @@ const ProvidersProvider: FC = (props) => {
             if (window.ethereum && window.ethereum.isMetaMask) {
               const web3Provider = new Web3Provider(window.ethereum, "any");
               const requestedNetwork = await web3Provider.getNetwork();
-              const supportedNetworks = await Promise.all(
-                env.chains.map((chain) => chain.provider.getNetwork())
-              );
+              const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
-              const supportedChainIds = supportedNetworks.map((network) => network.chainId);
 
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
@@ -78,7 +76,7 @@ const ProvidersProvider: FC = (props) => {
 
               const accounts = await getConnectedAccounts(web3Provider);
 
-              setConnectedProvider(web3Provider);
+              setConnectedProvider({ provider: web3Provider, chainId: requestedChainId });
               return setAccount({ status: "successful", data: accounts[0] });
             } else {
               return setAccount({
@@ -115,7 +113,7 @@ const ProvidersProvider: FC = (props) => {
               return walletConnectProvider
                 .enable()
                 .then((accounts) => {
-                  setConnectedProvider(web3Provider);
+                  setConnectedProvider({ provider: web3Provider, chainId });
                   setAccount({ status: "successful", data: accounts[0] });
                 })
                 .catch((error) =>
@@ -171,10 +169,9 @@ const ProvidersProvider: FC = (props) => {
         return false;
       } else {
         try {
-          const connectedProviderNetwork = await connectedProvider.getNetwork();
-          const chainProviderNetwork = await chain.provider.getNetwork();
+          const connectedProviderNetwork = await connectedProvider.provider.getNetwork();
 
-          return connectedProviderNetwork.chainId === chainProviderNetwork.chainId;
+          return connectedProviderNetwork.chainId === chain.chainId;
         } catch (error) {
           return false;
         }
@@ -184,54 +181,47 @@ const ProvidersProvider: FC = (props) => {
   );
 
   const changeNetwork = useCallback(
-    async (chain: Chain) => {
+    (chain: Chain) => {
       if (
         env &&
         connectedProvider &&
-        connectedProvider.provider.isMetaMask &&
-        connectedProvider.provider.request
+        connectedProvider.provider.provider.isMetaMask &&
+        connectedProvider.provider.provider.request
       ) {
-        const request = connectedProvider.provider.request;
-        try {
-          const network = await chain.provider.getNetwork();
-          await request({
+        const request = connectedProvider.provider.provider.request;
+        return (
+          request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId: hexValue(network.chainId) }],
-          });
-        } catch (error) {
-          try {
-            const network = await chain.provider.getNetwork();
-            if (isMetamaskUnknownChainError(error)) {
-              await request({
-                method: "wallet_addEthereumChain",
-                params: [
-                  {
-                    chainId: hexValue(network.chainId),
-                    chainName: getChainName(chain),
-                    rpcUrls: [chain.provider.connection.url],
-                  },
-                ],
-              });
-            } else {
-              throw error;
-            }
-          } catch (error) {
-            if (isMetamaskUserRejectedRequestError(error)) {
-              throw new Error("User rejected the request.");
-            }
-            throw new Error("Unknown error from Metamask");
-          }
-        }
-      } else {
-        return Promise.reject(new Error(providersContextNotReadyErrorMsg));
+            params: [{ chainId: hexValue(chain.chainId) }],
+          })
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            .then(() => {})
+            .catch((error) => {
+              if (isMetamaskUnknownChainError(error)) {
+                void request({
+                  method: "wallet_addEthereumChain",
+                  params: [
+                    {
+                      chainId: hexValue(chain.chainId),
+                      chainName: getChainName(chain),
+                      rpcUrls: [chain.provider.connection.url],
+                    },
+                  ],
+                });
+              } else {
+                throw error;
+              }
+            })
+        );
       }
+      return Promise.reject(new Error(providersContextNotReadyErrorMsg));
     },
     [connectedProvider, env]
   );
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
-      connectedProvider?.provider;
+      connectedProvider?.provider.provider;
     const onAccountsChanged = (accounts: unknown): void => {
       const parsedAccounts = ethereumAccountsParser.safeParse(accounts);
 
@@ -246,7 +236,7 @@ const ProvidersProvider: FC = (props) => {
     };
     const onChainChanged = () => {
       if (connectedProvider) {
-        if (connectedProvider.provider.isMetaMask) {
+        if (connectedProvider.provider.provider.isMetaMask) {
           void connectProvider(WalletName.METAMASK);
         } else {
           void connectProvider(WalletName.WALLET_CONNECT);

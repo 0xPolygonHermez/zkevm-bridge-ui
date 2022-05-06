@@ -44,9 +44,7 @@ const TransactionDetails: FC = () => {
           await changeNetwork(tx.bridge.destinationNetwork);
           if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
             setIncorrectMessageNetwork(
-              `Switch manually to ${getChainName(
-                tx.bridge.destinationNetwork
-              )} inside of MetaMask to continue`
+              `Manually switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
             );
             return;
           }
