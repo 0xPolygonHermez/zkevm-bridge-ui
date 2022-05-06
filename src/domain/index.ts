@@ -1,13 +1,13 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
-import { JsonRpcProvider, Network } from "@ethersproject/providers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 export interface Chain {
   key: "ethereum" | "polygon-hermez";
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
-  network: Network;
+  chainId: number;
   contractAddress: string;
   explorerUrl: string;
 }
