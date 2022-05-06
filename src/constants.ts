@@ -50,24 +50,32 @@ export const getChains = ({
     contractAddress: string;
     networkId: number;
   };
-}): [Chain, Chain] => [
-  {
-    key: "ethereum",
-    networkId: 0,
-    Icon: EthChainIcon,
-    provider: new JsonRpcProvider(ethereum.rpcUrl),
-    contractAddress: ethereum.contractAddress,
-    explorerUrl: ethereum.explorerUrl,
-  },
-  {
-    key: "polygon-hermez",
-    networkId: polygonHermez.networkId,
-    Icon: PolygonHermezChainIcon,
-    provider: new JsonRpcProvider(polygonHermez.rpcUrl),
-    contractAddress: polygonHermez.contractAddress,
-    explorerUrl: polygonHermez.explorerUrl,
-  },
-];
+}): Promise<[Chain, Chain]> => {
+  const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
+  const polygonHermezProvider = new JsonRpcProvider(polygonHermez.rpcUrl);
+  return Promise.all([ethereumProvider.getNetwork(), polygonHermezProvider.getNetwork()]).then(
+    ([ethereumNetwork, polygonHermezNetwork]) => [
+      {
+        key: "ethereum",
+        networkId: 0,
+        Icon: EthChainIcon,
+        provider: ethereumProvider,
+        network: ethereumNetwork,
+        contractAddress: ethereum.contractAddress,
+        explorerUrl: ethereum.explorerUrl,
+      },
+      {
+        key: "polygon-hermez",
+        networkId: polygonHermez.networkId,
+        Icon: PolygonHermezChainIcon,
+        provider: polygonHermezProvider,
+        network: polygonHermezNetwork,
+        contractAddress: polygonHermez.contractAddress,
+        explorerUrl: polygonHermez.explorerUrl,
+      },
+    ]
+  );
+};
 
 export const getUsdtToken = ({
   address,
