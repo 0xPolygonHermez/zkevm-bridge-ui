@@ -9,9 +9,7 @@ const EnvProvider: FC = (props) => {
   const [env, setEnv] = useState<Env>();
 
   useEffect(() => {
-    const parsedEnv = loadEnv();
-
-    setEnv(parsedEnv);
+    loadEnv().then(setEnv).catch(console.error);
   }, []);
 
   const value = useMemo(() => {

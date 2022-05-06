@@ -94,8 +94,8 @@ const envParser = StrictSchema<Env, domain.Env>()(
     .transform(envToDomain)
 );
 
-const loadEnv = (): domain.Env => {
-  const parsedEnv = envParser.parse(process.env);
+const loadEnv = (): Promise<domain.Env> => {
+  const parsedEnv = envParser.parseAsync(process.env);
 
   return parsedEnv;
 };
