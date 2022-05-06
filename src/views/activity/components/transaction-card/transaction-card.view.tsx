@@ -11,7 +11,7 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import { Transaction } from "src/domain";
 import { getTransactionStatus } from "src/utils/labels";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
@@ -19,7 +19,11 @@ export interface TransactionCardProps {
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
-  const { status, destinationNetwork, id, amount } = transaction;
+  const {
+    status,
+    id,
+    bridge: { destinationNetwork, amount, token },
+  } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
 
@@ -52,9 +56,9 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
         </div>
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
-            <Icon url={transaction.token.logoURI} className={classes.tokenIcon} size={20} />
+            <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
             <Typography type="body1">
-              {`${trimDecimals(amount, transaction.token.decimals)} ${transaction.token.symbol}`}
+              {`${formatTokenAmount(amount, token)} ${token.symbol}`}
             </Typography>
           </div>
         </div>

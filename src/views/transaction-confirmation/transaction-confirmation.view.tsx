@@ -14,7 +14,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getChainName } from "src/utils/labels";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
@@ -78,7 +78,7 @@ const TransactionConfirmation: FC = () => {
       <Card className={classes.card}>
         <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">
-          {`${trimDecimals(transaction.amount, transaction.token.decimals)} ${
+          {`${formatTokenAmount(transaction.amount, transaction.token)} ${
             transaction.token.symbol
           }`}
         </Typography>
@@ -97,7 +97,7 @@ const TransactionConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={transaction.token.logoURI} size={20} />
-            {`~ ${trimDecimals(transaction.estimatedFee, transaction.token.decimals)} ${
+            {`~ ${formatTokenAmount(transaction.estimatedFee, transaction.token)} ${
               transaction.token.symbol
             }`}
           </Typography>

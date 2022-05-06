@@ -28,6 +28,7 @@ export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 export const ETH_TOKEN: Token = {
   name: "Ether",
   address: ethers.constants.AddressZero,
+  network: 0,
   symbol: "ETH",
   decimals: 18,
   logoURI:
@@ -38,14 +39,16 @@ export const getChains = ({
   ethereum,
   polygonHermez,
 }: {
-  polygonHermez: {
-    rpcUrl: string;
-    contractAddress: string;
-    networkId: number;
-  };
   ethereum: {
     rpcUrl: string;
+    explorerUrl: string;
     contractAddress: string;
+  };
+  polygonHermez: {
+    rpcUrl: string;
+    explorerUrl: string;
+    contractAddress: string;
+    networkId: number;
   };
 }): [Chain, Chain] => [
   {
@@ -54,6 +57,7 @@ export const getChains = ({
     Icon: EthChainIcon,
     provider: new JsonRpcProvider(ethereum.rpcUrl),
     contractAddress: ethereum.contractAddress,
+    explorerUrl: ethereum.explorerUrl,
   },
   {
     key: "polygon-hermez",
@@ -61,12 +65,20 @@ export const getChains = ({
     Icon: PolygonHermezChainIcon,
     provider: new JsonRpcProvider(polygonHermez.rpcUrl),
     contractAddress: polygonHermez.contractAddress,
+    explorerUrl: polygonHermez.explorerUrl,
   },
 ];
 
-export const getUsdtToken = ({ address }: { address: string }): Token => ({
+export const getUsdtToken = ({
+  address,
+  network,
+}: {
+  address: string;
+  network: number;
+}): Token => ({
   name: "Tether USD",
   address,
+  network,
   symbol: "USDT",
   decimals: 6,
   logoURI:

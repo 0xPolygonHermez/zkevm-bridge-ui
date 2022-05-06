@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -17,7 +17,7 @@ import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { Transaction } from "src/domain";
-import { trimDecimals } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 import Button from "src/views/shared/button/button.view";
 
 const TransactionDetails: FC = () => {
@@ -47,17 +47,16 @@ const TransactionDetails: FC = () => {
         }
       }
       void claim({
-        originalTokenAddress: tx.token.address,
-        amount: tx.amount,
-        originalNetwork: tx.originNetwork,
-        destinationNetwork: tx.destinationNetwork,
-        destinationAddress: tx.destinationAddress,
-        index: tx.depositCount,
-        smtProof: tx.merkleProof,
-        globalExitRootNum: tx.exitRootNumber,
-        l2GlobalExitRootNum: tx.l2ExitRootNumber,
-        mainnetExitRoot: tx.mainExitRoot,
-        rollupExitRoot: tx.rollupExitRoot,
+        token: tx.bridge.token,
+        amount: tx.bridge.amount,
+        destinationNetwork: tx.bridge.destinationNetwork,
+        destinationAddress: tx.bridge.destinationAddress,
+        index: tx.bridge.depositCount,
+        smtProof: tx.merkleProof.merkleProof,
+        globalExitRootNum: tx.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: tx.merkleProof.mainExitRoot,
+        rollupExitRoot: tx.merkleProof.rollupExitRoot,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
@@ -120,7 +119,16 @@ const TransactionDetails: FC = () => {
     return <Navigate to="/activity" replace />;
   }
 
-  const { amount, destinationNetwork, originNetwork, status, token } = transaction.data;
+  const {
+    status,
+    bridge: { amount, destinationNetwork, networkId, token, txHash },
+  } = transaction.data;
+
+  const bridgeTxUrl = `${networkId.explorerUrl}/tx/${txHash}`;
+  const claimTxUrl =
+    transaction.data.status === "completed"
+      ? `${destinationNetwork.explorerUrl}/tx/${transaction.data.claim.txHash}`
+      : undefined;
 
   return (
     <>
@@ -128,9 +136,7 @@ const TransactionDetails: FC = () => {
       <Card className={classes.card}>
         <div className={classes.balance}>
           <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
-          <Typography type="h2">
-            {`${trimDecimals(amount, token.decimals)} ${token.symbol}`}
-          </Typography>
+          <Typography type="h2">{`${formatTokenAmount(amount, token)} ${token.symbol}`}</Typography>
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
@@ -145,7 +151,7 @@ const TransactionDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Chain chain={originNetwork} className={classes.alignRow} />
+          <Chain chain={networkId} className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
@@ -153,14 +159,29 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Chain chain={destinationNetwork} className={classes.alignRow} />
         </div>
-        <div className={`${classes.row} ${classes.lastRow}`}>
+        <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
-            Track transaction
+            Step 1/2
           </Typography>
-          <Link to="#" target="_blank" className={classes.explorerButton}>
+          <a href={bridgeTxUrl} target="_blank" className={classes.explorerButton} rel="noreferrer">
             <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
-          </Link>
+          </a>
         </div>
+        {claimTxUrl && (
+          <div className={`${classes.row} ${classes.lastRow}`}>
+            <Typography type="body2" className={classes.alignRow}>
+              Step 2/2
+            </Typography>
+            <a
+              href={claimTxUrl}
+              target="_blank"
+              className={classes.explorerButton}
+              rel="noreferrer"
+            >
+              <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
+            </a>
+          </div>
+        )}
       </Card>
       {(status === "initiated" || status === "on-hold") && (
         <div className={classes.finaliseRow}>
