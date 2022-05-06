@@ -10,10 +10,11 @@ import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { Transaction } from "src/domain";
+import { getChainName } from "src/utils/labels";
 
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
@@ -25,8 +26,15 @@ const Activity: FC = () => {
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
 
-  const onClaim = (tx: Transaction) => {
+  const onClaim = async (tx: Transaction) => {
     if (tx.status === "on-hold") {
+      if (!(await isConnectedProviderChainOk(tx.destinationNetwork))) {
+        try {
+          await changeNetwork(tx.destinationNetwork);
+        } catch (error) {
+          return `Switch to ${getChainName(tx.destinationNetwork)} to continue`;
+        }
+      }
       void claim({
         originalTokenAddress: tx.token.address,
         amount: tx.amount,

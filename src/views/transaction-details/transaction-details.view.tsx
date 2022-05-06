@@ -9,20 +9,23 @@ import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
+import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { getTransactionStatus } from "src/utils/labels";
+import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { Transaction } from "src/domain";
 import { trimDecimals } from "src/utils/amounts";
+import Button from "src/views/shared/button/button.view";
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
+  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
   });
@@ -30,9 +33,19 @@ const TransactionDetails: FC = () => {
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
 
-  const onClaim = () => {
+  const onClaim = async () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
+      if (!(await isConnectedProviderChainOk(tx.destinationNetwork))) {
+        try {
+          await changeNetwork(tx.destinationNetwork);
+        } catch (error) {
+          setIncorrectMessageNetwork(
+            `Switch to ${getChainName(tx.destinationNetwork)} to continue`
+          );
+          return;
+        }
+      }
       void claim({
         originalTokenAddress: tx.token.address,
         amount: tx.amount,
@@ -57,6 +70,16 @@ const TransactionDetails: FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (transaction.status === "successful") {
+      void isConnectedProviderChainOk(transaction.data.destinationNetwork).then((checked) => {
+        if (checked) {
+          setIncorrectMessageNetwork(undefined);
+        }
+      });
+    }
+  }, [isConnectedProviderChainOk, transaction]);
 
   useEffect(() => {
     if (account.status === "successful") {
@@ -141,16 +164,11 @@ const TransactionDetails: FC = () => {
       </Card>
       {(status === "initiated" || status === "on-hold") && (
         <div className={classes.finaliseRow}>
-          <button
-            onClick={onClaim}
-            className={classes.finaliseButton}
-            disabled={status === "initiated"}
-          >
-            <Typography type="body1" className={classes.finaliseButtonText}>
-              Finalise
-            </Typography>
+          <Button onClick={onClaim} disabled={status === "initiated"}>
+            Finalise
             {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
-          </button>
+          </Button>
+          {incorrectMessageNetwork && <Error error={incorrectMessageNetwork} />}
         </div>
       )}
     </>

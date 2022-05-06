@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
@@ -18,31 +18,22 @@ import { trimDecimals } from "src/utils/amounts";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
-  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
-  const { bridge } = useBridgeContext();
-  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const navigate = useNavigate();
+  const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
-
-  const checkCorrectNetwork = useCallback(async () => {
-    if (transaction && connectedProvider) {
-      const networkFrom = await transaction.from.provider.getNetwork();
-      const connectedProviderNetwork = await connectedProvider.getNetwork();
-      return connectedProviderNetwork.chainId === networkFrom.chainId;
-    }
-  }, [connectedProvider, transaction]);
+  const { account, changeNetwork, isConnectedProviderChainOk } = useProvidersContext();
+  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
   const onClick = async () => {
     if (transaction) {
       const { token, amount, from, to } = transaction;
-      if (!(await checkCorrectNetwork())) {
+      if (!(await isConnectedProviderChainOk(from))) {
         try {
           await changeNetwork(from);
         } catch (error) {
           setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
           return;
         }
-        setIncorrectMessageNetwork(undefined);
       }
       if (account.status === "successful") {
         bridge({
@@ -62,12 +53,14 @@ const TransactionConfirmation: FC = () => {
   };
 
   useEffect(() => {
-    void checkCorrectNetwork().then((checked) => {
-      if (checked) {
-        setIncorrectMessageNetwork(undefined);
-      }
-    });
-  }, [checkCorrectNetwork, connectedProvider]);
+    if (transaction) {
+      void isConnectedProviderChainOk(transaction.from).then((chainOk) => {
+        if (chainOk) {
+          setIncorrectMessageNetwork(undefined);
+        }
+      });
+    }
+  }, [isConnectedProviderChainOk, transaction]);
 
   useEffect(() => {
     if (!transaction) {
