@@ -15,27 +15,23 @@ import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { parseError } from "src/adapters/error";
+import { useUIContext } from "src/contexts/ui.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
   const navigate = useNavigate();
+  const { openSnackbar } = useUIContext();
   const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
   const { account, changeNetwork, connectedProvider } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
-  const onClick = async () => {
-    if (transaction) {
+  const onClick = () => {
+    if (transaction && account.status === "successful") {
       const { token, amount, from, to } = transaction;
-      if (from.chainId !== connectedProvider?.chainId) {
-        try {
-          await changeNetwork(from);
-        } catch (error) {
-          setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
-          return;
-        }
-      }
-      if (account.status === "successful") {
+      const executeBridge = () =>
         bridge({
           from,
           token,
@@ -47,7 +43,26 @@ const TransactionConfirmation: FC = () => {
             navigate(routes.activity.path);
             setTransaction(undefined);
           })
-          .catch(console.error);
+          .catch((error) => {
+            console.error(error);
+            if (isMetamaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
+                openSnackbar({
+                  type: "error",
+                  parsed,
+                });
+              });
+            }
+          });
+
+      if (from.chainId === connectedProvider?.chainId) {
+        void executeBridge();
+      } else {
+        changeNetwork(from)
+          .then(executeBridge)
+          .catch(() => {
+            setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
+          });
       }
     }
   };

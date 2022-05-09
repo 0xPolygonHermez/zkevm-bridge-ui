@@ -11,12 +11,12 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import Error from "src/views/shared/error/error.view";
 import { Transaction } from "src/domain";
-import { getTransactionStatus } from "src/utils/labels";
+import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
-  onClaim: () => Promise<string | undefined>;
+  onClaim: () => Promise<void>;
 }
 
 const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
@@ -29,10 +29,11 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   const navigate = useNavigate();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
-  const onClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    const error = await onClaim();
-    setIncorrectMessageNetwork(error);
+    onClaim().catch(() =>
+      setIncorrectMessageNetwork(`Switch to ${getChainName(destinationNetwork)} to continue`)
+    );
   };
 
   return (
