@@ -20,8 +20,7 @@ import { Chain, EthereumEvent, WalletName } from "src/domain";
 interface ProvidersContext {
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
-  isConnectedProviderChainOk: (chain: Chain) => Promise<boolean>;
-  changeNetwork: (chain: Chain) => Promise<void>;
+  changeNetwork: (chain: Chain) => Promise<number>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -30,7 +29,6 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
-  isConnectedProviderChainOk: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
@@ -163,60 +161,61 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
-  const isConnectedProviderChainOk = useCallback(
-    async (chain: Chain): Promise<boolean> => {
-      if (connectedProvider === undefined) {
-        return false;
-      } else {
-        try {
-          const connectedProviderNetwork = await connectedProvider.provider.getNetwork();
+  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+    if (connectedProvider.provider.request) {
+      return connectedProvider.provider
+        .request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: hexValue(chain.chainId) }],
+        })
+        .then(async () => {
+          const { chainId } = await connectedProvider.getNetwork();
+          return chainId === chain.chainId
+            ? chainId
+            : Promise.reject("Could not switch the network");
+        });
+    }
+    return Promise.reject(new Error("The provider does not have a request method"));
+  };
 
-          return connectedProviderNetwork.chainId === chain.chainId;
-        } catch (error) {
-          return false;
-        }
-      }
-    },
-    [connectedProvider]
-  );
+  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+    if (connectedProvider.provider.request) {
+      return connectedProvider.provider
+        .request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: hexValue(chain.chainId),
+              chainName: getChainName(chain),
+              rpcUrls: [chain.provider.connection.url],
+            },
+          ],
+        })
+        .then(async () => {
+          const { chainId } = await connectedProvider.getNetwork();
+          return chainId === chain.chainId
+            ? chainId
+            : Promise.reject("Could not switch the network");
+        });
+    }
+    return Promise.reject(new Error("The provider does not have a request method"));
+  };
 
   const changeNetwork = useCallback(
     (chain: Chain) => {
-      if (
-        env &&
-        connectedProvider &&
-        connectedProvider.provider.provider.isMetaMask &&
-        connectedProvider.provider.provider.request
-      ) {
-        const request = connectedProvider.provider.provider.request;
-        return (
-          request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: hexValue(chain.chainId) }],
-          })
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            .then(() => {})
-            .catch((error) => {
-              if (isMetamaskUnknownChainError(error)) {
-                void request({
-                  method: "wallet_addEthereumChain",
-                  params: [
-                    {
-                      chainId: hexValue(chain.chainId),
-                      chainName: getChainName(chain),
-                      rpcUrls: [chain.provider.connection.url],
-                    },
-                  ],
-                });
-              } else {
-                throw error;
-              }
-            })
-        );
+      if (connectedProvider && connectedProvider.provider.provider.isMetaMask) {
+        return switchNetwork(chain, connectedProvider.provider).catch((error) => {
+          if (isMetamaskUnknownChainError(error)) {
+            return addAndSwitchNetwork(chain, connectedProvider.provider);
+          } else {
+            throw error;
+          }
+        });
+      } else {
+        return Promise.reject(new Error(providersContextNotReadyErrorMsg));
       }
-      return Promise.reject(new Error(providersContextNotReadyErrorMsg));
     },
-    [connectedProvider, env]
+    [connectedProvider]
   );
 
   useEffect(() => {
@@ -275,19 +274,11 @@ const ProvidersProvider: FC = (props) => {
     () => ({
       connectedProvider,
       account,
-      isConnectedProviderChainOk,
       changeNetwork,
       connectProvider,
       disconnectProvider,
     }),
-    [
-      account,
-      connectedProvider,
-      isConnectedProviderChainOk,
-      connectProvider,
-      disconnectProvider,
-      changeNetwork,
-    ]
+    [account, connectedProvider, connectProvider, disconnectProvider, changeNetwork]
   );
 
   return <providersContext.Provider value={value} {...props} />;

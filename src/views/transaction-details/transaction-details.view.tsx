@@ -26,7 +26,7 @@ const TransactionDetails: FC = () => {
   const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
-  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
@@ -39,15 +39,9 @@ const TransactionDetails: FC = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
 
-      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
+      if (tx.bridge.destinationNetwork.chainId !== connectedProvider?.chainId) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
-          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-            setIncorrectMessageNetwork(
-              `Manually switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
-            );
-            return;
-          }
         } catch (error) {
           setIncorrectMessageNetwork(
             `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
@@ -86,15 +80,11 @@ const TransactionDetails: FC = () => {
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      void isConnectedProviderChainOk(transaction.data.bridge.destinationNetwork).then(
-        (chainOk) => {
-          if (chainOk) {
-            setIncorrectMessageNetwork(undefined);
-          }
-        }
-      );
+      if (transaction.data.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
+        setIncorrectMessageNetwork(undefined);
+      }
     }
-  }, [isConnectedProviderChainOk, transaction]);
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (account.status === "successful") {

@@ -21,19 +21,15 @@ const TransactionConfirmation: FC = () => {
   const navigate = useNavigate();
   const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
-  const { account, changeNetwork, isConnectedProviderChainOk } = useProvidersContext();
+  const { account, changeNetwork, connectedProvider } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
   const onClick = async () => {
     if (transaction) {
       const { token, amount, from, to } = transaction;
-      if (!(await isConnectedProviderChainOk(from))) {
+      if (from.chainId !== connectedProvider?.chainId) {
         try {
           await changeNetwork(from);
-          if (!(await isConnectedProviderChainOk(from))) {
-            setIncorrectMessageNetwork(`Manually switch to ${getChainName(from)} to continue`);
-            return;
-          }
         } catch (error) {
           setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
           return;
@@ -58,13 +54,11 @@ const TransactionConfirmation: FC = () => {
 
   useEffect(() => {
     if (transaction) {
-      void isConnectedProviderChainOk(transaction.from).then((chainOk) => {
-        if (chainOk) {
-          setIncorrectMessageNetwork(undefined);
-        }
-      });
+      if (transaction.from.chainId === connectedProvider?.chainId) {
+        setIncorrectMessageNetwork(undefined);
+      }
     }
-  }, [isConnectedProviderChainOk, transaction]);
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (!transaction) {

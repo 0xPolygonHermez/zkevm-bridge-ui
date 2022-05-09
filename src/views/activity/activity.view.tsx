@@ -14,7 +14,7 @@ import { getChainName } from "src/utils/labels";
 
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
-  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
@@ -28,12 +28,9 @@ const Activity: FC = () => {
 
   const onClaim = async (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
+      if (tx.bridge.destinationNetwork.chainId !== connectedProvider?.chainId) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
-          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-            return `Manually switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
-          }
         } catch (error) {
           return `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
         }
