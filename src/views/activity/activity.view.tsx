@@ -28,10 +28,10 @@ const Activity: FC = () => {
 
   const onClaim = async (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      if (isConnectedProviderChainOk && !isConnectedProviderChainOk(tx.bridge.destinationNetwork)) {
+      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
         try {
           await changeNetwork(tx.bridge.destinationNetwork);
-          if (!isConnectedProviderChainOk(tx.bridge.destinationNetwork)) {
+          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
             return `Manually switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
           }
         } catch (error) {
