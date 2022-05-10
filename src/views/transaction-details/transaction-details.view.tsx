@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
-import { TransactionResponse } from "@ethersproject/providers";
+import { BigNumber } from "ethers";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -18,40 +18,29 @@ import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getTransactionStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
-import { Transaction, Token } from "src/domain";
+import { calculateTransactionResponseFee } from "src/utils/fees";
+import { Transaction } from "src/domain";
 
 interface HistoricalFees {
   step1?: string;
   step2?: string;
 }
 
-const calculateTxFee = (txResponse: TransactionResponse, token: Token): string | undefined => {
-  if (txResponse.maxFeePerGas && txResponse.maxPriorityFeePerGas) {
-    const amount = txResponse.gasLimit.mul(
-      txResponse.maxFeePerGas.add(txResponse.maxPriorityFeePerGas)
-    );
-    return formatTokenAmount(amount, token);
-  } else if (txResponse.gasPrice) {
-    const amount = txResponse.gasLimit.mul(txResponse.gasPrice);
-    return formatTokenAmount(amount, token);
-  } else {
-    return undefined;
-  }
-};
-
 const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFees> => {
-  const calculate = (txResponse: TransactionResponse) =>
-    calculateTxFee(txResponse, transaction.bridge.token);
+  const feeToString = (fee: BigNumber | undefined) =>
+    fee ? formatTokenAmount(fee, transaction.bridge.token) : undefined;
 
   const step1Promise = transaction.bridge.networkId.provider
     .getTransaction(transaction.bridge.txHash)
-    .then(calculate);
+    .then(calculateTransactionResponseFee)
+    .then(feeToString);
 
   const step2Promise =
     transaction.status === "completed"
       ? transaction.bridge.destinationNetwork.provider
           .getTransaction(transaction.claim.txHash)
-          .then(calculate)
+          .then(calculateTransactionResponseFee)
+          .then(feeToString)
       : Promise.resolve(undefined);
 
   return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({
