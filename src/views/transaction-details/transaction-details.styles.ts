@@ -77,33 +77,14 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   },
   finaliseRow: {
     display: "flex",
+    flexDirection: "column",
     justifyContent: "center",
+    alignItems: "center",
+    gap: theme.spacing(1),
     margin: [theme.spacing(3), 0],
     [theme.breakpoints.upSm]: {
       margin: [theme.spacing(6), 0],
     },
-  },
-  finaliseButton: {
-    display: "inline-flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: [theme.spacing(2), theme.spacing(2)],
-    width: 248,
-    border: "none",
-    backgroundColor: theme.palette.primary.main,
-    cursor: "pointer",
-    borderRadius: 40,
-    gap: theme.spacing(1),
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-    "&:disabled": {
-      backgroundColor: theme.palette.disabled,
-      cursor: "initial",
-    },
-  },
-  finaliseButtonText: {
-    color: theme.palette.white,
   },
   finaliseSpinner: {
     "& path": {

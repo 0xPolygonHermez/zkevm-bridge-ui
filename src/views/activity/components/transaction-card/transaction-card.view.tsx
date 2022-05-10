@@ -9,16 +9,18 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
+import Error from "src/views/shared/error/error.view";
 import { Transaction } from "src/domain";
-import { getTransactionStatus } from "src/utils/labels";
+import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
+  networkError: boolean;
   onClaim: () => void;
 }
 
-const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
+const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, onClaim }) => {
   const {
     status,
     id,
@@ -26,6 +28,11 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
+
+  const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    onClaim();
+  };
 
   return (
     <Card
@@ -73,14 +80,15 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       )}
       {status === "on-hold" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Signature required to finalise the transaction</Typography>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClaim();
-            }}
-            className={classes.finaliseButton}
-          >
+          {networkError ? (
+            <Error
+              error={`Switch to ${getChainName(destinationNetwork)} to continue`}
+              type="body2"
+            />
+          ) : (
+            <Typography type="body2">Signature required to finalise the transaction</Typography>
+          )}
+          <button onClick={onClick} className={classes.finaliseButton}>
             Finalise
           </button>
         </div>

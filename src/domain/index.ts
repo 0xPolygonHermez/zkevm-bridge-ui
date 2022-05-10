@@ -7,6 +7,7 @@ export interface Chain {
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
+  chainId: number;
   contractAddress: string;
   explorerUrl: string;
 }

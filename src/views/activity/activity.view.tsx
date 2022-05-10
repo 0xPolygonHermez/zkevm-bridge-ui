@@ -13,10 +13,11 @@ import { Transaction } from "src/domain";
 
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
+  const [wrongNetworkTransactions, setWrongNetworkTransactions] = useState<Transaction["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
   const pendingTransactions = transactionList.filter((data) => data.status !== "completed");
@@ -27,7 +28,7 @@ const Activity: FC = () => {
 
   const onClaim = (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      void claim({
+      claim({
         token: tx.bridge.token,
         amount: tx.bridge.amount,
         destinationNetwork: tx.bridge.destinationNetwork,
@@ -41,10 +42,14 @@ const Activity: FC = () => {
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
-            });
+            if (parsed === "wrong-network") {
+              setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
+            } else {
+              openSnackbar({
+                type: "error",
+                parsed,
+              });
+            }
           });
         }
       });
@@ -67,6 +72,10 @@ const Activity: FC = () => {
         });
     }
   }, [account, getTransactions, openSnackbar]);
+
+  useEffect(() => {
+    setWrongNetworkTransactions([]);
+  }, [connectedProvider?.chainId]);
 
   return (
     <>
@@ -93,6 +102,7 @@ const Activity: FC = () => {
         <TransactionCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
+          networkError={wrongNetworkTransactions.includes(transaction.id)}
           key={transaction.id}
         />
       ))}

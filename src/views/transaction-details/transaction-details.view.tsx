@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
@@ -10,6 +10,7 @@ import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Chain from "src/views/transaction-details/components/chain/chain";
+import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
@@ -20,6 +21,8 @@ import { getTransactionStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Transaction } from "src/domain";
+import routes from "src/routes";
+import Button from "src/views/shared/button/button.view";
 
 interface HistoricalFees {
   step1?: string;
@@ -51,10 +54,11 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
-
+  const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
-  const { account } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
+  const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const env = useEnvContext();
 
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
@@ -69,7 +73,7 @@ const TransactionDetails: FC = () => {
   const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
-      void claim({
+      claim({
         token: tx.bridge.token,
         amount: tx.bridge.amount,
         destinationNetwork: tx.bridge.destinationNetwork,
@@ -80,18 +84,36 @@ const TransactionDetails: FC = () => {
         l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
         mainnetExitRoot: tx.merkleProof.mainExitRoot,
         rollupExitRoot: tx.merkleProof.rollupExitRoot,
-      }).catch((error) => {
-        if (isMetamaskUserRejectedRequestError(error) === false) {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
+      })
+        .then(() => {
+          navigate(routes.activity.path);
+        })
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                setIncorrectNetworkMessage(
+                  `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
+                );
+              } else {
+                openSnackbar({
+                  type: "error",
+                  parsed,
+                });
+              }
             });
-          });
-        }
-      });
+          }
+        });
     }
   };
+
+  useEffect(() => {
+    if (transaction.status === "successful") {
+      if (transaction.data.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
+        setIncorrectNetworkMessage(undefined);
+      }
+    }
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (account.status === "successful") {
@@ -139,7 +161,7 @@ const TransactionDetails: FC = () => {
   }
 
   if (transaction.status === "failed") {
-    return <Navigate to="/activity" replace />;
+    return <Navigate to={routes.activity.path} replace />;
   }
 
   const {
@@ -234,16 +256,11 @@ const TransactionDetails: FC = () => {
       </Card>
       {(status === "initiated" || status === "on-hold") && (
         <div className={classes.finaliseRow}>
-          <button
-            onClick={onClaim}
-            className={classes.finaliseButton}
-            disabled={status === "initiated"}
-          >
-            <Typography type="body1" className={classes.finaliseButtonText}>
-              Finalise
-            </Typography>
+          <Button onClick={onClaim} disabled={status === "initiated"}>
+            Finalise
             {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
-          </button>
+          </Button>
+          {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
         </div>
       )}
     </>

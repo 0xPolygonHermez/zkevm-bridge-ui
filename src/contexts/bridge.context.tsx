@@ -74,7 +74,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, account } = useProvidersContext();
+  const { connectedProvider, account, changeNetwork } = useProvidersContext();
 
   const getTransactions = useCallback(
     ({ ethereumAddress }: GetTransactionsParams) => {
@@ -139,7 +139,10 @@ const BridgeProvider: FC = (props) => {
         throw new Error("Connected provider is not available");
       }
 
-      const contract = Bridge__factory.connect(from.contractAddress, connectedProvider.getSigner());
+      const contract = Bridge__factory.connect(
+        from.contractAddress,
+        connectedProvider.provider.getSigner()
+      );
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -148,7 +151,10 @@ const BridgeProvider: FC = (props) => {
           throw new Error("The account address is not available");
         }
 
-        const erc20Contract = Erc20__factory.connect(token.address, connectedProvider.getSigner());
+        const erc20Contract = Erc20__factory.connect(
+          token.address,
+          connectedProvider.provider.getSigner()
+        );
         const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
 
         if (allowance.lt(amount)) {
@@ -156,13 +162,24 @@ const BridgeProvider: FC = (props) => {
         }
       }
 
-      return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
+      const executeBridge = () =>
+        contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
+
+      if (from.chainId === connectedProvider?.chainId) {
+        return executeBridge();
+      } else {
+        return changeNetwork(from)
+          .catch(() => {
+            throw { type: "wrong-network" };
+          })
+          .then(executeBridge);
+      }
     },
-    [connectedProvider, account]
+    [connectedProvider, account, changeNetwork]
   );
 
   const claim = useCallback(
-    async ({
+    ({
       token,
       amount,
       destinationNetwork,
@@ -180,26 +197,37 @@ const BridgeProvider: FC = (props) => {
 
       const contract = Bridge__factory.connect(
         destinationNetwork.contractAddress,
-        connectedProvider.getSigner()
+        connectedProvider.provider.getSigner()
       );
 
       const isL2Claim = destinationNetwork.key === "polygon-hermez";
 
-      return contract.claim(
-        token.address,
-        amount,
-        token.network,
-        destinationNetwork.networkId,
-        destinationAddress,
-        smtProof,
-        index,
-        isL2Claim ? l2GlobalExitRootNum : globalExitRootNum,
-        mainnetExitRoot,
-        rollupExitRoot,
-        isL2Claim ? { gasPrice: 0 } : {}
-      );
+      const executeClaim = () =>
+        contract.claim(
+          token.address,
+          amount,
+          token.network,
+          destinationNetwork.networkId,
+          destinationAddress,
+          smtProof,
+          index,
+          isL2Claim ? l2GlobalExitRootNum : globalExitRootNum,
+          mainnetExitRoot,
+          rollupExitRoot,
+          isL2Claim ? { gasPrice: 0 } : {}
+        );
+
+      if (destinationNetwork.chainId === connectedProvider?.chainId) {
+        return executeClaim();
+      } else {
+        return changeNetwork(destinationNetwork)
+          .catch(() => {
+            throw { type: "wrong-network" };
+          })
+          .then(executeClaim);
+      }
     },
-    [connectedProvider]
+    [changeNetwork, connectedProvider]
   );
 
   return (

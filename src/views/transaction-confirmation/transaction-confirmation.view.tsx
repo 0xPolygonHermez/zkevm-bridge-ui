@@ -15,40 +15,55 @@ import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { parseError } from "src/adapters/error";
+import { useUIContext } from "src/contexts/ui.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
-  const [isNetworkIncorrect, setIsNetworkIncorrect] = useState(false);
-  const { bridge } = useBridgeContext();
-  const { account, connectedProvider } = useProvidersContext();
   const navigate = useNavigate();
-  const { transaction } = useTransactionContext();
+  const { openSnackbar } = useUIContext();
+  const { bridge } = useBridgeContext();
+  const { transaction, setTransaction } = useTransactionContext();
+  const { account, connectedProvider } = useProvidersContext();
+  const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
 
   const onClick = () => {
-    if (transaction) {
+    if (transaction && account.status === "successful") {
       const { token, amount, from, to } = transaction;
-
-      if (account.status === "successful") {
-        bridge({
-          from,
-          token,
-          amount,
-          to,
-          destinationAddress: account.data,
+      bridge({
+        from,
+        token,
+        amount,
+        to,
+        destinationAddress: account.data,
+      })
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
         })
-          .then(console.log)
-          .catch(console.error);
-      }
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                setIncorrectNetworkMessage(`Switch to ${getChainName(from)} to continue`);
+              } else {
+                openSnackbar({
+                  type: "error",
+                  parsed,
+                });
+              }
+            });
+          }
+        });
     }
   };
 
   useEffect(() => {
-    if (connectedProvider && transaction) {
-      void connectedProvider.getNetwork().then((network) => {
-        void transaction.from.provider.getNetwork().then((networkFrom) => {
-          setIsNetworkIncorrect(network.chainId !== networkFrom.chainId);
-        });
-      });
+    if (transaction) {
+      if (transaction.from.chainId === connectedProvider?.chainId) {
+        setIncorrectNetworkMessage(undefined);
+      }
     }
   }, [connectedProvider, transaction]);
 
@@ -94,12 +109,8 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick} disabled={isNetworkIncorrect}>
-          Transfer
-        </Button>
-        {isNetworkIncorrect && (
-          <Error error={`Switch to ${getChainName(transaction.from)} to continue`} />
-        )}
+        <Button onClick={onClick}>Transfer</Button>
+        {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
       </div>
     </>
   );
