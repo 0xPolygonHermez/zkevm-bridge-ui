@@ -13,7 +13,7 @@ import { Transaction } from "src/domain";
 
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
-  const { account, connectedProvider, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
@@ -28,38 +28,31 @@ const Activity: FC = () => {
 
   const onClaim = (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      const executeClaim = () => {
-        claim({
-          token: tx.bridge.token,
-          amount: tx.bridge.amount,
-          destinationNetwork: tx.bridge.destinationNetwork,
-          destinationAddress: tx.bridge.destinationAddress,
-          index: tx.bridge.depositCount,
-          smtProof: tx.merkleProof.merkleProof,
-          globalExitRootNum: tx.merkleProof.exitRootNumber,
-          l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-          mainnetExitRoot: tx.merkleProof.mainExitRoot,
-          rollupExitRoot: tx.merkleProof.rollupExitRoot,
-        }).catch((error) => {
-          if (isMetamaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
+      claim({
+        token: tx.bridge.token,
+        amount: tx.bridge.amount,
+        destinationNetwork: tx.bridge.destinationNetwork,
+        destinationAddress: tx.bridge.destinationAddress,
+        index: tx.bridge.depositCount,
+        smtProof: tx.merkleProof.merkleProof,
+        globalExitRootNum: tx.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: tx.merkleProof.mainExitRoot,
+        rollupExitRoot: tx.merkleProof.rollupExitRoot,
+      }).catch((error) => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          void parseError(error).then((parsed) => {
+            if (parsed === "wrong-network") {
+              setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
+            } else {
               openSnackbar({
                 type: "error",
                 parsed,
               });
-            });
-          }
-        });
-      };
-      if (tx.bridge.destinationNetwork.chainId !== connectedProvider?.chainId) {
-        void changeNetwork(tx.bridge.destinationNetwork)
-          .then(executeClaim)
-          .catch(() => {
-            setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
+            }
           });
-      } else {
-        executeClaim();
-      }
+        }
+      });
     }
   };
 

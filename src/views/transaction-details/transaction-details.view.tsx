@@ -26,7 +26,7 @@ const TransactionDetails: FC = () => {
   const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
-  const { account, connectedProvider, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
@@ -38,45 +38,37 @@ const TransactionDetails: FC = () => {
   const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
-      const executeClaim = () =>
-        claim({
-          token: tx.bridge.token,
-          amount: tx.bridge.amount,
-          destinationNetwork: tx.bridge.destinationNetwork,
-          destinationAddress: tx.bridge.destinationAddress,
-          index: tx.bridge.depositCount,
-          smtProof: tx.merkleProof.merkleProof,
-          globalExitRootNum: tx.merkleProof.exitRootNumber,
-          l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-          mainnetExitRoot: tx.merkleProof.mainExitRoot,
-          rollupExitRoot: tx.merkleProof.rollupExitRoot,
+      claim({
+        token: tx.bridge.token,
+        amount: tx.bridge.amount,
+        destinationNetwork: tx.bridge.destinationNetwork,
+        destinationAddress: tx.bridge.destinationAddress,
+        index: tx.bridge.depositCount,
+        smtProof: tx.merkleProof.merkleProof,
+        globalExitRootNum: tx.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: tx.merkleProof.mainExitRoot,
+        rollupExitRoot: tx.merkleProof.rollupExitRoot,
+      })
+        .then(() => {
+          navigate(routes.activity.path);
         })
-          .then(() => {
-            navigate(routes.activity.path);
-          })
-          .catch((error) => {
-            console.error(error);
-            if (isMetamaskUserRejectedRequestError(error) === false) {
-              void parseError(error).then((parsed) => {
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                setIncorrectMessageNetwork(
+                  `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
+                );
+              } else {
                 openSnackbar({
                   type: "error",
                   parsed,
                 });
-              });
-            }
-          });
-
-      if (tx.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
-        void executeClaim();
-      } else {
-        changeNetwork(tx.bridge.destinationNetwork)
-          .then(executeClaim)
-          .catch(() => {
-            setIncorrectMessageNetwork(
-              `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
-            );
-          });
-      }
+              }
+            });
+          }
+        });
     }
   };
 

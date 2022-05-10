@@ -25,45 +25,37 @@ const TransactionConfirmation: FC = () => {
   const { openSnackbar } = useUIContext();
   const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
-  const { account, changeNetwork, connectedProvider } = useProvidersContext();
+  const { account, connectedProvider } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
   const onClick = () => {
     if (transaction && account.status === "successful") {
       const { token, amount, from, to } = transaction;
-      const executeBridge = () =>
-        bridge({
-          from,
-          token,
-          amount,
-          to,
-          destinationAddress: account.data,
+      bridge({
+        from,
+        token,
+        amount,
+        to,
+        destinationAddress: account.data,
+      })
+        .then(() => {
+          navigate(routes.activity.path);
+          setTransaction(undefined);
         })
-          .then(() => {
-            navigate(routes.activity.path);
-            setTransaction(undefined);
-          })
-          .catch((error) => {
-            console.error(error);
-            if (isMetamaskUserRejectedRequestError(error) === false) {
-              void parseError(error).then((parsed) => {
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
+              } else {
                 openSnackbar({
                   type: "error",
                   parsed,
                 });
-              });
-            }
-          });
-
-      if (from.chainId === connectedProvider?.chainId) {
-        void executeBridge();
-      } else {
-        changeNetwork(from)
-          .then(executeBridge)
-          .catch(() => {
-            setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
-          });
-      }
+              }
+            });
+          }
+        });
     }
   };
 
