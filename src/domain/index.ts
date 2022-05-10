@@ -35,6 +35,7 @@ export interface Env {
     ETH: Token;
     USDT: Token;
   };
+  version: string;
 }
 
 export interface RouterState {

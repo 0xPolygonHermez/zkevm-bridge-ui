@@ -14,11 +14,13 @@ import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Currency } from "src/domain";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useEnvContext } from "src/contexts/env.context";
+import { Currency } from "src/domain";
 
 const Settings: FC = () => {
   const classes = useSettingsStyles();
+  const env = useEnvContext();
   const { disconnectProvider } = useProvidersContext();
   const { preferredCurrency, changePreferredCurrency } = usePriceOracleContext();
   const currencies = [
@@ -35,11 +37,15 @@ const Settings: FC = () => {
 
   const onChangePreferredCurrency = changePreferredCurrency;
 
+  if (!env) {
+    return null;
+  }
+
   return (
     <>
       <Header title="Settings" backTo="home" />
       <Typography type="body2" className={classes.subtitle}>
-        Hermez Polygon Bridge v.01
+        Polygon Hermez Bridge v{env.version}
       </Typography>
       <Card className={classes.card}>
         <div className={classes.currenciesRow}>
