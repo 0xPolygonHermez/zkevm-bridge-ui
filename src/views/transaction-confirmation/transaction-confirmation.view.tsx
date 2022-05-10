@@ -26,7 +26,7 @@ const TransactionConfirmation: FC = () => {
   const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
   const { account, connectedProvider } = useProvidersContext();
-  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
+  const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
 
   const onClick = () => {
     if (transaction && account.status === "successful") {
@@ -46,7 +46,7 @@ const TransactionConfirmation: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                setIncorrectMessageNetwork(`Switch to ${getChainName(from)} to continue`);
+                setIncorrectNetworkMessage(`Switch to ${getChainName(from)} to continue`);
               } else {
                 openSnackbar({
                   type: "error",
@@ -62,7 +62,7 @@ const TransactionConfirmation: FC = () => {
   useEffect(() => {
     if (transaction) {
       if (transaction.from.chainId === connectedProvider?.chainId) {
-        setIncorrectMessageNetwork(undefined);
+        setIncorrectNetworkMessage(undefined);
       }
     }
   }, [connectedProvider, transaction]);
@@ -110,7 +110,7 @@ const TransactionConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <Button onClick={onClick}>Transfer</Button>
-        {incorrectMessageNetwork && <Error error={incorrectMessageNetwork} />}
+        {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
       </div>
     </>
   );

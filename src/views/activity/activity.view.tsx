@@ -102,7 +102,7 @@ const Activity: FC = () => {
         <TransactionCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
-          networkError={wrongNetworkTransactions?.includes(transaction.id)}
+          networkError={wrongNetworkTransactions.includes(transaction.id)}
           key={transaction.id}
         />
       ))}

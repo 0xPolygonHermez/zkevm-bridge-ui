@@ -27,7 +27,7 @@ const TransactionDetails: FC = () => {
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
-  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
+  const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
   });
@@ -57,7 +57,7 @@ const TransactionDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                setIncorrectMessageNetwork(
+                setIncorrectNetworkMessage(
                   `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
                 );
               } else {
@@ -75,7 +75,7 @@ const TransactionDetails: FC = () => {
   useEffect(() => {
     if (transaction.status === "successful") {
       if (transaction.data.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
-        setIncorrectMessageNetwork(undefined);
+        setIncorrectNetworkMessage(undefined);
       }
     }
   }, [connectedProvider, transaction]);
@@ -189,7 +189,7 @@ const TransactionDetails: FC = () => {
             Finalise
             {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
           </Button>
-          {incorrectMessageNetwork && <Error error={incorrectMessageNetwork} />}
+          {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
         </div>
       )}
     </>
