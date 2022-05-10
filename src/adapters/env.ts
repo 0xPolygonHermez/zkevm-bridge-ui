@@ -34,7 +34,7 @@ const envToDomain = ({
   REACT_APP_USDT_ADDRESS,
   REACT_APP_USDT_NETWORK,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
-}: Env): domain.Env => {
+}: Env): Promise<domain.Env> => {
   const polygonHermezNetworkId = z
     .number()
     .positive()
@@ -42,7 +42,19 @@ const envToDomain = ({
 
   const usdtNetwork = z.number().nonnegative().parse(Number(REACT_APP_USDT_NETWORK));
 
-  return {
+  return getChains({
+    ethereum: {
+      rpcUrl: REACT_APP_ETHEREUM_RPC_URL,
+      explorerUrl: REACT_APP_ETHEREUM_EXPLORER_URL,
+      contractAddress: REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+    },
+    polygonHermez: {
+      networkId: polygonHermezNetworkId,
+      rpcUrl: REACT_APP_POLYGON_HERMEZ_RPC_URL,
+      explorerUrl: REACT_APP_POLYGON_EXPLORER_URL,
+      contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
+    },
+  }).then((chains) => ({
     bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
     tokenQuotes: {
       uniswapQuoterContractAddress: REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
@@ -51,19 +63,7 @@ const envToDomain = ({
       apiUrl: REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
       apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
     },
-    chains: getChains({
-      ethereum: {
-        rpcUrl: REACT_APP_ETHEREUM_RPC_URL,
-        explorerUrl: REACT_APP_ETHEREUM_EXPLORER_URL,
-        contractAddress: REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
-      },
-      polygonHermez: {
-        networkId: polygonHermezNetworkId,
-        rpcUrl: REACT_APP_POLYGON_HERMEZ_RPC_URL,
-        explorerUrl: REACT_APP_POLYGON_EXPLORER_URL,
-        contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
-      },
-    }),
+    chains,
     tokens: {
       ETH: ETH_TOKEN,
       USDT: getUsdtToken({
@@ -71,7 +71,7 @@ const envToDomain = ({
         network: usdtNetwork,
       }),
     },
-  };
+  }));
 };
 
 const envParser = StrictSchema<Env, domain.Env>()(
@@ -94,8 +94,8 @@ const envParser = StrictSchema<Env, domain.Env>()(
     .transform(envToDomain)
 );
 
-const loadEnv = (): domain.Env => {
-  const parsedEnv = envParser.parse(process.env);
+const loadEnv = (): Promise<domain.Env> => {
+  const parsedEnv = envParser.parseAsync(process.env);
 
   return parsedEnv;
 };

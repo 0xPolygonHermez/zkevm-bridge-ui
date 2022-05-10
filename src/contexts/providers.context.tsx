@@ -18,10 +18,9 @@ import routes from "src/routes";
 import { Chain, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
-  connectedProvider?: Web3Provider;
+  connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
-  isConnectedProviderChainOk: (chain: Chain) => Promise<boolean>;
-  changeNetwork: (chain: Chain) => Promise<void>;
+  changeNetwork: (chain: Chain) => Promise<number>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -30,7 +29,6 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 
 const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
-  isConnectedProviderChainOk: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
@@ -42,7 +40,8 @@ const providersContext = createContext<ProvidersContext>({
 
 const ProvidersProvider: FC = (props) => {
   const navigate = useNavigate();
-  const [connectedProvider, setConnectedProvider] = useState<Web3Provider>();
+  const [connectedProvider, setConnectedProvider] =
+    useState<{ provider: Web3Provider; chainId: number }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -63,11 +62,8 @@ const ProvidersProvider: FC = (props) => {
             if (window.ethereum && window.ethereum.isMetaMask) {
               const web3Provider = new Web3Provider(window.ethereum, "any");
               const requestedNetwork = await web3Provider.getNetwork();
-              const supportedNetworks = await Promise.all(
-                env.chains.map((chain) => chain.provider.getNetwork())
-              );
+              const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
-              const supportedChainIds = supportedNetworks.map((network) => network.chainId);
 
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
@@ -78,7 +74,7 @@ const ProvidersProvider: FC = (props) => {
 
               const accounts = await getConnectedAccounts(web3Provider);
 
-              setConnectedProvider(web3Provider);
+              setConnectedProvider({ provider: web3Provider, chainId: requestedChainId });
               return setAccount({ status: "successful", data: accounts[0] });
             } else {
               return setAccount({
@@ -115,7 +111,7 @@ const ProvidersProvider: FC = (props) => {
               return walletConnectProvider
                 .enable()
                 .then((accounts) => {
-                  setConnectedProvider(web3Provider);
+                  setConnectedProvider({ provider: web3Provider, chainId });
                   setAccount({ status: "successful", data: accounts[0] });
                 })
                 .catch((error) =>
@@ -165,73 +161,66 @@ const ProvidersProvider: FC = (props) => {
     }
   }, [connectedProvider]);
 
-  const isConnectedProviderChainOk = useCallback(
-    async (chain: Chain): Promise<boolean> => {
-      if (connectedProvider === undefined) {
-        return false;
-      } else {
-        try {
-          const connectedProviderNetwork = await connectedProvider.getNetwork();
-          const chainProviderNetwork = await chain.provider.getNetwork();
+  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+    if (connectedProvider.provider.request) {
+      return connectedProvider.provider
+        .request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: hexValue(chain.chainId) }],
+        })
+        .then(async () => {
+          const { chainId } = await connectedProvider.getNetwork();
+          return chainId === chain.chainId
+            ? chainId
+            : Promise.reject(new Error("Could not switch the network"));
+        });
+    }
+    return Promise.reject(new Error("The provider does not have a request method"));
+  };
 
-          return connectedProviderNetwork.chainId === chainProviderNetwork.chainId;
-        } catch (error) {
-          return false;
-        }
+  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+    if (connectedProvider.provider.request) {
+      return connectedProvider.provider
+        .request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: hexValue(chain.chainId),
+              chainName: getChainName(chain),
+              rpcUrls: [chain.provider.connection.url],
+            },
+          ],
+        })
+        .then(async () => {
+          const { chainId } = await connectedProvider.getNetwork();
+          return chainId === chain.chainId
+            ? chainId
+            : Promise.reject(new Error("Could not switch the network"));
+        });
+    }
+    return Promise.reject(new Error("The provider does not have a request method"));
+  };
+
+  const changeNetwork = useCallback(
+    (chain: Chain) => {
+      if (connectedProvider && connectedProvider.provider.provider.isMetaMask) {
+        return switchNetwork(chain, connectedProvider.provider).catch((error) => {
+          if (isMetamaskUnknownChainError(error)) {
+            return addAndSwitchNetwork(chain, connectedProvider.provider);
+          } else {
+            throw error;
+          }
+        });
+      } else {
+        return Promise.reject(new Error(providersContextNotReadyErrorMsg));
       }
     },
     [connectedProvider]
   );
 
-  const changeNetwork = useCallback(
-    async (chain: Chain) => {
-      if (
-        env &&
-        connectedProvider &&
-        connectedProvider.provider.isMetaMask &&
-        connectedProvider.provider.request
-      ) {
-        const request = connectedProvider.provider.request;
-        try {
-          const network = await chain.provider.getNetwork();
-          await request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: hexValue(network.chainId) }],
-          });
-        } catch (error) {
-          try {
-            const network = await chain.provider.getNetwork();
-            if (isMetamaskUnknownChainError(error)) {
-              await request({
-                method: "wallet_addEthereumChain",
-                params: [
-                  {
-                    chainId: hexValue(network.chainId),
-                    chainName: getChainName(chain),
-                    rpcUrls: [chain.provider.connection.url],
-                  },
-                ],
-              });
-            } else {
-              throw error;
-            }
-          } catch (error) {
-            if (isMetamaskUserRejectedRequestError(error)) {
-              throw new Error("User rejected the request.");
-            }
-            throw new Error("Unknown error from Metamask");
-          }
-        }
-      } else {
-        return Promise.reject(new Error(providersContextNotReadyErrorMsg));
-      }
-    },
-    [connectedProvider, env]
-  );
-
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
-      connectedProvider?.provider;
+      connectedProvider?.provider.provider;
     const onAccountsChanged = (accounts: unknown): void => {
       const parsedAccounts = ethereumAccountsParser.safeParse(accounts);
 
@@ -246,7 +235,7 @@ const ProvidersProvider: FC = (props) => {
     };
     const onChainChanged = () => {
       if (connectedProvider) {
-        if (connectedProvider.provider.isMetaMask) {
+        if (connectedProvider.provider.provider.isMetaMask) {
           void connectProvider(WalletName.METAMASK);
         } else {
           void connectProvider(WalletName.WALLET_CONNECT);
@@ -285,19 +274,11 @@ const ProvidersProvider: FC = (props) => {
     () => ({
       connectedProvider,
       account,
-      isConnectedProviderChainOk,
       changeNetwork,
       connectProvider,
       disconnectProvider,
     }),
-    [
-      account,
-      connectedProvider,
-      isConnectedProviderChainOk,
-      connectProvider,
-      disconnectProvider,
-      changeNetwork,
-    ]
+    [account, connectedProvider, connectProvider, disconnectProvider, changeNetwork]
   );
 
   return <providersContext.Provider value={value} {...props} />;

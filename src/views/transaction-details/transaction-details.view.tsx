@@ -26,7 +26,7 @@ const TransactionDetails: FC = () => {
   const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { getTransactions, claim } = useBridgeContext();
-  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
@@ -35,68 +35,58 @@ const TransactionDetails: FC = () => {
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
 
-  const onClaim = async () => {
+  const onClaim = () => {
     if (transaction.status === "successful" && transaction.data.status === "on-hold") {
       const tx = transaction.data;
-
-      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-        try {
-          await changeNetwork(tx.bridge.destinationNetwork);
-          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-            setIncorrectMessageNetwork(
-              `Switch manually to ${getChainName(
-                tx.bridge.destinationNetwork
-              )} inside of MetaMask to continue`
-            );
-            return;
-          }
-        } catch (error) {
-          setIncorrectMessageNetwork(
-            `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
-          );
-          return;
-        }
-      }
-      void claim({
-        token: tx.bridge.token,
-        amount: tx.bridge.amount,
-        destinationNetwork: tx.bridge.destinationNetwork,
-        destinationAddress: tx.bridge.destinationAddress,
-        index: tx.bridge.depositCount,
-        smtProof: tx.merkleProof.merkleProof,
-        globalExitRootNum: tx.merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: tx.merkleProof.mainExitRoot,
-        rollupExitRoot: tx.merkleProof.rollupExitRoot,
-      })
-        .then(() => {
-          navigate(routes.activity.path);
+      const executeClaim = () =>
+        claim({
+          token: tx.bridge.token,
+          amount: tx.bridge.amount,
+          destinationNetwork: tx.bridge.destinationNetwork,
+          destinationAddress: tx.bridge.destinationAddress,
+          index: tx.bridge.depositCount,
+          smtProof: tx.merkleProof.merkleProof,
+          globalExitRootNum: tx.merkleProof.exitRootNumber,
+          l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+          mainnetExitRoot: tx.merkleProof.mainExitRoot,
+          rollupExitRoot: tx.merkleProof.rollupExitRoot,
         })
-        .catch((error) => {
-          console.log(error);
-          if (isMetamaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              openSnackbar({
-                type: "error",
-                parsed,
+          .then(() => {
+            navigate(routes.activity.path);
+          })
+          .catch((error) => {
+            console.error(error);
+            if (isMetamaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
+                openSnackbar({
+                  type: "error",
+                  parsed,
+                });
               });
-            });
-          }
-        });
+            }
+          });
+
+      if (tx.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
+        void executeClaim();
+      } else {
+        changeNetwork(tx.bridge.destinationNetwork)
+          .then(executeClaim)
+          .catch(() => {
+            setIncorrectMessageNetwork(
+              `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
+            );
+          });
+      }
     }
   };
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      void isConnectedProviderChainOk(transaction.data.bridge.destinationNetwork).then(
-        (chainOk) => {
-          if (chainOk) {
-            setIncorrectMessageNetwork(undefined);
-          }
-        }
-      );
+      if (transaction.data.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
+        setIncorrectMessageNetwork(undefined);
+      }
     }
-  }, [isConnectedProviderChainOk, transaction]);
+  }, [connectedProvider, transaction]);
 
   useEffect(() => {
     if (account.status === "successful") {

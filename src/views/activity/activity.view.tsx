@@ -10,11 +10,10 @@ import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { Transaction } from "src/domain";
-import { getChainName } from "src/utils/labels";
 
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
-  const { account, isConnectedProviderChainOk, changeNetwork } = useProvidersContext();
+  const { account, connectedProvider, changeNetwork } = useProvidersContext();
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
@@ -26,41 +25,39 @@ const Activity: FC = () => {
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
 
-  const onClaim = async (tx: Transaction) => {
+  const onClaim = (tx: Transaction) => {
     if (tx.status === "on-hold") {
-      if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-        try {
-          await changeNetwork(tx.bridge.destinationNetwork);
-          if (!(await isConnectedProviderChainOk(tx.bridge.destinationNetwork))) {
-            return `Switch manually to ${getChainName(
-              tx.bridge.destinationNetwork
-            )} inside of MetaMask to continue`;
-          }
-        } catch (error) {
-          return `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`;
-        }
-      }
-      void claim({
-        token: tx.bridge.token,
-        amount: tx.bridge.amount,
-        destinationNetwork: tx.bridge.destinationNetwork,
-        destinationAddress: tx.bridge.destinationAddress,
-        index: tx.bridge.depositCount,
-        smtProof: tx.merkleProof.merkleProof,
-        globalExitRootNum: tx.merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: tx.merkleProof.mainExitRoot,
-        rollupExitRoot: tx.merkleProof.rollupExitRoot,
-      }).catch((error) => {
-        if (isMetamaskUserRejectedRequestError(error) === false) {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
+      const executeClaim = () => {
+        claim({
+          token: tx.bridge.token,
+          amount: tx.bridge.amount,
+          destinationNetwork: tx.bridge.destinationNetwork,
+          destinationAddress: tx.bridge.destinationAddress,
+          index: tx.bridge.depositCount,
+          smtProof: tx.merkleProof.merkleProof,
+          globalExitRootNum: tx.merkleProof.exitRootNumber,
+          l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
+          mainnetExitRoot: tx.merkleProof.mainExitRoot,
+          rollupExitRoot: tx.merkleProof.rollupExitRoot,
+        }).catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              openSnackbar({
+                type: "error",
+                parsed,
+              });
             });
-          });
-        }
-      });
+          }
+        });
+      };
+      if (tx.bridge.destinationNetwork.chainId !== connectedProvider?.chainId) {
+        return changeNetwork(tx.bridge.destinationNetwork).then(executeClaim);
+      } else {
+        executeClaim();
+        return Promise.resolve();
+      }
+    } else {
+      return Promise.resolve();
     }
   };
 
