@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { BigNumber } from "ethers";
 
 import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
 import Card from "src/views/shared/card/card.view";
@@ -13,13 +14,43 @@ import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
+import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { getChainName, getTransactionStatus } from "src/utils/labels";
-import { Transaction } from "src/domain";
+import { getTransactionStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
-import Button from "src/views/shared/button/button.view";
+import { calculateTransactionResponseFee } from "src/utils/fees";
+import { Transaction } from "src/domain";
 import routes from "src/routes";
+import Button from "src/views/shared/button/button.view";
+
+interface HistoricalFees {
+  step1?: string;
+  step2?: string;
+}
+
+const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFees> => {
+  const feeToString = (fee: BigNumber | undefined) =>
+    fee ? formatTokenAmount(fee, transaction.bridge.token) : undefined;
+
+  const step1Promise = transaction.bridge.networkId.provider
+    .getTransaction(transaction.bridge.txHash)
+    .then(calculateTransactionResponseFee)
+    .then(feeToString);
+
+  const step2Promise =
+    transaction.status === "completed"
+      ? transaction.bridge.destinationNetwork.provider
+          .getTransaction(transaction.claim.txHash)
+          .then(calculateTransactionResponseFee)
+          .then(feeToString)
+      : Promise.resolve(undefined);
+
+  return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({
+    step1,
+    step2,
+  }));
+};
 
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
@@ -28,9 +59,13 @@ const TransactionDetails: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
+  const env = useEnvContext();
+
   const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
     status: "pending",
   });
+  const [historicalFees, setHistoricalFees] = useState<HistoricalFees>({});
+
   const classes = useTransactionDetailsStyles({
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
@@ -111,6 +146,16 @@ const TransactionDetails: FC = () => {
     }
   }, [getTransactions, openSnackbar, transactionId, account]);
 
+  useEffect(() => {
+    if (transaction.status === "successful") {
+      calculateHistoricalFees(transaction.data)
+        .then(setHistoricalFees)
+        .catch((error) => {
+          void parseError(error).then((text) => openSnackbar({ type: "error-msg", text }));
+        });
+    }
+  }, [transaction, openSnackbar]);
+
   if (transaction.status === "pending" || transaction.status === "loading") {
     return <SpinnerIcon />;
   }
@@ -129,6 +174,12 @@ const TransactionDetails: FC = () => {
     transaction.data.status === "completed"
       ? `${destinationNetwork.explorerUrl}/tx/${transaction.data.claim.txHash}`
       : undefined;
+
+  const { step1: step1Fee, step2: step2Fee } = historicalFees;
+
+  if (env === undefined) {
+    return null;
+  }
 
   return (
     <>
@@ -159,9 +210,29 @@ const TransactionDetails: FC = () => {
           </Typography>
           <Chain chain={destinationNetwork} className={classes.alignRow} />
         </div>
+        {step1Fee && (
+          <div className={classes.row}>
+            <Typography type="body2" className={classes.alignRow}>
+              Step 1 Fee ({getChainName(transaction.data.bridge.networkId)})
+            </Typography>
+            <Typography type="body1" className={classes.alignRow}>
+              {step1Fee} {env.tokens.ETH.symbol}
+            </Typography>
+          </div>
+        )}
+        {step2Fee && (
+          <div className={classes.row}>
+            <Typography type="body2" className={classes.alignRow}>
+              Step 2 Fee ({getChainName(transaction.data.bridge.destinationNetwork)})
+            </Typography>
+            <Typography type="body1" className={classes.alignRow}>
+              {step2Fee} {env.tokens.ETH.symbol}
+            </Typography>
+          </div>
+        )}
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
-            Step 1/2
+            Track step 1 transaction
           </Typography>
           <a href={bridgeTxUrl} target="_blank" className={classes.explorerButton} rel="noreferrer">
             <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
@@ -170,7 +241,7 @@ const TransactionDetails: FC = () => {
         {claimTxUrl && (
           <div className={`${classes.row} ${classes.lastRow}`}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 2/2
+              Track step 2 transaction
             </Typography>
             <a
               href={claimTxUrl}

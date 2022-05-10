@@ -14,6 +14,7 @@ import { Bridge__factory } from "src/types/contracts/bridge";
 import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
+import { calculateFee } from "src/utils/fees";
 
 interface GetTransactionsParams {
   ethereumAddress: string;
@@ -89,12 +90,11 @@ const BridgeProvider: FC = (props) => {
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
       return chain.provider.getFeeData().then((feeData) => {
-        if (feeData.maxFeePerGas !== null) {
-          return gasLimit.mul(feeData.maxFeePerGas);
-        } else if (feeData.gasPrice !== null) {
-          return gasLimit.mul(feeData.gasPrice);
+        const fee = calculateFee(gasLimit, feeData);
+        if (fee === undefined) {
+          return Promise.reject(new Error("Fee data is not available"));
         } else {
-          throw new Error("Fee data is not available");
+          return Promise.resolve(fee);
         }
       });
     },
