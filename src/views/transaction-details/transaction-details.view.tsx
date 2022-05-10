@@ -221,7 +221,7 @@ const TransactionDetails: FC = () => {
         )}
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
-            Step 1 Transaction
+            Track step 1 transaction
           </Typography>
           <a href={bridgeTxUrl} target="_blank" className={classes.explorerButton} rel="noreferrer">
             <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
@@ -230,7 +230,7 @@ const TransactionDetails: FC = () => {
         {claimTxUrl && (
           <div className={`${classes.row} ${classes.lastRow}`}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 2 Transaction
+              Track step 2 transaction
             </Typography>
             <a
               href={claimTxUrl}
