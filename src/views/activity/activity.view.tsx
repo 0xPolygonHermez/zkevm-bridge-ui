@@ -17,6 +17,7 @@ const Activity: FC = () => {
   const { openSnackbar } = useUIContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
+  const [wrongNetworkTransactions, setWrongNetworkTransactions] = useState<Transaction["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
   const pendingTransactions = transactionList.filter((data) => data.status !== "completed");
@@ -51,13 +52,14 @@ const Activity: FC = () => {
         });
       };
       if (tx.bridge.destinationNetwork.chainId !== connectedProvider?.chainId) {
-        return changeNetwork(tx.bridge.destinationNetwork).then(executeClaim);
+        void changeNetwork(tx.bridge.destinationNetwork)
+          .then(executeClaim)
+          .catch(() => {
+            setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
+          });
       } else {
         executeClaim();
-        return Promise.resolve();
       }
-    } else {
-      return Promise.resolve();
     }
   };
 
@@ -77,6 +79,10 @@ const Activity: FC = () => {
         });
     }
   }, [account, getTransactions, openSnackbar]);
+
+  useEffect(() => {
+    setWrongNetworkTransactions([]);
+  }, [connectedProvider?.chainId]);
 
   return (
     <>
@@ -103,6 +109,7 @@ const Activity: FC = () => {
         <TransactionCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
+          networkError={wrongNetworkTransactions?.includes(transaction.id)}
           key={transaction.id}
         />
       ))}

@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
@@ -16,10 +16,11 @@ import { formatTokenAmount } from "src/utils/amounts";
 
 export interface TransactionCardProps {
   transaction: Transaction;
-  onClaim: () => Promise<void>;
+  networkError: boolean;
+  onClaim: () => void;
 }
 
-const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => {
+const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, onClaim }) => {
   const {
     status,
     id,
@@ -27,13 +28,10 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
   } = transaction;
   const classes = useTransactionCardStyles();
   const navigate = useNavigate();
-  const [incorrectMessageNetwork, setIncorrectMessageNetwork] = useState<string>();
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    onClaim().catch(() =>
-      setIncorrectMessageNetwork(`Switch to ${getChainName(destinationNetwork)} to continue`)
-    );
+    onClaim();
   };
 
   return (
@@ -82,10 +80,13 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, onClaim }) => 
       )}
       {status === "on-hold" && (
         <div className={classes.bottom}>
-          {incorrectMessageNetwork === undefined ? (
-            <Typography type="body2">Signature required to finalise the transaction</Typography>
+          {networkError ? (
+            <Error
+              error={`Switch to ${getChainName(destinationNetwork)} to continue`}
+              type="body2"
+            />
           ) : (
-            <Error error={incorrectMessageNetwork} type="body2" />
+            <Typography type="body2">Signature required to finalise the transaction</Typography>
           )}
           <button onClick={onClick} className={classes.finaliseButton}>
             Finalise
