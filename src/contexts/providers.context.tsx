@@ -172,7 +172,7 @@ const ProvidersProvider: FC = (props) => {
           const { chainId } = await connectedProvider.getNetwork();
           return chainId === chain.chainId
             ? chainId
-            : Promise.reject("Could not switch the network");
+            : Promise.reject(new Error("Could not switch the network"));
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
@@ -195,7 +195,7 @@ const ProvidersProvider: FC = (props) => {
           const { chainId } = await connectedProvider.getNetwork();
           return chainId === chain.chainId
             ? chainId
-            : Promise.reject("Could not switch the network");
+            : Promise.reject(new Error("Could not switch the network"));
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
