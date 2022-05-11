@@ -18,6 +18,7 @@ interface Env {
   REACT_APP_USDT_ADDRESS: string;
   REACT_APP_USDT_NETWORK: string;
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
+  REACT_APP_VERSION: string;
 }
 
 const envToDomain = ({
@@ -34,6 +35,7 @@ const envToDomain = ({
   REACT_APP_USDT_ADDRESS,
   REACT_APP_USDT_NETWORK,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
+  REACT_APP_VERSION,
 }: Env): Promise<domain.Env> => {
   const polygonHermezNetworkId = z
     .number()
@@ -71,6 +73,7 @@ const envToDomain = ({
         network: usdtNetwork,
       }),
     },
+    version: REACT_APP_VERSION,
   }));
 };
 
@@ -90,6 +93,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_USDT_ADDRESS: z.string(),
       REACT_APP_USDT_NETWORK: z.string(),
       REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_VERSION: z.string(),
     })
     .transform(envToDomain)
 );
