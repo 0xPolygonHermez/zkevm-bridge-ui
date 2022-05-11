@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { BigNumber } from "ethers";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
@@ -23,6 +23,7 @@ import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
 import { Chain, Token, TransactionData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
+import { useProvidersContext } from "src/contexts/providers.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
@@ -40,11 +41,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
+  const { connectedProvider, changeNetwork } = useProvidersContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
   const [inputError, setInputError] = useState<string>();
-
   const [chains, setChains] = useState<FormChains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
@@ -54,13 +55,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
 
   const onChainFromButtonClick = (from: Chain) => {
     if (env && chains) {
-      const to = env.chains.find((chain) => chain.key !== from.key);
-
-      if (to) {
-        setChains({ from, to });
-        setList(undefined);
-        setAmount(undefined);
-      }
+      void changeNetwork(from).catch(console.error);
     }
   };
 
@@ -82,16 +77,28 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
     }
   };
 
+  const onChainChange = useCallback(() => {
+    if (env) {
+      const chains = [...env.chains].sort((chainA) => {
+        if (chainA.chainId !== connectedProvider?.chainId) {
+          return 1;
+        }
+        return -1;
+      });
+      setChains({ from: chains[0], to: chains[1] });
+    }
+  }, [connectedProvider, env]);
+
   useEffect(() => {
     if (transaction !== undefined) {
       setChains({ from: transaction.from, to: transaction.to });
       setToken(transaction.token);
       setAmount(transaction.amount);
     } else if (env !== undefined) {
-      setChains({ from: env.chains[0], to: env.chains[1] });
+      onChainChange();
       setToken(env.tokens.ETH);
     }
-  }, [env, transaction]);
+  }, [env, onChainChange, transaction]);
 
   useEffect(() => {
     if (chains) {
@@ -99,6 +106,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
       void chains.to.provider.getBalance(account).then(setBalanceTo);
     }
   }, [chains, account]);
+
+  useEffect(() => {
+    onChainChange();
+    setAmount(undefined);
+  }, [onChainChange]);
 
   useEffect(() => {
     if (chains && token) {
