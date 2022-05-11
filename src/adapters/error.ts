@@ -9,15 +9,15 @@ interface MessageKeyError {
   message: string;
 }
 
-interface WrongNetworkError {
-  type: "wrong-network";
-}
-
 const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
   z.object({
     message: z.string(),
   })
 );
+
+interface WrongNetworkError {
+  type: "wrong-network";
+}
 
 const wrongNetworkErrorParser = StrictSchema<WrongNetworkError>()(
   z.object({
