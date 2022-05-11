@@ -9,6 +9,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { AUTO_REFRESH_RATE } from "src/constants";
 import { Transaction } from "src/domain";
 
 const Activity: FC = () => {
@@ -58,18 +59,26 @@ const Activity: FC = () => {
 
   useEffect(() => {
     if (account.status === "successful") {
-      void getTransactions({ ethereumAddress: account.data })
-        .then((transactions) => {
-          setTransactionsList(transactions);
-        })
-        .catch((error) => {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
+      const loadTransactions = () => {
+        getTransactions({ ethereumAddress: account.data })
+          .then((transactions) => {
+            setTransactionsList(transactions);
+          })
+          .catch((error) => {
+            void parseError(error).then((parsed) => {
+              openSnackbar({
+                type: "error",
+                parsed,
+              });
             });
           });
-        });
+      };
+      const intervalId = setInterval(loadTransactions, AUTO_REFRESH_RATE);
+      loadTransactions();
+
+      return () => {
+        clearInterval(intervalId);
+      };
     }
   }, [account, getTransactions, openSnackbar]);
 
