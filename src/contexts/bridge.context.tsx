@@ -148,7 +148,7 @@ const BridgeProvider: FC = (props) => {
       } else {
         return changeNetwork(from)
           .catch(() => {
-            throw { type: "wrong-network" };
+            throw "wrong-network";
           })
           .then(executeBridge);
       }
@@ -200,7 +200,7 @@ const BridgeProvider: FC = (props) => {
       } else {
         return changeNetwork(destinationNetwork)
           .catch(() => {
-            throw { type: "wrong-network" };
+            throw "wrong-network";
           })
           .then(executeClaim);
       }
