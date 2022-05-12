@@ -55,7 +55,13 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
 
   const onChainFromButtonClick = (from: Chain) => {
     if (env && chains) {
-      void changeNetwork(from).catch(console.error);
+      const to = env.chains.find((chain) => chain.key !== from.key);
+
+      if (to) {
+        setChains({ from, to });
+        setList(undefined);
+        setAmount(undefined);
+      }
     }
   };
 
