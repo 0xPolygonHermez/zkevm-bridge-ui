@@ -8,12 +8,20 @@ interface GetFiatExchangeRatesSuccessResponse {
   rates: FiatExchangeRates;
 }
 
-interface GetFiatExchangeRatesErrorResponse {
-  error: {
-    code: string;
-    message: string;
-  };
-}
+type GetFiatExchangeRatesErrorResponse =
+  | {
+      error: {
+        code: string;
+        message: string;
+      };
+    }
+  | {
+      error: {
+        code: number;
+        type: string;
+        info: string;
+      };
+    };
 
 interface GetFiatExchangeRatesParams {
   apiUrl: string;
@@ -35,13 +43,28 @@ const fiatExchangeRatesParser = StrictSchema<GetFiatExchangeRatesSuccessResponse
 );
 
 const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesErrorResponse>()(
-  z.object({
-    error: z.object({
-      code: z.string(),
-      message: z.string(),
+  z.union([
+    z.object({
+      error: z.object({
+        code: z.string(),
+        message: z.string(),
+      }),
     }),
-  })
+    z.object({
+      error: z.object({
+        code: z.number(),
+        type: z.string(),
+        info: z.string(),
+      }),
+    }),
+  ])
 );
+
+const errorResponseToString = (errorResponse: GetFiatExchangeRatesErrorResponse): string => {
+  return `Fiat Exchange Rates API error: (${errorResponse.error.code}) ${
+    "message" in errorResponse.error ? errorResponse.error.message : errorResponse.error.info
+  }`;
+};
 
 const getFiatExchangeRates = ({
   apiUrl,
@@ -60,22 +83,23 @@ const getFiatExchangeRates = ({
       method: "GET",
     })
     .then((res) => {
-      const parsedRes = fiatExchangeRatesParser.safeParse(res.data);
-
-      if (parsedRes.success) {
-        return parsedRes.data.rates;
+      const parsedSuccessResponse = fiatExchangeRatesParser.safeParse(res.data);
+      const parsedErrorResponse = fiatExchangeRatesErrorParser.safeParse(res.data);
+      if (parsedSuccessResponse.success) {
+        return parsedSuccessResponse.data.rates;
+      } else if (parsedErrorResponse.success) {
+        throw errorResponseToString(parsedErrorResponse.data);
       } else {
-        throw parsedRes.error;
+        throw parsedSuccessResponse.error;
       }
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {
         const parsedError = fiatExchangeRatesErrorParser.safeParse(error.response.data);
-
         if (parsedError.success) {
-          throw parsedError.data.error;
+          throw errorResponseToString(parsedError.data);
         } else {
-          throw parsedError.error;
+          throw error;
         }
       } else {
         throw error;
