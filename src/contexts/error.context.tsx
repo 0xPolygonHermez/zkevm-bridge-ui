@@ -4,13 +4,13 @@ import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 
 interface ErrorContext {
-  parseAndNotify: (error: unknown) => void;
+  notifyError: (error: unknown) => void;
 }
 
 const errorContextNotReadyErrorMsg = "The error context is not yet ready";
 
 const errorContextDefaultValue: ErrorContext = {
-  parseAndNotify: () => {
+  notifyError: () => {
     console.error(errorContextNotReadyErrorMsg);
   },
 };
@@ -20,7 +20,7 @@ const errorContext = createContext<ErrorContext>(errorContextDefaultValue);
 const ErrorProvider: FC = (props) => {
   const { openSnackbar } = useUIContext();
 
-  const parseAndNotify = useCallback(
+  const notifyError = useCallback(
     (error: unknown): void => {
       void parseError(error)
         .then((parsed) => openSnackbar({ type: "error", parsed }))
@@ -29,7 +29,7 @@ const ErrorProvider: FC = (props) => {
     [openSnackbar]
   );
 
-  const value = useMemo(() => ({ parseAndNotify }), [parseAndNotify]);
+  const value = useMemo(() => ({ notifyError }), [notifyError]);
 
   return <errorContext.Provider value={value} {...props} />;
 };

@@ -8,11 +8,11 @@ const envContext = createContext<Env | undefined>(undefined);
 
 const EnvProvider: FC = (props) => {
   const [env, setEnv] = useState<Env>();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
 
   useEffect(() => {
-    loadEnv().then(setEnv).catch(parseAndNotify);
-  }, [parseAndNotify]);
+    loadEnv().then(setEnv).catch(notifyError);
+  }, [notifyError]);
 
   const value = useMemo(() => {
     return env;

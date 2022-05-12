@@ -30,7 +30,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 
 const PriceOracleProvider: FC = (props) => {
   const env = useEnvContext();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
   const [preferredCurrency, setPreferredCurrency] = useState(storage.getCurrency());
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
   const [quoterContract, setQuoterContract] = useState<UniswapQuoter>();
@@ -93,9 +93,9 @@ const PriceOracleProvider: FC = (props) => {
         apiKey: env.fiatExchangeRates.apiKey,
       })
         .then(setFiatExchangeRates)
-        .catch(parseAndNotify);
+        .catch(notifyError);
     }
-  }, [env, parseAndNotify]);
+  }, [env, notifyError]);
 
   const value = useMemo(
     () => ({ preferredCurrency, getTokenPrice, changePreferredCurrency }),

@@ -37,7 +37,7 @@ interface FormChains {
 const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
@@ -94,10 +94,10 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
 
   useEffect(() => {
     if (chains) {
-      void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(parseAndNotify);
-      void chains.to.provider.getBalance(account).then(setBalanceTo).catch(parseAndNotify);
+      void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(notifyError);
+      void chains.to.provider.getBalance(account).then(setBalanceTo).catch(notifyError);
     }
-  }, [chains, account, parseAndNotify]);
+  }, [chains, account, notifyError]);
 
   useEffect(() => {
     if (chains && token) {
@@ -117,11 +117,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
               error: "You don't have enough ETH to pay for the fees",
             });
           } else {
-            parseAndNotify(error);
+            notifyError(error);
           }
         });
     }
-  }, [account, chains, token, estimateBridgeGasPrice, parseAndNotify]);
+  }, [account, chains, token, estimateBridgeGasPrice, notifyError]);
 
   if (!env || !chains || !token) {
     return null;

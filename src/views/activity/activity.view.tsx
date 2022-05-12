@@ -18,7 +18,7 @@ const Activity: FC = () => {
   const env = useEnvContext();
   const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
   const [wrongNetworkTransactions, setWrongNetworkTransactions] = useState<Transaction["id"][]>([]);
@@ -49,7 +49,7 @@ const Activity: FC = () => {
             if (parsed === "wrong-network") {
               setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
             } else {
-              parseAndNotify(error);
+              notifyError(error);
             }
           });
         }
@@ -64,7 +64,7 @@ const Activity: FC = () => {
           .then((transactions) => {
             setTransactionsList(transactions);
           })
-          .catch(parseAndNotify);
+          .catch(notifyError);
       };
       const intervalId = setInterval(loadTransactions, AUTO_REFRESH_RATE);
       loadTransactions();
@@ -73,7 +73,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, env, parseAndNotify]);
+  }, [account, env, notifyError]);
 
   useEffect(() => {
     setWrongNetworkTransactions([]);

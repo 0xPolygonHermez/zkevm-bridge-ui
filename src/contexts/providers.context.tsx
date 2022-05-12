@@ -43,7 +43,7 @@ const ProvidersProvider: FC = (props) => {
     useState<{ provider: Web3Provider; chainId: number }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
 
   const connectProvider = useCallback(
     async (walletName: WalletName): Promise<void> => {
@@ -83,7 +83,7 @@ const ProvidersProvider: FC = (props) => {
             }
           } catch (error) {
             if (!isMetamaskUserRejectedRequestError(error)) {
-              parseAndNotify(error);
+              notifyError(error);
             }
 
             return setAccount({ status: "pending" });
@@ -112,7 +112,7 @@ const ProvidersProvider: FC = (props) => {
                   if (error instanceof Error && error.message === "User closed modal") {
                     setAccount({ status: "pending" });
                   } else {
-                    parseAndNotify(error);
+                    notifyError(error);
                   }
                 });
             } else {
@@ -129,7 +129,7 @@ const ProvidersProvider: FC = (props) => {
         }
       }
     },
-    [env, parseAndNotify]
+    [env, notifyError]
   );
 
   const disconnectProvider = useCallback((): Promise<void> => {

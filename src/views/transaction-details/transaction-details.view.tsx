@@ -56,7 +56,7 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
-  const { parseAndNotify } = useErrorContext();
+  const { notifyError } = useErrorContext();
   const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -97,7 +97,7 @@ const TransactionDetails: FC = () => {
                   `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
                 );
               } else {
-                parseAndNotify(error);
+                notifyError(error);
               }
             });
           }
@@ -133,15 +133,15 @@ const TransactionDetails: FC = () => {
             });
           }
         })
-        .catch(parseAndNotify);
+        .catch(notifyError);
     }
-  }, [account, env, transactionId, parseAndNotify]);
+  }, [account, env, transactionId, notifyError]);
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      calculateHistoricalFees(transaction.data).then(setHistoricalFees).catch(parseAndNotify);
+      calculateHistoricalFees(transaction.data).then(setHistoricalFees).catch(notifyError);
     }
-  }, [transaction, parseAndNotify]);
+  }, [transaction, notifyError]);
 
   if (transaction.status === "pending" || transaction.status === "loading") {
     return <SpinnerIcon />;
