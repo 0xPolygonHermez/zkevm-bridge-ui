@@ -6,14 +6,17 @@ import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { parseError } from "src/adapters/error";
+import { getTransactions } from "src/adapters/bridge-api";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
 import { Transaction } from "src/domain";
 
 const Activity: FC = () => {
-  const { getTransactions, claim } = useBridgeContext();
+  const env = useEnvContext();
+  const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { parseAndNotify } = useErrorContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
@@ -55,9 +58,9 @@ const Activity: FC = () => {
   };
 
   useEffect(() => {
-    if (account.status === "successful") {
+    if (env && account.status === "successful") {
       const loadTransactions = () => {
-        getTransactions({ ethereumAddress: account.data })
+        getTransactions({ env, ethereumAddress: account.data })
           .then((transactions) => {
             setTransactionsList(transactions);
           })
@@ -70,7 +73,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, getTransactions, parseAndNotify]);
+  }, [account, env, parseAndNotify]);
 
   useEffect(() => {
     setWrongNetworkTransactions([]);

@@ -16,6 +16,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
+import { getTransactions } from "src/adapters/bridge-api";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getTransactionStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -56,7 +57,7 @@ const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const { parseAndNotify } = useErrorContext();
-  const { getTransactions, claim } = useBridgeContext();
+  const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const env = useEnvContext();
@@ -113,9 +114,9 @@ const TransactionDetails: FC = () => {
   }, [connectedProvider, transaction]);
 
   useEffect(() => {
-    if (account.status === "successful") {
+    if (env && account.status === "successful") {
       // ToDo: Get all the data only for the right bridge
-      void getTransactions({ ethereumAddress: account.data })
+      void getTransactions({ env, ethereumAddress: account.data })
         .then((transactions) => {
           const foundTransaction = transactions.find((tx) => {
             return tx.id === transactionId;
@@ -134,7 +135,7 @@ const TransactionDetails: FC = () => {
         })
         .catch(parseAndNotify);
     }
-  }, [getTransactions, parseAndNotify, transactionId, account]);
+  }, [account, env, transactionId, parseAndNotify]);
 
   useEffect(() => {
     if (transaction.status === "successful") {
