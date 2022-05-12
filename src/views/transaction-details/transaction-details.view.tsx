@@ -13,7 +13,7 @@ import Chain from "src/views/transaction-details/components/chain/chain";
 import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
@@ -55,7 +55,7 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
 const TransactionDetails: FC = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
-  const { openSnackbar } = useUIContext();
+  const { parseAndNotify } = useErrorContext();
   const { getTransactions, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -96,10 +96,7 @@ const TransactionDetails: FC = () => {
                   `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
                 );
               } else {
-                openSnackbar({
-                  type: "error",
-                  parsed,
-                });
+                parseAndNotify(error);
               }
             });
           }
@@ -135,26 +132,15 @@ const TransactionDetails: FC = () => {
             });
           }
         })
-        .catch((error) => {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
-            });
-          });
-        });
+        .catch(parseAndNotify);
     }
-  }, [getTransactions, openSnackbar, transactionId, account]);
+  }, [getTransactions, parseAndNotify, transactionId, account]);
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      calculateHistoricalFees(transaction.data)
-        .then(setHistoricalFees)
-        .catch((error) => {
-          void parseError(error).then((text) => openSnackbar({ type: "error-msg", text }));
-        });
+      calculateHistoricalFees(transaction.data).then(setHistoricalFees).catch(parseAndNotify);
     }
-  }, [transaction, openSnackbar]);
+  }, [transaction, parseAndNotify]);
 
   if (transaction.status === "pending" || transaction.status === "loading") {
     return <SpinnerIcon />;

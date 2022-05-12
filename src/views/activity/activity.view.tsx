@@ -6,7 +6,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
@@ -15,7 +15,7 @@ import { Transaction } from "src/domain";
 const Activity: FC = () => {
   const { getTransactions, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
-  const { openSnackbar } = useUIContext();
+  const { parseAndNotify } = useErrorContext();
   const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
   const [wrongNetworkTransactions, setWrongNetworkTransactions] = useState<Transaction["id"][]>([]);
@@ -46,10 +46,7 @@ const Activity: FC = () => {
             if (parsed === "wrong-network") {
               setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
             } else {
-              openSnackbar({
-                type: "error",
-                parsed,
-              });
+              parseAndNotify(error);
             }
           });
         }
@@ -64,14 +61,7 @@ const Activity: FC = () => {
           .then((transactions) => {
             setTransactionsList(transactions);
           })
-          .catch((error) => {
-            void parseError(error).then((parsed) => {
-              openSnackbar({
-                type: "error",
-                parsed,
-              });
-            });
-          });
+          .catch(parseAndNotify);
       };
       const intervalId = setInterval(loadTransactions, AUTO_REFRESH_RATE);
       loadTransactions();
@@ -80,7 +70,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, getTransactions, openSnackbar]);
+  }, [account, getTransactions, parseAndNotify]);
 
   useEffect(() => {
     setWrongNetworkTransactions([]);

@@ -19,8 +19,7 @@ import {
 } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import { useBridgeContext } from "src/contexts/bridge.context";
-import { parseError } from "src/adapters/error";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { Chain, Token, TransactionData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 
@@ -38,7 +37,7 @@ interface FormChains {
 const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
-  const { openSnackbar } = useUIContext();
+  const { parseAndNotify } = useErrorContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
@@ -95,10 +94,10 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
 
   useEffect(() => {
     if (chains) {
-      void chains.from.provider.getBalance(account).then(setBalanceFrom);
-      void chains.to.provider.getBalance(account).then(setBalanceTo);
+      void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(parseAndNotify);
+      void chains.to.provider.getBalance(account).then(setBalanceTo).catch(parseAndNotify);
     }
-  }, [chains, account]);
+  }, [chains, account, parseAndNotify]);
 
   useEffect(() => {
     if (chains && token) {
@@ -118,13 +117,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
               error: "You don't have enough ETH to pay for the fees",
             });
           } else {
-            void parseError(error).then((errorMessage) => {
-              openSnackbar({ type: "error-msg", text: errorMessage });
-            });
+            parseAndNotify(error);
           }
         });
     }
-  }, [account, chains, token, estimateBridgeGasPrice, openSnackbar]);
+  }, [account, chains, token, estimateBridgeGasPrice, parseAndNotify]);
 
   if (!env || !chains || !token) {
     return null;

@@ -11,9 +11,8 @@ import {
 } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
-import { parseError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import routes from "src/routes";
 import { Chain, EthereumEvent, WalletName } from "src/domain";
 
@@ -44,7 +43,7 @@ const ProvidersProvider: FC = (props) => {
     useState<{ provider: Web3Provider; chainId: number }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
-  const { openSnackbar } = useUIContext();
+  const { parseAndNotify } = useErrorContext();
 
   const connectProvider = useCallback(
     async (walletName: WalletName): Promise<void> => {
@@ -84,12 +83,7 @@ const ProvidersProvider: FC = (props) => {
             }
           } catch (error) {
             if (!isMetamaskUserRejectedRequestError(error)) {
-              const errorMessage = await parseError(error);
-
-              openSnackbar({
-                type: "error",
-                parsed: errorMessage,
-              });
+              parseAndNotify(error);
             }
 
             return setAccount({ status: "pending" });
@@ -114,18 +108,13 @@ const ProvidersProvider: FC = (props) => {
                   setConnectedProvider({ provider: web3Provider, chainId });
                   setAccount({ status: "successful", data: accounts[0] });
                 })
-                .catch((error) =>
-                  parseError(error).then((errorMsg) => {
-                    if (error instanceof Error && error.message === "User closed modal") {
-                      setAccount({ status: "pending" });
-                    } else {
-                      openSnackbar({
-                        type: "error",
-                        parsed: errorMsg,
-                      });
-                    }
-                  })
-                );
+                .catch((error) => {
+                  if (error instanceof Error && error.message === "User closed modal") {
+                    setAccount({ status: "pending" });
+                  } else {
+                    parseAndNotify(error);
+                  }
+                });
             } else {
               return setAccount({
                 status: "failed",
@@ -140,7 +129,7 @@ const ProvidersProvider: FC = (props) => {
         }
       }
     },
-    [env, openSnackbar]
+    [env, parseAndNotify]
   );
 
   const disconnectProvider = useCallback((): Promise<void> => {
