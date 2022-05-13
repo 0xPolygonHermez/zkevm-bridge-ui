@@ -41,7 +41,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
-  const { connectedProvider, changeNetwork } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
@@ -84,14 +84,12 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   };
 
   const onChainChange = useCallback(() => {
-    if (env) {
-      const chains = [...env.chains].sort((chainA) => {
-        if (chainA.chainId !== connectedProvider?.chainId) {
-          return 1;
-        }
-        return -1;
-      });
-      setChains({ from: chains[0], to: chains[1] });
+    if (env && connectedProvider) {
+      const from = env.chains.find((chain) => chain.networkId === connectedProvider.chainId);
+      const to = env.chains.find((chain) => chain.networkId !== connectedProvider.chainId);
+      if (from && to) {
+        setChains({ from, to });
+      }
     }
   }, [connectedProvider, env]);
 
