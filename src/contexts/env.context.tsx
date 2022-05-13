@@ -2,15 +2,17 @@ import { createContext, FC, useContext, useEffect, useMemo, useState } from "rea
 
 import { loadEnv } from "src/adapters/env";
 import { Env } from "src/domain";
+import { useErrorContext } from "src/contexts/error.context";
 
 const envContext = createContext<Env | undefined>(undefined);
 
 const EnvProvider: FC = (props) => {
   const [env, setEnv] = useState<Env>();
+  const { notifyError } = useErrorContext();
 
   useEffect(() => {
-    loadEnv().then(setEnv).catch(console.error);
-  }, []);
+    loadEnv().then(setEnv).catch(notifyError);
+  }, [notifyError]);
 
   const value = useMemo(() => {
     return env;

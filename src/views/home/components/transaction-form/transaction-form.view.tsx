@@ -19,8 +19,7 @@ import {
 } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import { useBridgeContext } from "src/contexts/bridge.context";
-import { parseError } from "src/adapters/error";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { Chain, Token, TransactionData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -45,7 +44,7 @@ const TransactionForm: FC<TransactionFormProps> = ({
 }) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
-  const { openSnackbar } = useUIContext();
+  const { notifyError } = useErrorContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const [list, setList] = useState<List>();
@@ -113,10 +112,10 @@ const TransactionForm: FC<TransactionFormProps> = ({
 
   useEffect(() => {
     if (chains) {
-      void chains.from.provider.getBalance(account).then(setBalanceFrom);
-      void chains.to.provider.getBalance(account).then(setBalanceTo);
+      void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(notifyError);
+      void chains.to.provider.getBalance(account).then(setBalanceTo).catch(notifyError);
     }
-  }, [chains, account]);
+  }, [chains, account, notifyError]);
 
   useEffect(() => {
     if (chains && token) {
@@ -136,13 +135,11 @@ const TransactionForm: FC<TransactionFormProps> = ({
               error: "You don't have enough ETH to pay for the fees",
             });
           } else {
-            void parseError(error).then((errorMessage) => {
-              openSnackbar({ type: "error-msg", text: errorMessage });
-            });
+            notifyError(error);
           }
         });
     }
-  }, [account, chains, token, estimateBridgeGasPrice, openSnackbar]);
+  }, [account, chains, token, estimateBridgeGasPrice, notifyError]);
 
   if (!env || !chains || !token) {
     return null;
