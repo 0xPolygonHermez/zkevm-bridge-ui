@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
+const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   form: {
     margin: [theme.spacing(5), 0],
   },
@@ -90,4 +90,4 @@ const useTransactionFormStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTransactionFormStyles;
+export default useBridgeFormStyles;

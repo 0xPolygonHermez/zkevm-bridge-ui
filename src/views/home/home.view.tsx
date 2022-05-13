@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useHomeStyles from "src/views/home/home.styles";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import Header from "src/views/home/components/header/header.view";
-import TransactionForm from "src/views/home/components/transaction-form/transaction-form.view";
+import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -35,7 +35,7 @@ const Home = (): JSX.Element => {
             <MetaMaskIcon className={classes.metaMaskIcon} />
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
-          <TransactionForm
+          <BridgeForm
             onSubmit={onFormSubmit}
             transaction={transaction}
             resetTransaction={resetTransaction}

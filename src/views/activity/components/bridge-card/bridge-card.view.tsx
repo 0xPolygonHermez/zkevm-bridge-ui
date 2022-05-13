@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
+import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
@@ -14,19 +14,19 @@ import { Transaction } from "src/domain";
 import { getChainName, getTransactionStatus } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 
-export interface TransactionCardProps {
+export interface BridgeCardProps {
   transaction: Transaction;
   networkError: boolean;
   onClaim: () => void;
 }
 
-const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, onClaim }) => {
+const BridgeCard: FC<BridgeCardProps> = ({ transaction, networkError, onClaim }) => {
   const {
     status,
     id,
     bridge: { destinationNetwork, amount, token },
   } = transaction;
-  const classes = useTransactionCardStyles();
+  const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -86,7 +86,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, 
               type="body2"
             />
           ) : (
-            <Typography type="body2">Signature required to finalise the transaction</Typography>
+            <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}
           <button onClick={onClick} className={classes.finaliseButton}>
             Finalise
@@ -97,4 +97,4 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, 
   );
 };
 
-export default TransactionCard;
+export default BridgeCard;

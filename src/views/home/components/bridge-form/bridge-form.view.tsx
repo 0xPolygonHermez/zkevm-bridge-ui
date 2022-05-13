@@ -3,7 +3,7 @@ import { BigNumber } from "ethers";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
-import useTransactionFormStyles from "src/views/home/components/transaction-form/transaction-form.styles";
+import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import Error from "src/views/shared/error/error.view";
@@ -25,7 +25,7 @@ import { Chain, Token, TransactionData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
 
-interface TransactionFormProps {
+interface BridgeFormProps {
   onSubmit: (transactionData: TransactionData) => void;
   resetTransaction: () => void;
   transaction?: TransactionData;
@@ -37,13 +37,8 @@ interface FormChains {
   to: Chain;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({
-  onSubmit,
-  transaction,
-  account,
-  resetTransaction,
-}) => {
-  const classes = useTransactionFormStyles();
+const BridgeForm: FC<BridgeFormProps> = ({ onSubmit, transaction, account, resetTransaction }) => {
+  const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
@@ -240,4 +235,4 @@ const TransactionForm: FC<TransactionFormProps> = ({
   );
 };
 
-export default TransactionForm;
+export default BridgeForm;

@@ -1,6 +1,6 @@
 import { useState, FC, useEffect } from "react";
 
-import TransactionCard from "src/views/activity/components/transaction-card/transaction-card.view";
+import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
@@ -108,7 +108,7 @@ const Activity: FC = () => {
         </div>
       </div>
       {filteredList.map((transaction) => (
-        <TransactionCard
+        <BridgeCard
           transaction={transaction}
           onClaim={() => onClaim(transaction)}
           networkError={wrongNetworkTransactions.includes(transaction.id)}
