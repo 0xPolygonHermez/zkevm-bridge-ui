@@ -232,6 +232,7 @@ const TransactionForm: FC<TransactionFormProps> = ({
         <List
           placeholder={list.type === "chain" ? "Search network" : "Search token"}
           list={list}
+          selectedItem={list.type === "chain" ? chains.from.key : token.address}
           onClose={() => setList(undefined)}
         />
       )}

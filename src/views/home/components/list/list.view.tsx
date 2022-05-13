@@ -25,10 +25,11 @@ type List = ChainList | TokenList;
 interface ListProps {
   placeholder: string;
   list: List;
+  selectedItem: string;
   onClose: () => void;
 }
 
-const List: FC<ListProps> = ({ list, onClose }) => {
+const List: FC<ListProps> = ({ list, onClose, selectedItem }) => {
   const classes = useListStyles();
 
   const onOutsideClick = (event: React.MouseEvent) => {
@@ -47,6 +48,7 @@ const List: FC<ListProps> = ({ list, onClose }) => {
                     <button
                       className={classes.button}
                       key={chain.key}
+                      disabled={chain.key === selectedItem}
                       onClick={() => list.onClick(chain)}
                     >
                       <chain.Icon className={classes.icon} />
@@ -59,6 +61,7 @@ const List: FC<ListProps> = ({ list, onClose }) => {
                     <button
                       className={classes.button}
                       key={token.address}
+                      disabled={token.address === selectedItem}
                       onClick={() => list.onClick(token)}
                     >
                       <Icon url={token.logoURI} size={24} />
