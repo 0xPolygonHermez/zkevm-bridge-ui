@@ -2,14 +2,14 @@ import { FC, useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
-import useTransactionDetailsStyles from "src/views/transaction-details/transaction-details.styles";
+import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
 import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
-import Chain from "src/views/transaction-details/components/chain/chain";
+import Chain from "src/views/bridge-details/components/chain/chain";
 import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -52,7 +52,7 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
   }));
 };
 
-const TransactionDetails: FC = () => {
+const BridgeDetails: FC = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
@@ -66,7 +66,7 @@ const TransactionDetails: FC = () => {
   });
   const [historicalFees, setHistoricalFees] = useState<HistoricalFees>({});
 
-  const classes = useTransactionDetailsStyles({
+  const classes = useBridgeDetailsStyles({
     status: transaction.status === "successful" ? transaction.data.status : undefined,
   });
 
@@ -183,7 +183,7 @@ const TransactionDetails: FC = () => {
 
   return (
     <>
-      <Header title="Transaction Details" backTo="activity" />
+      <Header title="Bridge Details" backTo="activity" />
       <Card className={classes.card}>
         <div className={classes.balance}>
           <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
@@ -267,4 +267,4 @@ const TransactionDetails: FC = () => {
   );
 };
 
-export default TransactionDetails;
+export default BridgeDetails;

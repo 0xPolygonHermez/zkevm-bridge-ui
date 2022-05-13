@@ -7,7 +7,7 @@ interface StylesProps {
   status?: Transaction["status"];
 }
 
-const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
+const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   card: {
     padding: theme.spacing(3),
   },
@@ -93,4 +93,4 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTransactionDetailsStyles;
+export default useBridgeDetailsStyles;

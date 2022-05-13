@@ -2,8 +2,8 @@ import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useTransactionCardStyles from "src/views/activity/components/transaction-card/transaction-card.styles";
-import { ReactComponent as TransferL1Icon } from "src/assets/icons/l1-transfer.svg";
-import { ReactComponent as TransferL2Icon } from "src/assets/icons/l2-transfer.svg";
+import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
+import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
 import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
@@ -37,7 +37,7 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, 
   return (
     <Card
       className={classes.card}
-      onClick={() => navigate(`${routes.transactionDetails.path.split(":")[0]}${id}`)}
+      onClick={() => navigate(`${routes.bridgeDetails.path.split(":")[0]}${id}`)}
     >
       {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
@@ -46,14 +46,14 @@ const TransactionCard: FC<TransactionCardProps> = ({ transaction, networkError, 
           {status !== "completed" ? (
             <ReloadIcon />
           ) : destinationNetwork.key === "ethereum" ? (
-            <TransferL1Icon />
+            <BridgeL1Icon />
           ) : (
-            <TransferL2Icon />
+            <BridgeL2Icon />
           )}
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">
-            {destinationNetwork.key === "ethereum" ? "Transfer to L1" : "Transfer to L2"}
+            {destinationNetwork.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
           </Typography>
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}

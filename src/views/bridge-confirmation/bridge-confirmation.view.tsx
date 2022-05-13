@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
-import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
+import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import Header from "src/views/shared/header/header.view";
 import { useTransactionContext } from "src/contexts/transaction.context";
 import Card from "src/views/shared/card/card.view";
@@ -19,8 +19,8 @@ import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { useUIContext } from "src/contexts/ui.context";
 
-const TransactionConfirmation: FC = () => {
-  const classes = useConfirmationStyles();
+const BridgeConfirmation: FC = () => {
+  const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const { openSnackbar } = useUIContext();
   const { bridge } = useBridgeContext();
@@ -79,7 +79,7 @@ const TransactionConfirmation: FC = () => {
 
   return (
     <>
-      <Header title="Confirm Transfer" backTo="home" />
+      <Header title="Confirm Bridge" backTo="home" />
       <Card className={classes.card}>
         <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">
@@ -109,11 +109,11 @@ const TransactionConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick}>Transfer</Button>
+        <Button onClick={onClick}>Bridge</Button>
         {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
       </div>
     </>
   );
 };
 
-export default TransactionConfirmation;
+export default BridgeConfirmation;

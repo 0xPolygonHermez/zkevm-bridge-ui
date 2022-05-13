@@ -19,7 +19,7 @@ const Home = (): JSX.Element => {
 
   const onFormSubmit = (transaction: TransactionData) => {
     setTransaction(transaction);
-    navigate(routes.transactionConfirmation.path);
+    navigate(routes.bridgeConfirmation.path);
   };
 
   return (
