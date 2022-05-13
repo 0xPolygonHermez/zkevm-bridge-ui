@@ -8,24 +8,19 @@ interface GetFiatExchangeRatesSuccessResponse {
   rates: FiatExchangeRates;
 }
 
-type GetFiatExchangeRatesErrorResponse =
-  | {
-      error: {
-        code: string;
-        message: string;
-      };
-    }
-  | {
-      error: {
-        code: number;
-        type: string;
-        info: string;
-      };
-    };
+interface GetFiatExchangeRatesUnsuccessResponse {
+  error: {
+    code: number;
+    type: string;
+    info: string;
+  };
+}
 
-interface GetFiatExchangeRatesParams {
-  apiUrl: string;
-  apiKey: string;
+interface GetFiatExchangeRatesError {
+  error: {
+    code: string;
+    message: string;
+  };
 }
 
 const fiatExchangeRatesKeyParser = StrictSchema<keyof FiatExchangeRates>()(
@@ -38,33 +33,35 @@ const fiatExchangeRatesKeyParser = StrictSchema<keyof FiatExchangeRates>()(
   ])
 );
 
-const fiatExchangeRatesParser = StrictSchema<GetFiatExchangeRatesSuccessResponse>()(
-  z.object({ rates: z.record(fiatExchangeRatesKeyParser, z.number()) })
-);
+const getFiatExchangeRatesSuccessResponseParser =
+  StrictSchema<GetFiatExchangeRatesSuccessResponse>()(
+    z.object({ rates: z.record(fiatExchangeRatesKeyParser, z.number()) })
+  );
 
-const fiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesErrorResponse>()(
-  z.union([
-    z.object({
-      error: z.object({
-        code: z.string(),
-        message: z.string(),
-      }),
-    }),
+const getFiatExchangeRatesUnsuccessResponseParser =
+  StrictSchema<GetFiatExchangeRatesUnsuccessResponse>()(
     z.object({
       error: z.object({
         code: z.number(),
         type: z.string(),
         info: z.string(),
       }),
+    })
+  );
+
+const getFiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesError>()(
+  z.object({
+    error: z.object({
+      code: z.string(),
+      message: z.string(),
     }),
-  ])
+  })
 );
 
-const errorResponseToString = (errorResponse: GetFiatExchangeRatesErrorResponse): string => {
-  return `Fiat Exchange Rates API error: (${errorResponse.error.code}) ${
-    "message" in errorResponse.error ? errorResponse.error.message : errorResponse.error.info
-  }`;
-};
+interface GetFiatExchangeRatesParams {
+  apiUrl: string;
+  apiKey: string;
+}
 
 const getFiatExchangeRates = ({
   apiUrl,
@@ -83,21 +80,23 @@ const getFiatExchangeRates = ({
       method: "GET",
     })
     .then((res) => {
-      const parsedSuccessResponse = fiatExchangeRatesParser.safeParse(res.data);
-      const parsedErrorResponse = fiatExchangeRatesErrorParser.safeParse(res.data);
+      const parsedSuccessResponse = getFiatExchangeRatesSuccessResponseParser.safeParse(res.data);
+      const parsedUnsuccessResponse = getFiatExchangeRatesUnsuccessResponseParser.safeParse(
+        res.data
+      );
       if (parsedSuccessResponse.success) {
         return parsedSuccessResponse.data.rates;
-      } else if (parsedErrorResponse.success) {
-        throw errorResponseToString(parsedErrorResponse.data);
+      } else if (parsedUnsuccessResponse.success) {
+        throw `Fiat Exchange Rates API error: (${parsedUnsuccessResponse.data.error.code}) ${parsedUnsuccessResponse.data.error.info}`;
       } else {
         throw parsedSuccessResponse.error;
       }
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {
-        const parsedError = fiatExchangeRatesErrorParser.safeParse(error.response.data);
+        const parsedError = getFiatExchangeRatesErrorParser.safeParse(error.response.data);
         if (parsedError.success) {
-          throw errorResponseToString(parsedError.data);
+          throw `Fiat Exchange Rates API error: (${parsedError.data.error.code}) ${parsedError.data.error.message}`;
         } else {
           throw error;
         }
