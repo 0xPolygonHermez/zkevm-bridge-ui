@@ -58,9 +58,12 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
     "&:disabled": {
-      background: theme.palette.grey.main,
+      background: theme.palette.disabled,
       cursor: "initial",
     },
+  },
+  disabledButtonText: {
+    color: theme.palette.white,
   },
   icon: {
     width: "24px",

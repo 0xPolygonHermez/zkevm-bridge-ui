@@ -52,7 +52,14 @@ const List: FC<ListProps> = ({ list, onClose, selectedItem }) => {
                       onClick={() => list.onClick(chain)}
                     >
                       <chain.Icon className={classes.icon} />
-                      <Typography type="body1">{getChainName(chain)}</Typography>
+                      <Typography
+                        type="body1"
+                        className={
+                          chain.key === selectedItem ? classes.disabledButtonText : undefined
+                        }
+                      >
+                        {getChainName(chain)}
+                      </Typography>
                     </button>
                   );
                 })
@@ -65,7 +72,14 @@ const List: FC<ListProps> = ({ list, onClose, selectedItem }) => {
                       onClick={() => list.onClick(token)}
                     >
                       <Icon url={token.logoURI} size={24} />
-                      <Typography type="body1">{token.name}</Typography>
+                      <Typography
+                        type="body1"
+                        className={
+                          token.address === selectedItem ? classes.disabledButtonText : undefined
+                        }
+                      >
+                        {token.name}
+                      </Typography>
                     </button>
                   );
                 })}
