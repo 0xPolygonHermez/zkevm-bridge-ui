@@ -48,6 +48,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     gap: theme.spacing(1),
     padding: theme.spacing(2),
+    background: theme.palette.grey.light,
     borderRadius: 8,
     cursor: "pointer",
     alignItems: "center",
@@ -56,6 +57,11 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     },
     "&:hover": {
       background: theme.palette.grey.main,
+    },
+    "&:disabled": {
+      cursor: "initial",
+      background: theme.palette.grey.light,
+      opacity: 0.5,
     },
   },
   icon: {
