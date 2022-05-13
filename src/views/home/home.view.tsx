@@ -22,6 +22,10 @@ const Home = (): JSX.Element => {
     navigate(routes.transactionConfirmation.path);
   };
 
+  const resetTransaction = () => {
+    setTransaction(undefined);
+  };
+
   return (
     <>
       <Header />
@@ -34,6 +38,7 @@ const Home = (): JSX.Element => {
           <TransactionForm
             onSubmit={onFormSubmit}
             transaction={transaction}
+            resetTransaction={resetTransaction}
             account={account.data}
           />
         </>

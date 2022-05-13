@@ -22,9 +22,11 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { Chain, Token, TransactionData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
+import { useProvidersContext } from "src/contexts/providers.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
+  resetTransaction: () => void;
   transaction?: TransactionData;
   account: string;
 }
@@ -34,16 +36,21 @@ interface FormChains {
   to: Chain;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
+const TransactionForm: FC<TransactionFormProps> = ({
+  onSubmit,
+  transaction,
+  account,
+  resetTransaction,
+}) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const { estimateBridgeGasPrice } = useBridgeContext();
+  const { connectedProvider } = useProvidersContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
   const [inputError, setInputError] = useState<string>();
-
   const [chains, setChains] = useState<FormChains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
@@ -82,15 +89,26 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   };
 
   useEffect(() => {
+    if (env !== undefined && connectedProvider && transaction === undefined) {
+      const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
+      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
+      if (from && to) {
+        setChains({ from, to });
+      }
+      setToken(env.tokens.ETH);
+      setAmount(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectedProvider, env]);
+
+  useEffect(() => {
     if (transaction !== undefined) {
       setChains({ from: transaction.from, to: transaction.to });
       setToken(transaction.token);
       setAmount(transaction.amount);
-    } else if (env !== undefined) {
-      setChains({ from: env.chains[0], to: env.chains[1] });
-      setToken(env.tokens.ETH);
+      resetTransaction();
     }
-  }, [env, transaction]);
+  }, [transaction, resetTransaction]);
 
   useEffect(() => {
     if (chains) {
@@ -211,6 +229,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
         <List
           placeholder={list.type === "chain" ? "Search network" : "Search token"}
           list={list}
+          selectedItem={list.type === "chain" ? chains.from.key : token.address}
           onClose={() => setList(undefined)}
         />
       )}
