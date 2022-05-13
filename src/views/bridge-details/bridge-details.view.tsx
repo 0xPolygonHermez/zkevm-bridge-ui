@@ -13,9 +13,10 @@ import Chain from "src/views/bridge-details/components/chain/chain";
 import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
+import { getTransactions } from "src/adapters/bridge-api";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getTransactionStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -55,8 +56,8 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
 const BridgeDetails: FC = () => {
   const { transactionId } = useParams();
   const navigate = useNavigate();
-  const { openSnackbar } = useUIContext();
-  const { getTransactions, claim } = useBridgeContext();
+  const { notifyError } = useErrorContext();
+  const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const env = useEnvContext();
@@ -96,10 +97,7 @@ const BridgeDetails: FC = () => {
                   `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
                 );
               } else {
-                openSnackbar({
-                  type: "error",
-                  parsed,
-                });
+                notifyError(error);
               }
             });
           }
@@ -116,9 +114,9 @@ const BridgeDetails: FC = () => {
   }, [connectedProvider, transaction]);
 
   useEffect(() => {
-    if (account.status === "successful") {
+    if (env && account.status === "successful") {
       // ToDo: Get all the data only for the right bridge
-      void getTransactions({ ethereumAddress: account.data })
+      void getTransactions({ env, ethereumAddress: account.data })
         .then((transactions) => {
           const foundTransaction = transactions.find((tx) => {
             return tx.id === transactionId;
@@ -135,26 +133,15 @@ const BridgeDetails: FC = () => {
             });
           }
         })
-        .catch((error) => {
-          void parseError(error).then((parsed) => {
-            openSnackbar({
-              type: "error",
-              parsed,
-            });
-          });
-        });
+        .catch(notifyError);
     }
-  }, [getTransactions, openSnackbar, transactionId, account]);
+  }, [account, env, transactionId, notifyError]);
 
   useEffect(() => {
     if (transaction.status === "successful") {
-      calculateHistoricalFees(transaction.data)
-        .then(setHistoricalFees)
-        .catch((error) => {
-          void parseError(error).then((text) => openSnackbar({ type: "error-msg", text }));
-        });
+      calculateHistoricalFees(transaction.data).then(setHistoricalFees).catch(notifyError);
     }
-  }, [transaction, openSnackbar]);
+  }, [transaction, notifyError]);
 
   if (transaction.status === "pending" || transaction.status === "loading") {
     return <SpinnerIcon />;

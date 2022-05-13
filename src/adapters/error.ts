@@ -9,21 +9,12 @@ interface MessageKeyError {
   message: string;
 }
 
-interface WrongNetworkError {
-  type: "wrong-network";
-}
-
 const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
   z.object({
     message: z.string(),
   })
 );
 
-const wrongNetworkErrorParser = StrictSchema<WrongNetworkError>()(
-  z.object({
-    type: z.literal("wrong-network"),
-  })
-);
 export interface MetamaskUserRejectedRequestError {
   code: 4001;
   message: string;
@@ -93,11 +84,8 @@ export function parseError(error: unknown): Promise<string> {
       });
   } else {
     const parsedMessageKeyError = messageKeyErrorParser.safeParse(error);
-    const parsedWrongNetworkError = wrongNetworkErrorParser.safeParse(error);
     if (parsedMessageKeyError.success) {
       return Promise.resolve(parsedMessageKeyError.data.message);
-    } else if (parsedWrongNetworkError.success) {
-      return Promise.resolve(parsedWrongNetworkError.data.type);
     } else {
       console.error(error);
       return unknownError;

@@ -1,4 +1,5 @@
 import { UIProvider } from "src/contexts/ui.context";
+import { ErrorProvider } from "src/contexts/error.context";
 import { EnvProvider } from "src/contexts/env.context";
 import { ProvidersProvider } from "src/contexts/providers.context";
 import Layout from "src/views/core/layout/layout.view";
@@ -13,19 +14,21 @@ const App = (): JSX.Element => {
 
   return (
     <UIProvider>
-      <EnvProvider>
-        <ProvidersProvider>
-          <BridgeProvider>
-            <PriceOracleProvider>
-              <TransactionProvider>
-                <Layout>
-                  <Router />
-                </Layout>
-              </TransactionProvider>
-            </PriceOracleProvider>
-          </BridgeProvider>
-        </ProvidersProvider>
-      </EnvProvider>
+      <ErrorProvider>
+        <EnvProvider>
+          <ProvidersProvider>
+            <BridgeProvider>
+              <PriceOracleProvider>
+                <TransactionProvider>
+                  <Layout>
+                    <Router />
+                  </Layout>
+                </TransactionProvider>
+              </PriceOracleProvider>
+            </BridgeProvider>
+          </ProvidersProvider>
+        </EnvProvider>
+      </ErrorProvider>
     </UIProvider>
   );
 };
