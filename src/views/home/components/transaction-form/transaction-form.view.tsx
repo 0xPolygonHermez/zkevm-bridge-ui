@@ -27,6 +27,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 
 interface TransactionFormProps {
   onSubmit: (transactionData: TransactionData) => void;
+  resetTransaction: () => void;
   transaction?: TransactionData;
   account: string;
 }
@@ -36,7 +37,12 @@ interface FormChains {
   to: Chain;
 }
 
-const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, account }) => {
+const TransactionForm: FC<TransactionFormProps> = ({
+  onSubmit,
+  transaction,
+  account,
+  resetTransaction,
+}) => {
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
@@ -83,14 +89,17 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
     }
   };
 
-  const onChainChange = useCallback(() => {
-    if (env && connectedProvider) {
-      const from = env.chains.find((chain) => chain.networkId === connectedProvider.chainId);
-      const to = env.chains.find((chain) => chain.networkId !== connectedProvider.chainId);
+  useEffect(() => {
+    if (env !== undefined && connectedProvider && transaction === undefined) {
+      const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
+      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
       if (from && to) {
         setChains({ from, to });
       }
+      setToken(env.tokens.ETH);
+      setAmount(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedProvider, env]);
 
   useEffect(() => {
@@ -98,11 +107,9 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
       setChains({ from: transaction.from, to: transaction.to });
       setToken(transaction.token);
       setAmount(transaction.amount);
-    } else if (env !== undefined) {
-      onChainChange();
-      setToken(env.tokens.ETH);
+      resetTransaction();
     }
-  }, [env, onChainChange, transaction]);
+  }, [transaction, resetTransaction]);
 
   useEffect(() => {
     if (chains) {
@@ -110,11 +117,6 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
       void chains.to.provider.getBalance(account).then(setBalanceTo);
     }
   }, [chains, account]);
-
-  useEffect(() => {
-    onChainChange();
-    setAmount(undefined);
-  }, [onChainChange]);
 
   useEffect(() => {
     if (chains && token) {
