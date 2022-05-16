@@ -168,7 +168,7 @@ const BridgeProvider: FC = (props) => {
   );
 
   const claim = useCallback(
-    async ({
+    ({
       token,
       amount,
       destinationNetwork,
