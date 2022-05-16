@@ -21,7 +21,7 @@ const Activity: FC = () => {
   const { notifyError } = useErrorContext();
   const [bridgeList, setBridgeList] = useState<Bridge[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
-  const [wrongBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
+  const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
   const pendingBridges = bridgeList.filter((bridge) => bridge.status !== "completed");
@@ -47,7 +47,7 @@ const Activity: FC = () => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              setWrongNetworkBridges([...wrongBridges, bridge.id]);
+              setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
             } else {
               notifyError(error);
             }
@@ -100,7 +100,7 @@ const Activity: FC = () => {
         <BridgeCard
           bridge={bridge}
           onClaim={() => onClaim(bridge)}
-          networkError={wrongBridges.includes(bridge.id)}
+          networkError={wrongNetworkBridges.includes(bridge.id)}
           key={bridge.id}
         />
       ))}
