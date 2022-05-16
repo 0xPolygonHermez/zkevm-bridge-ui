@@ -132,12 +132,11 @@ const BridgeProvider: FC = (props) => {
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
-      const tokenAddress =
-        token.network === from.networkId || token.address === ethersConstants.AddressZero
-          ? token.address
-          : await contract.getTokenWrappedAddress(0, token.address);
-
       const executeBridge = async () => {
+        const tokenAddress =
+          token.network === from.networkId || token.address === ethersConstants.AddressZero
+            ? token.address
+            : await contract.getTokenWrappedAddress(0, token.address);
         if (token.address !== ethersConstants.AddressZero) {
           if (account.status !== "successful") {
             throw new Error("The account address is not available");
