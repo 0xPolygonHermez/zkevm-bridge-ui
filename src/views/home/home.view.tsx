@@ -22,7 +22,7 @@ const Home = (): JSX.Element => {
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const resetFormData = () => {
+  const resetForm = () => {
     setFormData(undefined);
   };
 
@@ -38,7 +38,7 @@ const Home = (): JSX.Element => {
           <BridgeForm
             onSubmit={onFormSubmit}
             formData={formData}
-            resetFormData={resetFormData}
+            resetForm={resetForm}
             account={account.data}
           />
         </>

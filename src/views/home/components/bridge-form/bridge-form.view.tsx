@@ -25,10 +25,10 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
 
 interface BridgeFormProps {
-  onSubmit: (formData: FormData) => void;
-  resetFormData: () => void;
-  formData?: FormData;
   account: string;
+  formData?: FormData;
+  resetForm: () => void;
+  onSubmit: (formData: FormData) => void;
 }
 
 interface FormChains {
@@ -36,7 +36,7 @@ interface FormChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({ formData, account, resetFormData, onSubmit }) => {
+const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmit }) => {
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -101,9 +101,9 @@ const BridgeForm: FC<BridgeFormProps> = ({ formData, account, resetFormData, onS
       setChains({ from: formData.from, to: formData.to });
       setToken(formData.token);
       setAmount(formData.amount);
-      resetFormData();
+      resetForm();
     }
-  }, [formData, resetFormData]);
+  }, [formData, resetForm]);
 
   useEffect(() => {
     if (chains) {
