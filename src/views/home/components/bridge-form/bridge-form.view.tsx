@@ -25,9 +25,9 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
 
 interface BridgeFormProps {
-  onSubmit: (transactionData: FormData) => void;
-  resetTransaction: () => void;
-  transaction?: FormData;
+  onSubmit: (formData: FormData) => void;
+  resetFormData: () => void;
+  formData?: FormData;
   account: string;
 }
 
@@ -36,7 +36,7 @@ interface FormChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({ onSubmit, transaction, account, resetTransaction }) => {
+const BridgeForm: FC<BridgeFormProps> = ({ formData, account, resetFormData, onSubmit }) => {
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -84,7 +84,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ onSubmit, transaction, account, reset
   };
 
   useEffect(() => {
-    if (env !== undefined && connectedProvider && transaction === undefined) {
+    if (env !== undefined && connectedProvider && formData === undefined) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
       if (from && to) {
@@ -97,13 +97,13 @@ const BridgeForm: FC<BridgeFormProps> = ({ onSubmit, transaction, account, reset
   }, [connectedProvider, env]);
 
   useEffect(() => {
-    if (transaction !== undefined) {
-      setChains({ from: transaction.from, to: transaction.to });
-      setToken(transaction.token);
-      setAmount(transaction.amount);
-      resetTransaction();
+    if (formData !== undefined) {
+      setChains({ from: formData.from, to: formData.to });
+      setToken(formData.token);
+      setAmount(formData.amount);
+      resetFormData();
     }
-  }, [transaction, resetTransaction]);
+  }, [formData, resetFormData]);
 
   useEffect(() => {
     if (chains) {

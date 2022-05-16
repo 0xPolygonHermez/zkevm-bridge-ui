@@ -7,23 +7,23 @@ import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useTransactionContext } from "src/contexts/transaction.context";
+import { useFormContext } from "src/contexts/form.context";
 import { FormData } from "src/domain";
 import routes from "src/routes";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
-  const { transaction, setTransaction } = useTransactionContext();
+  const { formData, setFormData } = useFormContext();
   const { account } = useProvidersContext();
 
-  const onFormSubmit = (transaction: FormData) => {
-    setTransaction(transaction);
+  const onFormSubmit = (formData: FormData) => {
+    setFormData(formData);
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const resetTransaction = () => {
-    setTransaction(undefined);
+  const resetFormData = () => {
+    setFormData(undefined);
   };
 
   return (
@@ -37,8 +37,8 @@ const Home = (): JSX.Element => {
           </div>
           <BridgeForm
             onSubmit={onFormSubmit}
-            transaction={transaction}
-            resetTransaction={resetTransaction}
+            formData={formData}
+            resetFormData={resetFormData}
             account={account.data}
           />
         </>
