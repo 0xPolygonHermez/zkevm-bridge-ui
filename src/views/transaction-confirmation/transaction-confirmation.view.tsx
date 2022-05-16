@@ -17,12 +17,12 @@ import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
-import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 
 const TransactionConfirmation: FC = () => {
   const classes = useConfirmationStyles();
   const navigate = useNavigate();
-  const { openSnackbar } = useUIContext();
+  const { notifyError } = useErrorContext();
   const { bridge } = useBridgeContext();
   const { transaction, setTransaction } = useTransactionContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -48,10 +48,7 @@ const TransactionConfirmation: FC = () => {
               if (parsed === "wrong-network") {
                 setIncorrectNetworkMessage(`Switch to ${getChainName(from)} to continue`);
               } else {
-                openSnackbar({
-                  type: "error",
-                  parsed,
-                });
+                notifyError(error);
               }
             });
           }

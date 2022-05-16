@@ -7,18 +7,12 @@ import {
 import { parseUnits } from "ethers/lib/utils";
 import { createContext, FC, useContext, useCallback } from "react";
 
-import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Transaction, Chain, Token } from "src/domain";
+import { Chain, Token } from "src/domain";
 import { Bridge__factory } from "src/types/contracts/bridge";
-import * as bridgeApi from "src/adapters/bridge-api";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { calculateFee } from "src/utils/fees";
-
-interface GetTransactionsParams {
-  ethereumAddress: string;
-}
 
 interface GetBalanceParams {
   token: Token;
@@ -54,7 +48,6 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  getTransactions: (params: GetTransactionsParams) => Promise<Transaction[]>;
   getBalance: (params: GetBalanceParams) => Promise<BigNumber>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
@@ -64,9 +57,6 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
-  getTransactions: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -82,19 +72,7 @@ const bridgeContext = createContext<BridgeContext>({
 });
 
 const BridgeProvider: FC = (props) => {
-  const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
-
-  const getTransactions = useCallback(
-    ({ ethereumAddress }: GetTransactionsParams) => {
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
-      return bridgeApi.getTransactions({ env, ethereumAddress });
-    },
-    [env]
-  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -182,7 +160,7 @@ const BridgeProvider: FC = (props) => {
       } else {
         return changeNetwork(from)
           .catch(() => {
-            throw { type: "wrong-network" };
+            throw "wrong-network";
           })
           .then(executeBridge);
       }
@@ -234,7 +212,7 @@ const BridgeProvider: FC = (props) => {
       } else {
         return changeNetwork(destinationNetwork)
           .catch(() => {
-            throw { type: "wrong-network" };
+            throw "wrong-network";
           })
           .then(executeClaim);
       }
@@ -259,7 +237,6 @@ const BridgeProvider: FC = (props) => {
   return (
     <bridgeContext.Provider
       value={{
-        getTransactions,
         estimateBridgeGasPrice,
         bridge,
         claim,
