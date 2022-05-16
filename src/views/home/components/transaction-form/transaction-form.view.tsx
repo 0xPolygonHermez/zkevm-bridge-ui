@@ -39,7 +39,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   const classes = useTransactionFormStyles();
   const env = useEnvContext();
   const { openSnackbar } = useUIContext();
-  const { estimateBridgeGasPrice } = useBridgeContext();
+  const { estimateBridgeGasPrice, getBalance } = useBridgeContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
@@ -62,6 +62,11 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
         setAmount(undefined);
       }
     }
+  };
+
+  const onTokenButtonClick = (token: Token) => {
+    setToken(token);
+    setList(undefined);
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
@@ -94,11 +99,20 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
   }, [env, transaction]);
 
   useEffect(() => {
-    if (chains) {
-      void chains.from.provider.getBalance(account).then(setBalanceFrom);
-      void chains.to.provider.getBalance(account).then(setBalanceTo);
+    if (chains && token && env) {
+      if (token.address === env.tokens.ETH.address) {
+        void chains.from.provider.getBalance(account).then(setBalanceFrom);
+        void chains.to.provider.getBalance(account).then(setBalanceTo);
+      } else {
+        void getBalance({ token, chain: chains.from, ethereumAddress: account })
+          .then(setBalanceFrom)
+          .catch(() => setBalanceTo(undefined));
+        void getBalance({ token, chain: chains.to, ethereumAddress: account })
+          .then(setBalanceTo)
+          .catch(() => setBalanceTo(undefined));
+      }
     }
-  }, [chains, account]);
+  }, [chains, account, token, env, getBalance]);
 
   useEffect(() => {
     if (chains && token) {
@@ -115,7 +129,7 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           if (isEthersInsufficientFundsError(error)) {
             setEstimatedFee({
               status: "failed",
-              error: "You don't have enough ETH to pay for the fees",
+              error: `You don't have enough ${token.symbol} to pay for the fees`,
             });
           } else {
             void parseError(error).then((errorMessage) => {
@@ -160,10 +174,21 @@ const TransactionForm: FC<TransactionFormProps> = ({ onSubmit, transaction, acco
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <div className={classes.tokenSelector}>
+          <button
+            className={classes.tokenSelector}
+            onClick={() =>
+              setList({
+                type: "token",
+                items: Object.values(env.tokens),
+                onClick: onTokenButtonClick,
+              })
+            }
+            type="button"
+          >
             <Icon url={token.logoURI} size={24} />
             <Typography type="h2">{token.symbol}</Typography>
-          </div>
+            <CaretDown />
+          </button>
           <AmountInput
             value={amount}
             token={token}

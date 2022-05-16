@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import { getChains, ETH_TOKEN, getUsdtToken } from "src/constants";
+import { getChains, ETH_TOKEN, getUsdtToken, MATIC_TOKEN } from "src/constants";
 
 interface Env {
   REACT_APP_ETHEREUM_RPC_URL: string;
@@ -72,6 +72,7 @@ const envToDomain = ({
         address: REACT_APP_USDT_ADDRESS,
         network: usdtNetwork,
       }),
+      MATIC: MATIC_TOKEN,
     },
     version: REACT_APP_VERSION,
   }));

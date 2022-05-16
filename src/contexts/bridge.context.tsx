@@ -20,6 +20,11 @@ interface GetTransactionsParams {
   ethereumAddress: string;
 }
 
+interface GetBalanceParams {
+  token: Token;
+  chain: Chain;
+  ethereumAddress: string;
+}
 interface EstimateBridgeGasPriceParams {
   from: Chain;
   token: Token;
@@ -50,6 +55,7 @@ interface ClaimParams {
 
 interface BridgeContext {
   getTransactions: (params: GetTransactionsParams) => Promise<Transaction[]>;
+  getBalance: (params: GetBalanceParams) => Promise<BigNumber>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
@@ -68,6 +74,9 @@ const bridgeContext = createContext<BridgeContext>({
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   claim: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getBalance: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
 });
@@ -103,7 +112,7 @@ const BridgeProvider: FC = (props) => {
 
   const estimateBridgeGasPrice = useCallback(
     ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
-      const amount = parseUnits("1", token.address);
+      const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
@@ -120,7 +129,6 @@ const BridgeProvider: FC = (props) => {
         .then((gasLimit) => {
           const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
           const safeGasLimit = gasLimit.add(gasIncrease);
-
           return estimateGasPrice({ chain: from, gasLimit: safeGasLimit });
         });
     },
@@ -146,24 +154,28 @@ const BridgeProvider: FC = (props) => {
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
-      if (token.address !== ethersConstants.AddressZero) {
-        if (account.status !== "successful") {
-          throw new Error("The account address is not available");
+      const tokenAddress =
+        token.network === from.networkId || token.address === ethersConstants.AddressZero
+          ? token.address
+          : await contract.getTokenWrappedAddress(0, token.address);
+
+      const executeBridge = async () => {
+        if (token.address !== ethersConstants.AddressZero) {
+          if (account.status !== "successful") {
+            throw new Error("The account address is not available");
+          }
+
+          const erc20Contract = Erc20__factory.connect(
+            tokenAddress,
+            connectedProvider.provider.getSigner()
+          );
+          const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
+          if (allowance.lt(amount)) {
+            await erc20Contract.approve(from.contractAddress, amount);
+          }
         }
-
-        const erc20Contract = Erc20__factory.connect(
-          token.address,
-          connectedProvider.provider.getSigner()
-        );
-        const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
-
-        if (allowance.lt(amount)) {
-          await erc20Contract.approve(from.contractAddress, amount);
-        }
-      }
-
-      const executeBridge = () =>
-        contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
+        return contract.bridge(tokenAddress, amount, to.networkId, destinationAddress, overrides);
+      };
 
       if (from.chainId === connectedProvider?.chainId) {
         return executeBridge();
@@ -179,7 +191,7 @@ const BridgeProvider: FC = (props) => {
   );
 
   const claim = useCallback(
-    ({
+    async ({
       token,
       amount,
       destinationNetwork,
@@ -230,6 +242,20 @@ const BridgeProvider: FC = (props) => {
     [changeNetwork, connectedProvider]
   );
 
+  const getBalance = async ({ token, chain, ethereumAddress }: GetBalanceParams) => {
+    const contract = Bridge__factory.connect(chain.contractAddress, chain.provider);
+    const address =
+      token.network === chain.networkId
+        ? token.address
+        : await contract.getTokenWrappedAddress(0, token.address);
+    if (address === ethersConstants.AddressZero) {
+      return Promise.reject(new Error("Token wrapped address is not available"));
+    }
+    const erc20Contract = Erc20__factory.connect(address, chain.provider);
+    const balance = await erc20Contract.balanceOf(ethereumAddress);
+    return balance;
+  };
+
   return (
     <bridgeContext.Provider
       value={{
@@ -237,6 +263,7 @@ const BridgeProvider: FC = (props) => {
         estimateBridgeGasPrice,
         bridge,
         claim,
+        getBalance,
       }}
       {...props}
     />

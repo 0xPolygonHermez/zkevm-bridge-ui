@@ -1,5 +1,5 @@
 import { BigNumber, constants as ethersConstants } from "ethers";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 
 import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
@@ -62,7 +62,7 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
       const maxAmountWithoutFee = balance.sub(actualFee);
 
       if (maxAmountWithoutFee.gt(0)) {
-        const newValue = formatUnits(maxAmountWithoutFee, token.decimals);
+        const newValue = formatTokenAmount(maxAmountWithoutFee, token);
 
         setInputValue(newValue);
         updateAmountInput(maxAmountWithoutFee);
