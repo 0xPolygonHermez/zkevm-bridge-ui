@@ -16,12 +16,12 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
-import { getTransactions } from "src/adapters/bridge-api";
+import { getBridges } from "src/adapters/bridge-api";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { getTransactionStatus, getChainName } from "src/utils/labels";
+import { getBridgeStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
-import { Transaction } from "src/domain";
+import { Bridge } from "src/domain";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 
@@ -30,19 +30,19 @@ interface HistoricalFees {
   step2?: string;
 }
 
-const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFees> => {
+const calculateHistoricalFees = (bridge: Bridge): Promise<HistoricalFees> => {
   const feeToString = (fee: BigNumber | undefined) =>
-    fee ? formatTokenAmount(fee, transaction.bridge.token) : undefined;
+    fee ? formatTokenAmount(fee, bridge.deposit.token) : undefined;
 
-  const step1Promise = transaction.bridge.networkId.provider
-    .getTransaction(transaction.bridge.txHash)
+  const step1Promise = bridge.deposit.networkId.provider
+    .getTransaction(bridge.deposit.txHash)
     .then(calculateTransactionResponseFee)
     .then(feeToString);
 
   const step2Promise =
-    transaction.status === "completed"
-      ? transaction.bridge.destinationNetwork.provider
-          .getTransaction(transaction.claim.txHash)
+    bridge.status === "completed"
+      ? bridge.deposit.destinationNetwork.provider
+          .getTransaction(bridge.claim.txHash)
           .then(calculateTransactionResponseFee)
           .then(feeToString)
       : Promise.resolve(undefined);
@@ -54,7 +54,7 @@ const calculateHistoricalFees = (transaction: Transaction): Promise<HistoricalFe
 };
 
 const BridgeDetails: FC = () => {
-  const { transactionId } = useParams();
+  const { bridgeId } = useParams();
   const navigate = useNavigate();
   const { notifyError } = useErrorContext();
   const { claim } = useBridgeContext();
@@ -62,29 +62,29 @@ const BridgeDetails: FC = () => {
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const env = useEnvContext();
 
-  const [transaction, setTransaction] = useState<AsyncTask<Transaction, string>>({
+  const [bridge, setBridge] = useState<AsyncTask<Bridge, string>>({
     status: "pending",
   });
   const [historicalFees, setHistoricalFees] = useState<HistoricalFees>({});
 
   const classes = useBridgeDetailsStyles({
-    status: transaction.status === "successful" ? transaction.data.status : undefined,
+    status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
   const onClaim = () => {
-    if (transaction.status === "successful" && transaction.data.status === "on-hold") {
-      const tx = transaction.data;
+    if (bridge.status === "successful" && bridge.data.status === "on-hold") {
+      const { deposit, merkleProof } = bridge.data;
       claim({
-        token: tx.bridge.token,
-        amount: tx.bridge.amount,
-        destinationNetwork: tx.bridge.destinationNetwork,
-        destinationAddress: tx.bridge.destinationAddress,
-        index: tx.bridge.depositCount,
-        smtProof: tx.merkleProof.merkleProof,
-        globalExitRootNum: tx.merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: tx.merkleProof.mainExitRoot,
-        rollupExitRoot: tx.merkleProof.rollupExitRoot,
+        token: deposit.token,
+        amount: deposit.amount,
+        destinationNetwork: deposit.destinationNetwork,
+        destinationAddress: deposit.destinationAddress,
+        index: deposit.depositCount,
+        smtProof: merkleProof.merkleProof,
+        globalExitRootNum: merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: merkleProof.mainExitRoot,
+        rollupExitRoot: merkleProof.rollupExitRoot,
       })
         .then(() => {
           navigate(routes.activity.path);
@@ -94,7 +94,7 @@ const BridgeDetails: FC = () => {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
                 setIncorrectNetworkMessage(
-                  `Switch to ${getChainName(tx.bridge.destinationNetwork)} to continue`
+                  `Switch to ${getChainName(deposit.destinationNetwork)} to continue`
                 );
               } else {
                 notifyError(error);
@@ -106,60 +106,60 @@ const BridgeDetails: FC = () => {
   };
 
   useEffect(() => {
-    if (transaction.status === "successful") {
-      if (transaction.data.bridge.destinationNetwork.chainId === connectedProvider?.chainId) {
+    if (bridge.status === "successful") {
+      if (bridge.data.deposit.destinationNetwork.chainId === connectedProvider?.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }
-  }, [connectedProvider, transaction]);
+  }, [connectedProvider, bridge]);
 
   useEffect(() => {
     if (env && account.status === "successful") {
       // ToDo: Get all the data only for the right bridge
-      void getTransactions({ env, ethereumAddress: account.data })
-        .then((transactions) => {
-          const foundTransaction = transactions.find((tx) => {
-            return tx.id === transactionId;
+      void getBridges({ env, ethereumAddress: account.data })
+        .then((bridges) => {
+          const foundBridge = bridges.find((bridge) => {
+            return bridge.id === bridgeId;
           });
-          if (foundTransaction) {
-            setTransaction({
+          if (foundBridge) {
+            setBridge({
               status: "successful",
-              data: foundTransaction,
+              data: foundBridge,
             });
           } else {
-            setTransaction({
+            setBridge({
               status: "failed",
-              error: "Transaction not found",
+              error: "Bridge not found",
             });
           }
         })
         .catch(notifyError);
     }
-  }, [account, env, transactionId, notifyError]);
+  }, [account, env, bridgeId, notifyError]);
 
   useEffect(() => {
-    if (transaction.status === "successful") {
-      calculateHistoricalFees(transaction.data).then(setHistoricalFees).catch(notifyError);
+    if (bridge.status === "successful") {
+      calculateHistoricalFees(bridge.data).then(setHistoricalFees).catch(notifyError);
     }
-  }, [transaction, notifyError]);
+  }, [bridge, notifyError]);
 
-  if (transaction.status === "pending" || transaction.status === "loading") {
+  if (bridge.status === "pending" || bridge.status === "loading") {
     return <SpinnerIcon />;
   }
 
-  if (transaction.status === "failed") {
+  if (bridge.status === "failed") {
     return <Navigate to={routes.activity.path} replace />;
   }
 
   const {
     status,
-    bridge: { amount, destinationNetwork, networkId, token, txHash },
-  } = transaction.data;
+    deposit: { amount, destinationNetwork, networkId, token, txHash },
+  } = bridge.data;
 
   const bridgeTxUrl = `${networkId.explorerUrl}/tx/${txHash}`;
   const claimTxUrl =
-    transaction.data.status === "completed"
-      ? `${destinationNetwork.explorerUrl}/tx/${transaction.data.claim.txHash}`
+    bridge.data.status === "completed"
+      ? `${destinationNetwork.explorerUrl}/tx/${bridge.data.claim.txHash}`
       : undefined;
 
   const { step1: step1Fee, step2: step2Fee } = historicalFees;
@@ -182,7 +182,7 @@ const BridgeDetails: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.alignRow}>
             <span className={classes.dot} />
-            {getTransactionStatus(status)}
+            {getBridgeStatus(status)}
           </Typography>
         </div>
         <div className={classes.row}>
@@ -200,7 +200,7 @@ const BridgeDetails: FC = () => {
         {step1Fee && (
           <div className={classes.row}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 1 Fee ({getChainName(transaction.data.bridge.networkId)})
+              Step 1 Fee ({getChainName(bridge.data.deposit.networkId)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
               {step1Fee} {env.tokens.ETH.symbol}
@@ -210,7 +210,7 @@ const BridgeDetails: FC = () => {
         {step2Fee && (
           <div className={classes.row}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 2 Fee ({getChainName(transaction.data.bridge.destinationNetwork)})
+              Step 2 Fee ({getChainName(bridge.data.deposit.destinationNetwork)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
               {step2Fee} {env.tokens.ETH.symbol}

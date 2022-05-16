@@ -80,9 +80,7 @@ const BridgeConfirmation: FC = () => {
       <Card className={classes.card}>
         <Icon url={formData.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">
-          {`${formatTokenAmount(formData.amount, formData.token)} ${
-            formData.token.symbol
-          }`}
+          {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
         </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>

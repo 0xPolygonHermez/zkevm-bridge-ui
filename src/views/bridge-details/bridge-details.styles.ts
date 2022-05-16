@@ -1,10 +1,10 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
-import { Transaction } from "src/domain";
+import { Bridge } from "src/domain";
 
 interface StylesProps {
-  status?: Transaction["status"];
+  status?: Bridge["status"];
 }
 
 const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({

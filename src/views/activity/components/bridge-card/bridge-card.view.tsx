@@ -10,22 +10,22 @@ import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import Error from "src/views/shared/error/error.view";
-import { Transaction } from "src/domain";
-import { getChainName, getTransactionStatus } from "src/utils/labels";
+import { Bridge } from "src/domain";
+import { getChainName, getBridgeStatus } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 
 export interface BridgeCardProps {
-  transaction: Transaction;
+  bridge: Bridge;
   networkError: boolean;
   onClaim: () => void;
 }
 
-const BridgeCard: FC<BridgeCardProps> = ({ transaction, networkError, onClaim }) => {
+const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
   const {
     status,
     id,
-    bridge: { destinationNetwork, amount, token },
-  } = transaction;
+    deposit: { destinationNetwork, amount, token },
+  } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 
@@ -58,7 +58,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ transaction, networkError, onClaim })
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
           >
-            {getTransactionStatus(status)}
+            {getBridgeStatus(status)}
           </span>
         </div>
         <div className={classes.tokenColumn}>

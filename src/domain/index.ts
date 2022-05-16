@@ -75,26 +75,26 @@ export type Message =
       parsed: string;
     };
 
-export type Transaction =
+export type Bridge =
   | {
       status: "initiated";
       id: string;
-      bridge: Bridge;
+      deposit: Deposit;
     }
   | {
       status: "on-hold";
       id: string;
-      bridge: Bridge;
+      deposit: Deposit;
       merkleProof: MerkleProof;
     }
   | {
       status: "completed";
       id: string;
-      bridge: Bridge;
+      deposit: Deposit;
       claim: Claim;
     };
 
-export interface Bridge {
+export interface Deposit {
   token: Token;
   amount: BigNumber;
   networkId: Chain;

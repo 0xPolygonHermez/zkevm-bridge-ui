@@ -5,7 +5,7 @@ import { BigNumber } from "ethers";
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
 
-interface BridgeInput {
+interface DepositInput {
   token_addr: string;
   amount: string;
   network_id: number;
@@ -16,7 +16,7 @@ interface BridgeInput {
   tx_hash: string;
 }
 
-interface BridgeOutput {
+interface DepositOutput {
   token_addr: string;
   amount: string;
   network_id: number;
@@ -47,7 +47,7 @@ interface MerkleProof {
   rollup_exit_root: string;
 }
 
-const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
+const depositParser = StrictSchema<DepositInput, DepositOutput>()(
   z.object({
     token_addr: z.string(),
     amount: z.string(),
@@ -60,16 +60,16 @@ const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
   })
 );
 
-const getBridgesResponseParser = StrictSchema<
+const getDepositsResponseParser = StrictSchema<
   {
-    deposits?: BridgeInput[];
+    deposits?: DepositInput[];
   },
   {
-    deposits?: BridgeOutput[];
+    deposits?: DepositOutput[];
   }
 >()(
   z.object({
-    deposits: z.optional(z.array(bridgeParser)),
+    deposits: z.optional(z.array(depositParser)),
   })
 );
 
@@ -141,28 +141,28 @@ const getClaimsResponseParser = StrictSchema<
   })
 );
 
-const getTransactions = async ({
+const getBridges = async ({
   env,
   ethereumAddress,
 }: {
   env: domain.Env;
   ethereumAddress: string;
-}): Promise<domain.Transaction[]> => {
+}): Promise<domain.Bridge[]> => {
   const apiUrl = env.bridgeApiUrl;
-  const [bridges, claims] = await Promise.all([
-    getBridges({ apiUrl, ethereumAddress }),
+  const [apiDeposits, apiClaims] = await Promise.all([
+    getDeposits({ apiUrl, ethereumAddress }),
     getClaims({ apiUrl, ethereumAddress }),
   ]);
 
   return await Promise.all(
-    bridges
+    apiDeposits
       .filter(
-        (apiBridge) =>
-          apiBridge.token_addr === env.tokens.ETH.address &&
-          apiBridge.orig_net === env.tokens.ETH.network
+        (apiDeposit) =>
+          apiDeposit.token_addr === env.tokens.ETH.address &&
+          apiDeposit.orig_net === env.tokens.ETH.network
       )
-      .map(async (apiBridge): Promise<domain.Transaction> => {
-        const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash } = apiBridge;
+      .map(async (apiDeposit): Promise<domain.Bridge> => {
+        const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash } = apiDeposit;
 
         const networkId = env.chains.find((chain) => chain.networkId === network_id);
         if (networkId === undefined) {
@@ -178,7 +178,7 @@ const getTransactions = async ({
           );
         }
 
-        const bridge: domain.Bridge = {
+        const deposit: domain.Deposit = {
           token: env.tokens.ETH,
           amount: BigNumber.from(amount),
           destinationAddress: dest_addr,
@@ -188,61 +188,61 @@ const getTransactions = async ({
           destinationNetwork,
         };
 
-        const claim = claims.find(
+        const apiClaim = apiClaims.find(
           (claim) =>
-            claim.index === bridge.depositCount &&
-            claim.network_id === bridge.destinationNetwork.networkId
+            claim.index === deposit.depositCount &&
+            claim.network_id === deposit.destinationNetwork.networkId
         );
 
-        const id = `${bridge.depositCount}-${bridge.destinationNetwork.networkId}`;
+        const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
 
-        if (claim) {
+        if (apiClaim) {
           return {
             status: "completed",
             id,
-            bridge,
+            deposit,
             claim: {
-              txHash: claim.tx_hash,
+              txHash: apiClaim.tx_hash,
             },
           };
         }
 
         const claimStatus = await getClaimStatus({
           apiUrl,
-          networkId: bridge.networkId.networkId,
-          depositCount: bridge.depositCount,
+          networkId: deposit.networkId.networkId,
+          depositCount: deposit.depositCount,
         });
 
         if (claimStatus === false) {
           return {
             status: "initiated",
             id,
-            bridge,
+            deposit,
           };
         }
 
         const merkleProof = await getMerkleProof({
           apiUrl,
-          networkId: bridge.networkId.networkId,
-          depositCount: bridge.depositCount,
+          networkId: deposit.networkId.networkId,
+          depositCount: deposit.depositCount,
         });
 
         return {
           status: "on-hold",
           id,
-          bridge,
+          deposit,
           merkleProof,
         };
       })
   );
 };
 
-interface GetBridgesParams {
+interface GetDepositsParams {
   apiUrl: string;
   ethereumAddress: string;
 }
 
-const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<BridgeOutput[]> => {
+const getDeposits = ({ apiUrl, ethereumAddress }: GetDepositsParams): Promise<DepositOutput[]> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -250,7 +250,7 @@ const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<Brid
       method: "GET",
     })
     .then((res) => {
-      const parsedData = getBridgesResponseParser.safeParse(res.data);
+      const parsedData = getDepositsResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
         return parsedData.data.deposits !== undefined ? parsedData.data.deposits : [];
@@ -347,4 +347,4 @@ const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimO
     });
 };
 
-export { getTransactions };
+export { getBridges };
