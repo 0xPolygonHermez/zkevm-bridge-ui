@@ -118,18 +118,21 @@ const TransactionForm: FC<TransactionFormProps> = ({
   useEffect(() => {
     if (chains && token && env) {
       if (token.address === env.tokens.ETH.address) {
-        void chains.from.provider.getBalance(account).then(setBalanceFrom);
-        void chains.to.provider.getBalance(account).then(setBalanceTo);
+        void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(notifyError);
+        void chains.to.provider
+          .getBalance(account)
+          .then(setBalanceTo)
+          .catch(() => setBalanceTo(undefined));
       } else {
         void getBalance({ token, chain: chains.from, ethereumAddress: account })
           .then(setBalanceFrom)
-          .catch(() => setBalanceTo(undefined));
+          .catch(notifyError);
         void getBalance({ token, chain: chains.to, ethereumAddress: account })
           .then(setBalanceTo)
           .catch(() => setBalanceTo(undefined));
       }
     }
-  }, [chains, account, token, env, getBalance]);
+  }, [chains, account, token, env, getBalance, notifyError]);
 
   useEffect(() => {
     if (chains && token) {
