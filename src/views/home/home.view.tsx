@@ -8,7 +8,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTransactionContext } from "src/contexts/transaction.context";
-import { TransactionData } from "src/domain";
+import { FormData } from "src/domain";
 import routes from "src/routes";
 
 const Home = (): JSX.Element => {
@@ -17,7 +17,7 @@ const Home = (): JSX.Element => {
   const { transaction, setTransaction } = useTransactionContext();
   const { account } = useProvidersContext();
 
-  const onFormSubmit = (transaction: TransactionData) => {
+  const onFormSubmit = (transaction: FormData) => {
     setTransaction(transaction);
     navigate(routes.bridgeConfirmation.path);
   };

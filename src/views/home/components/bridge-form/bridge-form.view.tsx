@@ -20,14 +20,14 @@ import {
 import { getChainName } from "src/utils/labels";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { Chain, Token, TransactionData } from "src/domain";
+import { Chain, Token, FormData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
 
 interface BridgeFormProps {
-  onSubmit: (transactionData: TransactionData) => void;
+  onSubmit: (transactionData: FormData) => void;
   resetTransaction: () => void;
-  transaction?: TransactionData;
+  transaction?: FormData;
   account: string;
 }
 

@@ -116,7 +116,7 @@ export interface MerkleProof {
   rollupExitRoot: string;
 }
 
-export interface TransactionData {
+export interface FormData {
   from: Chain;
   to: Chain;
   token: Token;
