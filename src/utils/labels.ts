@@ -1,6 +1,6 @@
-import { Transaction, Chain } from "src/domain";
+import { Bridge, Chain } from "src/domain";
 
-export function getTransactionStatus(status: Transaction["status"]): string {
+export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
     case "initiated":
       return "Initiated";

@@ -3,7 +3,7 @@ import { FC } from "react";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as HermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 import Typography from "src/views/shared/typography/typography.view";
-import useChainStyles from "src/views/transaction-details/components/chain/chain.styles";
+import useChainStyles from "src/views/bridge-details/components/chain/chain.styles";
 import * as domain from "src/domain";
 
 interface ChainProps {

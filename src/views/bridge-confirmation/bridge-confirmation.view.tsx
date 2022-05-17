@@ -2,9 +2,9 @@ import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
-import useConfirmationStyles from "src/views/transaction-confirmation/transaction-confirmation.styles";
+import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import Header from "src/views/shared/header/header.view";
-import { useTransactionContext } from "src/contexts/transaction.context";
+import { useFormContext } from "src/contexts/form.context";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
@@ -19,18 +19,18 @@ import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
 
-const TransactionConfirmation: FC = () => {
-  const classes = useConfirmationStyles();
+const BridgeConfirmation: FC = () => {
+  const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const { notifyError } = useErrorContext();
   const { bridge } = useBridgeContext();
-  const { transaction, setTransaction } = useTransactionContext();
+  const { formData, setFormData } = useFormContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
 
   const onClick = () => {
-    if (transaction && account.status === "successful") {
-      const { token, amount, from, to } = transaction;
+    if (formData && account.status === "successful") {
+      const { token, amount, from, to } = formData;
       bridge({
         from,
         token,
@@ -40,7 +40,7 @@ const TransactionConfirmation: FC = () => {
       })
         .then(() => {
           navigate(routes.activity.path);
-          setTransaction(undefined);
+          setFormData(undefined);
         })
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
@@ -57,40 +57,38 @@ const TransactionConfirmation: FC = () => {
   };
 
   useEffect(() => {
-    if (transaction) {
-      if (transaction.from.chainId === connectedProvider?.chainId) {
+    if (formData) {
+      if (formData.from.chainId === connectedProvider?.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }
-  }, [connectedProvider, transaction]);
+  }, [connectedProvider, formData]);
 
   useEffect(() => {
-    if (!transaction) {
+    if (!formData) {
       navigate(routes.home.path);
     }
-  }, [navigate, transaction]);
+  }, [navigate, formData]);
 
-  if (!transaction) {
+  if (!formData) {
     return null;
   }
 
   return (
     <>
-      <Header title="Confirm Transfer" backTo="home" />
+      <Header title="Confirm Bridge" backTo="home" />
       <Card className={classes.card}>
-        <Icon url={transaction.token.logoURI} size={46} className={classes.icon} />
+        <Icon url={formData.token.logoURI} size={46} className={classes.icon} />
         <Typography type="h1">
-          {`${formatTokenAmount(transaction.amount, transaction.token)} ${
-            transaction.token.symbol
-          }`}
+          {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
         </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <transaction.from.Icon /> {getChainName(transaction.from)}
+            <formData.from.Icon /> {getChainName(formData.from)}
           </div>
           <ArrowRightIcon className={classes.arrow} />
           <div className={classes.chainBox}>
-            <transaction.to.Icon /> {getChainName(transaction.to)}
+            <formData.to.Icon /> {getChainName(formData.to)}
           </div>
         </div>
         <div className={classes.fees}>
@@ -98,19 +96,19 @@ const TransactionConfirmation: FC = () => {
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            <Icon url={transaction.token.logoURI} size={20} />
-            {`~ ${formatTokenAmount(transaction.estimatedFee, transaction.token)} ${
-              transaction.token.symbol
+            <Icon url={formData.token.logoURI} size={20} />
+            {`~ ${formatTokenAmount(formData.estimatedFee, formData.token)} ${
+              formData.token.symbol
             }`}
           </Typography>
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick}>Transfer</Button>
+        <Button onClick={onClick}>Bridge</Button>
         {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
       </div>
     </>
   );
 };
 
-export default TransactionConfirmation;
+export default BridgeConfirmation;

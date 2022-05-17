@@ -1,13 +1,13 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
-import { Transaction } from "src/domain";
+import { Bridge } from "src/domain";
 
 interface StylesProps {
-  status?: Transaction["status"];
+  status?: Bridge["status"];
 }
 
-const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
+const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   card: {
     padding: theme.spacing(3),
   },
@@ -93,4 +93,4 @@ const useTransactionDetailsStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTransactionDetailsStyles;
+export default useBridgeDetailsStyles;
