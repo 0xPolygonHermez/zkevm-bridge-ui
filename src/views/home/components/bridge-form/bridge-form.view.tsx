@@ -161,7 +161,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           if (isEthersInsufficientFundsError(error)) {
             setEstimatedFee({
               status: "failed",
-              error: `You don't have enough ${token.symbol} to pay for the fees`,
+              error: `You don't have enough ETH to pay for the fees`,
             });
           } else {
             notifyError(error);
