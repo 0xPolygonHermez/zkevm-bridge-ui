@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
+const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   card: {
     padding: [theme.spacing(2), theme.spacing(3)],
     marginTop: theme.spacing(2),
@@ -95,4 +95,4 @@ const useTransactionCardStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTransactionCardStyles;
+export default useBridgeCardStyles;

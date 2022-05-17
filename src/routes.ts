@@ -2,8 +2,8 @@ import Home from "src/views/home/home.view";
 import Login from "src/views/login/login.view";
 import Settings from "src/views/settings/settings.view";
 import Activity from "src/views/activity/activity.view";
-import TransactionDetails from "src/views/transaction-details/transaction-details.view";
-import TransactionConfirmation from "src/views/transaction-confirmation/transaction-confirmation.view";
+import BridgeDetails from "src/views/bridge-details/bridge-details.view";
+import BridgeConfirmation from "src/views/bridge-confirmation/bridge-confirmation.view";
 
 const routes = {
   home: {
@@ -26,14 +26,14 @@ const routes = {
     Component: Activity,
     isPrivate: true,
   },
-  transactionDetails: {
-    path: "/transaction-details/:transactionId",
-    Component: TransactionDetails,
+  bridgeDetails: {
+    path: "/bridge-details/:bridgeId",
+    Component: BridgeDetails,
     isPrivate: true,
   },
-  transactionConfirmation: {
-    path: "/transaction-confirmation",
-    Component: TransactionConfirmation,
+  bridgeConfirmation: {
+    path: "/bridge-confirmation",
+    Component: BridgeConfirmation,
     isPrivate: true,
   },
 };

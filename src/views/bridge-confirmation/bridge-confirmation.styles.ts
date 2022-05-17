@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useConfirmationStyles = createUseStyles((theme: Theme) => ({
+const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
   card: {
     padding: theme.spacing(2),
     display: "flex",
@@ -88,4 +88,4 @@ const useConfirmationStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useConfirmationStyles;
+export default useBridgeConfirmationStyles;

@@ -3,27 +3,27 @@ import { useNavigate } from "react-router-dom";
 import useHomeStyles from "src/views/home/home.styles";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import Header from "src/views/home/components/header/header.view";
-import TransactionForm from "src/views/home/components/transaction-form/transaction-form.view";
+import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useTransactionContext } from "src/contexts/transaction.context";
-import { TransactionData } from "src/domain";
+import { useFormContext } from "src/contexts/form.context";
+import { FormData } from "src/domain";
 import routes from "src/routes";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
-  const { transaction, setTransaction } = useTransactionContext();
+  const { formData, setFormData } = useFormContext();
   const { account } = useProvidersContext();
 
-  const onFormSubmit = (transaction: TransactionData) => {
-    setTransaction(transaction);
-    navigate(routes.transactionConfirmation.path);
+  const onFormSubmit = (formData: FormData) => {
+    setFormData(formData);
+    navigate(routes.bridgeConfirmation.path);
   };
 
-  const resetTransaction = () => {
-    setTransaction(undefined);
+  const resetForm = () => {
+    setFormData(undefined);
   };
 
   return (
@@ -35,10 +35,10 @@ const Home = (): JSX.Element => {
             <MetaMaskIcon className={classes.metaMaskIcon} />
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
-          <TransactionForm
+          <BridgeForm
             onSubmit={onFormSubmit}
-            transaction={transaction}
-            resetTransaction={resetTransaction}
+            formData={formData}
+            resetForm={resetForm}
             account={account.data}
           />
         </>

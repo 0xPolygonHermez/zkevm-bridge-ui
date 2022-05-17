@@ -1,6 +1,6 @@
 import { useState, FC, useEffect } from "react";
 
-import TransactionCard from "src/views/activity/components/transaction-card/transaction-card.view";
+import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
@@ -9,45 +9,45 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { parseError } from "src/adapters/error";
-import { getTransactions } from "src/adapters/bridge-api";
+import { getBridges } from "src/adapters/bridge-api";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
-import { Transaction } from "src/domain";
+import { Bridge } from "src/domain";
 
 const Activity: FC = () => {
   const env = useEnvContext();
   const { claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
-  const [transactionList, setTransactionsList] = useState<Transaction[]>([]);
+  const [bridgeList, setBridgeList] = useState<Bridge[]>([]);
   const [displayAll, setDisplayAll] = useState(true);
-  const [wrongNetworkTransactions, setWrongNetworkTransactions] = useState<Transaction["id"][]>([]);
+  const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
-  const pendingTransactions = transactionList.filter((data) => data.status !== "completed");
-  const filteredList = displayAll ? transactionList : pendingTransactions;
+  const pendingBridges = bridgeList.filter((bridge) => bridge.status !== "completed");
+  const filteredList = displayAll ? bridgeList : pendingBridges;
 
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
 
-  const onClaim = (tx: Transaction) => {
-    if (tx.status === "on-hold") {
+  const onClaim = (bridge: Bridge) => {
+    if (bridge.status === "on-hold") {
       claim({
-        token: tx.bridge.token,
-        amount: tx.bridge.amount,
-        destinationNetwork: tx.bridge.destinationNetwork,
-        destinationAddress: tx.bridge.destinationAddress,
-        index: tx.bridge.depositCount,
-        smtProof: tx.merkleProof.merkleProof,
-        globalExitRootNum: tx.merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: tx.merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: tx.merkleProof.mainExitRoot,
-        rollupExitRoot: tx.merkleProof.rollupExitRoot,
+        token: bridge.deposit.token,
+        amount: bridge.deposit.amount,
+        destinationNetwork: bridge.deposit.destinationNetwork,
+        destinationAddress: bridge.deposit.destinationAddress,
+        index: bridge.deposit.depositCount,
+        smtProof: bridge.merkleProof.merkleProof,
+        globalExitRootNum: bridge.merkleProof.exitRootNumber,
+        l2GlobalExitRootNum: bridge.merkleProof.l2ExitRootNumber,
+        mainnetExitRoot: bridge.merkleProof.mainExitRoot,
+        rollupExitRoot: bridge.merkleProof.rollupExitRoot,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              setWrongNetworkTransactions([...wrongNetworkTransactions, tx.id]);
+              setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
             } else {
               notifyError(error);
             }
@@ -59,15 +59,11 @@ const Activity: FC = () => {
 
   useEffect(() => {
     if (env && account.status === "successful") {
-      const loadTransactions = () => {
-        getTransactions({ env, ethereumAddress: account.data })
-          .then((transactions) => {
-            setTransactionsList(transactions);
-          })
-          .catch(notifyError);
+      const loadBridges = () => {
+        getBridges({ env, ethereumAddress: account.data }).then(setBridgeList).catch(notifyError);
       };
-      const intervalId = setInterval(loadTransactions, AUTO_REFRESH_RATE);
-      loadTransactions();
+      const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
+      loadBridges();
 
       return () => {
         clearInterval(intervalId);
@@ -76,7 +72,7 @@ const Activity: FC = () => {
   }, [account, env, notifyError]);
 
   useEffect(() => {
-    setWrongNetworkTransactions([]);
+    setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
 
   return (
@@ -88,7 +84,7 @@ const Activity: FC = () => {
             All
           </Typography>
           <Typography type="body2" className={classes.numberAllBox}>
-            {transactionList.length}
+            {bridgeList.length}
           </Typography>
         </div>
         <div className={`${classes.selectorBox} ${classes.pendingBox}`} onClick={onDisplayPending}>
@@ -96,16 +92,16 @@ const Activity: FC = () => {
             Pending
           </Typography>
           <Typography type="body2" className={classes.numberPendingBox}>
-            {pendingTransactions.length}
+            {pendingBridges.length}
           </Typography>
         </div>
       </div>
-      {filteredList.map((transaction) => (
-        <TransactionCard
-          transaction={transaction}
-          onClaim={() => onClaim(transaction)}
-          networkError={wrongNetworkTransactions.includes(transaction.id)}
-          key={transaction.id}
+      {filteredList.map((bridge) => (
+        <BridgeCard
+          bridge={bridge}
+          onClaim={() => onClaim(bridge)}
+          networkError={wrongNetworkBridges.includes(bridge.id)}
+          key={bridge.id}
         />
       ))}
     </>
