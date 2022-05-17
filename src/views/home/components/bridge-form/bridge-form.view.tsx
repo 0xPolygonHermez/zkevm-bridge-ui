@@ -112,7 +112,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   useEffect(() => {
     if (chains && token && env) {
-      const setBalanceAndNotifyError = (error: unknown) => {
+      const resetBalanceAndNotifyError = (error: unknown) => {
         notifyError(error);
         setBalanceTo(undefined);
       };
@@ -120,11 +120,11 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         void chains.from.provider
           .getBalance(account)
           .then(setBalanceFrom)
-          .catch(setBalanceAndNotifyError);
+          .catch(resetBalanceAndNotifyError);
         void chains.to.provider
           .getBalance(account)
           .then(setBalanceTo)
-          .catch(setBalanceAndNotifyError);
+          .catch(resetBalanceAndNotifyError);
       } else {
         void getErc20TokenBalance({
           token,
@@ -133,7 +133,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           ethereumAddress: account,
         })
           .then(setBalanceFrom)
-          .catch(setBalanceAndNotifyError);
+          .catch(resetBalanceAndNotifyError);
         void getErc20TokenBalance({
           token,
           from: chains.to,
