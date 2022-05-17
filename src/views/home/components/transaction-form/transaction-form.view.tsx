@@ -124,10 +124,10 @@ const TransactionForm: FC<TransactionFormProps> = ({
           .then(setBalanceTo)
           .catch(() => setBalanceTo(undefined));
       } else {
-        void getBalance({ token, chain: chains.from, ethereumAddress: account })
+        void getBalance({ token, from: chains.from, to: chains.to, ethereumAddress: account })
           .then(setBalanceFrom)
           .catch(notifyError);
-        void getBalance({ token, chain: chains.to, ethereumAddress: account })
+        void getBalance({ token, from: chains.to, to: chains.from, ethereumAddress: account })
           .then(setBalanceTo)
           .catch(() => setBalanceTo(undefined));
       }
