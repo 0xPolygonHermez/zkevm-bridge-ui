@@ -64,7 +64,7 @@ const List: FC<ListProps> = ({ list, onClose, selectedItem }) => {
                       disabled={token.address === selectedItem}
                       onClick={() => list.onClick(token)}
                     >
-                      <Icon url={token.logoURI} size={24} />
+                      <Icon url={token.logoURI} size={24} className={classes.token} />
                       <Typography type="body1">{token.name}</Typography>
                     </button>
                   );

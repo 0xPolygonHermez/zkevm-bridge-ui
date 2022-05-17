@@ -181,7 +181,7 @@ const getBridges = async ({
       }
 
       const deposit: domain.Deposit = {
-        token: env.tokens.ETH,
+        token,
         amount: BigNumber.from(amount),
         destinationAddress: dest_addr,
         depositCount: deposit_cnt,

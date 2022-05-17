@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -40,7 +40,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { estimateBridgeGasPrice, getBalance } = useBridgeContext();
+  const { estimateBridgeGasPrice, getErc20TokenBalance: getBalance } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
@@ -112,16 +112,23 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   useEffect(() => {
     if (chains && token && env) {
-      if (token.address === env.tokens.ETH.address) {
-        void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(notifyError);
+      const setBalanceAndNotifyError = (error: unknown) => {
+        notifyError(error);
+        setBalanceTo(undefined);
+      };
+      if (token.address === ethers.constants.AddressZero) {
+        void chains.from.provider
+          .getBalance(account)
+          .then(setBalanceFrom)
+          .catch(setBalanceAndNotifyError);
         void chains.to.provider
           .getBalance(account)
           .then(setBalanceTo)
-          .catch(() => setBalanceTo(undefined));
+          .catch(setBalanceAndNotifyError);
       } else {
         void getBalance({ token, from: chains.from, to: chains.to, ethereumAddress: account })
           .then(setBalanceFrom)
-          .catch(notifyError);
+          .catch(setBalanceAndNotifyError);
         void getBalance({ token, from: chains.to, to: chains.from, ethereumAddress: account })
           .then(setBalanceTo)
           .catch(() => setBalanceTo(undefined));

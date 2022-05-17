@@ -15,7 +15,7 @@ import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 
-interface GetBalanceParams {
+interface GetErc20TokenBalanceParams {
   token: Token;
   from: Chain;
   to: Chain;
@@ -56,7 +56,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  getBalance: (params: GetBalanceParams) => Promise<BigNumber>;
+  getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
   getWrappedTokenAddress: (params: GetWrappedTokenAddressParams) => Promise<string>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
@@ -75,7 +75,7 @@ const bridgeContext = createContext<BridgeContext>({
   claim: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  getBalance: () => {
+  getErc20TokenBalance: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getWrappedTokenAddress: () => {
@@ -238,7 +238,12 @@ const BridgeProvider: FC = (props) => {
     [changeNetwork, connectedProvider]
   );
 
-  const getBalance = async ({ token, from, to, ethereumAddress }: GetBalanceParams) => {
+  const getErc20TokenBalance = async ({
+    token,
+    from,
+    to,
+    ethereumAddress,
+  }: GetErc20TokenBalanceParams) => {
     const isTokenEther = token.address === ethersConstants.AddressZero;
     if (isTokenEther) {
       return Promise.reject(new Error("Ether is not supported as ERC20 token"));
@@ -284,7 +289,7 @@ const BridgeProvider: FC = (props) => {
         estimateBridgeGasPrice,
         bridge,
         claim,
-        getBalance,
+        getErc20TokenBalance,
         getWrappedTokenAddress,
       }}
       {...props}
