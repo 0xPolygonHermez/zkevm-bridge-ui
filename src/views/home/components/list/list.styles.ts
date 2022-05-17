@@ -68,9 +68,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     width: "24px",
     height: "24px",
   },
-  token: {
-    mixBlendMode: "darken",
-  },
 }));
 
 export default useListStyles;
