@@ -37,6 +37,16 @@ export const ETH_TOKEN: Token = {
     "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
 };
 
+export const MATIC_TOKEN: Token = {
+  name: "Polygon",
+  address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  network: 0,
+  symbol: "MATIC",
+  decimals: 18,
+  logoURI:
+    "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png",
+};
+
 export const getChains = ({
   ethereum,
   polygonHermez,

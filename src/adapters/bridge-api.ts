@@ -155,85 +155,87 @@ const getBridges = async ({
   ]);
 
   return await Promise.all(
-    apiDeposits
-      .filter(
-        (apiDeposit) =>
-          apiDeposit.token_addr === env.tokens.ETH.address &&
-          apiDeposit.orig_net === env.tokens.ETH.network
-      )
-      .map(async (apiDeposit): Promise<domain.Bridge> => {
-        const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash } = apiDeposit;
+    apiDeposits.map(async (apiDeposit): Promise<domain.Bridge> => {
+      const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash, token_addr } =
+        apiDeposit;
 
-        const networkId = env.chains.find((chain) => chain.networkId === network_id);
-        if (networkId === undefined) {
-          throw new Error(
-            `The specified network_id "${network_id}" can not be found in the list of supported Chains`
-          );
-        }
-
-        const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
-        if (destinationNetwork === undefined) {
-          throw new Error(
-            `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
-          );
-        }
-
-        const deposit: domain.Deposit = {
-          token: env.tokens.ETH,
-          amount: BigNumber.from(amount),
-          destinationAddress: dest_addr,
-          depositCount: deposit_cnt,
-          txHash: tx_hash,
-          networkId,
-          destinationNetwork,
-        };
-
-        const apiClaim = apiClaims.find(
-          (claim) =>
-            claim.index === deposit.depositCount &&
-            claim.network_id === deposit.destinationNetwork.networkId
+      const networkId = env.chains.find((chain) => chain.networkId === network_id);
+      if (networkId === undefined) {
+        throw new Error(
+          `The specified network_id "${network_id}" can not be found in the list of supported Chains`
         );
+      }
 
-        const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
+      const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
+      if (destinationNetwork === undefined) {
+        throw new Error(
+          `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
+        );
+      }
 
-        if (apiClaim) {
-          return {
-            status: "completed",
-            id,
-            deposit,
-            claim: {
-              txHash: apiClaim.tx_hash,
-            },
-          };
-        }
+      const token = Object.values(env.tokens).find((token) => token.address === token_addr);
+      if (token === undefined) {
+        throw new Error(
+          `The specified token_addr "${token_addr}" can not be found in the list of supported Tokens`
+        );
+      }
 
-        const claimStatus = await getClaimStatus({
-          apiUrl,
-          networkId: deposit.networkId.networkId,
-          depositCount: deposit.depositCount,
-        });
+      const deposit: domain.Deposit = {
+        token,
+        amount: BigNumber.from(amount),
+        destinationAddress: dest_addr,
+        depositCount: deposit_cnt,
+        txHash: tx_hash,
+        networkId,
+        destinationNetwork,
+      };
 
-        if (claimStatus === false) {
-          return {
-            status: "initiated",
-            id,
-            deposit,
-          };
-        }
+      const apiClaim = apiClaims.find(
+        (claim) =>
+          claim.index === deposit.depositCount &&
+          claim.network_id === deposit.destinationNetwork.networkId
+      );
 
-        const merkleProof = await getMerkleProof({
-          apiUrl,
-          networkId: deposit.networkId.networkId,
-          depositCount: deposit.depositCount,
-        });
+      const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
 
+      if (apiClaim) {
         return {
-          status: "on-hold",
+          status: "completed",
           id,
           deposit,
-          merkleProof,
+          claim: {
+            txHash: apiClaim.tx_hash,
+          },
         };
-      })
+      }
+
+      const claimStatus = await getClaimStatus({
+        apiUrl,
+        networkId: deposit.networkId.networkId,
+        depositCount: deposit.depositCount,
+      });
+
+      if (claimStatus === false) {
+        return {
+          status: "initiated",
+          id,
+          deposit,
+        };
+      }
+
+      const merkleProof = await getMerkleProof({
+        apiUrl,
+        networkId: deposit.networkId.networkId,
+        depositCount: deposit.depositCount,
+      });
+
+      return {
+        status: "on-hold",
+        id,
+        deposit,
+        merkleProof,
+      };
+    })
   );
 };
 

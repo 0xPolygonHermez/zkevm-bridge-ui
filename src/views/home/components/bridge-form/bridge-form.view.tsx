@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -40,7 +40,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { estimateBridgeGasPrice } = useBridgeContext();
+  const { estimateBridgeGasPrice, getErc20TokenBalance } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const [list, setList] = useState<List>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
@@ -63,6 +63,11 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         setAmount(undefined);
       }
     }
+  };
+
+  const onTokenButtonClick = (token: Token) => {
+    setToken(token);
+    setList(undefined);
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
@@ -106,11 +111,40 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [formData, resetForm]);
 
   useEffect(() => {
-    if (chains) {
-      void chains.from.provider.getBalance(account).then(setBalanceFrom).catch(notifyError);
-      void chains.to.provider.getBalance(account).then(setBalanceTo).catch(notifyError);
+    if (chains && token && env) {
+      const resetBalanceAndNotifyError = (error: unknown) => {
+        notifyError(error);
+        setBalanceTo(undefined);
+      };
+      if (token.address === ethers.constants.AddressZero) {
+        void chains.from.provider
+          .getBalance(account)
+          .then(setBalanceFrom)
+          .catch(resetBalanceAndNotifyError);
+        void chains.to.provider
+          .getBalance(account)
+          .then(setBalanceTo)
+          .catch(resetBalanceAndNotifyError);
+      } else {
+        void getErc20TokenBalance({
+          token,
+          from: chains.from,
+          to: chains.to,
+          ethereumAddress: account,
+        })
+          .then(setBalanceFrom)
+          .catch(resetBalanceAndNotifyError);
+        void getErc20TokenBalance({
+          token,
+          from: chains.to,
+          to: chains.from,
+          ethereumAddress: account,
+        })
+          .then(setBalanceTo)
+          .catch(() => setBalanceTo(undefined));
+      }
     }
-  }, [chains, account, notifyError]);
+  }, [chains, account, token, env, getErc20TokenBalance, notifyError]);
 
   useEffect(() => {
     if (chains && token) {
@@ -127,7 +161,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           if (isEthersInsufficientFundsError(error)) {
             setEstimatedFee({
               status: "failed",
-              error: "You don't have enough ETH to pay for the fees",
+              error: `You don't have enough ETH to pay for the fees`,
             });
           } else {
             notifyError(error);
@@ -170,10 +204,21 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <div className={classes.tokenSelector}>
+          <button
+            className={classes.tokenSelector}
+            onClick={() =>
+              setList({
+                type: "token",
+                items: Object.values(env.tokens),
+                onClick: onTokenButtonClick,
+              })
+            }
+            type="button"
+          >
             <Icon url={token.logoURI} size={24} />
             <Typography type="h2">{token.symbol}</Typography>
-          </div>
+            <CaretDown />
+          </button>
           <AmountInput
             value={amount}
             token={token}
