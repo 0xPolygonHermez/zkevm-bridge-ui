@@ -265,7 +265,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       )}
       {tokenList && (
         <TokenList
-          placeholder="Search token"
           tokens={tokenList}
           selected={token}
           onClick={onTokenButtonClick}

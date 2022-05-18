@@ -8,7 +8,6 @@ import Portal from "src/views/shared/portal/portal.view";
 import { Token } from "src/domain";
 
 interface TokenListProps {
-  placeholder: string;
   tokens: Token[];
   selected: Token;
   onClick: (token: Token) => void;
