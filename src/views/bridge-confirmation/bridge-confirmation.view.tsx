@@ -18,10 +18,12 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
+import { useEnvContext } from "src/contexts/env.context";
 
 const BridgeConfirmation: FC = () => {
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
+  const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const { bridge } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
@@ -70,7 +72,7 @@ const BridgeConfirmation: FC = () => {
     }
   }, [navigate, formData]);
 
-  if (!formData) {
+  if (!formData || !env) {
     return null;
   }
 
@@ -96,7 +98,7 @@ const BridgeConfirmation: FC = () => {
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            <Icon url={formData.token.logoURI} size={20} />
+            <Icon url={env.tokens.ETH.logoURI} size={20} />
             {`~ ${formatTokenAmount(formData.estimatedFee, formData.token)} ETH`}
           </Typography>
         </div>
