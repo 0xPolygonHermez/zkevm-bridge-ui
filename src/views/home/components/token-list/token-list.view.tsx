@@ -1,4 +1,5 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
+import { utils as ethersUtils } from "ethers";
 
 import useListStyles from "src/views/home/components/token-list/token-list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -16,16 +17,33 @@ interface TokenListProps {
 
 const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) => {
   const classes = useListStyles();
+  const [addressInputValue, setAddressInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
     onClose();
   };
 
+  const onAddressInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = event.target.value;
+    setAddressInputValue(value);
+    if (ethersUtils.isAddress(value)) {
+      // getTokenFromAddress(value)
+    }
+  };
+
   return (
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
+          <input
+            placeholder="Paste token address"
+            type="search"
+            className={classes.addressInput}
+            value={addressInputValue}
+            autoFocus
+            onChange={onAddressInputChange}
+          />
           <div className={classes.list}>
             {tokens.slice(0, 20).map((token) => (
               <button

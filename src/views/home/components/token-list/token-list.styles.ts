@@ -13,6 +13,8 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     paddingTop: theme.spacing(20),
   },
   card: {
+    display: "flex",
+    flexDirection: "column",
     width: "100%",
     maxWidth: 426,
     padding: theme.spacing(2),
@@ -67,6 +69,14 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   icon: {
     width: "24px",
     height: "24px",
+  },
+  addressInput: {
+    flex: 1,
+    border: "none",
+    lineHeight: "36px",
+    borderBottom: "1px solid #F0F1F6",
+    marginBottom: theme.spacing(1),
+    outline: "none",
   },
 }));
 
