@@ -28,8 +28,11 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
   const onAddressInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     setAddressInputValue(value);
-    setFilteredTokens(tokens.filter(getTokenFilterByTerm(value)));
-    if (ethersUtils.isAddress(value)) {
+
+    const filterResult = tokens.filter(getTokenFilterByTerm(value));
+    setFilteredTokens(filterResult);
+
+    if (ethersUtils.isAddress(value) && filterResult.length === 0) {
       // getTokenFromAddress(value)
     }
   };
