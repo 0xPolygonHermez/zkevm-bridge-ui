@@ -17,6 +17,7 @@ interface TokenListProps {
 
 const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) => {
   const classes = useListStyles();
+  const [filteredTokens, setFilteredTokens] = useState<Token[]>(tokens);
   const [addressInputValue, setAddressInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
@@ -27,6 +28,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
   const onAddressInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     setAddressInputValue(value);
+    setFilteredTokens(tokens.filter(getTokenFilterByTerm(value)));
     if (ethersUtils.isAddress(value)) {
       // getTokenFromAddress(value)
     }
@@ -37,7 +39,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
           <input
-            placeholder="Paste token address"
+            placeholder="Search or paste address"
             type="search"
             className={classes.addressInput}
             value={addressInputValue}
@@ -45,7 +47,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
             onChange={onAddressInputChange}
           />
           <div className={classes.list}>
-            {tokens.slice(0, 20).map((token) => (
+            {filteredTokens.slice(0, 20).map((token) => (
               <button
                 className={classes.button}
                 key={token.address}
@@ -62,5 +64,10 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
     </Portal>
   );
 };
+
+const getTokenFilterByTerm = (term: string) => (token: Token) =>
+  token.address.toLowerCase().includes(term.toLowerCase()) ||
+  token.name.toLowerCase().includes(term.toLowerCase()) ||
+  token.symbol.toLowerCase().includes(term.toLowerCase());
 
 export default TokenList;
