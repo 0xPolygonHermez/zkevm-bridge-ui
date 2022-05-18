@@ -6,16 +6,19 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
-import { Token } from "src/domain";
+import { Token, Chain } from "src/domain";
+import { useBridgeContext } from "src/contexts/bridge.context";
 
 interface TokenListProps {
   tokens: Token[];
   selected: Token;
+  chain: Chain;
   onClick: (token: Token) => void;
   onClose: () => void;
 }
 
-const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) => {
+const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClose }) => {
+  const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>(tokens);
   const [addressInputValue, setAddressInputValue] = useState<string>("");
@@ -32,8 +35,16 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, onClick, onClose }) =
     const filterResult = tokens.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filterResult);
 
-    if (ethersUtils.isAddress(value) && filterResult.length === 0) {
-      // getTokenFromAddress(value)
+    // if (ethersUtils.isAddress(value) && filterResult.length === 0) {
+    if (ethersUtils.isAddress(value)) {
+      void getTokenFromAddress({
+        address: value,
+        chain,
+      })
+        .then((token) => {
+          setFilteredTokens([token]);
+        })
+        .catch(console.error);
     }
   };
 

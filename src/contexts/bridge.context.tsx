@@ -14,6 +14,11 @@ import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { calculateFee } from "src/utils/fees";
+import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
+interface GetTokenFromAddressParams {
+  address: string;
+  chain: Chain;
+}
 
 interface GetErc20TokenBalanceParams {
   token: Token;
@@ -21,6 +26,7 @@ interface GetErc20TokenBalanceParams {
   to: Chain;
   ethereumAddress: string;
 }
+
 interface EstimateBridgeGasPriceParams {
   from: Chain;
   token: Token;
@@ -56,6 +62,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
+  getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
   getWrappedTokenAddress: (params: GetWrappedTokenAddressParams) => Promise<string>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
@@ -66,6 +73,9 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
+  getTokenFromAddress: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -85,6 +95,28 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
+
+  const getTokenFromAddress = useCallback(
+    async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
+      const erc20Contract = Erc20__factory.connect(address, chain.provider);
+      const name = await erc20Contract.name();
+      const decimals = await erc20Contract.decimals();
+      const symbol = await erc20Contract.symbol();
+      const network = chain.networkId;
+      const logoURI = tokenIconDefaultUrl;
+      // const logoURI = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+      const token: Token = {
+        name,
+        decimals,
+        symbol,
+        address,
+        network,
+        logoURI,
+      };
+      return token;
+    },
+    []
+  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -286,6 +318,7 @@ const BridgeProvider: FC = (props) => {
   return (
     <bridgeContext.Provider
       value={{
+        getTokenFromAddress,
         estimateBridgeGasPrice,
         bridge,
         claim,
