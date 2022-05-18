@@ -29,12 +29,10 @@ export interface Env {
   fiatExchangeRates: {
     apiUrl: string;
     apiKey: string;
+    usdtToken: Token;
   };
   chains: [Chain, Chain];
-  tokens: {
-    ETH: Token;
-    USDT: Token;
-  };
+  tokens: Token[];
   version: string;
 }
 

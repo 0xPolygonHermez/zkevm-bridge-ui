@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import { getChains, ETH_TOKEN, getUsdtToken, MATIC_TOKEN } from "src/constants";
+import { getChains, ETH_TOKEN, getUsdtToken } from "src/constants";
+import { erc20Tokens } from "src/erc20-tokens";
 
 interface Env {
   REACT_APP_ETHEREUM_RPC_URL: string;
@@ -19,6 +20,7 @@ interface Env {
   REACT_APP_USDT_NETWORK: string;
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
   REACT_APP_VERSION: string;
+  REACT_APP_ENVIRONMENT: "LOCAL" | "INTERNAL_TESTNET" | "TESTNET" | "MAINNET";
 }
 
 const envToDomain = ({
@@ -36,6 +38,7 @@ const envToDomain = ({
   REACT_APP_USDT_NETWORK,
   REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
   REACT_APP_VERSION,
+  REACT_APP_ENVIRONMENT,
 }: Env): Promise<domain.Env> => {
   const polygonHermezNetworkId = z
     .number()
@@ -64,16 +67,10 @@ const envToDomain = ({
     fiatExchangeRates: {
       apiUrl: REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
       apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
+      usdtToken: getUsdtToken({ address: REACT_APP_USDT_ADDRESS, network: usdtNetwork }),
     },
     chains,
-    tokens: {
-      ETH: ETH_TOKEN,
-      USDT: getUsdtToken({
-        address: REACT_APP_USDT_ADDRESS,
-        network: usdtNetwork,
-      }),
-      MATIC: MATIC_TOKEN,
-    },
+    tokens: [ETH_TOKEN, ...erc20Tokens[REACT_APP_ENVIRONMENT]],
     version: REACT_APP_VERSION,
   }));
 };
@@ -95,6 +92,12 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_USDT_NETWORK: z.string(),
       REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
       REACT_APP_VERSION: z.string(),
+      REACT_APP_ENVIRONMENT: z.union([
+        z.literal("LOCAL"),
+        z.literal("INTERNAL_TESTNET"),
+        z.literal("TESTNET"),
+        z.literal("MAINNET"),
+      ]),
     })
     .transform(envToDomain)
 );

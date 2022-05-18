@@ -24,6 +24,7 @@ import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
+import { ETH_TOKEN } from "src/constants";
 
 interface HistoricalFees {
   step1?: string;
@@ -203,7 +204,7 @@ const BridgeDetails: FC = () => {
               Step 1 Fee ({getChainName(bridge.data.deposit.networkId)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step1Fee} {env.tokens.ETH.symbol}
+              {step1Fee} {ETH_TOKEN.symbol}
             </Typography>
           </div>
         )}
@@ -213,7 +214,7 @@ const BridgeDetails: FC = () => {
               Step 2 Fee ({getChainName(bridge.data.deposit.destinationNetwork)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step2Fee} {env.tokens.ETH.symbol}
+              {step2Fee} {ETH_TOKEN.symbol}
             </Typography>
           </div>
         )}
