@@ -8,7 +8,8 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
-import List from "src/views/home/components/list/list.view";
+import ChainList from "src/views/home/components/chain-list/chain-list.view";
+import TokenList from "src/views/home/components/token-list/token-list.view";
 import Button from "src/views/shared/button/button.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import { useEnvContext } from "src/contexts/env.context";
@@ -42,7 +43,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const { notifyError } = useErrorContext();
   const { estimateBridgeGasPrice, getErc20TokenBalance } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
-  const [list, setList] = useState<List>();
+  const [chainList, setChainList] = useState<Chain[]>();
+  const [tokenList, setTokenList] = useState<Token[]>();
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
   const [inputError, setInputError] = useState<string>();
@@ -53,13 +55,13 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     status: "pending",
   });
 
-  const onChainFromButtonClick = (from: Chain) => {
+  const onChainButtonClick = (from: Chain) => {
     if (env && chains) {
       const to = env.chains.find((chain) => chain.key !== from.key);
 
       if (to) {
         setChains({ from, to });
-        setList(undefined);
+        setChainList(undefined);
         setAmount(undefined);
       }
     }
@@ -67,7 +69,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   const onTokenButtonClick = (token: Token) => {
     setToken(token);
-    setList(undefined);
+    setTokenList(undefined);
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
@@ -182,13 +184,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
             <Typography type="body2">From</Typography>
             <button
               className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
-              onClick={() =>
-                setList({
-                  type: "chain",
-                  items: env.chains,
-                  onClick: onChainFromButtonClick,
-                })
-              }
+              onClick={() => setChainList(env.chains)}
               type="button"
             >
               <chains.from.Icon />
@@ -206,13 +202,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button
             className={classes.tokenSelector}
-            onClick={() =>
-              setList({
-                type: "token",
-                items: Object.values(env.tokens),
-                onClick: onTokenButtonClick,
-              })
-            }
+            onClick={() => setTokenList(Object.values(env.tokens))}
             type="button"
           >
             <Icon url={token.logoURI} size={24} />
@@ -265,12 +255,20 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         {amount && inputError && estimatedFee.status !== "failed" && <Error error={inputError} />}
         {estimatedFee.status === "failed" && <Error error={estimatedFee.error} />}
       </div>
-      {list && (
-        <List
-          placeholder={list.type === "chain" ? "Search network" : "Search token"}
-          list={list}
-          selectedItem={list.type === "chain" ? chains.from.key : token.address}
-          onClose={() => setList(undefined)}
+      {chainList && (
+        <ChainList
+          chains={chainList}
+          selected={chains.from}
+          onClick={onChainButtonClick}
+          onClose={() => setChainList(undefined)}
+        />
+      )}
+      {tokenList && (
+        <TokenList
+          tokens={tokenList}
+          selected={token}
+          onClick={onTokenButtonClick}
+          onClose={() => setTokenList(undefined)}
         />
       )}
     </form>
