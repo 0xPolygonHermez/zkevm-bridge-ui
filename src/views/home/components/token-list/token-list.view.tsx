@@ -9,42 +9,54 @@ import Portal from "src/views/shared/portal/portal.view";
 import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import Error from "src/views/shared/error/error.view";
+import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 
 interface TokenListProps {
   tokens: Token[];
   selected: Token;
   chain: Chain;
-  onClick: (token: Token) => void;
+  onSelectToken: (token: Token) => void;
   onClose: () => void;
 }
 
-const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClose }) => {
+const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken, onClose }) => {
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
-  const [filteredTokens, setFilteredTokens] = useState<Token[]>(tokens);
-  const [inputValue, setInputValue] = useState<string>("");
+  const [filteredTokens, setFilteredTokens] = useState<Token[]>([...getCustomTokens(), ...tokens]);
+  const [customToken, setCustomToken] = useState<Token>();
+  const [searchInputValue, setSearchInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
     onClose();
   };
 
-  const onAddressInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+  const onRemoveTokenClick = (token: Token) => {
+    removeCustomToken(token);
+    const all = [...getCustomTokens(), ...tokens];
+    const filtered = searchInputValue.length
+      ? all.filter(getTokenFilterByTerm(searchInputValue))
+      : all;
+    setFilteredTokens(filtered);
+  };
+
+  const onSearchInputValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
-    setInputValue(value);
+    setSearchInputValue(value);
+    setCustomToken(undefined);
 
-    const filterResult = tokens.filter(getTokenFilterByTerm(value));
-    setFilteredTokens(filterResult);
+    const all = [...getCustomTokens(), ...tokens];
+    const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
+    setFilteredTokens(filtered);
 
-    if (ethersUtils.isAddress(value) && filterResult.length === 0) {
+    if (ethersUtils.isAddress(value) && filtered.length === 0) {
       void getTokenFromAddress({
         address: value,
         chain,
-      })
-        .then((token) => {
-          setFilteredTokens([token]);
-        })
-        .catch(console.error);
+      }).then((token) => {
+        setCustomToken(token);
+        setFilteredTokens([token]);
+      });
     }
   };
 
@@ -52,29 +64,62 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
-          <input
-            placeholder="Search or paste address"
-            type="search"
-            className={classes.addressInput}
-            value={inputValue}
-            autoFocus
-            onChange={onAddressInputChange}
-          />
+          <div className={classes.searchInputWrapper}>
+            <input
+              placeholder="Search or paste address"
+              type="search"
+              className={classes.searchInput}
+              value={searchInputValue}
+              autoFocus
+              onChange={onSearchInputValueChange}
+            />
+            <button
+              className={classes.importButton}
+              disabled={customToken === undefined}
+              onClick={() => {
+                if (customToken) {
+                  addCustomToken(customToken);
+                }
+              }}
+            >
+              <Typography type="body1">Import</Typography>
+            </button>
+          </div>
           <div className={classes.list}>
-            {filteredTokens.slice(0, 20).map((token) => (
-              <button
-                className={classes.button}
-                key={token.address}
-                disabled={token.address === selected.address}
-                onClick={() => onClick(token)}
-              >
-                <Icon url={token.logoURI} size={24} />
-                <Typography type="body1">{token.name}</Typography>
-              </button>
-            ))}
+            {filteredTokens.slice(0, 20).map((token) => {
+              const isCustomToken =
+                getCustomTokens().find((tkn) => tkn.address === token.address) !== undefined;
+              const isDisabled = token.address === selected.address;
+              return (
+                <div
+                  className={`${classes.tokenWrapper} ${
+                    isDisabled ? classes.disabledTokenWrapper : classes.enabledTokenWrapper
+                  }`}
+                  key={token.address}
+                >
+                  <button
+                    className={classes.tokenButton}
+                    disabled={isDisabled}
+                    onClick={() => onSelectToken(token)}
+                  >
+                    <Icon url={token.logoURI} size={24} />
+                    <Typography type="body1">{token.name}</Typography>
+                  </button>
+                  {isCustomToken && (
+                    <button
+                      className={classes.removeCustomTokenButton}
+                      disabled={isDisabled}
+                      onClick={() => onRemoveTokenClick(token)}
+                    >
+                      <Typography type="body1">Remove</Typography>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             {filteredTokens.length === 0 && (
               <Error
-                error={`The keywork "${inputValue}" produced no matches`}
+                error={`The input "${searchInputValue}" produced no matches`}
                 type="body2"
                 className={classes.error}
               />

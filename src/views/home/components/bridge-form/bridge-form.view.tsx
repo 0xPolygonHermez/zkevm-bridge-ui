@@ -268,7 +268,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           tokens={tokenList}
           selected={token}
           chain={chains.from}
-          onClick={onTokenButtonClick}
+          onSelectToken={onTokenButtonClick}
           onClose={() => setTokenList(undefined)}
         />
       )}
