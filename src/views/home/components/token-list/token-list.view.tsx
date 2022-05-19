@@ -31,9 +31,18 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
     onClose();
   };
 
+  const onImportTokenClick = (token: Token) => {
+    addCustomToken(token);
+    const all = [...getCustomTokens(), ...tokens];
+    const filtered = searchInputValue.length
+      ? all.filter(getTokenFilterByTerm(searchInputValue))
+      : all;
+    setFilteredTokens(filtered);
+  };
+
   const onRemoveTokenClick = (token: Token) => {
     removeCustomToken(token);
-    const all = [...getCustomTokens(), ...tokens];
+    const all = [...(customToken ? [customToken] : []), ...getCustomTokens(), ...tokens];
     const filtered = searchInputValue.length
       ? all.filter(getTokenFilterByTerm(searchInputValue))
       : all;
@@ -64,30 +73,19 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
     <Portal>
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.searchInputWrapper}>
-            <input
-              placeholder="Search or paste address"
-              type="search"
-              className={classes.searchInput}
-              value={searchInputValue}
-              autoFocus
-              onChange={onSearchInputValueChange}
-            />
-            <button
-              className={classes.importButton}
-              disabled={customToken === undefined}
-              onClick={() => {
-                if (customToken) {
-                  addCustomToken(customToken);
-                }
-              }}
-            >
-              <Typography type="body1">Import</Typography>
-            </button>
-          </div>
+          <input
+            placeholder="Search or paste address"
+            type="search"
+            className={classes.searchInput}
+            value={searchInputValue}
+            autoFocus
+            onChange={onSearchInputValueChange}
+          />
           <div className={classes.list}>
             {filteredTokens.slice(0, 20).map((token) => {
               const isCustomToken =
+                tokens.find((tkn) => tkn.address === token.address) === undefined;
+              const isImportedCustomToken =
                 getCustomTokens().find((tkn) => tkn.address === token.address) !== undefined;
               const isDisabled = token.address === selected.address;
               return (
@@ -98,20 +96,33 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                   key={token.address}
                 >
                   <button
-                    className={classes.tokenButton}
+                    className={classes.tokenMainButton}
                     disabled={isDisabled}
                     onClick={() => onSelectToken(token)}
                   >
                     <Icon url={token.logoURI} size={24} />
                     <Typography type="body1">{token.name}</Typography>
                   </button>
-                  {isCustomToken && (
+                  {isImportedCustomToken && (
                     <button
-                      className={classes.removeCustomTokenButton}
+                      className={classes.tokenAccessoryButton}
                       disabled={isDisabled}
                       onClick={() => onRemoveTokenClick(token)}
                     >
                       <Typography type="body1">Remove</Typography>
+                    </button>
+                  )}
+                  {isCustomToken && !isImportedCustomToken && (
+                    <button
+                      className={classes.tokenAccessoryButton}
+                      disabled={customToken === undefined}
+                      onClick={() => {
+                        if (customToken) {
+                          onImportTokenClick(customToken);
+                        }
+                      }}
+                    >
+                      <Typography type="body1">Import</Typography>
                     </button>
                   )}
                 </div>

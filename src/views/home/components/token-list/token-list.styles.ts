@@ -15,34 +15,18 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   card: {
     width: "100%",
     maxWidth: 500,
-    padding: theme.spacing(2),
-  },
-  searchInputWrapper: {
     display: "flex",
-    borderBottom: "1px solid #F0F1F6",
-    marginBottom: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
+    flexDirection: "column",
+    padding: theme.spacing(2),
   },
   searchInput: {
     flex: 1,
     border: "none",
     lineHeight: "36px",
     outline: "none",
-  },
-  importButton: {
-    border: "none",
-    borderRadius: "8px",
-    background: "#f0f1f6",
-    padding: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-    "&:disabled": {
-      cursor: "initial",
-      background: theme.palette.grey.light,
-      opacity: 0.5,
-    },
+    borderBottom: "1px solid #F0F1F6",
+    marginBottom: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   list: {
     display: "flex",
@@ -78,7 +62,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.grey.light,
     opacity: 0.5,
   },
-  tokenButton: {
+  tokenMainButton: {
     cursor: "pointer",
     border: "none",
     background: "transparent",
@@ -90,7 +74,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       cursor: "initial",
     },
   },
-  removeCustomTokenButton: {
+  tokenAccessoryButton: {
     cursor: "pointer",
     border: "none",
     background: "transparent",
