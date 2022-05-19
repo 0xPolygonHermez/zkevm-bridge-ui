@@ -35,8 +35,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
     const filterResult = tokens.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filterResult);
 
-    // if (ethersUtils.isAddress(value) && filterResult.length === 0) {
-    if (ethersUtils.isAddress(value)) {
+    if (ethersUtils.isAddress(value) && filterResult.length === 0) {
       void getTokenFromAddress({
         address: value,
         chain,

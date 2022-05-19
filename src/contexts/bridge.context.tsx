@@ -104,10 +104,10 @@ const BridgeProvider: FC = (props) => {
       const decimals = await erc20Contract.decimals();
       const symbol = await erc20Contract.symbol();
       const network = chain.networkId;
-      const onlineLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+      const trustWalletLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
       const logoURI = await axios
-        .get(onlineLogoUrl)
-        .then(() => onlineLogoUrl)
+        .get(trustWalletLogoUrl)
+        .then(() => trustWalletLogoUrl)
         .catch(() => tokenIconDefaultUrl);
       const token: Token = {
         name,
