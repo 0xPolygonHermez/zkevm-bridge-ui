@@ -6,6 +6,7 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
+  isMetamaskRequestAccountsError,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
@@ -60,9 +61,17 @@ const ProvidersProvider: FC = (props) => {
           try {
             if (window.ethereum && window.ethereum.isMetaMask) {
               const web3Provider = new Web3Provider(window.ethereum, "any");
+              const checkMetamaskHeartbeat = setTimeout(() => {
+                return setAccount({
+                  status: "failed",
+                  error: `You need to reload the page to connect ${WalletName.METAMASK}`,
+                });
+              }, 2000);
               const requestedNetwork = await web3Provider.getNetwork();
               const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
+
+              clearTimeout(checkMetamaskHeartbeat);
 
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
@@ -82,7 +91,12 @@ const ProvidersProvider: FC = (props) => {
               });
             }
           } catch (error) {
-            if (!isMetamaskUserRejectedRequestError(error)) {
+            if (isMetamaskRequestAccountsError(error)) {
+              return setAccount({
+                status: "failed",
+                error: `Unlock ${WalletName.METAMASK} to continue`,
+              });
+            } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
 

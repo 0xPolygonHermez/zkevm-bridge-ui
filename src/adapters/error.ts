@@ -27,6 +27,18 @@ export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejecte
   })
 );
 
+export interface MetamaskRequestAccountsError {
+  code: -32002;
+  message: string;
+}
+
+export const metamaskRequestAccountsError = StrictSchema<MetamaskRequestAccountsError>()(
+  z.object({
+    code: z.literal(-32002),
+    message: z.string(),
+  })
+);
+
 export interface EthersInsufficientFundsError {
   code: "INSUFFICIENT_FUNDS";
   reason: string;
