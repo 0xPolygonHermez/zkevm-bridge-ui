@@ -8,6 +8,7 @@ import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
 import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
+import Error from "src/views/shared/error/error.view";
 
 interface TokenListProps {
   tokens: Token[];
@@ -21,7 +22,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>(tokens);
-  const [addressInputValue, setAddressInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
     if (event.target !== event.currentTarget) return;
@@ -30,7 +31,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
 
   const onAddressInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
-    setAddressInputValue(value);
+    setInputValue(value);
 
     const filterResult = tokens.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filterResult);
@@ -55,7 +56,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
             placeholder="Search or paste address"
             type="search"
             className={classes.addressInput}
-            value={addressInputValue}
+            value={inputValue}
             autoFocus
             onChange={onAddressInputChange}
           />
@@ -71,6 +72,13 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onClick, onClo
                 <Typography type="body1">{token.name}</Typography>
               </button>
             ))}
+            {filteredTokens.length === 0 && (
+              <Error
+                error={`The keywork "${inputValue}" produced no matches`}
+                type="body2"
+                className={classes.error}
+              />
+            )}
           </div>
         </Card>
       </div>

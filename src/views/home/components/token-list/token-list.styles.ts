@@ -78,6 +78,9 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(1),
     outline: "none",
   },
+  error: {
+    padding: theme.spacing(1),
+  },
 }));
 
 export default useListStyles;
