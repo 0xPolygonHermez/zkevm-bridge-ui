@@ -10,6 +10,7 @@ import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import Error from "src/views/shared/error/error.view";
 import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
+import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface TokenListProps {
   tokens: Token[];
@@ -23,7 +24,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([...getCustomTokens(), ...tokens]);
-  const [customToken, setCustomToken] = useState<Token>();
+  const [customToken, setCustomToken] = useState<AsyncTask<Token, never>>({ status: "pending" });
   const [searchInputValue, setSearchInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
@@ -42,7 +43,11 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
 
   const onRemoveTokenClick = (token: Token) => {
     removeCustomToken(token);
-    const all = [...(customToken ? [customToken] : []), ...getCustomTokens(), ...tokens];
+    const all = [
+      ...(isAsyncTaskDataAvailable(customToken) ? [customToken.data] : []),
+      ...getCustomTokens(),
+      ...tokens,
+    ];
     const filtered = searchInputValue.length
       ? all.filter(getTokenFilterByTerm(searchInputValue))
       : all;
@@ -52,18 +57,19 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const onSearchInputValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     setSearchInputValue(value);
-    setCustomToken(undefined);
+    setCustomToken({ status: "pending" });
 
     const all = [...getCustomTokens(), ...tokens];
     const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
     setFilteredTokens(filtered);
 
     if (ethersUtils.isAddress(value) && filtered.length === 0) {
+      setCustomToken({ status: "loading" });
       void getTokenFromAddress({
         address: value,
         chain,
       }).then((token) => {
-        setCustomToken(token);
+        setCustomToken({ status: "successful", data: token });
         setFilteredTokens([token]);
       });
     }
@@ -117,8 +123,8 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                       className={classes.tokenAccessoryButton}
                       disabled={customToken === undefined}
                       onClick={() => {
-                        if (customToken) {
-                          onImportTokenClick(customToken);
+                        if (isAsyncTaskDataAvailable(customToken)) {
+                          onImportTokenClick(customToken.data);
                         }
                       }}
                     >
@@ -128,13 +134,18 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                 </div>
               );
             })}
-            {filteredTokens.length === 0 && (
-              <Error
-                error={`The input "${searchInputValue}" produced no matches`}
-                type="body2"
-                className={classes.error}
-              />
-            )}
+            {filteredTokens.length === 0 &&
+              (customToken.status === "loading" ? (
+                <Typography className={classes.loading} type="body1">
+                  Loading...
+                </Typography>
+              ) : (
+                <Error
+                  error={`The input "${searchInputValue}" produced no matches`}
+                  type="body2"
+                  className={classes.error}
+                />
+              ))}
           </div>
         </Card>
       </div>

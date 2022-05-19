@@ -82,6 +82,9 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       cursor: "initial",
     },
   },
+  loading: {
+    lineHeight: "48px",
+  },
   error: {
     padding: theme.spacing(1),
   },
