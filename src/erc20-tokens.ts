@@ -47,16 +47,7 @@ export const erc20Tokens: TokenList = {
       decimals: 18,
       network: 0,
       logoURI:
-        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735/logo.png",
-    },
-    {
-      name: "Maker",
-      address: "0xF9bA5210F91D0474bd1e1DcDAeC4C58E359AaD85",
-      symbol: "MKR",
-      decimals: 18,
-      network: 0,
-      logoURI:
-        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xF9bA5210F91D0474bd1e1DcDAeC4C58E359AaD85/logo.png",
+        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png",
     },
     {
       name: "Uniswap",
@@ -74,10 +65,19 @@ export const erc20Tokens: TokenList = {
       decimals: 18,
       network: 0,
       logoURI:
-        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xc778417E063141139Fce010982780140Aa0cD5Ab/logo.png",
+        "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
     },
   ],
   MAINNET: [
+    {
+      name: "Dai Stablecoin",
+      address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      symbol: "DAI",
+      decimals: 18,
+      network: 0,
+      logoURI:
+        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png",
+    },
     {
       address: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
       name: "Polygon",
@@ -85,7 +85,7 @@ export const erc20Tokens: TokenList = {
       decimals: 18,
       network: 0,
       logoURI:
-        "https://assets.coingecko.com/coins/images/4713/thumb/matic-token-icon.png?1624446912",
+        "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png",
     },
     {
       name: "Uniswap",
