@@ -6,6 +6,7 @@ import {
   ethers,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
+import axios from "axios";
 import { createContext, FC, useContext, useCallback } from "react";
 
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -103,8 +104,11 @@ const BridgeProvider: FC = (props) => {
       const decimals = await erc20Contract.decimals();
       const symbol = await erc20Contract.symbol();
       const network = chain.networkId;
-      const logoURI = tokenIconDefaultUrl;
-      // const logoURI = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+      const onlineLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+      const logoURI = await axios
+        .get(onlineLogoUrl)
+        .then(() => onlineLogoUrl)
+        .catch(() => tokenIconDefaultUrl);
       const token: Token = {
         name,
         decimals,
