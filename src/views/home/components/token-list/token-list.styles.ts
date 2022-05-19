@@ -29,8 +29,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     paddingBottom: theme.spacing(1),
   },
   list: {
-    display: "flex",
-    flexDirection: "column",
     overflowY: "auto",
     maxHeight: 270,
     "&::-webkit-scrollbar": {
@@ -45,41 +43,43 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   },
   tokenWrapper: {
     display: "flex",
-    padding: theme.spacing(2),
     background: theme.palette.grey.light,
     borderRadius: 8,
-    alignItems: "center",
     "&:not(:first-of-type)": {
       marginTop: theme.spacing(1),
     },
   },
-  enabledTokenWrapper: {
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-  },
-  disabledTokenWrapper: {
-    background: theme.palette.grey.light,
-    opacity: 0.5,
-  },
   tokenMainButton: {
     cursor: "pointer",
     border: "none",
-    background: "transparent",
+    padding: theme.spacing(2),
     display: "flex",
     flex: 1,
     alignItems: "center",
     gap: theme.spacing(1),
+    borderRadius: [8, 0, 0, 8],
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
     "&:disabled": {
+      background: "transparent",
       cursor: "initial",
+      opacity: 0.5,
     },
   },
   tokenAccessoryButton: {
     cursor: "pointer",
     border: "none",
-    background: "transparent",
+    minWidth: 100,
+    padding: theme.spacing(2),
+    borderRadius: [0, 8, 8, 0],
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
     "&:disabled": {
+      background: "transparent",
       cursor: "initial",
+      opacity: 0.5,
     },
   },
   loading: {

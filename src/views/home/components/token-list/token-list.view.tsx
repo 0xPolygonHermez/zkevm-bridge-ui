@@ -93,17 +93,12 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                 tokens.find((tkn) => tkn.address === token.address) === undefined;
               const isImportedCustomToken =
                 getCustomTokens().find((tkn) => tkn.address === token.address) !== undefined;
-              const isDisabled = token.address === selected.address;
+              const isSelected = token.address === selected.address;
               return (
-                <div
-                  className={`${classes.tokenWrapper} ${
-                    isDisabled ? classes.disabledTokenWrapper : classes.enabledTokenWrapper
-                  }`}
-                  key={token.address}
-                >
+                <div className={classes.tokenWrapper} key={token.address}>
                   <button
                     className={classes.tokenMainButton}
-                    disabled={isDisabled}
+                    disabled={isSelected}
                     onClick={() => onSelectToken(token)}
                   >
                     <Icon url={token.logoURI} size={24} />
@@ -112,7 +107,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                   {isImportedCustomToken && (
                     <button
                       className={classes.tokenAccessoryButton}
-                      disabled={isDisabled}
+                      disabled={isSelected}
                       onClick={() => onRemoveTokenClick(token)}
                     >
                       <Typography type="body1">Remove</Typography>
@@ -121,7 +116,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                   {isCustomToken && !isImportedCustomToken && (
                     <button
                       className={classes.tokenAccessoryButton}
-                      disabled={customToken === undefined}
+                      disabled={isSelected}
                       onClick={() => {
                         if (isAsyncTaskDataAvailable(customToken)) {
                           onImportTokenClick(customToken.data);
