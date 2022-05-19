@@ -106,7 +106,7 @@ const BridgeProvider: FC = (props) => {
       const network = chain.networkId;
       const trustWalletLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
       const logoURI = await axios
-        .get(trustWalletLogoUrl)
+        .head(trustWalletLogoUrl)
         .then(() => trustWalletLogoUrl)
         .catch(() => tokenIconDefaultUrl);
       const token: Token = {
