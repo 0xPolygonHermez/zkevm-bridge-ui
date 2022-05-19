@@ -15,6 +15,17 @@ const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
   })
 );
 
+export interface MetamaskInsufficientAllowanceError {
+  code: -32603;
+}
+
+export const metamaskInsufficientAllowanceError =
+  StrictSchema<MetamaskInsufficientAllowanceError>()(
+    z.object({
+      code: z.literal(-32603),
+    })
+  );
+
 export interface MetamaskUserRejectedRequestError {
   code: 4001;
   message: string;
@@ -61,6 +72,7 @@ function sanitizeErrorMessage(errorMessage: string): string {
 }
 
 export function parseError(error: unknown): Promise<string> {
+  console.error(error);
   const unknownError = Promise.resolve(`An unknown error has occurred: ${JSON.stringify(error)}`);
   if (typeof error === "string") {
     return Promise.resolve(error);
@@ -87,7 +99,6 @@ export function parseError(error: unknown): Promise<string> {
     if (parsedMessageKeyError.success) {
       return Promise.resolve(parsedMessageKeyError.data.message);
     } else {
-      console.error(error);
       return unknownError;
     }
   }
