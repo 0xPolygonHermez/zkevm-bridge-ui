@@ -33,25 +33,21 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   };
 
   const onImportTokenClick = (token: Token) => {
-    addCustomToken(token);
-    const all = [...getCustomTokens(), ...tokens];
-    const filtered = searchInputValue.length
-      ? all.filter(getTokenFilterByTerm(searchInputValue))
-      : all;
-    setFilteredTokens(filtered);
+    const all = [...addCustomToken(token), ...tokens];
+    setFilteredTokens(
+      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
+    );
   };
 
   const onRemoveTokenClick = (token: Token) => {
-    removeCustomToken(token);
     const all = [
       ...(isAsyncTaskDataAvailable(customToken) ? [customToken.data] : []),
-      ...getCustomTokens(),
+      ...removeCustomToken(token),
       ...tokens,
     ];
-    const filtered = searchInputValue.length
-      ? all.filter(getTokenFilterByTerm(searchInputValue))
-      : all;
-    setFilteredTokens(filtered);
+    setFilteredTokens(
+      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
+    );
   };
 
   const onSearchInputValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
