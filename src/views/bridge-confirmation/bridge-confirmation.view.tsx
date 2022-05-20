@@ -19,6 +19,7 @@ import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
+import { ETH_TOKEN_LOGO_URI } from "src/constants";
 
 const BridgeConfirmation: FC = () => {
   const classes = useBridgeConfirmationStyles();
@@ -98,7 +99,7 @@ const BridgeConfirmation: FC = () => {
             Estimated gas fee
           </Typography>
           <Typography type="body1" className={classes.fee}>
-            <Icon url={env.tokens.ETH.logoURI} size={20} />
+            <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
             {`~ ${formatTokenAmount(formData.estimatedFee, formData.token)} ETH`}
           </Typography>
         </div>

@@ -14,6 +14,7 @@ import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { calculateFee } from "src/utils/fees";
+import { useEnvContext } from "src/contexts/env.context";
 
 interface GetErc20TokenBalanceParams {
   token: Token;
@@ -85,6 +86,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
+  const env = useEnvContext();
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -145,7 +147,7 @@ const BridgeProvider: FC = (props) => {
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       const executeBridge = async () => {
-        const doesTokenMatchNetwork = token.network === from.networkId;
+        const doesTokenMatchNetwork = token.chainId === from.chainId;
         const isTokenEther = token.address === ethersConstants.AddressZero;
         const tokenAddress =
           doesTokenMatchNetwork || isTokenEther
@@ -202,6 +204,9 @@ const BridgeProvider: FC = (props) => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
+      if (env === undefined) {
+        throw new Error("Env is not available");
+      }
 
       const contract = Bridge__factory.connect(
         destinationNetwork.contractAddress,
@@ -210,11 +215,17 @@ const BridgeProvider: FC = (props) => {
 
       const isL2Claim = destinationNetwork.key === "polygon-hermez";
 
+      const tokenChain = env.chains.find((chain) => chain.chainId === token.chainId);
+
+      if (tokenChain === undefined) {
+        throw new Error("Token chain is not available");
+      }
+
       const executeClaim = () =>
         contract.claim(
           token.address,
           amount,
-          token.network,
+          tokenChain.networkId,
           destinationNetwork.networkId,
           destinationAddress,
           smtProof,
@@ -235,7 +246,7 @@ const BridgeProvider: FC = (props) => {
           .then(executeClaim);
       }
     },
-    [changeNetwork, connectedProvider]
+    [changeNetwork, connectedProvider, env]
   );
 
   const getErc20TokenBalance = async ({
@@ -248,7 +259,7 @@ const BridgeProvider: FC = (props) => {
     if (isTokenEther) {
       return Promise.reject(new Error("Ether is not supported as ERC20 token"));
     }
-    const doesTokenMatchNetwork = token.network === from.networkId;
+    const doesTokenMatchNetwork = token.chainId === from.chainId;
 
     const tokenAddress = doesTokenMatchNetwork
       ? token.address

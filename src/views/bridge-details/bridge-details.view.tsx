@@ -203,7 +203,7 @@ const BridgeDetails: FC = () => {
               Step 1 Fee ({getChainName(bridge.data.deposit.networkId)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step1Fee} {env.tokens.ETH.symbol}
+              {step1Fee} ETH
             </Typography>
           </div>
         )}
@@ -213,7 +213,7 @@ const BridgeDetails: FC = () => {
               Step 2 Fee ({getChainName(bridge.data.deposit.destinationNetwork)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step2Fee} {env.tokens.ETH.symbol}
+              {step2Fee} ETH
             </Typography>
           </div>
         )}
