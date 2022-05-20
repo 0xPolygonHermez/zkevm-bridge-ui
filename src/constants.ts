@@ -1,7 +1,7 @@
-import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
+import { erc20Tokens } from "src/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 
@@ -27,15 +27,8 @@ export const UNISWAP_V3_POOL_FEE = 3000;
 
 export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 
-export const ETH_TOKEN: Token = {
-  name: "Ether",
-  address: ethers.constants.AddressZero,
-  network: 0,
-  symbol: "ETH",
-  decimals: 18,
-  logoURI:
-    "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
-};
+export const ETH_TOKEN_LOGO_URI =
+  "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
 export const getChains = ({
   ethereum,
@@ -79,16 +72,22 @@ export const getChains = ({
   );
 };
 
+export const getSupportedERC20Tokens = (chains: Chain[]): Token[] => {
+  return erc20Tokens.filter(
+    (token) => token.chainId === chains[0].chainId || token.chainId === chains[1].chainId
+  );
+};
+
 export const getUsdtToken = ({
   address,
-  network,
+  chainId,
 }: {
   address: string;
-  network: number;
+  chainId: number;
 }): Token => ({
   name: "Tether USD",
   address,
-  network,
+  chainId,
   symbol: "USDT",
   decimals: 6,
   logoURI:

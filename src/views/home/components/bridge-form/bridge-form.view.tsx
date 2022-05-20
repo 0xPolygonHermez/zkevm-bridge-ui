@@ -24,7 +24,6 @@ import { useErrorContext } from "src/contexts/error.context";
 import { Chain, Token, FormData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { ETH_TOKEN } from "src/constants";
 
 interface BridgeFormProps {
   account: string;
@@ -98,7 +97,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       if (from && to) {
         setChains({ from, to });
       }
-      setToken(ETH_TOKEN);
+      const ethToken = env.tokens.find((token) => token.address === ethers.constants.AddressZero);
+      setToken(ethToken);
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

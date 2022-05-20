@@ -16,8 +16,8 @@ export interface Token {
   name: string;
   symbol: string;
   address: string;
-  network: number;
   decimals: number;
+  chainId: number;
   logoURI: string;
 }
 
