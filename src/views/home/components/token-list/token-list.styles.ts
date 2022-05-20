@@ -87,6 +87,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   },
   error: {
     padding: theme.spacing(1),
+    lineHeight: "26px",
   },
 }));
 

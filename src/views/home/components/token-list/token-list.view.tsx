@@ -11,6 +11,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import Error from "src/views/shared/error/error.view";
 import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
+import { getChainName } from "src/utils/labels";
 
 interface TokenListProps {
   tokens: Token[];
@@ -24,7 +25,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([...getCustomTokens(), ...tokens]);
-  const [customToken, setCustomToken] = useState<AsyncTask<Token, never>>({ status: "pending" });
+  const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({ status: "pending" });
   const [searchInputValue, setSearchInputValue] = useState<string>("");
 
   const onOutsideClick = (event: React.MouseEvent) => {
@@ -40,33 +41,39 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   };
 
   const onRemoveTokenClick = (token: Token) => {
-    const all = [
-      ...(isAsyncTaskDataAvailable(customToken) ? [customToken.data] : []),
-      ...removeCustomToken(token),
-      ...tokens,
-    ];
+    const all = [...removeCustomToken(token), ...tokens];
     setFilteredTokens(
       searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
     );
+    onSearchInputValueChange(searchInputValue);
   };
 
-  const onSearchInputValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = event.target.value;
+  const onSearchInputValueChange = (value: string): void => {
     setSearchInputValue(value);
 
     const all = [...getCustomTokens(), ...tokens];
     const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
     setFilteredTokens(filtered);
+    setCustomToken({ status: "pending" });
 
     if (ethersUtils.isAddress(value) && filtered.length === 0) {
       setCustomToken({ status: "loading" });
       void getTokenFromAddress({
         address: value,
         chain,
-      }).then((token) => {
-        setCustomToken({ status: "successful", data: token });
-        setFilteredTokens([token]);
-      });
+      })
+        .then((token) => {
+          setCustomToken({ status: "successful", data: token });
+          setFilteredTokens([token]);
+        })
+        .catch(() =>
+          setCustomToken({
+            status: "failed",
+            error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
+              chain
+            )} chain with id ${chain.chainId}`,
+          })
+        );
     }
   };
 
@@ -80,7 +87,9 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
             className={classes.searchInput}
             value={searchInputValue}
             autoFocus
-            onChange={onSearchInputValueChange}
+            onChange={(event) => {
+              onSearchInputValueChange(event.target.value);
+            }}
           />
           <div className={classes.list}>
             {filteredTokens.slice(0, 20).map((token) => {
@@ -123,7 +132,10 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                 </div>
               );
             })}
-            {filteredTokens.length === 0 &&
+            {customToken.status === "failed" ? (
+              <Error error={customToken.error} type="body2" className={classes.error} />
+            ) : (
+              filteredTokens.length === 0 &&
               (customToken.status === "loading" ? (
                 <Typography className={classes.loading} type="body1">
                   Loading...
@@ -134,7 +146,8 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                   type="body2"
                   className={classes.error}
                 />
-              ))}
+              ))
+            )}
           </div>
         </Card>
       </div>
