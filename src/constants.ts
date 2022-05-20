@@ -72,9 +72,9 @@ export const getChains = ({
   );
 };
 
-export const getSupportedERC20Tokens = (chains: Chain[]): Token[] => {
+export const getSupportedERC20Tokens = ([l1, l2]: [Chain, Chain]): Token[] => {
   return erc20Tokens.filter(
-    (token) => token.chainId === chains[0].chainId || token.chainId === chains[1].chainId
+    (token) => token.chainId === l1.chainId || token.chainId === l2.chainId
   );
 };
 
