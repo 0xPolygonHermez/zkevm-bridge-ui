@@ -184,6 +184,7 @@ const BridgeProvider: FC = (props) => {
     tokenAddress: string;
     originNetwork: number;
   }): Promise<Token> => {
+    const error = `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`;
     const token = [...getCustomTokens(), ...env.tokens].find(
       (token) => token.address === tokenAddress
     );
@@ -192,11 +193,11 @@ const BridgeProvider: FC = (props) => {
     } else {
       const chain = env.chains.find((chain) => chain.networkId === originNetwork);
       if (chain) {
-        return await getTokenFromAddress({ address: tokenAddress, chain });
+        return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
+          throw new Error(error);
+        });
       } else {
-        throw new Error(
-          `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`
-        );
+        throw new Error(error);
       }
     }
   };
