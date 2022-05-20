@@ -15,7 +15,10 @@ import Icon from "src/views/shared/icon/icon.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
-import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import {
+  isMetamaskUserRejectedRequestError,
+  isMetamaskInsufficientAllowanceError,
+} from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
@@ -29,7 +32,7 @@ const BridgeConfirmation: FC = () => {
   const { bridge } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { account, connectedProvider } = useProvidersContext();
-  const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
+  const [error, setError] = useState<string>();
 
   const onClick = () => {
     if (formData && account.status === "successful") {
@@ -47,13 +50,20 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                setIncorrectNetworkMessage(`Switch to ${getChainName(from)} to continue`);
-              } else {
-                notifyError(error);
-              }
-            });
+            if (isMetamaskInsufficientAllowanceError(error)) {
+              const network = getChainName(from);
+              setError(
+                `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
+              );
+            } else {
+              void parseError(error).then((parsed) => {
+                if (parsed === "wrong-network") {
+                  setError(`Switch to ${getChainName(from)} to continue`);
+                } else {
+                  notifyError(error);
+                }
+              });
+            }
           }
         });
     }
@@ -62,7 +72,7 @@ const BridgeConfirmation: FC = () => {
   useEffect(() => {
     if (formData) {
       if (formData.from.chainId === connectedProvider?.chainId) {
-        setIncorrectNetworkMessage(undefined);
+        setError(undefined);
       }
     }
   }, [connectedProvider, formData]);
@@ -106,7 +116,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <Button onClick={onClick}>Bridge</Button>
-        {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
+        {error && <Error error={error} />}
       </div>
     </>
   );

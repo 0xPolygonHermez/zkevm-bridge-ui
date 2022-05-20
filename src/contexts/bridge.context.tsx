@@ -6,15 +6,24 @@ import {
   ethers,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
+import axios from "axios";
 import { createContext, FC, useContext, useCallback } from "react";
 
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Chain, Token } from "src/domain";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { useEnvContext } from "src/contexts/env.context";
+import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
+import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
+import { getCustomTokens } from "src/adapters/storage";
+import { Env, Chain, Token, Bridge, Deposit } from "src/domain";
+
+interface GetTokenFromAddressParams {
+  address: string;
+  chain: Chain;
+}
 
 interface GetErc20TokenBalanceParams {
   token: Token;
@@ -22,11 +31,17 @@ interface GetErc20TokenBalanceParams {
   to: Chain;
   ethereumAddress: string;
 }
+
 interface EstimateBridgeGasPriceParams {
   from: Chain;
   token: Token;
   to: Chain;
   destinationAddress: string;
+}
+
+interface GetBridgesParams {
+  env: Env;
+  ethereumAddress: string;
 }
 
 interface GetWrappedTokenAddressParams {
@@ -57,7 +72,9 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
+  getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
+  getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
   getWrappedTokenAddress: (params: GetWrappedTokenAddressParams) => Promise<string>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
@@ -67,7 +84,13 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
+  getTokenFromAddress: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   estimateBridgeGasPrice: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   bridge: () => {
@@ -87,6 +110,31 @@ const bridgeContext = createContext<BridgeContext>({
 const BridgeProvider: FC = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const env = useEnvContext();
+
+  const getTokenFromAddress = useCallback(
+    async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
+      const erc20Contract = Erc20__factory.connect(address, chain.provider);
+      const name = await erc20Contract.name();
+      const decimals = await erc20Contract.decimals();
+      const symbol = await erc20Contract.symbol();
+      const chainId = chain.chainId;
+      const trustWalletLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+      const logoURI = await axios
+        .head(trustWalletLogoUrl)
+        .then(() => trustWalletLogoUrl)
+        .catch(() => tokenIconDefaultUrl);
+      const token: Token = {
+        name,
+        decimals,
+        symbol,
+        address,
+        chainId,
+        logoURI,
+      };
+      return token;
+    },
+    []
+  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -126,6 +174,128 @@ const BridgeProvider: FC = (props) => {
     },
     [estimateGasPrice]
   );
+
+  const getToken = async ({
+    env,
+    tokenAddress,
+    originNetwork,
+  }: {
+    env: Env;
+    tokenAddress: string;
+    originNetwork: number;
+  }): Promise<Token> => {
+    const error = `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`;
+    const token = [...getCustomTokens(), ...env.tokens].find(
+      (token) => token.address === tokenAddress
+    );
+    if (token) {
+      return token;
+    } else {
+      const chain = env.chains.find((chain) => chain.networkId === originNetwork);
+      if (chain) {
+        return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
+          throw new Error(error);
+        });
+      } else {
+        throw new Error(error);
+      }
+    }
+  };
+
+  const getBridges = async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
+    const apiUrl = env.bridgeApiUrl;
+    const [apiDeposits, apiClaims] = await Promise.all([
+      getDeposits({ apiUrl, ethereumAddress }),
+      getClaims({ apiUrl, ethereumAddress }),
+    ]);
+
+    return await Promise.all(
+      apiDeposits.map(async (apiDeposit): Promise<Bridge> => {
+        const {
+          network_id,
+          dest_net,
+          amount,
+          dest_addr,
+          deposit_cnt,
+          tx_hash,
+          token_addr,
+          orig_net,
+        } = apiDeposit;
+
+        const networkId = env.chains.find((chain) => chain.networkId === network_id);
+        if (networkId === undefined) {
+          throw new Error(
+            `The specified network_id "${network_id}" can not be found in the list of supported Chains`
+          );
+        }
+
+        const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
+        if (destinationNetwork === undefined) {
+          throw new Error(
+            `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
+          );
+        }
+
+        const token = await getToken({ env, tokenAddress: token_addr, originNetwork: orig_net });
+
+        const deposit: Deposit = {
+          token,
+          amount: BigNumber.from(amount),
+          destinationAddress: dest_addr,
+          depositCount: deposit_cnt,
+          txHash: tx_hash,
+          networkId,
+          destinationNetwork,
+        };
+
+        const apiClaim = apiClaims.find(
+          (claim) =>
+            claim.index === deposit.depositCount &&
+            claim.network_id === deposit.destinationNetwork.networkId
+        );
+
+        const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
+
+        if (apiClaim) {
+          return {
+            status: "completed",
+            id,
+            deposit,
+            claim: {
+              txHash: apiClaim.tx_hash,
+            },
+          };
+        }
+
+        const claimStatus = await getClaimStatus({
+          apiUrl,
+          networkId: deposit.networkId.networkId,
+          depositCount: deposit.depositCount,
+        });
+
+        if (claimStatus === false) {
+          return {
+            status: "initiated",
+            id,
+            deposit,
+          };
+        }
+
+        const merkleProof = await getMerkleProof({
+          apiUrl,
+          networkId: deposit.networkId.networkId,
+          depositCount: deposit.depositCount,
+        });
+
+        return {
+          status: "on-hold",
+          id,
+          deposit,
+          merkleProof,
+        };
+      })
+    );
+  };
 
   const bridge = useCallback(
     async ({
@@ -297,8 +467,10 @@ const BridgeProvider: FC = (props) => {
   return (
     <bridgeContext.Provider
       value={{
+        getTokenFromAddress,
         estimateBridgeGasPrice,
         bridge,
+        getBridges,
         claim,
         getErc20TokenBalance,
         getWrappedTokenAddress,

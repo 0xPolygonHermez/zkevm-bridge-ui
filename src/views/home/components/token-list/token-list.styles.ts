@@ -14,23 +14,21 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   },
   card: {
     width: "100%",
-    maxWidth: 426,
-    padding: theme.spacing(2),
-  },
-  search: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1.25),
-    padding: [theme.spacing(1), 0],
-  },
-  input: {
-    flex: 1,
-    border: "none",
-    outline: "none",
-  },
-  list: {
+    maxWidth: 500,
     display: "flex",
     flexDirection: "column",
+    padding: theme.spacing(2),
+  },
+  searchInput: {
+    flex: 1,
+    border: "none",
+    lineHeight: "36px",
+    outline: "none",
+    borderBottom: "1px solid #F0F1F6",
+    marginBottom: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
+  list: {
     overflowY: "auto",
     maxHeight: 270,
     "&::-webkit-scrollbar": {
@@ -43,30 +41,53 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.grey.dark,
     },
   },
-  button: {
-    border: "none",
+  tokenWrapper: {
     display: "flex",
-    gap: theme.spacing(1),
-    padding: theme.spacing(2),
     background: theme.palette.grey.light,
     borderRadius: 8,
-    cursor: "pointer",
-    alignItems: "center",
     "&:not(:first-of-type)": {
       marginTop: theme.spacing(1),
     },
+  },
+  tokenMainButton: {
+    cursor: "pointer",
+    border: "none",
+    padding: theme.spacing(2),
+    display: "flex",
+    flex: 1,
+    alignItems: "center",
+    gap: theme.spacing(1),
+    borderRadius: [8, 0, 0, 8],
     "&:hover": {
       background: theme.palette.grey.main,
     },
     "&:disabled": {
+      background: "transparent",
       cursor: "initial",
-      background: theme.palette.grey.light,
       opacity: 0.5,
     },
   },
-  icon: {
-    width: "24px",
-    height: "24px",
+  tokenAccessoryButton: {
+    cursor: "pointer",
+    border: "none",
+    minWidth: 100,
+    padding: theme.spacing(2),
+    borderRadius: [0, 8, 8, 0],
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+    "&:disabled": {
+      background: "transparent",
+      cursor: "initial",
+      opacity: 0.5,
+    },
+  },
+  loading: {
+    lineHeight: "48px",
+  },
+  error: {
+    padding: theme.spacing(1),
+    lineHeight: "26px",
   },
 }));
 

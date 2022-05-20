@@ -17,17 +17,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     maxWidth: 426,
     padding: theme.spacing(2),
   },
-  search: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1.25),
-    padding: [theme.spacing(1), 0],
-  },
-  input: {
-    flex: 1,
-    border: "none",
-    outline: "none",
-  },
   list: {
     display: "flex",
     flexDirection: "column",

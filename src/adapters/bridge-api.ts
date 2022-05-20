@@ -1,6 +1,5 @@
 import axios from "axios";
 import { z } from "zod";
-import { BigNumber } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
@@ -141,110 +140,15 @@ const getClaimsResponseParser = StrictSchema<
   })
 );
 
-const getBridges = async ({
-  env,
-  ethereumAddress,
-}: {
-  env: domain.Env;
-  ethereumAddress: string;
-}): Promise<domain.Bridge[]> => {
-  const apiUrl = env.bridgeApiUrl;
-  const [apiDeposits, apiClaims] = await Promise.all([
-    getDeposits({ apiUrl, ethereumAddress }),
-    getClaims({ apiUrl, ethereumAddress }),
-  ]);
-
-  return await Promise.all(
-    apiDeposits.map(async (apiDeposit): Promise<domain.Bridge> => {
-      const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash, token_addr } =
-        apiDeposit;
-
-      const networkId = env.chains.find((chain) => chain.networkId === network_id);
-      if (networkId === undefined) {
-        throw new Error(
-          `The specified network_id "${network_id}" can not be found in the list of supported Chains`
-        );
-      }
-
-      const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
-      if (destinationNetwork === undefined) {
-        throw new Error(
-          `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
-        );
-      }
-
-      const token = env.tokens.find((token) => token.address === token_addr);
-      if (token === undefined) {
-        throw new Error(
-          `The specified token_addr "${token_addr}" can not be found in the list of supported Tokens`
-        );
-      }
-
-      const deposit: domain.Deposit = {
-        token,
-        amount: BigNumber.from(amount),
-        destinationAddress: dest_addr,
-        depositCount: deposit_cnt,
-        txHash: tx_hash,
-        networkId,
-        destinationNetwork,
-      };
-
-      const apiClaim = apiClaims.find(
-        (claim) =>
-          claim.index === deposit.depositCount &&
-          claim.network_id === deposit.destinationNetwork.networkId
-      );
-
-      const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
-
-      if (apiClaim) {
-        return {
-          status: "completed",
-          id,
-          deposit,
-          claim: {
-            txHash: apiClaim.tx_hash,
-          },
-        };
-      }
-
-      const claimStatus = await getClaimStatus({
-        apiUrl,
-        networkId: deposit.networkId.networkId,
-        depositCount: deposit.depositCount,
-      });
-
-      if (claimStatus === false) {
-        return {
-          status: "initiated",
-          id,
-          deposit,
-        };
-      }
-
-      const merkleProof = await getMerkleProof({
-        apiUrl,
-        networkId: deposit.networkId.networkId,
-        depositCount: deposit.depositCount,
-      });
-
-      return {
-        status: "on-hold",
-        id,
-        deposit,
-        merkleProof,
-      };
-    })
-  );
-};
-
 interface GetDepositsParams {
   apiUrl: string;
   ethereumAddress: string;
 }
 
-const getDeposits = ({ apiUrl, ethereumAddress }: GetDepositsParams): Promise<DepositOutput[]> => {
+export const getDeposits = ({
+  apiUrl,
+  ethereumAddress,
+}: GetDepositsParams): Promise<DepositOutput[]> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -268,7 +172,7 @@ interface GetClaimStatusParams {
   depositCount: number;
 }
 
-const getClaimStatus = ({
+export const getClaimStatus = ({
   apiUrl,
   networkId,
   depositCount,
@@ -300,7 +204,7 @@ interface GetMerkleProofParams {
   depositCount: number;
 }
 
-const getMerkleProof = ({
+export const getMerkleProof = ({
   apiUrl,
   networkId,
   depositCount,
@@ -331,7 +235,7 @@ interface GetClaimsParams {
   ethereumAddress: string;
 }
 
-const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimOutput[]> => {
+export const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimOutput[]> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -348,5 +252,3 @@ const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimO
       }
     });
 };
-
-export { getBridges };
