@@ -2,15 +2,15 @@ import { Token } from "src/domain";
 
 export const erc20Tokens: Token[] = [
   // LOCAL
-  // {
-  //   name: "Polygon",
-  //   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  //   chainId: 1337,
-  //   symbol: "MATIC",
-  //   decimals: 18,
-  //   logoURI:
-  //     "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png",
-  // },
+  {
+    name: "Polygon",
+    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    chainId: 1337,
+    symbol: "MATIC",
+    decimals: 18,
+    logoURI:
+      "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png",
+  },
   //GOERLI - INTERNAL-TESTNET
   {
     name: "Uniswap",
