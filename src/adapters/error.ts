@@ -15,6 +15,28 @@ const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
   })
 );
 
+export interface JsonRpcError {
+  code: number;
+  message: string;
+  data: {
+    code: number;
+    message: string;
+    data: string;
+  };
+}
+
+export const jsonRpcError = StrictSchema<JsonRpcError>()(
+  z.object({
+    code: z.number(),
+    message: z.string(),
+    data: z.object({
+      code: z.number(),
+      message: z.string(),
+      data: z.string(),
+    }),
+  })
+);
+
 export interface MetamaskInsufficientAllowanceError {
   code: -32603;
 }
@@ -95,8 +117,13 @@ export function parseError(error: unknown): Promise<string> {
         return unknownError;
       });
   } else {
+    const parsedJsonRpcError = jsonRpcError.safeParse(error);
     const parsedMessageKeyError = messageKeyErrorParser.safeParse(error);
-    if (parsedMessageKeyError.success) {
+    if (parsedJsonRpcError.success) {
+      return Promise.resolve(
+        `${parsedJsonRpcError.data.message} (code ${parsedJsonRpcError.data.code}): ${parsedJsonRpcError.data.data.message} (code ${parsedJsonRpcError.data.data.code})`
+      );
+    } else if (parsedMessageKeyError.success) {
       return Promise.resolve(parsedMessageKeyError.data.message);
     } else {
       return unknownError;
