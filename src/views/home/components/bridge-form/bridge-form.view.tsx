@@ -203,7 +203,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button
             className={classes.tokenSelector}
-            onClick={() => setTokenList(Object.values(env.tokens))}
+            onClick={() => setTokenList(env.tokens)}
             type="button"
           >
             <Icon url={token.logoURI} size={24} />
