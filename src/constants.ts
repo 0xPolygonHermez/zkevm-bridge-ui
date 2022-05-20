@@ -4,6 +4,7 @@ import { Chain, Currency, Token } from "src/domain";
 import { erc20Tokens } from "src/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
+import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
@@ -73,9 +74,11 @@ export const getChains = ({
 };
 
 export const getSupportedERC20Tokens = ([l1, l2]: [Chain, Chain]): Token[] => {
-  return erc20Tokens.filter(
+  const tokens = erc20Tokens.filter(
     (token) => token.chainId === l1.chainId || token.chainId === l2.chainId
   );
+  cleanupCustomTokens(tokens);
+  return tokens;
 };
 
 export const getUsdtToken = ({

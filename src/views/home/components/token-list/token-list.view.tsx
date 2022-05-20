@@ -53,7 +53,6 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const onSearchInputValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     setSearchInputValue(value);
-    setCustomToken({ status: "pending" });
 
     const all = [...getCustomTokens(), ...tokens];
     const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
@@ -85,9 +84,8 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
           />
           <div className={classes.list}>
             {filteredTokens.slice(0, 20).map((token) => {
+              const isEnvToken = tokens.find((tkn) => tkn.address === token.address) !== undefined;
               const isCustomToken =
-                tokens.find((tkn) => tkn.address === token.address) === undefined;
-              const isImportedCustomToken =
                 getCustomTokens().find((tkn) => tkn.address === token.address) !== undefined;
               const isSelected = token.address === selected.address;
               return (
@@ -100,7 +98,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                     <Icon url={token.logoURI} size={24} />
                     <Typography type="body1">{token.name}</Typography>
                   </button>
-                  {isImportedCustomToken && (
+                  {isCustomToken && (
                     <button
                       className={classes.tokenAccessoryButton}
                       disabled={isSelected}
@@ -109,7 +107,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
                       <Typography type="body1">Remove</Typography>
                     </button>
                   )}
-                  {isCustomToken && !isImportedCustomToken && (
+                  {!isEnvToken && !isCustomToken && (
                     <button
                       className={classes.tokenAccessoryButton}
                       disabled={isSelected}

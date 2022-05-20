@@ -3,6 +3,7 @@ import { z } from "zod";
 import { BigNumber } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
+import { getCustomTokens } from "src/adapters/storage";
 import * as domain from "src/domain";
 
 interface DepositInput {
@@ -173,7 +174,9 @@ const getBridges = async ({
         );
       }
 
-      const token = env.tokens.find((token) => token.address === token_addr);
+      const token = [...getCustomTokens(), ...env.tokens].find(
+        (token) => token.address === token_addr
+      );
       if (token === undefined) {
         throw new Error(
           `The specified token_addr "${token_addr}" can not be found in the list of supported Tokens`

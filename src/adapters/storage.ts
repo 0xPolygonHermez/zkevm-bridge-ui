@@ -33,6 +33,18 @@ const tokenParser = StrictSchema<Token>()(
 
 const CUSTOM_TOKENS_KEY = "customTokens";
 
+export function cleanupCustomTokens(envTokens: Token[]): Token[] {
+  return setCustomTokens(
+    getCustomTokens().reduce(
+      (acc: Token[], curr: Token) =>
+        envTokens.find((token) => token.address === curr.address) === undefined
+          ? [...acc, curr]
+          : acc,
+      []
+    )
+  );
+}
+
 export function getCustomTokens(): Token[] {
   return getStorageByKey({
     key: CUSTOM_TOKENS_KEY,
