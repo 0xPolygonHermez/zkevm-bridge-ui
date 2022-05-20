@@ -25,8 +25,8 @@ const tokenParser = StrictSchema<Token>()(
     name: z.string(),
     symbol: z.string(),
     address: z.string(),
-    network: z.number(),
     decimals: z.number(),
+    chainId: z.number(),
     logoURI: z.string(),
   })
 );

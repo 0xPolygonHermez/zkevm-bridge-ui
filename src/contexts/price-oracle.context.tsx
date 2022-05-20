@@ -56,12 +56,12 @@ const PriceOracleProvider: FC = (props) => {
 
       const rate = await quoterContract.callStatic.quoteExactInputSingle(
         tokenAddress,
-        env.tokens.USDT.address,
+        env.fiatExchangeRates.usdtToken.address,
         UNISWAP_V3_POOL_FEE,
         parseUnits("1"),
         0
       );
-      const usdPrice = Number(formatUnits(rate, env.tokens.USDT.decimals));
+      const usdPrice = Number(formatUnits(rate, env.fiatExchangeRates.usdtToken.decimals));
       const fiatExchangeRate = fiatExchangeRates[preferredCurrency];
 
       if (!fiatExchangeRate) {

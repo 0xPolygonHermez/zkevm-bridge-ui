@@ -97,7 +97,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       if (from && to) {
         setChains({ from, to });
       }
-      setToken(env.tokens.ETH);
+      const ethToken = env.tokens.find((token) => token.address === ethers.constants.AddressZero);
+      setToken(ethToken);
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -173,7 +173,7 @@ const getBridges = async ({
         );
       }
 
-      const token = Object.values(env.tokens).find((token) => token.address === token_addr);
+      const token = env.tokens.find((token) => token.address === token_addr);
       if (token === undefined) {
         throw new Error(
           `The specified token_addr "${token_addr}" can not be found in the list of supported Tokens`
