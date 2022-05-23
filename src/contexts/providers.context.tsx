@@ -64,9 +64,9 @@ const ProvidersProvider: FC = (props) => {
               const checkMetamaskHeartbeat = setTimeout(() => {
                 return setAccount({
                   status: "failed",
-                  error: `You need to reload the page to connect ${WalletName.METAMASK}`,
+                  error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
                 });
-              }, 2000);
+              }, 3000);
               const requestedNetwork = await web3Provider.getNetwork();
               const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
@@ -87,14 +87,14 @@ const ProvidersProvider: FC = (props) => {
             } else {
               return setAccount({
                 status: "failed",
-                error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser`,
+                error: `We can't detect your wallet\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
               });
             }
           } catch (error) {
             if (isMetamaskRequestAccountsError(error)) {
               return setAccount({
                 status: "failed",
-                error: `Unlock ${WalletName.METAMASK} to continue`,
+                error: `Please unlock ${WalletName.METAMASK} to continue`,
               });
             } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
