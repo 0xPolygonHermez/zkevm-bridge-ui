@@ -16,7 +16,6 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { parseError } from "src/adapters/error";
-import { getBridges } from "src/adapters/bridge-api";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -57,7 +56,7 @@ const BridgeDetails: FC = () => {
   const { bridgeId } = useParams();
   const navigate = useNavigate();
   const { notifyError } = useErrorContext();
-  const { claim } = useBridgeContext();
+  const { getBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const env = useEnvContext();
@@ -135,7 +134,7 @@ const BridgeDetails: FC = () => {
         })
         .catch(notifyError);
     }
-  }, [account, env, bridgeId, notifyError]);
+  }, [account, env, bridgeId, notifyError, getBridges]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -203,7 +202,7 @@ const BridgeDetails: FC = () => {
               Step 1 Fee ({getChainName(bridge.data.deposit.networkId)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step1Fee} {env.tokens.ETH.symbol}
+              {step1Fee} ETH
             </Typography>
           </div>
         )}
@@ -213,7 +212,7 @@ const BridgeDetails: FC = () => {
               Step 2 Fee ({getChainName(bridge.data.deposit.destinationNetwork)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
-              {step2Fee} {env.tokens.ETH.symbol}
+              {step2Fee} ETH
             </Typography>
           </div>
         )}

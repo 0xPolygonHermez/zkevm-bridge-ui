@@ -1,9 +1,10 @@
-import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
+import { erc20Tokens } from "src/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
+import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
@@ -27,25 +28,8 @@ export const UNISWAP_V3_POOL_FEE = 3000;
 
 export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 
-export const ETH_TOKEN: Token = {
-  name: "Ether",
-  address: ethers.constants.AddressZero,
-  network: 0,
-  symbol: "ETH",
-  decimals: 18,
-  logoURI:
-    "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png",
-};
-
-export const MATIC_TOKEN: Token = {
-  name: "Polygon",
-  address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  network: 0,
-  symbol: "MATIC",
-  decimals: 18,
-  logoURI:
-    "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png",
-};
+export const ETH_TOKEN_LOGO_URI =
+  "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
 export const getChains = ({
   ethereum,
@@ -89,16 +73,24 @@ export const getChains = ({
   );
 };
 
+export const getSupportedERC20Tokens = ([l1, l2]: [Chain, Chain]): Token[] => {
+  const tokens = erc20Tokens.filter(
+    (token) => token.chainId === l1.chainId || token.chainId === l2.chainId
+  );
+  cleanupCustomTokens(tokens);
+  return tokens;
+};
+
 export const getUsdtToken = ({
   address,
-  network,
+  chainId,
 }: {
   address: string;
-  network: number;
+  chainId: number;
 }): Token => ({
   name: "Tether USD",
   address,
-  network,
+  chainId,
   symbol: "USDT",
   decimals: 6,
   logoURI:

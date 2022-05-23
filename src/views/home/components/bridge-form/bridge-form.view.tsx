@@ -97,7 +97,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       if (from && to) {
         setChains({ from, to });
       }
-      setToken(env.tokens.ETH);
+      const ethToken = env.tokens.find((token) => token.address === ethers.constants.AddressZero);
+      setToken(ethToken);
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,7 +203,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button
             className={classes.tokenSelector}
-            onClick={() => setTokenList(Object.values(env.tokens))}
+            onClick={() => setTokenList(env.tokens)}
             type="button"
           >
             <Icon url={token.logoURI} size={24} />
@@ -267,7 +268,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <TokenList
           tokens={tokenList}
           selected={token}
-          onClick={onTokenButtonClick}
+          chain={chains.from}
+          onSelectToken={onTokenButtonClick}
           onClose={() => setTokenList(undefined)}
         />
       )}

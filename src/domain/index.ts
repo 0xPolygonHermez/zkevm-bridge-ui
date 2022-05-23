@@ -16,8 +16,8 @@ export interface Token {
   name: string;
   symbol: string;
   address: string;
-  network: number;
   decimals: number;
+  chainId: number;
   logoURI: string;
 }
 
@@ -29,12 +29,10 @@ export interface Env {
   fiatExchangeRates: {
     apiUrl: string;
     apiKey: string;
+    usdtToken: Token;
   };
   chains: [Chain, Chain];
-  tokens: {
-    ETH: Token;
-    USDT: Token;
-  };
+  tokens: Token[];
   version: string;
 }
 
