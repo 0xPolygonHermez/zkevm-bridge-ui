@@ -9,7 +9,7 @@ const PrivateRoute: FC = ({ children }) => {
   const { pathname } = useLocation();
 
   if (!provider) {
-    return <Navigate to={routes.login.path} state={{ redirectUrl: pathname }} />;
+    return <Navigate to={routes.login.path} replace state={{ redirectUrl: pathname }} />;
   }
 
   return <>{children}</>;
