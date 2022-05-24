@@ -74,8 +74,8 @@ export const getChains = ({
   );
 };
 
-export const getChainTokens = (chain: Chain): Token[] => {
-  const etherToken: Token = {
+export const getEtherToken = (chain: Chain): Token => {
+  return {
     name: "Ether",
     address: ethers.constants.AddressZero,
     chainId: chain.chainId,
@@ -83,8 +83,11 @@ export const getChainTokens = (chain: Chain): Token[] => {
     decimals: 18,
     logoURI: ETH_TOKEN_LOGO_URI,
   };
+};
+
+export const getChainTokens = (chain: Chain): Token[] => {
   const chainErc20Tokens: Token[] = erc20Tokens.filter((token) => token.chainId === chain.chainId);
-  const tokens = [etherToken, ...chainErc20Tokens];
+  const tokens = [getEtherToken(chain), ...chainErc20Tokens];
   cleanupCustomTokens(tokens);
   return tokens;
 };

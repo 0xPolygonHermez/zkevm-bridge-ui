@@ -12,7 +12,7 @@ import { createContext, FC, useContext, useCallback } from "react";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE } from "src/constants";
+import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, getEtherToken } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { useEnvContext } from "src/contexts/env.context";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
@@ -180,13 +180,15 @@ const BridgeProvider: FC = (props) => {
     env,
     tokenAddress,
     originNetwork,
+    chain,
   }: {
     env: Env;
     tokenAddress: string;
     originNetwork: number;
+    chain: Chain;
   }): Promise<Token> => {
     const error = `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`;
-    const token = [...getCustomTokens(), ...erc20Tokens].find(
+    const token = [...getCustomTokens(), getEtherToken(chain), ...erc20Tokens].find(
       (token) => token.address === tokenAddress
     );
     if (token) {
@@ -237,7 +239,12 @@ const BridgeProvider: FC = (props) => {
           );
         }
 
-        const token = await getToken({ env, tokenAddress: token_addr, originNetwork: orig_net });
+        const token = await getToken({
+          env,
+          tokenAddress: token_addr,
+          originNetwork: orig_net,
+          chain: networkId,
+        });
 
         const deposit: Deposit = {
           token,
