@@ -6,6 +6,7 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
+  isMetamaskRequestAccountsError,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
@@ -60,9 +61,17 @@ const ProvidersProvider: FC = (props) => {
           try {
             if (window.ethereum && window.ethereum.isMetaMask) {
               const web3Provider = new Web3Provider(window.ethereum, "any");
+              const checkMetamaskHeartbeat = setTimeout(() => {
+                return setAccount({
+                  status: "failed",
+                  error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
+                });
+              }, 3000);
               const requestedNetwork = await web3Provider.getNetwork();
               const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
+
+              clearTimeout(checkMetamaskHeartbeat);
 
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
@@ -78,11 +87,16 @@ const ProvidersProvider: FC = (props) => {
             } else {
               return setAccount({
                 status: "failed",
-                error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser`,
+                error: `We can't detect your wallet\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
               });
             }
           } catch (error) {
-            if (!isMetamaskUserRejectedRequestError(error)) {
+            if (isMetamaskRequestAccountsError(error)) {
+              return setAccount({
+                status: "failed",
+                error: `Please unlock ${WalletName.METAMASK} to continue`,
+              });
+            } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
 
