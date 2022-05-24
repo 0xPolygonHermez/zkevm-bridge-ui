@@ -33,9 +33,9 @@ const Login: FC = () => {
       const routerState = routerStateParser.safeParse(state);
 
       if (routerState.success) {
-        navigate(routerState.data.redirectUrl);
+        navigate(routerState.data.redirectUrl, { replace: true });
       } else {
-        navigate(routes.home.path);
+        navigate(routes.home.path, { replace: true });
       }
     }
   }, [account, state, navigate]);

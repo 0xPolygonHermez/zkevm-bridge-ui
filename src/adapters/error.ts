@@ -21,7 +21,6 @@ export interface JsonRpcError {
   data: {
     code: number;
     message: string;
-    data: string;
   };
 }
 
@@ -32,7 +31,6 @@ export const jsonRpcError = StrictSchema<JsonRpcError>()(
     data: z.object({
       code: z.number(),
       message: z.string(),
-      data: z.string(),
     }),
   })
 );
