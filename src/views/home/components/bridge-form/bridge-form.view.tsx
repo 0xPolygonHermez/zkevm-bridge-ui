@@ -24,6 +24,7 @@ import { useErrorContext } from "src/contexts/error.context";
 import { Chain, Token, FormData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { getChainTokens } from "src/constants";
 
 interface BridgeFormProps {
   account: string;
@@ -55,19 +56,28 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     status: "pending",
   });
 
+  const getEtherToken = (chain: Chain): Token | undefined => {
+    return getChainTokens(chain).find((token) => token.address === ethers.constants.AddressZero);
+  };
+
   const onChainButtonClick = (from: Chain) => {
     if (env && chains) {
       const to = env.chains.find((chain) => chain.key !== from.key);
 
       if (to) {
         setChains({ from, to });
+        setToken(getEtherToken(from));
         setChainList(undefined);
         setAmount(undefined);
       }
     }
   };
 
-  const onTokenButtonClick = (token: Token) => {
+  const onTokenDropdownClick = (chain: Chain) => {
+    setTokenList(getChainTokens(chain));
+  };
+
+  const onTokenClick = (token: Token) => {
     setToken(token);
     setTokenList(undefined);
   };
@@ -96,9 +106,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
       if (from && to) {
         setChains({ from, to });
+        setToken(getEtherToken(from));
       }
-      const ethToken = env.tokens.find((token) => token.address === ethers.constants.AddressZero);
-      setToken(ethToken);
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,7 +212,9 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button
             className={classes.tokenSelector}
-            onClick={() => setTokenList(env.tokens)}
+            onClick={() => {
+              onTokenDropdownClick(chains.from);
+            }}
             type="button"
           >
             <Icon url={token.logoURI} size={24} />
@@ -269,7 +280,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           tokens={tokenList}
           selected={token}
           chain={chains.from}
-          onSelectToken={onTokenButtonClick}
+          onSelectToken={onTokenClick}
           onClose={() => setTokenList(undefined)}
         />
       )}

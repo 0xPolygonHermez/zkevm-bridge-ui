@@ -32,7 +32,6 @@ export interface Env {
     usdtToken: Token;
   };
   chains: [Chain, Chain];
-  tokens: Token[];
   version: string;
 }
 

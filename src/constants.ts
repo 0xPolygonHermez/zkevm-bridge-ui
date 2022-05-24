@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
@@ -73,10 +74,17 @@ export const getChains = ({
   );
 };
 
-export const getSupportedERC20Tokens = ([l1, l2]: [Chain, Chain]): Token[] => {
-  const tokens = erc20Tokens.filter(
-    (token) => token.chainId === l1.chainId || token.chainId === l2.chainId
-  );
+export const getChainTokens = (chain: Chain): Token[] => {
+  const etherToken: Token = {
+    name: "Ether",
+    address: ethers.constants.AddressZero,
+    chainId: chain.chainId,
+    symbol: "ETH",
+    decimals: 18,
+    logoURI: ETH_TOKEN_LOGO_URI,
+  };
+  const chainErc20Tokens: Token[] = erc20Tokens.filter((token) => token.chainId === chain.chainId);
+  const tokens = [etherToken, ...chainErc20Tokens];
   cleanupCustomTokens(tokens);
   return tokens;
 };

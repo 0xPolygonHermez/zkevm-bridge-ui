@@ -19,6 +19,7 @@ import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
 import { Env, Chain, Token, Bridge, Deposit } from "src/domain";
+import { erc20Tokens } from "src/erc20-tokens";
 
 interface GetTokenFromAddressParams {
   address: string;
@@ -185,7 +186,7 @@ const BridgeProvider: FC = (props) => {
     originNetwork: number;
   }): Promise<Token> => {
     const error = `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`;
-    const token = [...getCustomTokens(), ...env.tokens].find(
+    const token = [...getCustomTokens(), ...erc20Tokens].find(
       (token) => token.address === tokenAddress
     );
     if (token) {
