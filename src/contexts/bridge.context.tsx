@@ -325,16 +325,7 @@ const BridgeProvider: FC = (props) => {
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       const executeBridge = async () => {
-        const doesTokenMatchNetwork = token.chainId === from.chainId;
         const isTokenEther = token.address === ethersConstants.AddressZero;
-        const tokenAddress =
-          doesTokenMatchNetwork || isTokenEther
-            ? token.address
-            : await getWrappedTokenAddress({
-                token,
-                from,
-                to,
-              });
 
         if (!isTokenEther) {
           if (account.status !== "successful") {
@@ -342,7 +333,7 @@ const BridgeProvider: FC = (props) => {
           }
 
           const erc20Contract = Erc20__factory.connect(
-            tokenAddress,
+            token.address,
             connectedProvider.provider.getSigner()
           );
           const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
@@ -350,7 +341,7 @@ const BridgeProvider: FC = (props) => {
             await erc20Contract.approve(from.contractAddress, amount);
           }
         }
-        return contract.bridge(tokenAddress, amount, to.networkId, destinationAddress, overrides);
+        return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
       };
 
       if (from.chainId === connectedProvider?.chainId) {
