@@ -24,7 +24,10 @@ interface TokenListProps {
 const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken, onClose }) => {
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
-  const [filteredTokens, setFilteredTokens] = useState<Token[]>([...getCustomTokens(), ...tokens]);
+  const [filteredTokens, setFilteredTokens] = useState<Token[]>([
+    ...getCustomTokens().filter((token) => token.chainId === chain.chainId),
+    ...tokens,
+  ]);
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({ status: "pending" });
   const [searchInputValue, setSearchInputValue] = useState<string>("");
 
