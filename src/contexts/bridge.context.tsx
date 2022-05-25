@@ -46,8 +46,8 @@ interface GetBridgesParams {
 
 interface GetWrappedTokenAddressParams {
   token: Token;
-  from: Chain;
-  to: Chain;
+  nativeTokenChain: Chain;
+  wrappedTokenChain: Chain;
 }
 
 interface BridgeParams {
@@ -432,14 +432,17 @@ const BridgeProvider: FC = (props) => {
 
   const getWrappedTokenAddress = async ({
     token,
-    from,
-    to,
+    nativeTokenChain,
+    wrappedTokenChain,
   }: GetWrappedTokenAddressParams): Promise<string> => {
-    const bridgeContract = Bridge__factory.connect(from.contractAddress, from.provider);
+    const bridgeContract = Bridge__factory.connect(
+      wrappedTokenChain.contractAddress,
+      wrappedTokenChain.provider
+    );
     const tokenImplementationAddress = await bridgeContract.tokenImplementation();
     const salt = ethers.utils.solidityKeccak256(
       ["uint32", "address"],
-      [to.networkId, token.address]
+      [nativeTokenChain.networkId, token.address]
     );
     // Bytecode proxy from this blog https://blog.openzeppelin.com/deep-dive-into-the-minimal-proxy-contract/
     const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(

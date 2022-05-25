@@ -148,8 +148,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           .catch(resetBalanceAndNotifyError);
         void getWrappedTokenAddress({
           token,
-          from: chains.from,
-          to: chains.to,
+          nativeTokenChain: chains.from,
+          wrappedTokenChain: chains.to,
         }).then((tokenAddress) =>
           getErc20TokenBalance({
             chain: chains.to,
