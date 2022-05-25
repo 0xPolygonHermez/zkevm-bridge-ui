@@ -42,7 +42,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { estimateBridgeGasPrice, getErc20TokenBalance } = useBridgeContext();
+  const { estimateBridgeGasPrice, getErc20TokenBalance, getWrappedTokenAddress } =
+    useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const [chainList, setChainList] = useState<Chain[]>();
   const [tokenList, setTokenList] = useState<Token[]>();
@@ -139,24 +140,28 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           .catch(resetBalanceAndNotifyError);
       } else {
         void getErc20TokenBalance({
-          token,
-          from: chains.from,
-          to: chains.to,
-          ethereumAddress: account,
+          chain: chains.from,
+          tokenAddress: token.address,
+          accountAddress: account,
         })
           .then(setBalanceFrom)
           .catch(resetBalanceAndNotifyError);
-        void getErc20TokenBalance({
+        void getWrappedTokenAddress({
           token,
-          from: chains.to,
-          to: chains.from,
-          ethereumAddress: account,
-        })
-          .then(setBalanceTo)
-          .catch(() => setBalanceTo(undefined));
+          from: chains.from,
+          to: chains.to,
+        }).then((tokenAddress) =>
+          getErc20TokenBalance({
+            chain: chains.to,
+            tokenAddress,
+            accountAddress: account,
+          })
+            .then(setBalanceTo)
+            .catch(() => setBalanceTo(undefined))
+        );
       }
     }
-  }, [chains, account, token, env, getErc20TokenBalance, notifyError]);
+  }, [chains, account, token, env, getErc20TokenBalance, notifyError, getWrappedTokenAddress]);
 
   useEffect(() => {
     if (chains && token) {

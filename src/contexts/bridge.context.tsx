@@ -27,10 +27,9 @@ interface GetTokenFromAddressParams {
 }
 
 interface GetErc20TokenBalanceParams {
-  token: Token;
-  from: Chain;
-  to: Chain;
-  ethereumAddress: string;
+  chain: Chain;
+  tokenAddress: string;
+  accountAddress: string;
 }
 
 interface EstimateBridgeGasPriceParams {
@@ -419,28 +418,16 @@ const BridgeProvider: FC = (props) => {
   );
 
   const getErc20TokenBalance = async ({
-    token,
-    from,
-    to,
-    ethereumAddress,
+    chain,
+    tokenAddress,
+    accountAddress,
   }: GetErc20TokenBalanceParams) => {
-    const isTokenEther = token.address === ethersConstants.AddressZero;
+    const isTokenEther = tokenAddress === ethersConstants.AddressZero;
     if (isTokenEther) {
       return Promise.reject(new Error("Ether is not supported as ERC20 token"));
     }
-    const doesTokenMatchNetwork = token.chainId === from.chainId;
-
-    const tokenAddress = doesTokenMatchNetwork
-      ? token.address
-      : await getWrappedTokenAddress({
-          token,
-          from,
-          to,
-        });
-
-    const erc20Contract = Erc20__factory.connect(tokenAddress, from.provider);
-    const balance = await erc20Contract.balanceOf(ethereumAddress);
-    return balance;
+    const erc20Contract = Erc20__factory.connect(tokenAddress, chain.provider);
+    return await erc20Contract.balanceOf(accountAddress);
   };
 
   const getWrappedTokenAddress = async ({
