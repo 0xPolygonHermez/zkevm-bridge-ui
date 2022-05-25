@@ -42,8 +42,12 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { estimateBridgeGasPrice, getErc20TokenBalance, getWrappedTokenAddress } =
-    useBridgeContext();
+  const {
+    estimateBridgeGasPrice,
+    getErc20TokenBalance,
+    computeWrappedTokenAddress,
+    getNativeTokenInfo,
+  } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const [chainList, setChainList] = useState<Chain[]>();
   const [tokenList, setTokenList] = useState<Token[]>();
@@ -146,22 +150,40 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         })
           .then(setBalanceFrom)
           .catch(resetBalanceAndNotifyError);
-        void getWrappedTokenAddress({
-          token,
-          nativeTokenChain: chains.from,
-          wrappedTokenChain: chains.to,
-        }).then((tokenAddress) =>
-          getErc20TokenBalance({
-            chain: chains.to,
-            tokenAddress,
-            accountAddress: account,
-          })
-            .then(setBalanceTo)
-            .catch(() => setBalanceTo(undefined))
-        );
+
+        void getNativeTokenInfo({
+          wrappedToken: token,
+          tokenChain: chains.from,
+        })
+          .then((tokenInfo) => tokenInfo.originalTokenAddress)
+          .catch(() =>
+            computeWrappedTokenAddress({
+              token,
+              nativeTokenChain: chains.from,
+              wrappedTokenChain: chains.to,
+            })
+          )
+          .then((tokenAddress) =>
+            getErc20TokenBalance({
+              chain: chains.to,
+              tokenAddress,
+              accountAddress: account,
+            })
+              .then(setBalanceTo)
+              .catch(() => setBalanceTo(undefined))
+          );
       }
     }
-  }, [chains, account, token, env, getErc20TokenBalance, notifyError, getWrappedTokenAddress]);
+  }, [
+    chains,
+    account,
+    token,
+    env,
+    getErc20TokenBalance,
+    notifyError,
+    computeWrappedTokenAddress,
+    getNativeTokenInfo,
+  ]);
 
   useEffect(() => {
     if (chains && token) {
