@@ -2,12 +2,12 @@ import { createContext, FC, useCallback, useContext, useEffect, useMemo, useStat
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 
 import { useEnvContext } from "src/contexts/env.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { UniswapQuoter, UniswapQuoter__factory } from "src/types/contracts/uniswap-quoter";
 import { FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
+import { getCurrency } from "src/adapters/storage";
 import { UNISWAP_V3_POOL_FEE } from "src/constants";
-import * as storage from "src/adapters/storage";
-import { useErrorContext } from "src/contexts/error.context";
 import { Token } from "src/domain";
 
 interface PriceOracleContext {
@@ -50,7 +50,7 @@ const PriceOracleProvider: FC = (props) => {
         0
       );
       const usdPrice = Number(formatUnits(rate, env.fiatExchangeRates.usdtToken.decimals));
-      const fiatExchangeRate = fiatExchangeRates[storage.getCurrency()];
+      const fiatExchangeRate = fiatExchangeRates[getCurrency()];
 
       if (!fiatExchangeRate) {
         throw new Error("Fiat exchange rate not found");
