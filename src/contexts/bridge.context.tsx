@@ -19,7 +19,7 @@ import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
 import { Env, Chain, Token, Bridge, Deposit } from "src/domain";
-import { erc20Tokens } from "src/erc20-tokens";
+import { erc20Tokens } from "src/assets/erc20-tokens";
 
 interface GetTokenFromAddressParams {
   address: string;

@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
-import { erc20Tokens } from "src/erc20-tokens";
+import { erc20Tokens } from "src/assets/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 import { cleanupCustomTokens } from "src/adapters/storage";
