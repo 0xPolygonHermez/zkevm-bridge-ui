@@ -11,8 +11,9 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import Error from "src/views/shared/error/error.view";
 import { Bridge } from "src/domain";
-import { getChainName, getBridgeStatus } from "src/utils/labels";
+import { getChainName, getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
+import { getCurrency } from "src/adapters/storage";
 
 export interface BridgeCardProps {
   bridge: Bridge;
@@ -24,7 +25,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
   const {
     status,
     id,
-    deposit: { destinationNetwork, amount, token },
+    deposit: { destinationNetwork, amount, token, fiatAmount },
   } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
@@ -33,6 +34,8 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
     e.stopPropagation();
     onClaim();
   };
+
+  const preferredCurrency = getCurrency();
 
   return (
     <Card
@@ -68,6 +71,9 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
               {`${formatTokenAmount(amount, token)} ${token.symbol}`}
             </Typography>
           </div>
+          <Typography type="body1" className={classes.fiat}>
+            {`${getCurrencySymbol(preferredCurrency)}${fiatAmount || "--"}`}
+          </Typography>
         </div>
       </div>
       {status === "initiated" && (

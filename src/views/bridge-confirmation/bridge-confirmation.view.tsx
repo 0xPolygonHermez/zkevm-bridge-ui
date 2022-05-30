@@ -35,7 +35,7 @@ const BridgeConfirmation: FC = () => {
   const { formData, setFormData } = useFormContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const [fiatAmount, setFiatAmount] = useState<string>();
+  const [fiatAmount, setFiatAmount] = useState<number>();
   const [error, setError] = useState<string>();
   const preferredCurrency = getCurrency();
 
@@ -91,8 +91,11 @@ const BridgeConfirmation: FC = () => {
   useEffect(() => {
     if (formData) {
       getTokenPrice({ token: formData.token, chain: formData.from })
-        .then((amount) => setFiatAmount(amount.toString()))
-        .catch(() => setFiatAmount("--"));
+        .then((price) => {
+          const amount = Number(formatTokenAmount(formData.amount, formData.token));
+          setFiatAmount(price * amount);
+        })
+        .catch(() => setFiatAmount(undefined));
     }
   }, [formData, getTokenPrice, notifyError]);
 
@@ -108,11 +111,9 @@ const BridgeConfirmation: FC = () => {
         <Typography type="h1">
           {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
         </Typography>
-        {fiatAmount && (
-          <Typography type="h2">{`${getCurrencySymbol(
-            preferredCurrency
-          )} ${fiatAmount}`}</Typography>
-        )}
+        <Typography type="h2" className={classes.fiat}>{`${getCurrencySymbol(preferredCurrency)}${
+          fiatAmount || "--"
+        }`}</Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <formData.from.Icon /> {getChainName(formData.from)}

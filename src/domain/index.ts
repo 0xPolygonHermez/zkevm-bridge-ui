@@ -94,6 +94,7 @@ export type Bridge =
 export interface Deposit {
   token: Token;
   amount: BigNumber;
+  fiatAmount: number | undefined;
   networkId: Chain;
   destinationNetwork: Chain;
   destinationAddress: string;

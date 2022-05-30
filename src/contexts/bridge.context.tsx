@@ -7,14 +7,16 @@ import {
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios from "axios";
-import { createContext, FC, useContext, useCallback } from "react";
+import { createContext, FC, useContext, useCallback, useState } from "react";
 
+import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, getEtherToken } from "src/constants";
 import { calculateFee } from "src/utils/fees";
-import { useEnvContext } from "src/contexts/env.context";
+import { formatTokenAmount } from "src/utils/amounts";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
@@ -120,8 +122,13 @@ const bridgeContext = createContext<BridgeContext>({
 });
 
 const BridgeProvider: FC = (props) => {
-  const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const env = useEnvContext();
+  const { connectedProvider, account, changeNetwork } = useProvidersContext();
+  const { getTokenPrice } = usePriceOracleContext();
+
+  type Address = string;
+  type Price = number;
+  const [tokenPrices, setTokenPrices] = useState<Partial<Record<Address, Price | null>>>({});
 
   const getTokenFromAddress = useCallback(
     async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
@@ -191,27 +198,28 @@ const BridgeProvider: FC = (props) => {
     env,
     tokenAddress,
     originNetwork,
-    chain,
+    tokens,
   }: {
     env: Env;
     tokenAddress: string;
     originNetwork: number;
-    chain: Chain;
+    tokens: Token[];
   }): Promise<Token> => {
-    const error = `The specified token_addr "${tokenAddress}" can not be found in the list of supported Tokens`;
-    const token = [...getCustomTokens(), getEtherToken(chain), ...erc20Tokens].find(
-      (token) => token.address === tokenAddress
-    );
+    const token = tokens.find((token) => token.address === tokenAddress);
     if (token) {
       return token;
     } else {
       const chain = env.chains.find((chain) => chain.networkId === originNetwork);
       if (chain) {
         return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
-          throw new Error(error);
+          throw new Error(
+            `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
+          );
         });
       } else {
-        throw new Error(error);
+        throw new Error(
+          `The token with the address "${tokenAddress}" could not be found in the list of supported and the provided network id "${originNetwork}" is not supported`
+        );
       }
     }
   };
@@ -222,6 +230,24 @@ const BridgeProvider: FC = (props) => {
       getDeposits({ apiUrl, ethereumAddress }),
       getClaims({ apiUrl, ethereumAddress }),
     ]);
+
+    const getMappedTokenPrice = async (token: Token, chain: Chain): Promise<Price> => {
+      const mappedPrice = tokenPrices[token.address];
+      const error = new Error(`The fiat price for the token "${token.symbol}" is not available`);
+      if (mappedPrice) {
+        return mappedPrice;
+      } else if (mappedPrice === null) {
+        throw error;
+      } else {
+        const price = await getTokenPrice({ token, chain }).catch(() => null);
+        setTokenPrices((prevState) => ({ ...prevState, [token.address]: price }));
+        if (price) {
+          return price;
+        } else {
+          throw error;
+        }
+      }
+    };
 
     return await Promise.all(
       apiDeposits.map(async (apiDeposit): Promise<Bridge> => {
@@ -250,16 +276,27 @@ const BridgeProvider: FC = (props) => {
           );
         }
 
+        const tokens = [...getCustomTokens(), getEtherToken(networkId), ...erc20Tokens];
         const token = await getToken({
           env,
           tokenAddress: token_addr,
           originNetwork: orig_net,
-          chain: networkId,
+          tokens,
         });
+
+        const amountBigNumber = BigNumber.from(amount);
+
+        const computeFiatAmount = (price: number) =>
+          price * Number(formatTokenAmount(amountBigNumber, token));
+
+        const fiatAmount = await getMappedTokenPrice(token, networkId)
+          .then(computeFiatAmount)
+          .catch(() => undefined);
 
         const deposit: Deposit = {
           token,
-          amount: BigNumber.from(amount),
+          amount: amountBigNumber,
+          fiatAmount,
           destinationAddress: dest_addr,
           depositCount: deposit_cnt,
           txHash: tx_hash,

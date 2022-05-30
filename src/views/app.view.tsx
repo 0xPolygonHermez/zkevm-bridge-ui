@@ -17,15 +17,15 @@ const App = (): JSX.Element => {
       <ErrorProvider>
         <EnvProvider>
           <ProvidersProvider>
-            <BridgeProvider>
-              <PriceOracleProvider>
+            <PriceOracleProvider>
+              <BridgeProvider>
                 <FormProvider>
                   <Layout>
                     <Router />
                   </Layout>
                 </FormProvider>
-              </PriceOracleProvider>
-            </BridgeProvider>
+              </BridgeProvider>
+            </PriceOracleProvider>
           </ProvidersProvider>
         </EnvProvider>
       </ErrorProvider>

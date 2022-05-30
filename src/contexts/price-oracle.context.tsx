@@ -1,11 +1,12 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers/lib/utils";
 import { pack, keccak256 } from "@ethersproject/solidity";
 import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { formatTokenAmount } from "src/utils/amounts";
 import {
   UniswapV2Router02,
   UniswapV2Router02__factory,
@@ -99,7 +100,7 @@ const PriceOracleProvider: FC = (props) => {
         reserveIn,
         reserveOut
       );
-      const usdPrice = Number(formatUnits(rate, env.fiatExchangeRates.usdtToken.decimals));
+      const usdPrice = Number(formatTokenAmount(rate, env.fiatExchangeRates.usdtToken));
       const fiatExchangeRate = fiatExchangeRates[getCurrency()];
 
       if (!fiatExchangeRate) {

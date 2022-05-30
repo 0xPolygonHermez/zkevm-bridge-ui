@@ -20,6 +20,10 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
       marginBottom: theme.spacing(2),
     },
   },
+  fiat: {
+    color: theme.palette.grey.dark,
+    fontSize: 14,
+  },
   chainsRow: {
     width: "100%",
     display: "flex",
