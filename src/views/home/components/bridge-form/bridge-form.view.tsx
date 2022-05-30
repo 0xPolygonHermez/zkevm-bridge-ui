@@ -85,6 +85,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const onTokenClick = (token: Token) => {
     setToken(token);
     setTokenList(undefined);
+    setAmount(undefined);
   };
 
   const onInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
