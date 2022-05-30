@@ -1,4 +1,5 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { ethers } from "ethers";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { pack, keccak256 } from "@ethersproject/solidity";
 import { getCreate2Address } from "@ethersproject/address";
@@ -13,7 +14,8 @@ import { UniswapV2Pair__factory } from "src/types/contracts/uniswap-v2-pair";
 import { FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
 import { getCurrency } from "src/adapters/storage";
-import { Token } from "src/domain";
+import { Token, Chain } from "src/domain";
+import { getChainTokens } from "src/constants";
 
 const INIT_CODE_HASH = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
 const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
@@ -27,8 +29,13 @@ const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }
   return getCreate2Address(FACTORY_ADDRESS, salt, INIT_CODE_HASH);
 };
 
+interface GetTokenPriceParams {
+  token: Token;
+  chain: Chain;
+}
+
 interface PriceOracleContext {
-  getTokenPrice: (token: Token) => Promise<number>;
+  getTokenPrice: (params: GetTokenPriceParams) => Promise<number>;
 }
 
 const priceOracleContextNotReadyErrorMsg = "The price oracle context is not yet ready";
@@ -46,7 +53,17 @@ const PriceOracleProvider: FC = (props) => {
   const [uniswapV2Router02Contract, setUniswapV2Router02Contract] = useState<UniswapV2Router02>();
 
   const getTokenPrice = useCallback(
-    async (token: Token): Promise<number> => {
+    async ({ token, chain }: GetTokenPriceParams): Promise<number> => {
+      const erc20Token =
+        token.address === ethers.constants.AddressZero
+          ? getChainTokens(chain).find((t) => t.symbol === "WETH")
+          : token;
+
+      if (!erc20Token) {
+        throw new Error(
+          `${token.symbol} is not a valid ERC-20 token and no wrapped ERC-20 token could be found`
+        );
+      }
       if (env === undefined) {
         throw new Error("Env is not available");
       }
@@ -66,7 +83,7 @@ const PriceOracleProvider: FC = (props) => {
       }
 
       const uniswapPairContractAddress = computePairAddress({
-        tokenA: token,
+        tokenA: erc20Token,
         tokenB: env.fiatExchangeRates.usdtToken,
       });
 
@@ -78,7 +95,7 @@ const PriceOracleProvider: FC = (props) => {
       const [reserveIn, reserveOut] = await uniswapPairContract.callStatic.getReserves();
 
       const rate = await uniswapV2Router02Contract.callStatic.getAmountOut(
-        parseUnits("1", token.decimals),
+        parseUnits("1", erc20Token.decimals),
         reserveIn,
         reserveOut
       );

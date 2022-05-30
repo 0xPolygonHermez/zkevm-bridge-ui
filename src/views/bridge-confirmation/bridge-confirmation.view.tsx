@@ -90,7 +90,7 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (formData) {
-      getTokenPrice(formData.token)
+      getTokenPrice({ token: formData.token, chain: formData.from })
         .then((amount) => setFiatAmount(amount.toString()))
         .catch(() => setFiatAmount("--"));
     }
