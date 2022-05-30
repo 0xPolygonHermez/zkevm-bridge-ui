@@ -1,14 +1,8 @@
 import { z } from "zod";
-import { ethers } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import {
-  getChains,
-  getUsdtToken,
-  getSupportedERC20Tokens,
-  ETH_TOKEN_LOGO_URI,
-} from "src/constants";
+import { getChains, getUsdtToken } from "src/constants";
 
 interface Env {
   REACT_APP_ETHEREUM_RPC_URL: string;
@@ -78,17 +72,6 @@ const envToDomain = ({
         usdtToken: getUsdtToken({ address: REACT_APP_USDT_ADDRESS, chainId: usdtChainId }),
       },
       chains,
-      tokens: [
-        {
-          name: "Ether",
-          address: ethers.constants.AddressZero,
-          chainId,
-          symbol: "ETH",
-          decimals: 18,
-          logoURI: ETH_TOKEN_LOGO_URI,
-        },
-        ...getSupportedERC20Tokens(chains),
-      ],
       version: REACT_APP_VERSION,
     };
   });
