@@ -35,7 +35,7 @@ const BridgeConfirmation: FC = () => {
   const { formData, setFormData } = useFormContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const [fiatAmount, setFiatAmount] = useState<number>();
+  const [fiatAmount, setFiatAmount] = useState<string>();
   const [error, setError] = useState<string>();
   const preferredCurrency = getCurrency();
 
@@ -90,7 +90,9 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (formData) {
-      getTokenPrice(formData.token).then(setFiatAmount).catch(notifyError);
+      getTokenPrice(formData.token)
+        .then((amount) => setFiatAmount(amount.toString()))
+        .catch(() => setFiatAmount("--"));
     }
   }, [formData, getTokenPrice, notifyError]);
 
