@@ -17,7 +17,7 @@ interface Env {
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
   REACT_APP_USDT_ADDRESS: string;
   REACT_APP_USDT_CHAIN_ID: string;
-  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
+  REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS: string;
   REACT_APP_VERSION: string;
 }
 
@@ -34,7 +34,7 @@ const envToDomain = ({
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
   REACT_APP_USDT_ADDRESS,
   REACT_APP_USDT_CHAIN_ID,
-  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
+  REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
   REACT_APP_VERSION,
 }: Env): Promise<domain.Env> => {
   const polygonHermezNetworkId = z
@@ -64,7 +64,7 @@ const envToDomain = ({
     return {
       bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
       tokenQuotes: {
-        uniswapQuoterContractAddress: REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
+        uniswapV2Router02ContractAddress: REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
       },
       fiatExchangeRates: {
         apiUrl: REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
@@ -92,7 +92,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
       REACT_APP_USDT_ADDRESS: z.string(),
       REACT_APP_USDT_CHAIN_ID: z.string(),
-      REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
+      REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS: z.string(),
       REACT_APP_VERSION: z.string(),
     })
     .transform(envToDomain)
