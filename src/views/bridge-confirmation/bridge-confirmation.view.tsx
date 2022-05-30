@@ -10,7 +10,7 @@ import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { getChainName } from "src/utils/labels";
+import { getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import {
   isMetamaskUserRejectedRequestError,
@@ -108,7 +108,11 @@ const BridgeConfirmation: FC = () => {
         <Typography type="h1">
           {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
         </Typography>
-        {fiatAmount && <Typography type="h2">{`${preferredCurrency} ${fiatAmount}`}</Typography>}
+        {fiatAmount && (
+          <Typography type="h2">{`${getCurrencySymbol(
+            preferredCurrency
+          )} ${fiatAmount}`}</Typography>
+        )}
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <formData.from.Icon /> {getChainName(formData.from)}

@@ -1,4 +1,4 @@
-import { Bridge, Chain } from "src/domain";
+import { Bridge, Chain, Currency } from "src/domain";
 
 export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
@@ -17,5 +17,20 @@ export function getChainName(chain: Chain): string {
       return "Ethereum";
     case "polygon-hermez":
       return "Polygon Hermez";
+  }
+}
+
+export function getCurrencySymbol(currency: Currency): string {
+  switch (currency) {
+    case Currency.EUR:
+      return "€";
+    case Currency.USD:
+      return "$";
+    case Currency.JPY:
+      return "¥";
+    case Currency.GBP:
+      return "£";
+    case Currency.CNY:
+      return "¥";
   }
 }
