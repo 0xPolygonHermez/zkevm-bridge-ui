@@ -11,6 +11,8 @@ export const PREFERRED_CURRENCY_KEY = "currency";
 
 export const PREFERRED_CURRENCY = Currency.USD;
 
+export const PREFERRED_CURRENCY_PRECISION = 2;
+
 export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
 export const AUTO_REFRESH_RATE = 15000;

@@ -14,6 +14,7 @@ import { Bridge } from "src/domain";
 import { getChainName, getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { getCurrency } from "src/adapters/storage";
+import { roundFiat } from "src/utils/amounts";
 
 export interface BridgeCardProps {
   bridge: Bridge;
@@ -72,7 +73,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
             </Typography>
           </div>
           <Typography type="body1" className={classes.fiat}>
-            {`${getCurrencySymbol(preferredCurrency)}${fiatAmount || "--"}`}
+            {`${getCurrencySymbol(preferredCurrency)}${fiatAmount ? roundFiat(fiatAmount) : "--"}`}
           </Typography>
         </div>
       </div>
