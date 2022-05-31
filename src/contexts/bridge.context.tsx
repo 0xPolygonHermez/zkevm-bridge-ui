@@ -18,7 +18,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
-import { Env, Chain, Token, Bridge, Deposit } from "src/domain";
+import { Env, Chain, Token, Bridge, Deposit, MerkleProof } from "src/domain";
 import { erc20Tokens } from "src/erc20-tokens";
 
 interface GetTokenFromAddressParams {
@@ -64,16 +64,8 @@ interface BridgeParams {
 }
 
 interface ClaimParams {
-  token: Token;
-  amount: BigNumber;
-  destinationNetwork: Chain;
-  destinationAddress: string;
-  index: number;
-  smtProof: string[];
-  globalExitRootNum: number;
-  l2GlobalExitRootNum: number;
-  mainnetExitRoot: string;
-  rollupExitRoot: string;
+  deposit: Deposit;
+  merkleProof: MerkleProof;
 }
 
 interface BridgeContext {
@@ -263,17 +255,17 @@ const BridgeProvider: FC = (props) => {
           destinationAddress: dest_addr,
           depositCount: deposit_cnt,
           txHash: tx_hash,
-          networkId,
-          destinationNetwork,
+          from: networkId,
+          to: destinationNetwork,
+          tokenOriginNetwork: orig_net,
         };
 
         const apiClaim = apiClaims.find(
           (claim) =>
-            claim.index === deposit.depositCount &&
-            claim.network_id === deposit.destinationNetwork.networkId
+            claim.index === deposit.depositCount && claim.network_id === deposit.to.networkId
         );
 
-        const id = `${deposit.depositCount}-${deposit.destinationNetwork.networkId}`;
+        const id = `${deposit.depositCount}-${deposit.to.networkId}`;
 
         if (apiClaim) {
           return {
@@ -288,7 +280,7 @@ const BridgeProvider: FC = (props) => {
 
         const claimStatus = await getClaimStatus({
           apiUrl,
-          networkId: deposit.networkId.networkId,
+          networkId: deposit.from.networkId,
           depositCount: deposit.depositCount,
         });
 
@@ -302,7 +294,7 @@ const BridgeProvider: FC = (props) => {
 
         const merkleProof = await getMerkleProof({
           apiUrl,
-          networkId: deposit.networkId.networkId,
+          networkId: deposit.from.networkId,
           depositCount: deposit.depositCount,
         });
 
@@ -370,16 +362,8 @@ const BridgeProvider: FC = (props) => {
 
   const claim = useCallback(
     ({
-      token,
-      amount,
-      destinationNetwork,
-      destinationAddress,
-      index,
-      smtProof,
-      globalExitRootNum,
-      l2GlobalExitRootNum,
-      mainnetExitRoot,
-      rollupExitRoot,
+      deposit: { token, amount, tokenOriginNetwork, to, destinationAddress, depositCount: index },
+      merkleProof: { merkleProof, exitRootNumber, l2ExitRootNumber, mainExitRoot, rollupExitRoot },
     }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
@@ -389,37 +373,31 @@ const BridgeProvider: FC = (props) => {
       }
 
       const contract = Bridge__factory.connect(
-        destinationNetwork.contractAddress,
+        to.contractAddress,
         connectedProvider.provider.getSigner()
       );
 
-      const isL2Claim = destinationNetwork.key === "polygon-hermez";
-
-      const tokenChain = env.chains.find((chain) => chain.chainId === token.chainId);
-
-      if (tokenChain === undefined) {
-        throw new Error("Token chain is not available");
-      }
+      const isL2Claim = to.key === "polygon-hermez";
 
       const executeClaim = () =>
         contract.claim(
           token.address,
           amount,
-          tokenChain.networkId,
-          destinationNetwork.networkId,
+          tokenOriginNetwork,
+          to.networkId,
           destinationAddress,
-          smtProof,
+          merkleProof,
           index,
-          isL2Claim ? l2GlobalExitRootNum : globalExitRootNum,
-          mainnetExitRoot,
+          isL2Claim ? l2ExitRootNumber : exitRootNumber,
+          mainExitRoot,
           rollupExitRoot,
           isL2Claim ? { gasPrice: 0 } : {}
         );
 
-      if (destinationNetwork.chainId === connectedProvider?.chainId) {
+      if (to.chainId === connectedProvider?.chainId) {
         return executeClaim();
       } else {
-        return changeNetwork(destinationNetwork)
+        return changeNetwork(to)
           .catch(() => {
             throw "wrong-network";
           })
