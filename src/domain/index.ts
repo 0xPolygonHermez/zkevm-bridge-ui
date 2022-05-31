@@ -23,9 +23,6 @@ export interface Token {
 
 export interface Env {
   bridgeApiUrl: string;
-  tokenQuotes: {
-    uniswapV2Router02ContractAddress: string;
-  };
   fiatExchangeRates: {
     apiUrl: string;
     apiKey: string;

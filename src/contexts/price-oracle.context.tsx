@@ -16,7 +16,7 @@ import { FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
 import { getCurrency } from "src/adapters/storage";
 import { Token, Chain } from "src/domain";
-import { getChainTokens } from "src/constants";
+import { getChainTokens, UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS } from "src/constants";
 
 const INIT_CODE_HASH = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
 const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
@@ -118,7 +118,7 @@ const PriceOracleProvider: FC = (props) => {
       if (ethereumChain) {
         setUniswapV2Router02Contract(
           UniswapV2Router02__factory.connect(
-            env.tokenQuotes.uniswapV2Router02ContractAddress,
+            UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
             ethereumChain.provider
           )
         );

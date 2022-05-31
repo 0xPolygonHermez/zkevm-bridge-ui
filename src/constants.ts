@@ -7,6 +7,8 @@ import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 import { cleanupCustomTokens } from "src/adapters/storage";
 
+export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+
 export const PREFERRED_CURRENCY_KEY = "currency";
 
 export const PREFERRED_CURRENCY = Currency.USD;
