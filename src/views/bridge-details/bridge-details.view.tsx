@@ -142,7 +142,7 @@ const BridgeDetails: FC = () => {
 
   const {
     status,
-    deposit: { amount, to, from, token, txHash },
+    deposit: { amount, from, to, token, txHash },
   } = bridge.data;
 
   const bridgeTxUrl = `${from.explorerUrl}/tx/${txHash}`;
