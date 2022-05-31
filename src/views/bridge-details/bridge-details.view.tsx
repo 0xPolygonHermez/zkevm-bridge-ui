@@ -282,7 +282,6 @@ const BridgeDetails: FC = () => {
         <div className={classes.finaliseRow}>
           <Button onClick={onClaim} disabled={status === "initiated"}>
             Finalise
-            {status === "initiated" && <SpinnerIcon className={classes.finaliseSpinner} />}
           </Button>
           {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
         </div>
