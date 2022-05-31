@@ -85,7 +85,7 @@ const PriceOracleProvider: FC = (props) => {
 
       const uniswapPairContractAddress = computePairAddress({
         tokenA: erc20Token,
-        tokenB: env.fiatExchangeRates.usdtToken,
+        tokenB: env.fiatExchangeRates.usdcToken,
       });
 
       const uniswapPairContract = UniswapV2Pair__factory.connect(
@@ -100,7 +100,7 @@ const PriceOracleProvider: FC = (props) => {
         reserveIn,
         reserveOut
       );
-      const usdPrice = Number(formatTokenAmount(rate, env.fiatExchangeRates.usdtToken));
+      const usdPrice = Number(formatTokenAmount(rate, env.fiatExchangeRates.usdcToken));
       const fiatExchangeRate = fiatExchangeRates[getCurrency()];
 
       if (!fiatExchangeRate) {

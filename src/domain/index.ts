@@ -29,7 +29,7 @@ export interface Env {
   fiatExchangeRates: {
     apiUrl: string;
     apiKey: string;
-    usdtToken: Token;
+    usdcToken: Token;
   };
   chains: [Chain, Chain];
   version: string;

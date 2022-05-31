@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import { getChains, getUsdtToken } from "src/constants";
+import { getChains, getUsdcToken } from "src/constants";
 
 interface Env {
   REACT_APP_ETHEREUM_RPC_URL: string;
@@ -15,7 +15,7 @@ interface Env {
   REACT_APP_BRIDGE_API_URL: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL: string;
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
-  REACT_APP_USDT_ADDRESS: string;
+  REACT_APP_ETHEREUM_USDC_ADDRESS: string;
   REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS: string;
   REACT_APP_VERSION: string;
 }
@@ -31,7 +31,7 @@ const envToDomain = ({
   REACT_APP_BRIDGE_API_URL,
   REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
-  REACT_APP_USDT_ADDRESS,
+  REACT_APP_ETHEREUM_USDC_ADDRESS,
   REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
   REACT_APP_VERSION,
 }: Env): Promise<domain.Env> => {
@@ -65,8 +65,8 @@ const envToDomain = ({
       fiatExchangeRates: {
         apiUrl: REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
         apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
-        usdtToken: getUsdtToken({
-          address: REACT_APP_USDT_ADDRESS,
+        usdcToken: getUsdcToken({
+          address: REACT_APP_ETHEREUM_USDC_ADDRESS,
           chainId: ethereumChain.chainId,
         }),
       },
@@ -89,7 +89,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       REACT_APP_BRIDGE_API_URL: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
-      REACT_APP_USDT_ADDRESS: z.string().length(42),
+      REACT_APP_ETHEREUM_USDC_ADDRESS: z.string().length(42),
       REACT_APP_UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS: z.string().length(42),
       REACT_APP_VERSION: z.string(),
     })
