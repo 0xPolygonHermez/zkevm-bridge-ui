@@ -31,17 +31,10 @@ const Activity: FC = () => {
 
   const onClaim = (bridge: Bridge) => {
     if (bridge.status === "on-hold") {
+      const { deposit, merkleProof } = bridge;
       claim({
-        token: bridge.deposit.token,
-        amount: bridge.deposit.amount,
-        destinationNetwork: bridge.deposit.destinationNetwork,
-        destinationAddress: bridge.deposit.destinationAddress,
-        index: bridge.deposit.depositCount,
-        smtProof: bridge.merkleProof.merkleProof,
-        globalExitRootNum: bridge.merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: bridge.merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: bridge.merkleProof.mainExitRoot,
-        rollupExitRoot: bridge.merkleProof.rollupExitRoot,
+        deposit,
+        merkleProof,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {

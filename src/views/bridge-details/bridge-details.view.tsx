@@ -33,14 +33,14 @@ const calculateHistoricalFees = (bridge: Bridge): Promise<HistoricalFees> => {
   const feeToString = (fee: BigNumber | undefined) =>
     fee ? formatTokenAmount(fee, bridge.deposit.token) : undefined;
 
-  const step1Promise = bridge.deposit.networkId.provider
+  const step1Promise = bridge.deposit.from.provider
     .getTransaction(bridge.deposit.txHash)
     .then(calculateTransactionResponseFee)
     .then(feeToString);
 
   const step2Promise =
     bridge.status === "completed"
-      ? bridge.deposit.destinationNetwork.provider
+      ? bridge.deposit.to.provider
           .getTransaction(bridge.claim.txHash)
           .then(calculateTransactionResponseFee)
           .then(feeToString)
@@ -74,16 +74,8 @@ const BridgeDetails: FC = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
       const { deposit, merkleProof } = bridge.data;
       claim({
-        token: deposit.token,
-        amount: deposit.amount,
-        destinationNetwork: deposit.destinationNetwork,
-        destinationAddress: deposit.destinationAddress,
-        index: deposit.depositCount,
-        smtProof: merkleProof.merkleProof,
-        globalExitRootNum: merkleProof.exitRootNumber,
-        l2GlobalExitRootNum: merkleProof.l2ExitRootNumber,
-        mainnetExitRoot: merkleProof.mainExitRoot,
-        rollupExitRoot: merkleProof.rollupExitRoot,
+        deposit,
+        merkleProof,
       })
         .then(() => {
           navigate(routes.activity.path);
@@ -92,9 +84,7 @@ const BridgeDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                setIncorrectNetworkMessage(
-                  `Switch to ${getChainName(deposit.destinationNetwork)} to continue`
-                );
+                setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
               } else {
                 notifyError(error);
               }
@@ -106,7 +96,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (bridge.status === "successful") {
-      if (bridge.data.deposit.destinationNetwork.chainId === connectedProvider?.chainId) {
+      if (bridge.data.deposit.to.chainId === connectedProvider?.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }
@@ -152,13 +142,13 @@ const BridgeDetails: FC = () => {
 
   const {
     status,
-    deposit: { amount, destinationNetwork, networkId, token, txHash },
+    deposit: { amount, to, from, token, txHash },
   } = bridge.data;
 
-  const bridgeTxUrl = `${networkId.explorerUrl}/tx/${txHash}`;
+  const bridgeTxUrl = `${from.explorerUrl}/tx/${txHash}`;
   const claimTxUrl =
     bridge.data.status === "completed"
-      ? `${destinationNetwork.explorerUrl}/tx/${bridge.data.claim.txHash}`
+      ? `${to.explorerUrl}/tx/${bridge.data.claim.txHash}`
       : undefined;
 
   const { step1: step1Fee, step2: step2Fee } = historicalFees;
@@ -188,18 +178,18 @@ const BridgeDetails: FC = () => {
           <Typography type="body2" className={classes.alignRow}>
             From
           </Typography>
-          <Chain chain={networkId} className={classes.alignRow} />
+          <Chain chain={from} className={classes.alignRow} />
         </div>
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
             To
           </Typography>
-          <Chain chain={destinationNetwork} className={classes.alignRow} />
+          <Chain chain={to} className={classes.alignRow} />
         </div>
         {step1Fee && (
           <div className={classes.row}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 1 Fee ({getChainName(bridge.data.deposit.networkId)})
+              Step 1 Fee ({getChainName(bridge.data.deposit.from)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
               {step1Fee} ETH
@@ -209,7 +199,7 @@ const BridgeDetails: FC = () => {
         {step2Fee && (
           <div className={classes.row}>
             <Typography type="body2" className={classes.alignRow}>
-              Step 2 Fee ({getChainName(bridge.data.deposit.destinationNetwork)})
+              Step 2 Fee ({getChainName(bridge.data.deposit.to)})
             </Typography>
             <Typography type="body1" className={classes.alignRow}>
               {step2Fee} ETH
