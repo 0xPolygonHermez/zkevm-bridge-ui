@@ -9,11 +9,11 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
   return trimed === "0" ? whole : `${whole}.${trimed}`;
 };
 
-export const roundNumber = (num: number, dec: number) => {
+export const roundNumber = (num: number, dec: number): number => {
   return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
 };
 
-export const roundFiat = (num: number) => {
+export const roundFiat = (num: number): number => {
   return (
     Math.round(num * Math.pow(10, PREFERRED_CURRENCY_PRECISION)) /
     Math.pow(10, PREFERRED_CURRENCY_PRECISION)

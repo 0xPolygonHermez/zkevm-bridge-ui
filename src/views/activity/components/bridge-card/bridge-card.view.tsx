@@ -26,7 +26,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
   const {
     status,
     id,
-    deposit: { destinationNetwork, amount, token, fiatAmount },
+    deposit: { to, amount, token, fiatAmount },
   } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
         <div className={classes.actionCircle}>
           {status !== "completed" ? (
             <ReloadIcon />
-          ) : destinationNetwork.key === "ethereum" ? (
+          ) : to.key === "ethereum" ? (
             <BridgeL1Icon />
           ) : (
             <BridgeL2Icon />
@@ -57,7 +57,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">
-            {destinationNetwork.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
+            {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
           </Typography>
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
@@ -88,10 +88,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
       {status === "on-hold" && (
         <div className={classes.bottom}>
           {networkError ? (
-            <Error
-              error={`Switch to ${getChainName(destinationNetwork)} to continue`}
-              type="body2"
-            />
+            <Error error={`Switch to ${getChainName(to)} to continue`} type="body2" />
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}

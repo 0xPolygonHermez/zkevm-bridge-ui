@@ -20,17 +20,19 @@ export function getChainName(chain: Chain): string {
   }
 }
 
-export function getCurrencySymbol(currency: Currency) {
+type CurrencySymbol = "€" | "$" | "¥" | "£";
+
+export function getCurrencySymbol(currency: Currency): CurrencySymbol {
   switch (currency) {
     case Currency.EUR:
-      return "€" as const;
+      return "€";
     case Currency.USD:
-      return "$" as const;
+      return "$";
     case Currency.JPY:
-      return "¥" as const;
+      return "¥";
     case Currency.GBP:
-      return "£" as const;
+      return "£";
     case Currency.CNY:
-      return "¥" as const;
+      return "¥";
   }
 }

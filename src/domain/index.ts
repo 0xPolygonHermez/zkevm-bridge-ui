@@ -95,8 +95,9 @@ export interface Deposit {
   token: Token;
   amount: BigNumber;
   fiatAmount: number | undefined;
-  networkId: Chain;
-  destinationNetwork: Chain;
+  from: Chain;
+  to: Chain;
+  tokenOriginNetwork: number;
   destinationAddress: string;
   depositCount: number;
   txHash: string;
