@@ -41,6 +41,10 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
     height: 48,
     margin: [theme.spacing(1), 0, theme.spacing(2)],
   },
+  fiat: {
+    color: theme.palette.grey.dark,
+    fontSize: 14,
+  },
   row: {
     display: "flex",
     justifyContent: "space-between",

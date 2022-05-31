@@ -39,7 +39,7 @@ const BridgeConfirmation: FC = () => {
   const [fiatAmount, setFiatAmount] = useState<number>();
   const [fiatFee, setFiatFee] = useState<number>();
   const [error, setError] = useState<string>();
-  const preferredCurrency = getCurrency();
+  const currencySymbol = getCurrencySymbol(getCurrency());
 
   const onClick = () => {
     if (formData && account.status === "successful") {
@@ -124,7 +124,7 @@ const BridgeConfirmation: FC = () => {
         <Typography type="h1">
           {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
         </Typography>
-        <Typography type="h2" className={classes.fiat}>{`${getCurrencySymbol(preferredCurrency)}${
+        <Typography type="h2" className={classes.fiat}>{`${currencySymbol}${
           fiatAmount ? roundFiat(fiatAmount) : "--"
         }`}</Typography>
         <div className={classes.chainsRow}>
@@ -142,9 +142,9 @@ const BridgeConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            {`${formatTokenAmount(formData.estimatedFee, formData.token)} ETH ~ ${getCurrencySymbol(
-              preferredCurrency
-            )}${fiatFee ? roundFiat(fiatFee) : "--"}`}
+            {`${formatTokenAmount(formData.estimatedFee, formData.token)} ETH ~ ${currencySymbol}${
+              fiatFee ? roundFiat(fiatFee) : "--"
+            }`}
           </Typography>
         </div>
       </Card>
