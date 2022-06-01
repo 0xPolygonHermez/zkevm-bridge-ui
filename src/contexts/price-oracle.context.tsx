@@ -61,9 +61,7 @@ const PriceOracleProvider: FC = (props) => {
           : token;
 
       if (!erc20Token) {
-        throw new Error(
-          `${token.symbol} is not a valid ERC-20 token and no wrapped ERC-20 token could be found`
-        );
+        throw new Error(`ETH is not a valid ERC-20 token and its wrapped version WETH could not be found`);
       }
       if (env === undefined) {
         throw new Error("Env is not available");
