@@ -7,7 +7,7 @@ import {
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios from "axios";
-import { createContext, FC, useContext, useCallback, useState } from "react";
+import { createContext, FC, useContext, useCallback } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -116,11 +116,7 @@ const bridgeContext = createContext<BridgeContext>({
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
-  const { getTokenPrice } = usePriceOracleContext();
-
-  type Address = string;
-  type Price = number;
-  const [tokenPrices, setTokenPrices] = useState<Partial<Record<Address, Price | null>>>({});
+  const { getTokenPrice: fetchTokenPrice } = usePriceOracleContext();
 
   const getTokenFromAddress = useCallback(
     async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
@@ -186,164 +182,184 @@ const BridgeProvider: FC = (props) => {
     [estimateGasPrice]
   );
 
-  const getToken = async ({
-    env,
-    tokenAddress,
-    originNetwork,
-    tokens,
-  }: {
-    env: Env;
-    tokenAddress: string;
-    originNetwork: number;
-    tokens: Token[];
-  }): Promise<Token> => {
-    const token = tokens.find((token) => token.address === tokenAddress);
-    if (token) {
-      return token;
-    } else {
-      const chain = env.chains.find((chain) => chain.networkId === originNetwork);
-      if (chain) {
-        return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
-          throw new Error(
-            `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
-          );
-        });
+  const getToken = useCallback(
+    async ({
+      env,
+      tokenAddress,
+      originNetwork,
+      tokens,
+    }: {
+      env: Env;
+      tokenAddress: string;
+      originNetwork: number;
+      tokens: Token[];
+    }): Promise<Token> => {
+      const token = tokens.find((token) => token.address === tokenAddress);
+      if (token) {
+        return token;
       } else {
-        throw new Error(
-          `The token with the address "${tokenAddress}" could not be found in the list of supported and the provided network id "${originNetwork}" is not supported`
-        );
-      }
-    }
-  };
-
-  const getBridges = async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
-    const apiUrl = env.bridgeApiUrl;
-    const [apiDeposits, apiClaims] = await Promise.all([
-      getDeposits({ apiUrl, ethereumAddress }),
-      getClaims({ apiUrl, ethereumAddress }),
-    ]);
-
-    const getMappedTokenPrice = async (token: Token, chain: Chain): Promise<Price> => {
-      const mappedPrice = tokenPrices[token.address];
-      const error = new Error(`The fiat price for the token "${token.symbol}" is not available`);
-      if (mappedPrice) {
-        return mappedPrice;
-      } else if (mappedPrice === null) {
-        throw error;
-      } else {
-        const price = await getTokenPrice({ token, chain }).catch(() => null);
-        setTokenPrices((prevState) => ({ ...prevState, [token.address]: price }));
-        if (price) {
-          return price;
+        const chain = env.chains.find((chain) => chain.networkId === originNetwork);
+        if (chain) {
+          return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
+            throw new Error(
+              `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
+            );
+          });
         } else {
-          throw error;
+          throw new Error(
+            `The token with the address "${tokenAddress}" could not be found in the list of supported and the provided network id "${originNetwork}" is not supported`
+          );
         }
       }
-    };
+    },
+    [getTokenFromAddress]
+  );
 
-    return await Promise.all(
-      apiDeposits.map(async (apiDeposit): Promise<Bridge> => {
-        const {
-          network_id,
-          dest_net,
-          amount,
-          dest_addr,
-          deposit_cnt,
-          tx_hash,
-          token_addr,
-          orig_net,
-        } = apiDeposit;
+  type Price = number | null;
+  type TokenPrices = Partial<Record<string, Price>>;
 
-        const networkId = env.chains.find((chain) => chain.networkId === network_id);
-        if (networkId === undefined) {
-          throw new Error(
-            `The specified network_id "${network_id}" can not be found in the list of supported Chains`
-          );
-        }
+  const getTokenPrice = useCallback(
+    async (token: Token, chain: Chain, cache: TokenPrices): Promise<Price> => {
+      const cachedPrice = cache[token.address];
+      return cachedPrice === undefined
+        ? await fetchTokenPrice({ token, chain }).catch(() => null)
+        : cachedPrice;
+    },
+    [fetchTokenPrice]
+  );
 
-        const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
-        if (destinationNetwork === undefined) {
-          throw new Error(
-            `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
-          );
-        }
+  const getBridges = useCallback(
+    async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
+      const apiUrl = env.bridgeApiUrl;
+      const [apiDeposits, apiClaims] = await Promise.all([
+        getDeposits({ apiUrl, ethereumAddress }),
+        getClaims({ apiUrl, ethereumAddress }),
+      ]);
 
-        const tokens = [...getCustomTokens(), getEtherToken(networkId), ...erc20Tokens];
-        const token = await getToken({
-          env,
-          tokenAddress: token_addr,
-          originNetwork: orig_net,
-          tokens,
-        });
+      const deposits = await Promise.all(
+        apiDeposits.map(async (apiDeposit): Promise<Deposit> => {
+          const {
+            network_id,
+            dest_net,
+            amount,
+            dest_addr,
+            deposit_cnt,
+            tx_hash,
+            token_addr,
+            orig_net,
+          } = apiDeposit;
 
-        const amountBigNumber = BigNumber.from(amount);
+          const networkId = env.chains.find((chain) => chain.networkId === network_id);
+          if (networkId === undefined) {
+            throw new Error(
+              `The specified network_id "${network_id}" can not be found in the list of supported Chains`
+            );
+          }
 
-        const computeFiatAmount = (price: number) =>
-          price * Number(formatTokenAmount(amountBigNumber, token));
+          const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
+          if (destinationNetwork === undefined) {
+            throw new Error(
+              `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
+            );
+          }
 
-        const fiatAmount = await getMappedTokenPrice(token, networkId)
-          .then(computeFiatAmount)
-          .catch(() => undefined);
+          const tokens = [...getCustomTokens(), getEtherToken(networkId), ...erc20Tokens];
+          const token = await getToken({
+            env,
+            tokenAddress: token_addr,
+            originNetwork: orig_net,
+            tokens,
+          });
 
-        const deposit: Deposit = {
-          token,
-          amount: amountBigNumber,
-          fiatAmount,
-          destinationAddress: dest_addr,
-          depositCount: deposit_cnt,
-          txHash: tx_hash,
-          from: networkId,
-          to: destinationNetwork,
-          tokenOriginNetwork: orig_net,
-        };
-
-        const apiClaim = apiClaims.find(
-          (claim) =>
-            claim.index === deposit.depositCount && claim.network_id === deposit.to.networkId
-        );
-
-        const id = `${deposit.depositCount}-${deposit.to.networkId}`;
-
-        if (apiClaim) {
           return {
-            status: "completed",
+            token,
+            amount: BigNumber.from(amount),
+            fiatAmount: undefined,
+            destinationAddress: dest_addr,
+            depositCount: deposit_cnt,
+            txHash: tx_hash,
+            from: networkId,
+            to: destinationNetwork,
+            tokenOriginNetwork: orig_net,
+          };
+        })
+      );
+
+      const tokenPrices: TokenPrices = await deposits.reduce(
+        async (accTokenPrices: Promise<TokenPrices>, deposit: Deposit): Promise<TokenPrices> => {
+          const tokenPrices = await accTokenPrices;
+          const price = await getTokenPrice(deposit.token, deposit.from, tokenPrices);
+          return {
+            ...tokenPrices,
+            [deposit.token.address]: price,
+          };
+        },
+        Promise.resolve({})
+      );
+
+      return Promise.all(
+        deposits.map(async (partialDeposit): Promise<Bridge> => {
+          const tokenPrice = tokenPrices[partialDeposit.token.address];
+
+          const fiatAmount =
+            tokenPrice !== undefined && tokenPrice !== null
+              ? tokenPrice * Number(formatTokenAmount(partialDeposit.amount, partialDeposit.token))
+              : undefined;
+
+          const deposit: Deposit = {
+            ...partialDeposit,
+            fiatAmount,
+          };
+
+          const apiClaim = apiClaims.find(
+            (claim) =>
+              claim.index === deposit.depositCount && claim.network_id === deposit.to.networkId
+          );
+
+          const id = `${deposit.depositCount}-${deposit.to.networkId}`;
+
+          if (apiClaim) {
+            return {
+              status: "completed",
+              id,
+              deposit,
+              claim: {
+                txHash: apiClaim.tx_hash,
+              },
+            };
+          }
+
+          const claimStatus = await getClaimStatus({
+            apiUrl,
+            networkId: deposit.from.networkId,
+            depositCount: deposit.depositCount,
+          });
+
+          if (claimStatus === false) {
+            return {
+              status: "initiated",
+              id,
+              deposit,
+            };
+          }
+
+          const merkleProof = await getMerkleProof({
+            apiUrl,
+            networkId: deposit.from.networkId,
+            depositCount: deposit.depositCount,
+          });
+
+          return {
+            status: "on-hold",
             id,
             deposit,
-            claim: {
-              txHash: apiClaim.tx_hash,
-            },
+            merkleProof,
           };
-        }
-
-        const claimStatus = await getClaimStatus({
-          apiUrl,
-          networkId: deposit.from.networkId,
-          depositCount: deposit.depositCount,
-        });
-
-        if (claimStatus === false) {
-          return {
-            status: "initiated",
-            id,
-            deposit,
-          };
-        }
-
-        const merkleProof = await getMerkleProof({
-          apiUrl,
-          networkId: deposit.from.networkId,
-          depositCount: deposit.depositCount,
-        });
-
-        return {
-          status: "on-hold",
-          id,
-          deposit,
-          merkleProof,
-        };
-      })
-    );
-  };
+        })
+      );
+    },
+    [getTokenPrice, getToken]
+  );
 
   const bridge = useCallback(
     async ({
