@@ -74,16 +74,16 @@ const envToDomain = ({
 const envParser = StrictSchema<Env, domain.Env>()(
   z
     .object({
-      REACT_APP_ETHEREUM_RPC_URL: z.string(),
-      REACT_APP_ETHEREUM_EXPLORER_URL: z.string(),
+      REACT_APP_ETHEREUM_RPC_URL: z.string().url(),
+      REACT_APP_ETHEREUM_EXPLORER_URL: z.string().url(),
       REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       REACT_APP_ETHEREUM_USDC_ADDRESS: z.string().length(42),
-      REACT_APP_POLYGON_HERMEZ_RPC_URL: z.string(),
-      REACT_APP_POLYGON_EXPLORER_URL: z.string(),
+      REACT_APP_POLYGON_HERMEZ_RPC_URL: z.string().url(),
+      REACT_APP_POLYGON_EXPLORER_URL: z.string().url(),
       REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       REACT_APP_POLYGON_HERMEZ_NETWORK_ID: z.string(),
-      REACT_APP_BRIDGE_API_URL: z.string(),
-      REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
+      REACT_APP_BRIDGE_API_URL: z.string().url(),
+      REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string().url(),
       REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
       REACT_APP_VERSION: z.string(),
     })
