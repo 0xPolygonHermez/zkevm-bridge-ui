@@ -51,9 +51,9 @@ const envToDomain = ({
       contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
     },
   }).then((chains) => {
-    const ethereumChain = chains.find((chain) => chain.networkId === 0);
+    const ethereumChain = chains.find((chain) => chain.key === "ethereum");
     if (!ethereumChain) {
-      throw new Error("No chain found for network id 0 (Ethereum Chain)");
+      throw new Error("Ethereum chain not found");
     }
     return {
       bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
