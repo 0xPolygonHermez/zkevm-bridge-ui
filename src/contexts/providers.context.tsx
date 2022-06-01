@@ -222,6 +222,12 @@ const ProvidersProvider: FC = (props) => {
   );
 
   useEffect(() => {
+    if (account.status === "failed") {
+      navigate(routes.login.path);
+    }
+  }, [account, navigate]);
+
+  useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =
       connectedProvider?.provider.provider;
     const onAccountsChanged = (accounts: unknown): void => {
