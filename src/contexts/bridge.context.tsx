@@ -116,7 +116,7 @@ const bridgeContext = createContext<BridgeContext>({
 const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
-  const { getTokenPrice: fetchTokenPrice } = usePriceOracleContext();
+  const { getTokenPrice } = usePriceOracleContext();
 
   const getTokenFromAddress = useCallback(
     async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
@@ -220,16 +220,6 @@ const BridgeProvider: FC = (props) => {
   type Price = number | null;
   type TokenPrices = Partial<Record<string, Price>>;
 
-  const getTokenPrice = useCallback(
-    async (token: Token, chain: Chain, cache: TokenPrices): Promise<Price> => {
-      const cachedPrice = cache[token.address];
-      return cachedPrice === undefined
-        ? await fetchTokenPrice({ token, chain }).catch(() => null)
-        : cachedPrice;
-    },
-    [fetchTokenPrice]
-  );
-
   const getBridges = useCallback(
     async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
       const apiUrl = env.bridgeApiUrl;
@@ -289,7 +279,14 @@ const BridgeProvider: FC = (props) => {
       const tokenPrices: TokenPrices = await deposits.reduce(
         async (accTokenPrices: Promise<TokenPrices>, deposit: Deposit): Promise<TokenPrices> => {
           const tokenPrices = await accTokenPrices;
-          const price = await getTokenPrice(deposit.token, deposit.from, tokenPrices);
+          const cachedPrice = tokenPrices[deposit.token.address];
+          const price =
+            cachedPrice !== undefined
+              ? cachedPrice
+              : await getTokenPrice({ token: deposit.token, chain: deposit.from }).catch(
+                  () => null
+                );
+
           return {
             ...tokenPrices,
             [deposit.token.address]: price,
