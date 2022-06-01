@@ -13,9 +13,6 @@ export const roundNumber = (num: number, dec: number): number => {
   return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
 };
 
-export const roundFiat = (num: number): number => {
-  return (
-    Math.round(num * Math.pow(10, PREFERRED_CURRENCY_PRECISION)) /
-    Math.pow(10, PREFERRED_CURRENCY_PRECISION)
-  );
+export const roundFiat = (amount: number): number => {
+  return roundNumber(amount, PREFERRED_CURRENCY_PRECISION);
 };
