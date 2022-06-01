@@ -187,14 +187,16 @@ const BridgeProvider: FC = (props) => {
       env,
       tokenAddress,
       originNetwork,
-      tokens,
+      chain,
     }: {
       env: Env;
       tokenAddress: string;
       originNetwork: number;
-      tokens: Token[];
+      chain: Chain;
     }): Promise<Token> => {
-      const token = tokens.find((token) => token.address === tokenAddress);
+      const token = [...getCustomTokens(), getEtherToken(chain), ...erc20Tokens].find(
+        (token) => token.address === tokenAddress
+      );
       if (token) {
         return token;
       } else {
@@ -249,26 +251,25 @@ const BridgeProvider: FC = (props) => {
             orig_net,
           } = apiDeposit;
 
-          const networkId = env.chains.find((chain) => chain.networkId === network_id);
-          if (networkId === undefined) {
+          const from = env.chains.find((chain) => chain.networkId === network_id);
+          if (from === undefined) {
             throw new Error(
               `The specified network_id "${network_id}" can not be found in the list of supported Chains`
             );
           }
 
-          const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
-          if (destinationNetwork === undefined) {
+          const to = env.chains.find((chain) => chain.networkId === dest_net);
+          if (to === undefined) {
             throw new Error(
               `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
             );
           }
 
-          const tokens = [...getCustomTokens(), getEtherToken(networkId), ...erc20Tokens];
           const token = await getToken({
             env,
             tokenAddress: token_addr,
             originNetwork: orig_net,
-            tokens,
+            chain: from,
           });
 
           return {
@@ -278,8 +279,8 @@ const BridgeProvider: FC = (props) => {
             destinationAddress: dest_addr,
             depositCount: deposit_cnt,
             txHash: tx_hash,
-            from: networkId,
-            to: destinationNetwork,
+            from,
+            to,
             tokenOriginNetwork: orig_net,
           };
         })
