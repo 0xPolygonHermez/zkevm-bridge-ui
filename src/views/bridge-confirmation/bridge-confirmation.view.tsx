@@ -94,18 +94,18 @@ const BridgeConfirmation: FC = () => {
     if (formData) {
       // fiat amount
       getTokenPrice({ token: formData.token, chain: formData.from })
-        .then((price) => {
-          const amount = Number(formatTokenAmount(formData.amount, formData.token));
-          setFiatAmount(price * amount);
+        .then((tokenFiatPrice) => {
+          const tokenAmount = Number(formatTokenAmount(formData.amount, formData.token));
+          setFiatAmount(tokenFiatPrice * tokenAmount);
         })
         .catch(() => setFiatAmount(undefined));
       // fiat fee
       const weth = getChainTokens(formData.from).find((t) => t.symbol === "WETH");
       if (weth) {
         getTokenPrice({ token: weth, chain: formData.from })
-          .then((price) => {
-            const fee = Number(formatTokenAmount(formData.estimatedFee, weth));
-            setFiatFee(price * fee);
+          .then((tokenFiatPrice) => {
+            const feeAmount = Number(formatTokenAmount(formData.estimatedFee, weth));
+            setFiatFee(tokenFiatPrice * feeAmount);
           })
           .catch(() => setFiatFee(undefined));
       }

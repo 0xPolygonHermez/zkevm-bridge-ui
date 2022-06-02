@@ -279,17 +279,17 @@ const BridgeProvider: FC = (props) => {
       const tokenPrices: TokenPrices = await deposits.reduce(
         async (accTokenPrices: Promise<TokenPrices>, deposit: Deposit): Promise<TokenPrices> => {
           const tokenPrices = await accTokenPrices;
-          const cachedPrice = tokenPrices[deposit.token.address];
-          const price =
-            cachedPrice !== undefined
-              ? cachedPrice
+          const tokenCachedPrice = tokenPrices[deposit.token.address];
+          const tokenPrice =
+            tokenCachedPrice !== undefined
+              ? tokenCachedPrice
               : await getTokenPrice({ token: deposit.token, chain: deposit.from }).catch(
                   () => null
                 );
 
           return {
             ...tokenPrices,
-            [deposit.token.address]: price,
+            [deposit.token.address]: tokenPrice,
           };
         },
         Promise.resolve({})

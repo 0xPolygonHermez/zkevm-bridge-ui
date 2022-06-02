@@ -152,8 +152,9 @@ const BridgeDetails: FC = () => {
 
       // fiat amount
       getTokenPrice({ token, chain: from })
-        .then((price) => {
-          setFiatAmount(price * Number(formatTokenAmount(amount, token)));
+        .then((tokenFiatPrice) => {
+          const tokenAmount = Number(formatTokenAmount(amount, token));
+          setFiatAmount(tokenFiatPrice * tokenAmount);
         })
         .catch(() => setFiatAmount(undefined));
 
@@ -161,10 +162,14 @@ const BridgeDetails: FC = () => {
       const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
       if (weth) {
         getTokenPrice({ token: weth, chain: from })
-          .then((price) => {
+          .then((tokenFiatPrice) => {
             setFiatHistoricalFees({
-              step1: historicalFees.step1 ? Number(historicalFees.step1) * price : undefined,
-              step2: historicalFees.step2 ? Number(historicalFees.step2) * price : undefined,
+              step1: historicalFees.step1
+                ? tokenFiatPrice * Number(historicalFees.step1)
+                : undefined,
+              step2: historicalFees.step2
+                ? tokenFiatPrice * Number(historicalFees.step2)
+                : undefined,
             });
           })
           .catch(() => setFiatHistoricalFees({}));
