@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BigNumber } from "ethers";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
@@ -11,7 +12,7 @@ import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount } from "src/utils/amounts";
+import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
 import {
   isMetamaskUserRejectedRequestError,
   isMetamaskInsufficientAllowanceError,
@@ -25,7 +26,6 @@ import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { ETH_TOKEN_LOGO_URI, getChainTokens } from "src/constants";
-import { roundFiat } from "src/utils/amounts";
 
 const BridgeConfirmation: FC = () => {
   const classes = useBridgeConfirmationStyles();
@@ -36,8 +36,8 @@ const BridgeConfirmation: FC = () => {
   const { formData, setFormData } = useFormContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const [fiatAmount, setFiatAmount] = useState<number>();
-  const [fiatFee, setFiatFee] = useState<number>();
+  const [fiatAmount, setFiatAmount] = useState<BigNumber>();
+  const [fiatFee, setFiatFee] = useState<BigNumber>();
   const [error, setError] = useState<string>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
@@ -96,8 +96,7 @@ const BridgeConfirmation: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain })
         .then((tokenPrice) => {
-          const tokenAmount = Number(formatTokenAmount(amount, token));
-          setFiatAmount(tokenPrice * tokenAmount);
+          setFiatAmount(tokenPrice.mul(amount));
         })
         .catch(() => setFiatAmount(undefined));
       // fiat fee
@@ -105,8 +104,7 @@ const BridgeConfirmation: FC = () => {
       if (weth) {
         getTokenPrice({ token: weth, chain })
           .then((tokenPrice) => {
-            const feeAmount = Number(formatTokenAmount(estimatedFee, weth));
-            setFiatFee(tokenPrice * feeAmount);
+            setFiatFee(tokenPrice.mul(estimatedFee));
           })
           .catch(() => setFiatFee(undefined));
       }
@@ -117,24 +115,27 @@ const BridgeConfirmation: FC = () => {
     return null;
   }
 
+  const { token, amount, from, to, estimatedFee } = formData;
+
+  const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
+  const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
+
   return (
     <>
       <Header title="Confirm Bridge" backTo="home" />
       <Card className={classes.card}>
-        <Icon url={formData.token.logoURI} size={46} className={classes.icon} />
-        <Typography type="h1">
-          {`${formatTokenAmount(formData.amount, formData.token)} ${formData.token.symbol}`}
+        <Icon url={token.logoURI} size={46} className={classes.icon} />
+        <Typography type="h1">{tokenAmountString}</Typography>
+        <Typography type="h2" className={classes.fiat}>
+          {fiatAmountString}
         </Typography>
-        <Typography type="h2" className={classes.fiat}>{`${currencySymbol}${
-          fiatAmount ? roundFiat(fiatAmount) : "--"
-        }`}</Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <formData.from.Icon /> {getChainName(formData.from)}
+            <formData.from.Icon /> {getChainName(from)}
           </div>
           <ArrowRightIcon className={classes.arrow} />
           <div className={classes.chainBox}>
-            <formData.to.Icon /> {getChainName(formData.to)}
+            <formData.to.Icon /> {getChainName(to)}
           </div>
         </div>
         <div className={classes.fees}>
@@ -143,8 +144,8 @@ const BridgeConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            {`${formatTokenAmount(formData.estimatedFee, formData.token)} ETH ~ ${currencySymbol}${
-              fiatFee ? roundFiat(fiatFee) : "--"
+            {`${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
+              fiatFee ? formatFiatAmount(fiatFee) : "--"
             }`}
           </Typography>
         </div>

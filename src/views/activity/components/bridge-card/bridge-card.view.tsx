@@ -12,9 +12,8 @@ import Icon from "src/views/shared/icon/icon.view";
 import Error from "src/views/shared/error/error.view";
 import { Bridge } from "src/domain";
 import { getChainName, getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount } from "src/utils/amounts";
+import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
 import { getCurrency } from "src/adapters/storage";
-import { roundFiat } from "src/utils/amounts";
 
 export interface BridgeCardProps {
   bridge: Bridge;
@@ -36,7 +35,13 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
     onClaim();
   };
 
-  const preferredCurrency = getCurrency();
+  const preferredCurrencySymbol = getCurrencySymbol(getCurrency());
+
+  const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
+
+  const fiatAmountString = `${preferredCurrencySymbol}${
+    fiatAmount ? formatFiatAmount(fiatAmount) : "--"
+  }`;
 
   return (
     <Card
@@ -68,12 +73,10 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
         <div className={classes.tokenColumn}>
           <div className={classes.token}>
             <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
-            <Typography type="body1">
-              {`${formatTokenAmount(amount, token)} ${token.symbol}`}
-            </Typography>
+            <Typography type="body1">{tokenAmountString}</Typography>
           </div>
           <Typography type="body1" className={classes.fiat}>
-            {`${getCurrencySymbol(preferredCurrency)}${fiatAmount ? roundFiat(fiatAmount) : "--"}`}
+            {fiatAmountString}
           </Typography>
         </div>
       </div>

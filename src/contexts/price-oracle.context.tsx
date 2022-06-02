@@ -1,12 +1,12 @@
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { pack, keccak256 } from "@ethersproject/solidity";
 import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { formatTokenAmount } from "src/utils/amounts";
+import { fiatStringToBigNumber } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
   UniswapV2Router02,
@@ -37,7 +37,7 @@ interface GetTokenPriceParams {
 }
 
 interface PriceOracleContext {
-  getTokenPrice: (params: GetTokenPriceParams) => Promise<number>;
+  getTokenPrice: (params: GetTokenPriceParams) => Promise<BigNumber>;
 }
 
 const priceOracleContextNotReadyErrorMsg = "The price oracle context is not yet ready";
@@ -55,7 +55,7 @@ const PriceOracleProvider: FC = (props) => {
   const [uniswapV2Router02Contract, setUniswapV2Router02Contract] = useState<UniswapV2Router02>();
 
   const getTokenPrice = useCallback(
-    async ({ token, chain }: GetTokenPriceParams): Promise<number> => {
+    async ({ token, chain }: GetTokenPriceParams): Promise<BigNumber> => {
       const erc20Token =
         token.address === ethers.constants.AddressZero
           ? getChainTokens(chain).find((t) => t.symbol === "WETH")
@@ -103,14 +103,13 @@ const PriceOracleProvider: FC = (props) => {
         reserveIn,
         reserveOut
       );
-      const usdPrice = Number(formatTokenAmount(rate, env.fiatExchangeRates.usdcToken));
       const fiatExchangeRate = fiatExchangeRates[getCurrency()];
 
       if (!fiatExchangeRate) {
         throw new Error("Fiat exchange rate not found");
       }
 
-      return usdPrice * fiatExchangeRate;
+      return rate.mul(fiatStringToBigNumber(fiatExchangeRate.toString()));
     },
     [env, fiatExchangeRates, uniswapV2Router02Contract]
   );
