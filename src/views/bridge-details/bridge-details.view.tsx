@@ -147,29 +147,25 @@ const BridgeDetails: FC = () => {
   useEffect(() => {
     if (bridge.status === "successful") {
       const {
-        deposit: { amount, from, token },
+        deposit: { amount, from: chain, token },
       } = bridge.data;
 
       // fiat amount
-      getTokenPrice({ token, chain: from })
-        .then((tokenFiatPrice) => {
+      getTokenPrice({ token, chain })
+        .then((tokenPrice) => {
           const tokenAmount = Number(formatTokenAmount(amount, token));
-          setFiatAmount(tokenFiatPrice * tokenAmount);
+          setFiatAmount(tokenPrice * tokenAmount);
         })
         .catch(() => setFiatAmount(undefined));
 
       // fiat historical fees
-      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
+      const weth = getChainTokens(chain).find((t) => t.symbol === "WETH");
       if (weth) {
-        getTokenPrice({ token: weth, chain: from })
-          .then((tokenFiatPrice) => {
+        getTokenPrice({ token: weth, chain: chain })
+          .then((tokenPrice) => {
             setFiatHistoricalFees({
-              step1: historicalFees.step1
-                ? tokenFiatPrice * Number(historicalFees.step1)
-                : undefined,
-              step2: historicalFees.step2
-                ? tokenFiatPrice * Number(historicalFees.step2)
-                : undefined,
+              step1: historicalFees.step1 ? tokenPrice * Number(historicalFees.step1) : undefined,
+              step2: historicalFees.step2 ? tokenPrice * Number(historicalFees.step2) : undefined,
             });
           })
           .catch(() => setFiatHistoricalFees({}));

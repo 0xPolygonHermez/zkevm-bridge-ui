@@ -92,20 +92,21 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (formData) {
+      const { token, amount, from: chain, estimatedFee } = formData;
       // fiat amount
-      getTokenPrice({ token: formData.token, chain: formData.from })
-        .then((tokenFiatPrice) => {
-          const tokenAmount = Number(formatTokenAmount(formData.amount, formData.token));
-          setFiatAmount(tokenFiatPrice * tokenAmount);
+      getTokenPrice({ token, chain })
+        .then((tokenPrice) => {
+          const tokenAmount = Number(formatTokenAmount(amount, token));
+          setFiatAmount(tokenPrice * tokenAmount);
         })
         .catch(() => setFiatAmount(undefined));
       // fiat fee
-      const weth = getChainTokens(formData.from).find((t) => t.symbol === "WETH");
+      const weth = getChainTokens(chain).find((t) => t.symbol === "WETH");
       if (weth) {
-        getTokenPrice({ token: weth, chain: formData.from })
-          .then((tokenFiatPrice) => {
-            const feeAmount = Number(formatTokenAmount(formData.estimatedFee, weth));
-            setFiatFee(tokenFiatPrice * feeAmount);
+        getTokenPrice({ token: weth, chain })
+          .then((tokenPrice) => {
+            const feeAmount = Number(formatTokenAmount(estimatedFee, weth));
+            setFiatFee(tokenPrice * feeAmount);
           })
           .catch(() => setFiatFee(undefined));
       }
