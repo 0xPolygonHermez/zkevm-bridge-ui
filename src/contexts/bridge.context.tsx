@@ -14,8 +14,13 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, getEtherToken } from "src/constants";
+import {
+  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
+  getEtherToken,
+  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+} from "src/constants";
 import { calculateFee } from "src/utils/fees";
+import { multiplyAmounts } from "src/utils/amounts";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
@@ -300,7 +305,17 @@ const BridgeProvider: FC = (props) => {
 
           const fiatAmount =
             tokenPrice !== undefined && tokenPrice !== null
-              ? tokenPrice.mul(partialDeposit.amount)
+              ? multiplyAmounts(
+                  {
+                    value: tokenPrice,
+                    precision: env.fiatExchangeRates.usdcToken.decimals,
+                  },
+                  {
+                    value: partialDeposit.amount,
+                    precision: partialDeposit.token.decimals,
+                  },
+                  PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                )
               : undefined;
 
           const deposit: Deposit = {

@@ -6,7 +6,7 @@ import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { fiatStringToBigNumber } from "src/utils/amounts";
+import { fiatStringToBigNumber, multiplyAmounts } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
   UniswapV2Router02,
@@ -17,7 +17,11 @@ import { FiatExchangeRates } from "src/domain";
 import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
 import { getCurrency } from "src/adapters/storage";
 import { Token, Chain } from "src/domain";
-import { getChainTokens, UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS } from "src/constants";
+import {
+  getChainTokens,
+  UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
+  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+} from "src/constants";
 
 const INIT_CODE_HASH = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
 const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
@@ -103,13 +107,23 @@ const PriceOracleProvider: FC = (props) => {
         reserveIn,
         reserveOut
       );
+
       const fiatExchangeRate = fiatExchangeRates[getCurrency()];
 
-      if (!fiatExchangeRate) {
+      if (fiatExchangeRate === undefined) {
         throw new Error("Fiat exchange rate not found");
       }
 
-      return rate.mul(fiatStringToBigNumber(fiatExchangeRate.toString()));
+      const price = multiplyAmounts(
+        { value: rate, precision: env.fiatExchangeRates.usdcToken.decimals },
+        {
+          value: fiatStringToBigNumber(fiatExchangeRate.toString()),
+          precision: PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+        },
+        PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+      );
+
+      return price;
     },
     [env, fiatExchangeRates, uniswapV2Router02Contract]
   );

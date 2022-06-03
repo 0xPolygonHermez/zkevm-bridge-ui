@@ -12,7 +12,7 @@ import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
+import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import {
   isMetamaskUserRejectedRequestError,
   isMetamaskInsufficientAllowanceError,
@@ -25,7 +25,11 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
-import { ETH_TOKEN_LOGO_URI, getChainTokens } from "src/constants";
+import {
+  ETH_TOKEN_LOGO_URI,
+  getChainTokens,
+  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+} from "src/constants";
 
 const BridgeConfirmation: FC = () => {
   const classes = useBridgeConfirmationStyles();
@@ -91,25 +95,49 @@ const BridgeConfirmation: FC = () => {
   }, [navigate, formData]);
 
   useEffect(() => {
-    if (formData) {
-      const { token, amount, from: chain, estimatedFee } = formData;
+    if (env !== undefined && formData) {
+      const { token, amount, from, estimatedFee } = formData;
       // fiat amount
-      getTokenPrice({ token, chain })
+      getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          setFiatAmount(tokenPrice.mul(amount));
+          setFiatAmount(
+            multiplyAmounts(
+              {
+                value: tokenPrice,
+                precision: env.fiatExchangeRates.usdcToken.decimals,
+              },
+              {
+                value: amount,
+                precision: token.decimals,
+              },
+              PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+            )
+          );
         })
         .catch(() => setFiatAmount(undefined));
       // fiat fee
-      const weth = getChainTokens(chain).find((t) => t.symbol === "WETH");
+      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
       if (weth) {
-        getTokenPrice({ token: weth, chain })
+        getTokenPrice({ token: weth, chain: from })
           .then((tokenPrice) => {
-            setFiatFee(tokenPrice.mul(estimatedFee));
+            setFiatFee(
+              multiplyAmounts(
+                {
+                  value: tokenPrice,
+                  precision: env.fiatExchangeRates.usdcToken.decimals,
+                },
+                {
+                  value: estimatedFee,
+                  precision: weth.decimals,
+                },
+                PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+              )
+            );
           })
           .catch(() => setFiatFee(undefined));
       }
     }
-  }, [formData, getTokenPrice]);
+  }, [env, formData, getTokenPrice]);
 
   if (!formData || !env) {
     return null;
@@ -118,7 +146,12 @@ const BridgeConfirmation: FC = () => {
   const { token, amount, from, to, estimatedFee } = formData;
 
   const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
+
   const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
+
+  const feeString = `${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
+    fiatFee ? formatFiatAmount(fiatFee) : "--"
+  }`;
 
   return (
     <>
@@ -144,9 +177,7 @@ const BridgeConfirmation: FC = () => {
           </Typography>
           <Typography type="body1" className={classes.fee}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            {`${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
-              fiatFee ? formatFiatAmount(fiatFee) : "--"
-            }`}
+            {feeString}
           </Typography>
         </div>
       </Card>

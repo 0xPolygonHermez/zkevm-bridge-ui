@@ -20,12 +20,13 @@ import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
+import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
+import { PREFERRED_CURRENCY_ARITHMETIC_PRECISION } from "src/constants";
 
 interface Fees {
   step1?: BigNumber;
@@ -134,32 +135,76 @@ const BridgeDetails: FC = () => {
   }, [bridge, notifyError]);
 
   useEffect(() => {
-    if (bridge.status === "successful") {
+    if (env !== undefined && bridge.status === "successful") {
       const {
-        deposit: { amount, from: chain, token },
+        deposit: { amount, from, token },
       } = bridge.data;
 
       // fiat amount
-      getTokenPrice({ token, chain })
+      getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          setFiatAmount(tokenPrice.mul(amount));
+          setFiatAmount(
+            multiplyAmounts(
+              {
+                value: tokenPrice,
+                precision: env.fiatExchangeRates.usdcToken.decimals,
+              },
+              {
+                value: amount,
+                precision: token.decimals,
+              },
+              PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+            )
+          );
         })
         .catch(() => setFiatAmount(undefined));
+    }
+  }, [env, bridge, getTokenPrice]);
+
+  useEffect(() => {
+    if (env !== undefined && bridge.status === "successful") {
+      const {
+        deposit: { from },
+      } = bridge.data;
 
       // fiat fees
-      const weth = getChainTokens(chain).find((t) => t.symbol === "WETH");
-      if (weth) {
-        getTokenPrice({ token: weth, chain: chain })
+      const token = getChainTokens(from).find((t) => t.symbol === "WETH");
+      if (token) {
+        getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
             setFiatFees({
-              step1: ethFees.step1 ? tokenPrice.mul(ethFees.step1) : undefined,
-              step2: ethFees.step2 ? tokenPrice.mul(ethFees.step2) : undefined,
+              step1: ethFees.step1
+                ? multiplyAmounts(
+                    {
+                      value: tokenPrice,
+                      precision: env.fiatExchangeRates.usdcToken.decimals,
+                    },
+                    {
+                      value: ethFees.step1,
+                      precision: token.decimals,
+                    },
+                    PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                  )
+                : undefined,
+              step2: ethFees.step2
+                ? multiplyAmounts(
+                    {
+                      value: tokenPrice,
+                      precision: env.fiatExchangeRates.usdcToken.decimals,
+                    },
+                    {
+                      value: ethFees.step2,
+                      precision: token.decimals,
+                    },
+                    PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                  )
+                : undefined,
             });
           })
           .catch(() => setFiatFees({}));
       }
     }
-  }, [bridge, ethFees, getTokenPrice]);
+  }, [env, bridge, ethFees, getTokenPrice]);
 
   if (bridge.status === "pending" || bridge.status === "loading") {
     return <SpinnerIcon />;
