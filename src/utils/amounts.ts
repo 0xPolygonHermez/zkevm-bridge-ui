@@ -15,7 +15,7 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
     decimals.length > TOKEN_DISPLAY_PRECISION
       ? decimals.slice(0, TOKEN_DISPLAY_PRECISION)
       : decimals;
-  return trimed === "0" ? whole : `${whole}.${trimed}`;
+  return trimed === "" || trimed === "0" ? whole : `${whole}.${trimed}`;
 };
 
 export const formatFiatAmount = (value: BigNumber): string => {
@@ -24,7 +24,7 @@ export const formatFiatAmount = (value: BigNumber): string => {
     decimals.length > PREFERRED_CURRENCY_DISPLAY_PRECISION
       ? decimals.slice(0, PREFERRED_CURRENCY_DISPLAY_PRECISION)
       : decimals;
-  return trimed === "0" ? whole : `${whole}.${trimed}`;
+  return trimed === "" || trimed === "0" ? whole : `${whole}.${trimed}`;
 };
 
 export const fiatStringToBigNumber = (value: string): BigNumber => {
