@@ -10,7 +10,7 @@ import {
 
 export const formatTokenAmount = (value: BigNumber, token: Token): string => {
   const amount = ethers.utils.formatUnits(value, token.decimals);
-  const [whole, decimals] = amount.split(".");
+  const [whole, decimals = ""] = amount.split(".");
   const trimed =
     decimals.length > TOKEN_DISPLAY_PRECISION
       ? decimals.slice(0, TOKEN_DISPLAY_PRECISION)
@@ -19,7 +19,7 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
 };
 
 export const formatFiatAmount = (value: BigNumber): string => {
-  const [whole, decimals] = fiatBigNumberToString(value).split(".");
+  const [whole, decimals = ""] = fiatBigNumberToString(value).split(".");
   const trimed =
     decimals.length > PREFERRED_CURRENCY_DISPLAY_PRECISION
       ? decimals.slice(0, PREFERRED_CURRENCY_DISPLAY_PRECISION)
@@ -42,7 +42,7 @@ interface Amount {
 
 export const multiplyAmounts = (a: Amount, b: Amount, outputPrecision: number): BigNumber => {
   const result = formatUnits(a.value.mul(b.value), a.precision + b.precision);
-  const [whole, decimals] = result.split(".");
+  const [whole, decimals = ""] = result.split(".");
   const trimedDecimals =
     decimals.length > outputPrecision ? decimals.slice(0, outputPrecision) : decimals;
   return parseUnits(`${whole}.${trimedDecimals}`, outputPrecision);
