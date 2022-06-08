@@ -63,7 +63,13 @@ const Activity: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
-        getBridges({ env, ethereumAddress: account.data }).then(setBridgeList).catch(notifyError);
+        getBridges({ env, ethereumAddress: account.data })
+          .then((bridges) => {
+            mountSafe(setBridgeList, bridges);
+          })
+          .catch((error) => {
+            mountSafe(notifyError, error);
+          });
       };
       const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
       loadBridges();
@@ -72,7 +78,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, env, getBridges, notifyError]);
+  }, [account, env, getBridges, notifyError, mountSafe]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);
