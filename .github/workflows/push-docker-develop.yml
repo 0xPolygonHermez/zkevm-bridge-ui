@@ -43,3 +43,14 @@ jobs:
           build-args: |
             ENVIRONMENT=integration
             REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY}}
+
+      - name: Build and push for frontend-testnet
+        id: docker_build_integration
+        uses: docker/build-push-action@v2
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: hermeznetwork/bridge-ui:1.5-fetestnet
+          build-args: |
+            ENVIRONMENT=fetestnet
+            REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY}}
