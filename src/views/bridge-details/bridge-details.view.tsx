@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useCallback } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -27,6 +27,7 @@ import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
 import { PREFERRED_CURRENCY_ARITHMETIC_PRECISION } from "src/constants";
+import useIsMounted from "src/hooks/use-is-mounted";
 
 interface Fees {
   step1?: BigNumber;
@@ -52,6 +53,7 @@ const calculateFees = (bridge: Bridge): Promise<Fees> => {
 };
 
 const BridgeDetails: FC = () => {
+  const isMounted = useIsMounted();
   const { bridgeId } = useParams();
   const navigate = useNavigate();
   const env = useEnvContext();
@@ -72,6 +74,15 @@ const BridgeDetails: FC = () => {
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
+  const mountSafe = useCallback(
+    <T,>(callback: (value: T) => void, value: T) => {
+      if (isMounted()) {
+        callback(value);
+      }
+    },
+    [isMounted]
+  );
+
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
       const { deposit, merkleProof } = bridge.data;
@@ -86,9 +97,12 @@ const BridgeDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
+                mountSafe(
+                  setIncorrectNetworkMessage,
+                  `Switch to ${getChainName(deposit.to)} to continue`
+                );
               } else {
-                notifyError(error);
+                mountSafe(notifyError, error);
               }
             });
           }
@@ -113,12 +127,12 @@ const BridgeDetails: FC = () => {
             return bridge.id === bridgeId;
           });
           if (foundBridge) {
-            setBridge({
+            mountSafe(setBridge, {
               status: "successful",
               data: foundBridge,
             });
           } else {
-            setBridge({
+            mountSafe(setBridge, {
               status: "failed",
               error: "Bridge not found",
             });
@@ -126,13 +140,19 @@ const BridgeDetails: FC = () => {
         })
         .catch(notifyError);
     }
-  }, [account, env, bridgeId, notifyError, getBridges]);
+  }, [account, env, bridgeId, notifyError, getBridges, mountSafe]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
-      calculateFees(bridge.data).then(setEthFees).catch(notifyError);
+      calculateFees(bridge.data)
+        .then((ethFees) => {
+          mountSafe(setEthFees, ethFees);
+        })
+        .catch((error) => {
+          mountSafe(notifyError, error);
+        });
     }
-  }, [bridge, notifyError]);
+  }, [bridge, notifyError, mountSafe]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -143,7 +163,8 @@ const BridgeDetails: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          setFiatAmount(
+          mountSafe(
+            setFiatAmount,
             multiplyAmounts(
               {
                 value: tokenPrice,
@@ -157,9 +178,9 @@ const BridgeDetails: FC = () => {
             )
           );
         })
-        .catch(() => setFiatAmount(undefined));
+        .catch(() => mountSafe(setFiatAmount, undefined));
     }
-  }, [env, bridge, getTokenPrice]);
+  }, [env, bridge, getTokenPrice, mountSafe]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -172,7 +193,7 @@ const BridgeDetails: FC = () => {
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
-            setFiatFees({
+            mountSafe(setFiatFees, {
               step1: ethFees.step1
                 ? multiplyAmounts(
                     {
@@ -201,10 +222,10 @@ const BridgeDetails: FC = () => {
                 : undefined,
             });
           })
-          .catch(() => setFiatFees({}));
+          .catch(() => mountSafe(setFiatFees, {}));
       }
     }
-  }, [env, bridge, ethFees, getTokenPrice]);
+  }, [env, bridge, ethFees, getTokenPrice, mountSafe]);
 
   if (bridge.status === "pending" || bridge.status === "loading") {
     return <SpinnerIcon />;
