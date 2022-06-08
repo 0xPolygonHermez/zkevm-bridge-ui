@@ -49,16 +49,12 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
 
   const onImportTokenClick = (token: Token) => {
     const all = [...addCustomToken(token), ...tokens];
-    setFilteredTokens(
-      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
-    );
+    setFilteredTokens(all.filter(getTokenFilterByTerm(searchInputValue)));
   };
 
   const onRemoveTokenClick = (token: Token) => {
     const all = [...removeCustomToken(token), ...tokens];
-    setFilteredTokens(
-      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
-    );
+    setFilteredTokens(all.filter(getTokenFilterByTerm(searchInputValue)));
     onSearchInputValueChange(searchInputValue);
   };
 
@@ -66,7 +62,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
     setSearchInputValue(value);
 
     const all = [...getCustomTokens(), ...tokens];
-    const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
+    const filtered = all.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filtered);
     setCustomToken({ status: "pending" });
 
@@ -170,6 +166,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
 };
 
 const getTokenFilterByTerm = (term: string) => (token: Token) =>
+  term.length === 0 ||
   token.address.toLowerCase().includes(term.toLowerCase()) ||
   token.name.toLowerCase().includes(term.toLowerCase()) ||
   token.symbol.toLowerCase().includes(term.toLowerCase());
