@@ -40,8 +40,8 @@ interface Chains {
 }
 
 const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmit }) => {
-  const classes = useBridgeFormStyles();
   const isMounted = useIsMounted();
+  const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const {

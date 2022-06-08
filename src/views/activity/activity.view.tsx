@@ -1,4 +1,4 @@
-import { useState, FC, useEffect } from "react";
+import { useState, FC, useEffect, useCallback } from "react";
 
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
@@ -12,8 +12,10 @@ import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
 import { Bridge } from "src/domain";
+import useIsMounted from "src/hooks/use-is-mounted";
 
 const Activity: FC = () => {
+  const isMounted = useIsMounted();
   const env = useEnvContext();
   const { getBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -22,6 +24,15 @@ const Activity: FC = () => {
   const [displayAll, setDisplayAll] = useState(true);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
+
+  const mountSafe = useCallback(
+    <T,>(callback: (value: T) => void, value: T) => {
+      if (isMounted()) {
+        callback(value);
+      }
+    },
+    [isMounted]
+  );
 
   const pendingBridges = bridgeList.filter((bridge) => bridge.status !== "completed");
   const filteredList = displayAll ? bridgeList : pendingBridges;
@@ -39,9 +50,9 @@ const Activity: FC = () => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
+              mountSafe(setWrongNetworkBridges, [...wrongNetworkBridges, bridge.id]);
             } else {
-              notifyError(error);
+              mountSafe(notifyError, error);
             }
           });
         }
