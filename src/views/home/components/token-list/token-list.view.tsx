@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, MouseEvent } from "react";
+import { FC, useState, MouseEvent } from "react";
 import { utils as ethersUtils } from "ethers";
 
 import useListStyles from "src/views/home/components/token-list/token-list.styles";
@@ -12,7 +12,7 @@ import Error from "src/views/shared/error/error.view";
 import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
-import useIsMounted from "src/hooks/use-is-mounted";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface TokenListProps {
   tokens: Token[];
@@ -23,7 +23,7 @@ interface TokenListProps {
 }
 
 const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken, onClose }) => {
-  const isMounted = useIsMounted();
+  const callIfMounted = useCallIfMounted();
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([
@@ -32,15 +32,6 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   ]);
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({ status: "pending" });
   const [searchInputValue, setSearchInputValue] = useState<string>("");
-
-  const mountSafe = useCallback(
-    (callback: () => void) => {
-      if (isMounted()) {
-        callback();
-      }
-    },
-    [isMounted]
-  );
 
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target !== event.currentTarget) return;
@@ -73,15 +64,15 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
         chain,
       })
         .then((token) => {
-          mountSafe(() => {
+          callIfMounted(() => {
             setCustomToken({ status: "successful", data: token });
           });
-          mountSafe(() => {
+          callIfMounted(() => {
             setFilteredTokens([token]);
           });
         })
         .catch(() =>
-          mountSafe(() => {
+          callIfMounted(() => {
             setCustomToken({
               status: "failed",
               error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(

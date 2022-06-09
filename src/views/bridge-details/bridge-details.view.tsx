@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useCallback } from "react";
+import { FC, useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -27,7 +27,7 @@ import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
 import { PREFERRED_CURRENCY_ARITHMETIC_PRECISION } from "src/constants";
-import useIsMounted from "src/hooks/use-is-mounted";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
   step1?: BigNumber;
@@ -53,7 +53,7 @@ const calculateFees = (bridge: Bridge): Promise<Fees> => {
 };
 
 const BridgeDetails: FC = () => {
-  const isMounted = useIsMounted();
+  const callIfMounted = useCallIfMounted();
   const { bridgeId } = useParams();
   const navigate = useNavigate();
   const env = useEnvContext();
@@ -74,15 +74,6 @@ const BridgeDetails: FC = () => {
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
-  const mountSafe = useCallback(
-    (callback: () => void) => {
-      if (isMounted()) {
-        callback();
-      }
-    },
-    [isMounted]
-  );
-
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
       const { deposit, merkleProof } = bridge.data;
@@ -97,11 +88,11 @@ const BridgeDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                mountSafe(() => {
+                callIfMounted(() => {
                   setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
                 });
               } else {
-                mountSafe(() => {
+                callIfMounted(() => {
                   notifyError(error);
                 });
               }
@@ -128,14 +119,14 @@ const BridgeDetails: FC = () => {
             return bridge.id === bridgeId;
           });
           if (foundBridge) {
-            mountSafe(() => {
+            callIfMounted(() => {
               setBridge({
                 status: "successful",
                 data: foundBridge,
               });
             });
           } else {
-            mountSafe(() => {
+            callIfMounted(() => {
               setBridge({
                 status: "failed",
                 error: "Bridge not found",
@@ -145,23 +136,23 @@ const BridgeDetails: FC = () => {
         })
         .catch(notifyError);
     }
-  }, [account, env, bridgeId, notifyError, getBridges, mountSafe]);
+  }, [account, env, bridgeId, notifyError, getBridges, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
       calculateFees(bridge.data)
         .then((ethFees) => {
-          mountSafe(() => {
+          callIfMounted(() => {
             setEthFees(ethFees);
           });
         })
         .catch((error) => {
-          mountSafe(() => {
+          callIfMounted(() => {
             notifyError(error);
           });
         });
     }
-  }, [bridge, notifyError, mountSafe]);
+  }, [bridge, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -172,7 +163,7 @@ const BridgeDetails: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          mountSafe(() => {
+          callIfMounted(() => {
             setFiatAmount(
               multiplyAmounts(
                 {
@@ -189,12 +180,12 @@ const BridgeDetails: FC = () => {
           });
         })
         .catch(() =>
-          mountSafe(() => {
+          callIfMounted(() => {
             setFiatAmount(undefined);
           })
         );
     }
-  }, [env, bridge, getTokenPrice, mountSafe]);
+  }, [env, bridge, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -207,7 +198,7 @@ const BridgeDetails: FC = () => {
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
-            mountSafe(() => {
+            callIfMounted(() => {
               setFiatFees({
                 step1: ethFees.step1
                   ? multiplyAmounts(
@@ -239,13 +230,13 @@ const BridgeDetails: FC = () => {
             });
           })
           .catch(() =>
-            mountSafe(() => {
+            callIfMounted(() => {
               setFiatFees({});
             })
           );
       }
     }
-  }, [env, bridge, ethFees, getTokenPrice, mountSafe]);
+  }, [env, bridge, ethFees, getTokenPrice, callIfMounted]);
 
   if (bridge.status === "pending" || bridge.status === "loading") {
     return <SpinnerIcon />;

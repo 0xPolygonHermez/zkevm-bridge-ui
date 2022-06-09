@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useCallback } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -30,10 +30,10 @@ import {
   getChainTokens,
   PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
 } from "src/constants";
-import useIsMounted from "src/hooks/use-is-mounted";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const BridgeConfirmation: FC = () => {
-  const isMounted = useIsMounted();
+  const callIfMounted = useCallIfMounted();
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
@@ -46,15 +46,6 @@ const BridgeConfirmation: FC = () => {
   const [fiatFee, setFiatFee] = useState<BigNumber>();
   const [error, setError] = useState<string>();
   const currencySymbol = getCurrencySymbol(getCurrency());
-
-  const mountSafe = useCallback(
-    (callback: () => void) => {
-      if (isMounted()) {
-        callback();
-      }
-    },
-    [isMounted]
-  );
 
   const onClick = () => {
     if (formData && account.status === "successful") {
@@ -74,7 +65,7 @@ const BridgeConfirmation: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             if (isMetamaskInsufficientAllowanceError(error)) {
               const network = getChainName(from);
-              mountSafe(() => {
+              callIfMounted(() => {
                 setError(
                   `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
                 );
@@ -82,11 +73,11 @@ const BridgeConfirmation: FC = () => {
             } else {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  mountSafe(() => {
+                  callIfMounted(() => {
                     setError(`Switch to ${getChainName(from)} to continue`);
                   });
                 } else {
-                  mountSafe(() => {
+                  callIfMounted(() => {
                     notifyError(error);
                   });
                 }
@@ -117,7 +108,7 @@ const BridgeConfirmation: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          mountSafe(() => {
+          callIfMounted(() => {
             setFiatAmount(
               multiplyAmounts(
                 {
@@ -134,7 +125,7 @@ const BridgeConfirmation: FC = () => {
           });
         })
         .catch(() =>
-          mountSafe(() => {
+          callIfMounted(() => {
             setFiatAmount(undefined);
           })
         );
@@ -143,7 +134,7 @@ const BridgeConfirmation: FC = () => {
       if (weth) {
         getTokenPrice({ token: weth, chain: from })
           .then((tokenPrice) => {
-            mountSafe(() => {
+            callIfMounted(() => {
               setFiatFee(
                 multiplyAmounts(
                   {
@@ -160,13 +151,13 @@ const BridgeConfirmation: FC = () => {
             });
           })
           .catch(() =>
-            mountSafe(() => {
+            callIfMounted(() => {
               setFiatFee(undefined);
             })
           );
       }
     }
-  }, [env, formData, getTokenPrice, mountSafe]);
+  }, [env, formData, getTokenPrice, callIfMounted]);
 
   if (!formData || !env) {
     return null;

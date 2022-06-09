@@ -1,4 +1,4 @@
-import { useState, FC, useEffect, useCallback } from "react";
+import { useState, FC, useEffect } from "react";
 
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
@@ -12,10 +12,10 @@ import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
 import { Bridge } from "src/domain";
-import useIsMounted from "src/hooks/use-is-mounted";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const Activity: FC = () => {
-  const isMounted = useIsMounted();
+  const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
   const { getBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -24,15 +24,6 @@ const Activity: FC = () => {
   const [displayAll, setDisplayAll] = useState(true);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
-
-  const mountSafe = useCallback(
-    (callback: () => void) => {
-      if (isMounted()) {
-        callback();
-      }
-    },
-    [isMounted]
-  );
 
   const pendingBridges = bridgeList.filter((bridge) => bridge.status !== "completed");
   const filteredList = displayAll ? bridgeList : pendingBridges;
@@ -50,11 +41,11 @@ const Activity: FC = () => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              mountSafe(() => {
+              callIfMounted(() => {
                 setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
               });
             } else {
-              mountSafe(() => {
+              callIfMounted(() => {
                 notifyError(error);
               });
             }
@@ -69,12 +60,12 @@ const Activity: FC = () => {
       const loadBridges = () => {
         getBridges({ env, ethereumAddress: account.data })
           .then((bridges) => {
-            mountSafe(() => {
+            callIfMounted(() => {
               setBridgeList(bridges);
             });
           })
           .catch((error) => {
-            mountSafe(() => {
+            callIfMounted(() => {
               notifyError(error);
             });
           });
@@ -86,7 +77,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, env, getBridges, notifyError, mountSafe]);
+  }, [account, env, getBridges, notifyError, callIfMounted]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);
