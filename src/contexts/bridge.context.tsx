@@ -17,7 +17,7 @@ import { Erc20__factory } from "src/types/contracts/erc-20";
 import {
   BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
   getEtherToken,
-  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+  FIAT_DISPLAY_PRECISION,
 } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
@@ -308,13 +308,13 @@ const BridgeProvider: FC = (props) => {
               ? multiplyAmounts(
                   {
                     value: tokenPrice,
-                    precision: env.fiatExchangeRates.usdcToken.decimals,
+                    precision: FIAT_DISPLAY_PRECISION,
                   },
                   {
                     value: partialDeposit.amount,
                     precision: partialDeposit.token.decimals,
                   },
-                  PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                  FIAT_DISPLAY_PRECISION
                 )
               : undefined;
 

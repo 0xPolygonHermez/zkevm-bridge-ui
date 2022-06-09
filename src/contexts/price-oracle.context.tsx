@@ -22,7 +22,7 @@ import {
   UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
   UNISWAP_V2_ROUTER_02_INIT_CODE_HASH,
   UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
-  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+  FIAT_DISPLAY_PRECISION,
 } from "src/constants";
 
 const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }): string => {
@@ -121,9 +121,9 @@ const PriceOracleProvider: FC = (props) => {
         { value: rate, precision: env.fiatExchangeRates.usdcToken.decimals },
         {
           value: fiatStringToBigNumber(fiatExchangeRate.toString()),
-          precision: PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+          precision: FIAT_DISPLAY_PRECISION,
         },
-        PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+        FIAT_DISPLAY_PRECISION
       );
 
       return price;

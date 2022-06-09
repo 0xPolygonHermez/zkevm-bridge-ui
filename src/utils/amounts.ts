@@ -4,8 +4,7 @@ import { parseUnits, formatUnits } from "ethers/lib/utils";
 import { Token } from "src/domain";
 import {
   TOKEN_DISPLAY_PRECISION,
-  PREFERRED_CURRENCY_DISPLAY_PRECISION,
-  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+  FIAT_DISPLAY_PRECISION,
 } from "src/constants";
 
 export const formatTokenAmount = (value: BigNumber, token: Token): string => {
@@ -21,18 +20,18 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
 export const formatFiatAmount = (value: BigNumber): string => {
   const [whole, decimals = ""] = fiatBigNumberToString(value).split(".");
   const trimed =
-    decimals.length > PREFERRED_CURRENCY_DISPLAY_PRECISION
-      ? decimals.slice(0, PREFERRED_CURRENCY_DISPLAY_PRECISION)
+    decimals.length > FIAT_DISPLAY_PRECISION
+      ? decimals.slice(0, FIAT_DISPLAY_PRECISION)
       : decimals;
   return trimed === "" || trimed === "0" ? whole : `${whole}.${trimed}`;
 };
 
 export const fiatStringToBigNumber = (value: string): BigNumber => {
-  return parseUnits(value, PREFERRED_CURRENCY_ARITHMETIC_PRECISION);
+  return parseUnits(value, FIAT_DISPLAY_PRECISION);
 };
 
 export const fiatBigNumberToString = (value: BigNumber): string => {
-  return formatUnits(value, PREFERRED_CURRENCY_ARITHMETIC_PRECISION);
+  return formatUnits(value, FIAT_DISPLAY_PRECISION);
 };
 
 interface Amount {

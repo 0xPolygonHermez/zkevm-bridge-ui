@@ -28,7 +28,7 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import {
   ETH_TOKEN_LOGO_URI,
   getChainTokens,
-  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+  FIAT_DISPLAY_PRECISION,
 } from "src/constants";
 
 const BridgeConfirmation: FC = () => {
@@ -104,13 +104,13 @@ const BridgeConfirmation: FC = () => {
             multiplyAmounts(
               {
                 value: tokenPrice,
-                precision: env.fiatExchangeRates.usdcToken.decimals,
+                precision: FIAT_DISPLAY_PRECISION,
               },
               {
                 value: amount,
                 precision: token.decimals,
               },
-              PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+              FIAT_DISPLAY_PRECISION
             )
           );
         })
@@ -124,13 +124,13 @@ const BridgeConfirmation: FC = () => {
               multiplyAmounts(
                 {
                   value: tokenPrice,
-                  precision: env.fiatExchangeRates.usdcToken.decimals,
+                  precision: FIAT_DISPLAY_PRECISION,
                 },
                 {
                   value: estimatedFee,
                   precision: weth.decimals,
                 },
-                PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                FIAT_DISPLAY_PRECISION
               )
             );
           })

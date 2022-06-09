@@ -18,9 +18,7 @@ export const PREFERRED_CURRENCY_KEY = "currency";
 
 export const PREFERRED_CURRENCY = Currency.USD;
 
-export const PREFERRED_CURRENCY_DISPLAY_PRECISION = 2;
-
-export const PREFERRED_CURRENCY_ARITHMETIC_PRECISION = 6;
+export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
