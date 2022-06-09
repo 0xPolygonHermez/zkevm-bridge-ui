@@ -15,18 +15,10 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
 };
 
 export const formatFiatAmount = (value: BigNumber): string => {
-  const [whole, decimals = ""] = fiatBigNumberToString(value).split(".");
+  const [whole, decimals = ""] = formatUnits(value, FIAT_DISPLAY_PRECISION).split(".");
   const trimmed =
     decimals.length > FIAT_DISPLAY_PRECISION ? decimals.slice(0, FIAT_DISPLAY_PRECISION) : decimals;
   return trimmed === "" || trimmed === "0" ? whole : `${whole}.${trimmed}`;
-};
-
-export const fiatStringToBigNumber = (value: string): BigNumber => {
-  return parseUnits(value, FIAT_DISPLAY_PRECISION);
-};
-
-export const fiatBigNumberToString = (value: BigNumber): string => {
-  return formatUnits(value, FIAT_DISPLAY_PRECISION);
 };
 
 interface Amount {

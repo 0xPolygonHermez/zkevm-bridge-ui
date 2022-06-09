@@ -6,7 +6,7 @@ import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { fiatStringToBigNumber, multiplyAmounts } from "src/utils/amounts";
+import { multiplyAmounts } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
   UniswapV2Router02,
@@ -120,7 +120,7 @@ const PriceOracleProvider: FC = (props) => {
       const price = multiplyAmounts(
         { value: rate, precision: env.fiatExchangeRates.usdcToken.decimals },
         {
-          value: fiatStringToBigNumber(fiatExchangeRate.toString()),
+          value: parseUnits(fiatExchangeRate.toString(), FIAT_DISPLAY_PRECISION),
           precision: FIAT_DISPLAY_PRECISION,
         },
         FIAT_DISPLAY_PRECISION
