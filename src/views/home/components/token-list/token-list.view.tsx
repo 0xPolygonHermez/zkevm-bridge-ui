@@ -66,8 +66,6 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
         .then((token) => {
           callIfMounted(() => {
             setCustomToken({ status: "successful", data: token });
-          });
-          callIfMounted(() => {
             setFilteredTokens([token]);
           });
         })
