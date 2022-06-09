@@ -16,7 +16,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   },
   steps: {
     color: theme.palette.grey.dark,
-    fontSize: theme.spacing(1.75),
+    fontSize: 14,
     marginBottom: theme.spacing(2),
   },
   actionCircle: {
@@ -37,12 +37,12 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   },
   time: {
     color: theme.palette.grey.dark,
-    fontSize: theme.spacing(1.75),
+    fontSize: 14,
   },
   statusBox: {
     backgroundColor: theme.palette.warning.light,
     color: theme.palette.warning.main,
-    fontSize: theme.spacing(1.75),
+    fontSize: 14,
     padding: [theme.spacing(0.5), theme.spacing(1)],
     borderRadius: 8,
     alignSelf: "flex-start",
@@ -66,7 +66,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   },
   fiat: {
     color: theme.palette.grey.dark,
-    fontSize: theme.spacing(1.75),
+    fontSize: 14,
   },
   bottom: {
     marginTop: theme.spacing(2),

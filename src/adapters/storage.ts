@@ -14,8 +14,8 @@ export function getCurrency(): Currency {
   });
 }
 
-export function setCurrency(currency: Currency): void {
-  setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
+export function setCurrency(currency: Currency): Currency {
+  return setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
 }
 
 // Custom Tokens

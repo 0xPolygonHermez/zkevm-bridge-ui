@@ -23,13 +23,10 @@ export interface Token {
 
 export interface Env {
   bridgeApiUrl: string;
-  tokenQuotes: {
-    uniswapQuoterContractAddress: string;
-  };
   fiatExchangeRates: {
     apiUrl: string;
     apiKey: string;
-    usdtToken: Token;
+    usdcToken: Token;
   };
   chains: [Chain, Chain];
   version: string;
@@ -94,6 +91,7 @@ export type Bridge =
 export interface Deposit {
   token: Token;
   amount: BigNumber;
+  fiatAmount: BigNumber | undefined;
   from: Chain;
   to: Chain;
   tokenOriginNetwork: number;

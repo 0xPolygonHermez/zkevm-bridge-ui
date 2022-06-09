@@ -2,14 +2,25 @@ import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
-import { erc20Tokens } from "src/erc20-tokens";
+import { erc20Tokens } from "src/assets/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
 import { cleanupCustomTokens } from "src/adapters/storage";
 
+export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+
+export const UNISWAP_V2_ROUTER_02_INIT_CODE_HASH =
+  "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
+
+export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+
 export const PREFERRED_CURRENCY_KEY = "currency";
 
 export const PREFERRED_CURRENCY = Currency.USD;
+
+export const FIAT_DISPLAY_PRECISION = 2;
+
+export const TOKEN_DISPLAY_PRECISION = 6;
 
 export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
@@ -24,8 +35,6 @@ export const REPORT_ERROR_FORM_ENTRIES = {
 
 export const REPORT_ERROR_FORM_URL =
   "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
-
-export const UNISWAP_V3_POOL_FEE = 3000;
 
 export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 
@@ -92,18 +101,18 @@ export const getChainTokens = (chain: Chain): Token[] => {
   return tokens;
 };
 
-export const getUsdtToken = ({
+export const getUsdcToken = ({
   address,
   chainId,
 }: {
   address: string;
   chainId: number;
 }): Token => ({
-  name: "Tether USD",
+  name: "USD Coin",
   address,
   chainId,
-  symbol: "USDT",
+  symbol: "USDC",
   decimals: 6,
   logoURI:
-    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
 });
