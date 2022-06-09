@@ -27,6 +27,7 @@ import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
 import { FIAT_DISPLAY_PRECISION } from "src/constants";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
   step1?: BigNumber;
@@ -52,6 +53,7 @@ const calculateFees = (bridge: Bridge): Promise<Fees> => {
 };
 
 const BridgeDetails: FC = () => {
+  const callIfMounted = useCallIfMounted();
   const { bridgeId } = useParams();
   const navigate = useNavigate();
   const env = useEnvContext();
@@ -86,9 +88,13 @@ const BridgeDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
+                callIfMounted(() => {
+                  setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
+                });
               } else {
-                notifyError(error);
+                callIfMounted(() => {
+                  notifyError(error);
+                });
               }
             });
           }
@@ -113,26 +119,40 @@ const BridgeDetails: FC = () => {
             return bridge.id === bridgeId;
           });
           if (foundBridge) {
-            setBridge({
-              status: "successful",
-              data: foundBridge,
+            callIfMounted(() => {
+              setBridge({
+                status: "successful",
+                data: foundBridge,
+              });
             });
           } else {
-            setBridge({
-              status: "failed",
-              error: "Bridge not found",
+            callIfMounted(() => {
+              setBridge({
+                status: "failed",
+                error: "Bridge not found",
+              });
             });
           }
         })
         .catch(notifyError);
     }
-  }, [account, env, bridgeId, notifyError, getBridges]);
+  }, [account, env, bridgeId, notifyError, getBridges, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
-      calculateFees(bridge.data).then(setEthFees).catch(notifyError);
+      calculateFees(bridge.data)
+        .then((ethFees) => {
+          callIfMounted(() => {
+            setEthFees(ethFees);
+          });
+        })
+        .catch((error) => {
+          callIfMounted(() => {
+            notifyError(error);
+          });
+        });
     }
-  }, [bridge, notifyError]);
+  }, [bridge, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -143,23 +163,29 @@ const BridgeDetails: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          setFiatAmount(
-            multiplyAmounts(
-              {
-                value: tokenPrice,
-                precision: FIAT_DISPLAY_PRECISION,
-              },
-              {
-                value: amount,
-                precision: token.decimals,
-              },
-              FIAT_DISPLAY_PRECISION
-            )
-          );
+          callIfMounted(() => {
+            setFiatAmount(
+              multiplyAmounts(
+                {
+                  value: tokenPrice,
+                  precision: FIAT_DISPLAY_PRECISION,
+                },
+                {
+                  value: amount,
+                  precision: token.decimals,
+                },
+                FIAT_DISPLAY_PRECISION
+              )
+            );
+          });
         })
-        .catch(() => setFiatAmount(undefined));
+        .catch(() =>
+          callIfMounted(() => {
+            setFiatAmount(undefined);
+          })
+        );
     }
-  }, [env, bridge, getTokenPrice]);
+  }, [env, bridge, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
@@ -172,39 +198,45 @@ const BridgeDetails: FC = () => {
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
-            setFiatFees({
-              step1: ethFees.step1
-                ? multiplyAmounts(
-                    {
-                      value: tokenPrice,
-                      precision: FIAT_DISPLAY_PRECISION,
-                    },
-                    {
-                      value: ethFees.step1,
-                      precision: token.decimals,
-                    },
-                    FIAT_DISPLAY_PRECISION
-                  )
-                : undefined,
-              step2: ethFees.step2
-                ? multiplyAmounts(
-                    {
-                      value: tokenPrice,
-                      precision: FIAT_DISPLAY_PRECISION,
-                    },
-                    {
-                      value: ethFees.step2,
-                      precision: token.decimals,
-                    },
-                    FIAT_DISPLAY_PRECISION
-                  )
-                : undefined,
+            callIfMounted(() => {
+              setFiatFees({
+                step1: ethFees.step1
+                  ? multiplyAmounts(
+                      {
+                        value: tokenPrice,
+                        precision: FIAT_DISPLAY_PRECISION,
+                      },
+                      {
+                        value: ethFees.step1,
+                        precision: token.decimals,
+                      },
+                      FIAT_DISPLAY_PRECISION
+                    )
+                  : undefined,
+                step2: ethFees.step2
+                  ? multiplyAmounts(
+                      {
+                        value: tokenPrice,
+                        precision: FIAT_DISPLAY_PRECISION,
+                      },
+                      {
+                        value: ethFees.step2,
+                        precision: token.decimals,
+                      },
+                      FIAT_DISPLAY_PRECISION
+                    )
+                  : undefined,
+              });
             });
           })
-          .catch(() => setFiatFees({}));
+          .catch(() =>
+            callIfMounted(() => {
+              setFiatFees({});
+            })
+          );
       }
     }
-  }, [env, bridge, ethFees, getTokenPrice]);
+  }, [env, bridge, ethFees, getTokenPrice, callIfMounted]);
 
   if (bridge.status === "pending" || bridge.status === "loading") {
     return <SpinnerIcon />;

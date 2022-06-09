@@ -25,13 +25,11 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
-import {
-  ETH_TOKEN_LOGO_URI,
-  getChainTokens,
-  FIAT_DISPLAY_PRECISION,
-} from "src/constants";
+import { ETH_TOKEN_LOGO_URI, getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const BridgeConfirmation: FC = () => {
+  const callIfMounted = useCallIfMounted();
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
@@ -63,15 +61,21 @@ const BridgeConfirmation: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             if (isMetamaskInsufficientAllowanceError(error)) {
               const network = getChainName(from);
-              setError(
-                `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
-              );
+              callIfMounted(() => {
+                setError(
+                  `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
+                );
+              });
             } else {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  setError(`Switch to ${getChainName(from)} to continue`);
+                  callIfMounted(() => {
+                    setError(`Switch to ${getChainName(from)} to continue`);
+                  });
                 } else {
-                  notifyError(error);
+                  callIfMounted(() => {
+                    notifyError(error);
+                  });
                 }
               });
             }
@@ -100,44 +104,56 @@ const BridgeConfirmation: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          setFiatAmount(
-            multiplyAmounts(
-              {
-                value: tokenPrice,
-                precision: FIAT_DISPLAY_PRECISION,
-              },
-              {
-                value: amount,
-                precision: token.decimals,
-              },
-              FIAT_DISPLAY_PRECISION
-            )
-          );
-        })
-        .catch(() => setFiatAmount(undefined));
-      // fiat fee
-      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
-      if (weth) {
-        getTokenPrice({ token: weth, chain: from })
-          .then((tokenPrice) => {
-            setFiatFee(
+          callIfMounted(() => {
+            setFiatAmount(
               multiplyAmounts(
                 {
                   value: tokenPrice,
                   precision: FIAT_DISPLAY_PRECISION,
                 },
                 {
-                  value: estimatedFee,
-                  precision: weth.decimals,
+                  value: amount,
+                  precision: token.decimals,
                 },
                 FIAT_DISPLAY_PRECISION
               )
             );
+          });
+        })
+        .catch(() =>
+          callIfMounted(() => {
+            setFiatAmount(undefined);
           })
-          .catch(() => setFiatFee(undefined));
+        );
+      // fiat fee
+      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
+      if (weth) {
+        getTokenPrice({ token: weth, chain: from })
+          .then((tokenPrice) => {
+            callIfMounted(() => {
+              setFiatFee(
+                multiplyAmounts(
+                  {
+                    value: tokenPrice,
+                    precision: FIAT_DISPLAY_PRECISION,
+                  },
+                  {
+                    value: estimatedFee,
+                    precision: weth.decimals,
+                  },
+                  FIAT_DISPLAY_PRECISION
+                )
+              );
+            });
+          })
+          .catch(() =>
+            callIfMounted(() => {
+              setFiatFee(undefined);
+            })
+          );
       }
     }
-  }, [env, formData, getTokenPrice]);
+  }, [env, formData, getTokenPrice, callIfMounted]);
 
   if (!formData || !env) {
     return null;

@@ -25,6 +25,7 @@ import { Chain, Token, FormData } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { getChainTokens } from "src/constants";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface BridgeFormProps {
   account: string;
@@ -33,12 +34,13 @@ interface BridgeFormProps {
   onSubmit: (formData: FormData) => void;
 }
 
-interface FormChains {
+interface Chains {
   from: Chain;
   to: Chain;
 }
 
 const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmit }) => {
+  const callIfMounted = useCallIfMounted();
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -54,7 +56,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const [balanceFrom, setBalanceFrom] = useState<BigNumber>();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
   const [inputError, setInputError] = useState<string>();
-  const [chains, setChains] = useState<FormChains>();
+  const [chains, setChains] = useState<Chains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
   const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
@@ -129,19 +131,29 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [formData, resetForm]);
 
   useEffect(() => {
-    if (chains && token && env) {
+    if (chains && token) {
       const resetBalanceAndNotifyError = (error: unknown) => {
-        notifyError(error);
-        setBalanceTo(undefined);
+        callIfMounted(() => {
+          notifyError(error);
+          setBalanceTo(undefined);
+        });
       };
       if (token.address === ethers.constants.AddressZero) {
         void chains.from.provider
           .getBalance(account)
-          .then(setBalanceFrom)
+          .then((balance) =>
+            callIfMounted(() => {
+              setBalanceFrom(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
         void chains.to.provider
           .getBalance(account)
-          .then(setBalanceTo)
+          .then((balance) =>
+            callIfMounted(() => {
+              setBalanceTo(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
       } else {
         void getErc20TokenBalance({
@@ -149,7 +161,11 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           tokenAddress: token.address,
           accountAddress: account,
         })
-          .then(setBalanceFrom)
+          .then((balance) =>
+            callIfMounted(() => {
+              setBalanceFrom(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
 
         void getNativeTokenInfo({
@@ -170,8 +186,16 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               tokenAddress,
               accountAddress: account,
             })
-              .then(setBalanceTo)
-              .catch(() => setBalanceTo(undefined))
+              .then((balance) =>
+                callIfMounted(() => {
+                  setBalanceTo(balance);
+                })
+              )
+              .catch(() =>
+                callIfMounted(() => {
+                  setBalanceTo(undefined);
+                })
+              )
           );
       }
     }
@@ -179,11 +203,11 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     chains,
     account,
     token,
-    env,
     getErc20TokenBalance,
     notifyError,
     computeWrappedTokenAddress,
     getNativeTokenInfo,
+    callIfMounted,
   ]);
 
   useEffect(() => {
@@ -195,20 +219,26 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         destinationAddress: account,
       })
         .then((estimatedFee) => {
-          setEstimatedFee({ status: "successful", data: estimatedFee });
+          callIfMounted(() => {
+            setEstimatedFee({ status: "successful", data: estimatedFee });
+          });
         })
         .catch((error) => {
           if (isEthersInsufficientFundsError(error)) {
-            setEstimatedFee({
-              status: "failed",
-              error: `You don't have enough ETH to pay for the fees`,
+            callIfMounted(() => {
+              setEstimatedFee({
+                status: "failed",
+                error: `You don't have enough ETH to pay for the fees`,
+              });
             });
           } else {
-            notifyError(error);
+            callIfMounted(() => {
+              notifyError(error);
+            });
           }
         });
     }
-  }, [account, chains, token, estimateBridgeGasPrice, notifyError]);
+  }, [account, chains, token, estimateBridgeGasPrice, notifyError, callIfMounted]);
 
   if (!env || !chains || !token) {
     return null;

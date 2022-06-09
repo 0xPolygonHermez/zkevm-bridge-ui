@@ -412,7 +412,7 @@ const BridgeProvider: FC = (props) => {
         return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
       };
 
-      if (from.chainId === connectedProvider?.chainId) {
+      if (from.chainId === connectedProvider.chainId) {
         return executeBridge();
       } else {
         return changeNetwork(from)
@@ -459,7 +459,7 @@ const BridgeProvider: FC = (props) => {
           isL2Claim ? { gasPrice: 0 } : {}
         );
 
-      if (to.chainId === connectedProvider?.chainId) {
+      if (to.chainId === connectedProvider.chainId) {
         return executeClaim();
       } else {
         return changeNetwork(to)

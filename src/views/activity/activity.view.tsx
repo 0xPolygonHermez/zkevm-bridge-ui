@@ -12,8 +12,10 @@ import { parseError } from "src/adapters/error";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE } from "src/constants";
 import { Bridge } from "src/domain";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const Activity: FC = () => {
+  const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
   const { getBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -39,9 +41,13 @@ const Activity: FC = () => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
+              callIfMounted(() => {
+                setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
+              });
             } else {
-              notifyError(error);
+              callIfMounted(() => {
+                notifyError(error);
+              });
             }
           });
         }
@@ -52,7 +58,17 @@ const Activity: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
-        getBridges({ env, ethereumAddress: account.data }).then(setBridgeList).catch(notifyError);
+        getBridges({ env, ethereumAddress: account.data })
+          .then((bridges) => {
+            callIfMounted(() => {
+              setBridgeList(bridges);
+            });
+          })
+          .catch((error) => {
+            callIfMounted(() => {
+              notifyError(error);
+            });
+          });
       };
       const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
       loadBridges();
@@ -61,7 +77,7 @@ const Activity: FC = () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, env, getBridges, notifyError]);
+  }, [account, env, getBridges, notifyError, callIfMounted]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);

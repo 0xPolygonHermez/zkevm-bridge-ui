@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState, MouseEvent } from "react";
 import { utils as ethersUtils } from "ethers";
 
 import useListStyles from "src/views/home/components/token-list/token-list.styles";
@@ -12,6 +12,7 @@ import Error from "src/views/shared/error/error.view";
 import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface TokenListProps {
   tokens: Token[];
@@ -22,6 +23,7 @@ interface TokenListProps {
 }
 
 const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken, onClose }) => {
+  const callIfMounted = useCallIfMounted();
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([
@@ -31,23 +33,19 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({ status: "pending" });
   const [searchInputValue, setSearchInputValue] = useState<string>("");
 
-  const onOutsideClick = (event: React.MouseEvent) => {
+  const onOutsideClick = (event: MouseEvent) => {
     if (event.target !== event.currentTarget) return;
     onClose();
   };
 
   const onImportTokenClick = (token: Token) => {
     const all = [...addCustomToken(token), ...tokens];
-    setFilteredTokens(
-      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
-    );
+    setFilteredTokens(all.filter(getTokenFilterByTerm(searchInputValue)));
   };
 
   const onRemoveTokenClick = (token: Token) => {
     const all = [...removeCustomToken(token), ...tokens];
-    setFilteredTokens(
-      searchInputValue.length ? all.filter(getTokenFilterByTerm(searchInputValue)) : all
-    );
+    setFilteredTokens(all.filter(getTokenFilterByTerm(searchInputValue)));
     onSearchInputValueChange(searchInputValue);
   };
 
@@ -55,7 +53,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
     setSearchInputValue(value);
 
     const all = [...getCustomTokens(), ...tokens];
-    const filtered = value.length ? all.filter(getTokenFilterByTerm(value)) : all;
+    const filtered = all.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filtered);
     setCustomToken({ status: "pending" });
 
@@ -66,15 +64,19 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
         chain,
       })
         .then((token) => {
-          setCustomToken({ status: "successful", data: token });
-          setFilteredTokens([token]);
+          callIfMounted(() => {
+            setCustomToken({ status: "successful", data: token });
+            setFilteredTokens([token]);
+          });
         })
         .catch(() =>
-          setCustomToken({
-            status: "failed",
-            error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
-              chain
-            )} chain with id ${chain.chainId}`,
+          callIfMounted(() => {
+            setCustomToken({
+              status: "failed",
+              error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
+                chain
+              )} chain with id ${chain.chainId}`,
+            });
           })
         );
     }
@@ -159,6 +161,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
 };
 
 const getTokenFilterByTerm = (term: string) => (token: Token) =>
+  term.length === 0 ||
   token.address.toLowerCase().includes(term.toLowerCase()) ||
   token.name.toLowerCase().includes(term.toLowerCase()) ||
   token.symbol.toLowerCase().includes(term.toLowerCase());
