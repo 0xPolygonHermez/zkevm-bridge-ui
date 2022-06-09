@@ -26,7 +26,7 @@ import { Bridge } from "src/domain";
 import routes from "src/routes";
 import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
-import { PREFERRED_CURRENCY_ARITHMETIC_PRECISION } from "src/constants";
+import { FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
@@ -168,13 +168,13 @@ const BridgeDetails: FC = () => {
               multiplyAmounts(
                 {
                   value: tokenPrice,
-                  precision: env.fiatExchangeRates.usdcToken.decimals,
+                  precision: FIAT_DISPLAY_PRECISION,
                 },
                 {
                   value: amount,
                   precision: token.decimals,
                 },
-                PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                FIAT_DISPLAY_PRECISION
               )
             );
           });
@@ -204,26 +204,26 @@ const BridgeDetails: FC = () => {
                   ? multiplyAmounts(
                       {
                         value: tokenPrice,
-                        precision: env.fiatExchangeRates.usdcToken.decimals,
+                        precision: FIAT_DISPLAY_PRECISION,
                       },
                       {
                         value: ethFees.step1,
                         precision: token.decimals,
                       },
-                      PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                      FIAT_DISPLAY_PRECISION
                     )
                   : undefined,
                 step2: ethFees.step2
                   ? multiplyAmounts(
                       {
                         value: tokenPrice,
-                        precision: env.fiatExchangeRates.usdcToken.decimals,
+                        precision: FIAT_DISPLAY_PRECISION,
                       },
                       {
                         value: ethFees.step2,
                         precision: token.decimals,
                       },
-                      PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                      FIAT_DISPLAY_PRECISION
                     )
                   : undefined,
               });

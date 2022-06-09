@@ -28,10 +28,9 @@ export function getCurrencySymbol(currency: Currency): CurrencySymbol {
       return "€";
     case Currency.USD:
       return "$";
-    case Currency.JPY:
-      return "¥";
     case Currency.GBP:
       return "£";
+    case Currency.JPY:
     case Currency.CNY:
       return "¥";
   }

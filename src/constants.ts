@@ -9,13 +9,16 @@ import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
+export const UNISWAP_V2_ROUTER_02_INIT_CODE_HASH =
+  "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
+
+export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+
 export const PREFERRED_CURRENCY_KEY = "currency";
 
 export const PREFERRED_CURRENCY = Currency.USD;
 
-export const PREFERRED_CURRENCY_DISPLAY_PRECISION = 2;
-
-export const PREFERRED_CURRENCY_ARITHMETIC_PRECISION = 6;
+export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 

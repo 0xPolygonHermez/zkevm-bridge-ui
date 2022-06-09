@@ -6,7 +6,7 @@ import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { fiatStringToBigNumber, multiplyAmounts } from "src/utils/amounts";
+import { multiplyAmounts } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
   UniswapV2Router02,
@@ -20,11 +20,10 @@ import { Token, Chain } from "src/domain";
 import {
   getChainTokens,
   UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
-  PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+  UNISWAP_V2_ROUTER_02_INIT_CODE_HASH,
+  UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
+  FIAT_DISPLAY_PRECISION,
 } from "src/constants";
-
-const INIT_CODE_HASH = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
-const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
 const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }): string => {
   const [token0, token1] = tokenA.address < tokenB.address ? [tokenA, tokenB] : [tokenB, tokenA];
@@ -32,7 +31,11 @@ const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }
     ["bytes"],
     [pack(["address", "address"], [token0.address, token1.address])]
   );
-  return getCreate2Address(FACTORY_ADDRESS, salt, INIT_CODE_HASH);
+  return getCreate2Address(
+    UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
+    salt,
+    UNISWAP_V2_ROUTER_02_INIT_CODE_HASH
+  );
 };
 
 interface GetTokenPriceParams {
@@ -117,10 +120,10 @@ const PriceOracleProvider: FC = (props) => {
       const price = multiplyAmounts(
         { value: rate, precision: env.fiatExchangeRates.usdcToken.decimals },
         {
-          value: fiatStringToBigNumber(fiatExchangeRate.toString()),
-          precision: PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
+          value: parseUnits(fiatExchangeRate.toString(), FIAT_DISPLAY_PRECISION),
+          precision: FIAT_DISPLAY_PRECISION,
         },
-        PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+        FIAT_DISPLAY_PRECISION
       );
 
       return price;
