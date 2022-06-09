@@ -48,9 +48,9 @@ const BridgeConfirmation: FC = () => {
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   const mountSafe = useCallback(
-    <T,>(callback: (value: T) => void, value: T) => {
+    (callback: () => void) => {
       if (isMounted()) {
-        callback(value);
+        callback();
       }
     },
     [isMounted]
@@ -74,16 +74,21 @@ const BridgeConfirmation: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             if (isMetamaskInsufficientAllowanceError(error)) {
               const network = getChainName(from);
-              mountSafe(
-                setError,
-                `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
-              );
+              mountSafe(() => {
+                setError(
+                  `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
+                );
+              });
             } else {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  mountSafe(setError, `Switch to ${getChainName(from)} to continue`);
+                  mountSafe(() => {
+                    setError(`Switch to ${getChainName(from)} to continue`);
+                  });
                 } else {
-                  mountSafe(notifyError, error);
+                  mountSafe(() => {
+                    notifyError(error);
+                  });
                 }
               });
             }
@@ -112,43 +117,53 @@ const BridgeConfirmation: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          mountSafe(
-            setFiatAmount,
-            multiplyAmounts(
-              {
-                value: tokenPrice,
-                precision: env.fiatExchangeRates.usdcToken.decimals,
-              },
-              {
-                value: amount,
-                precision: token.decimals,
-              },
-              PREFERRED_CURRENCY_ARITHMETIC_PRECISION
-            )
-          );
-        })
-        .catch(() => mountSafe(setFiatAmount, undefined));
-      // fiat fee
-      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
-      if (weth) {
-        getTokenPrice({ token: weth, chain: from })
-          .then((tokenPrice) => {
-            mountSafe(
-              setFiatFee,
+          mountSafe(() => {
+            setFiatAmount(
               multiplyAmounts(
                 {
                   value: tokenPrice,
                   precision: env.fiatExchangeRates.usdcToken.decimals,
                 },
                 {
-                  value: estimatedFee,
-                  precision: weth.decimals,
+                  value: amount,
+                  precision: token.decimals,
                 },
                 PREFERRED_CURRENCY_ARITHMETIC_PRECISION
               )
             );
+          });
+        })
+        .catch(() =>
+          mountSafe(() => {
+            setFiatAmount(undefined);
           })
-          .catch(() => mountSafe(setFiatFee, undefined));
+        );
+      // fiat fee
+      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
+      if (weth) {
+        getTokenPrice({ token: weth, chain: from })
+          .then((tokenPrice) => {
+            mountSafe(() => {
+              setFiatFee(
+                multiplyAmounts(
+                  {
+                    value: tokenPrice,
+                    precision: env.fiatExchangeRates.usdcToken.decimals,
+                  },
+                  {
+                    value: estimatedFee,
+                    precision: weth.decimals,
+                  },
+                  PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                )
+              );
+            });
+          })
+          .catch(() =>
+            mountSafe(() => {
+              setFiatFee(undefined);
+            })
+          );
       }
     }
   }, [env, formData, getTokenPrice, mountSafe]);

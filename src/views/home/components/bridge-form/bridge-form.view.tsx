@@ -64,9 +64,9 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   });
 
   const mountSafe = useCallback(
-    <T,>(callback: (value: T) => void, value: T) => {
+    (callback: () => void) => {
       if (isMounted()) {
-        callback(value);
+        callback();
       }
     },
     [isMounted]
@@ -142,17 +142,29 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   useEffect(() => {
     if (chains && token) {
       const resetBalanceAndNotifyError = (error: unknown) => {
-        mountSafe(notifyError, error);
-        mountSafe(setBalanceTo, undefined);
+        mountSafe(() => {
+          notifyError(error);
+        });
+        mountSafe(() => {
+          setBalanceTo(undefined);
+        });
       };
       if (token.address === ethers.constants.AddressZero) {
         void chains.from.provider
           .getBalance(account)
-          .then((balance) => mountSafe(setBalanceFrom, balance))
+          .then((balance) =>
+            mountSafe(() => {
+              setBalanceFrom(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
         void chains.to.provider
           .getBalance(account)
-          .then((balance) => mountSafe(setBalanceTo, balance))
+          .then((balance) =>
+            mountSafe(() => {
+              setBalanceTo(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
       } else {
         void getErc20TokenBalance({
@@ -160,7 +172,11 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           tokenAddress: token.address,
           accountAddress: account,
         })
-          .then((balance) => mountSafe(setBalanceFrom, balance))
+          .then((balance) =>
+            mountSafe(() => {
+              setBalanceFrom(balance);
+            })
+          )
           .catch(resetBalanceAndNotifyError);
 
         void getNativeTokenInfo({
@@ -181,8 +197,16 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               tokenAddress,
               accountAddress: account,
             })
-              .then((balance) => mountSafe(setBalanceTo, balance))
-              .catch(() => mountSafe(setBalanceTo, undefined))
+              .then((balance) =>
+                mountSafe(() => {
+                  setBalanceTo(balance);
+                })
+              )
+              .catch(() =>
+                mountSafe(() => {
+                  setBalanceTo(undefined);
+                })
+              )
           );
       }
     }
@@ -206,16 +230,22 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         destinationAddress: account,
       })
         .then((estimatedFee) => {
-          mountSafe(setEstimatedFee, { status: "successful", data: estimatedFee });
+          mountSafe(() => {
+            setEstimatedFee({ status: "successful", data: estimatedFee });
+          });
         })
         .catch((error) => {
           if (isEthersInsufficientFundsError(error)) {
-            mountSafe(setEstimatedFee, {
-              status: "failed",
-              error: `You don't have enough ETH to pay for the fees`,
+            mountSafe(() => {
+              setEstimatedFee({
+                status: "failed",
+                error: `You don't have enough ETH to pay for the fees`,
+              });
             });
           } else {
-            mountSafe(notifyError, error);
+            mountSafe(() => {
+              notifyError(error);
+            });
           }
         });
     }

@@ -75,9 +75,9 @@ const BridgeDetails: FC = () => {
   });
 
   const mountSafe = useCallback(
-    <T,>(callback: (value: T) => void, value: T) => {
+    (callback: () => void) => {
       if (isMounted()) {
-        callback(value);
+        callback();
       }
     },
     [isMounted]
@@ -97,12 +97,13 @@ const BridgeDetails: FC = () => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
-                mountSafe(
-                  setIncorrectNetworkMessage,
-                  `Switch to ${getChainName(deposit.to)} to continue`
-                );
+                mountSafe(() => {
+                  setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
+                });
               } else {
-                mountSafe(notifyError, error);
+                mountSafe(() => {
+                  notifyError(error);
+                });
               }
             });
           }
@@ -127,14 +128,18 @@ const BridgeDetails: FC = () => {
             return bridge.id === bridgeId;
           });
           if (foundBridge) {
-            mountSafe(setBridge, {
-              status: "successful",
-              data: foundBridge,
+            mountSafe(() => {
+              setBridge({
+                status: "successful",
+                data: foundBridge,
+              });
             });
           } else {
-            mountSafe(setBridge, {
-              status: "failed",
-              error: "Bridge not found",
+            mountSafe(() => {
+              setBridge({
+                status: "failed",
+                error: "Bridge not found",
+              });
             });
           }
         })
@@ -146,10 +151,14 @@ const BridgeDetails: FC = () => {
     if (bridge.status === "successful") {
       calculateFees(bridge.data)
         .then((ethFees) => {
-          mountSafe(setEthFees, ethFees);
+          mountSafe(() => {
+            setEthFees(ethFees);
+          });
         })
         .catch((error) => {
-          mountSafe(notifyError, error);
+          mountSafe(() => {
+            notifyError(error);
+          });
         });
     }
   }, [bridge, notifyError, mountSafe]);
@@ -163,22 +172,27 @@ const BridgeDetails: FC = () => {
       // fiat amount
       getTokenPrice({ token, chain: from })
         .then((tokenPrice) => {
-          mountSafe(
-            setFiatAmount,
-            multiplyAmounts(
-              {
-                value: tokenPrice,
-                precision: env.fiatExchangeRates.usdcToken.decimals,
-              },
-              {
-                value: amount,
-                precision: token.decimals,
-              },
-              PREFERRED_CURRENCY_ARITHMETIC_PRECISION
-            )
-          );
+          mountSafe(() => {
+            setFiatAmount(
+              multiplyAmounts(
+                {
+                  value: tokenPrice,
+                  precision: env.fiatExchangeRates.usdcToken.decimals,
+                },
+                {
+                  value: amount,
+                  precision: token.decimals,
+                },
+                PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+              )
+            );
+          });
         })
-        .catch(() => mountSafe(setFiatAmount, undefined));
+        .catch(() =>
+          mountSafe(() => {
+            setFiatAmount(undefined);
+          })
+        );
     }
   }, [env, bridge, getTokenPrice, mountSafe]);
 
@@ -193,36 +207,42 @@ const BridgeDetails: FC = () => {
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
-            mountSafe(setFiatFees, {
-              step1: ethFees.step1
-                ? multiplyAmounts(
-                    {
-                      value: tokenPrice,
-                      precision: env.fiatExchangeRates.usdcToken.decimals,
-                    },
-                    {
-                      value: ethFees.step1,
-                      precision: token.decimals,
-                    },
-                    PREFERRED_CURRENCY_ARITHMETIC_PRECISION
-                  )
-                : undefined,
-              step2: ethFees.step2
-                ? multiplyAmounts(
-                    {
-                      value: tokenPrice,
-                      precision: env.fiatExchangeRates.usdcToken.decimals,
-                    },
-                    {
-                      value: ethFees.step2,
-                      precision: token.decimals,
-                    },
-                    PREFERRED_CURRENCY_ARITHMETIC_PRECISION
-                  )
-                : undefined,
+            mountSafe(() => {
+              setFiatFees({
+                step1: ethFees.step1
+                  ? multiplyAmounts(
+                      {
+                        value: tokenPrice,
+                        precision: env.fiatExchangeRates.usdcToken.decimals,
+                      },
+                      {
+                        value: ethFees.step1,
+                        precision: token.decimals,
+                      },
+                      PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                    )
+                  : undefined,
+                step2: ethFees.step2
+                  ? multiplyAmounts(
+                      {
+                        value: tokenPrice,
+                        precision: env.fiatExchangeRates.usdcToken.decimals,
+                      },
+                      {
+                        value: ethFees.step2,
+                        precision: token.decimals,
+                      },
+                      PREFERRED_CURRENCY_ARITHMETIC_PRECISION
+                    )
+                  : undefined,
+              });
             });
           })
-          .catch(() => mountSafe(setFiatFees, {}));
+          .catch(() =>
+            mountSafe(() => {
+              setFiatFees({});
+            })
+          );
       }
     }
   }, [env, bridge, ethFees, getTokenPrice, mountSafe]);

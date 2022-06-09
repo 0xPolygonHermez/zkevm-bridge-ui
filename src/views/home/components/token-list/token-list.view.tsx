@@ -34,9 +34,9 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const [searchInputValue, setSearchInputValue] = useState<string>("");
 
   const mountSafe = useCallback(
-    <T,>(callback: (value: T) => void, value: T) => {
+    (callback: () => void) => {
       if (isMounted()) {
-        callback(value);
+        callback();
       }
     },
     [isMounted]
@@ -73,15 +73,21 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
         chain,
       })
         .then((token) => {
-          mountSafe(setCustomToken, { status: "successful", data: token });
-          mountSafe(setFilteredTokens, [token]);
+          mountSafe(() => {
+            setCustomToken({ status: "successful", data: token });
+          });
+          mountSafe(() => {
+            setFilteredTokens([token]);
+          });
         })
         .catch(() =>
-          mountSafe(setCustomToken, {
-            status: "failed",
-            error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
-              chain
-            )} chain with id ${chain.chainId}`,
+          mountSafe(() => {
+            setCustomToken({
+              status: "failed",
+              error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
+                chain
+              )} chain with id ${chain.chainId}`,
+            });
           })
         );
     }

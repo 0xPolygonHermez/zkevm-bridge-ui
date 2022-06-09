@@ -26,9 +26,9 @@ const Activity: FC = () => {
   const classes = useActivityStyles({ displayAll });
 
   const mountSafe = useCallback(
-    <T,>(callback: (value: T) => void, value: T) => {
+    (callback: () => void) => {
       if (isMounted()) {
-        callback(value);
+        callback();
       }
     },
     [isMounted]
@@ -50,9 +50,13 @@ const Activity: FC = () => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
-              mountSafe(setWrongNetworkBridges, [...wrongNetworkBridges, bridge.id]);
+              mountSafe(() => {
+                setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
+              });
             } else {
-              mountSafe(notifyError, error);
+              mountSafe(() => {
+                notifyError(error);
+              });
             }
           });
         }
@@ -65,10 +69,14 @@ const Activity: FC = () => {
       const loadBridges = () => {
         getBridges({ env, ethereumAddress: account.data })
           .then((bridges) => {
-            mountSafe(setBridgeList, bridges);
+            mountSafe(() => {
+              setBridgeList(bridges);
+            });
           })
           .catch((error) => {
-            mountSafe(notifyError, error);
+            mountSafe(() => {
+              notifyError(error);
+            });
           });
       };
       const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
