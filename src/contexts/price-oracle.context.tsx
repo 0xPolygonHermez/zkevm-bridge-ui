@@ -20,11 +20,10 @@ import { Token, Chain } from "src/domain";
 import {
   getChainTokens,
   UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
+  UNISWAP_V2_ROUTER_02_INIT_CODE_HASH,
+  UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
   PREFERRED_CURRENCY_ARITHMETIC_PRECISION,
 } from "src/constants";
-
-const INIT_CODE_HASH = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
-const FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
 const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }): string => {
   const [token0, token1] = tokenA.address < tokenB.address ? [tokenA, tokenB] : [tokenB, tokenA];
@@ -32,7 +31,11 @@ const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }
     ["bytes"],
     [pack(["address", "address"], [token0.address, token1.address])]
   );
-  return getCreate2Address(FACTORY_ADDRESS, salt, INIT_CODE_HASH);
+  return getCreate2Address(
+    UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
+    salt,
+    UNISWAP_V2_ROUTER_02_INIT_CODE_HASH
+  );
 };
 
 interface GetTokenPriceParams {
