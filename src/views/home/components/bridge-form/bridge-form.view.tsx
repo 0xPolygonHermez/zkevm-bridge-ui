@@ -135,8 +135,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       const resetBalanceAndNotifyError = (error: unknown) => {
         callIfMounted(() => {
           notifyError(error);
-        });
-        callIfMounted(() => {
           setBalanceTo(undefined);
         });
       };
