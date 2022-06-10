@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
-import { ReactComponent as ReloadIcon } from "src/assets/icons/spinner.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
@@ -52,13 +51,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
       <div className={classes.row}>
         <div className={classes.actionCircle}>
-          {status !== "completed" ? (
-            <ReloadIcon />
-          ) : to.key === "ethereum" ? (
-            <BridgeL1Icon />
-          ) : (
-            <BridgeL2Icon />
-          )}
+          {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
         </div>
         <div className={classes.actionColumn}>
           <Typography type="body1">
