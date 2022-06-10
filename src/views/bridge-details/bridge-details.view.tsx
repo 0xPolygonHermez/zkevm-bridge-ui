@@ -25,8 +25,7 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
-import { getChainTokens } from "src/constants";
-import { FIAT_DISPLAY_PRECISION } from "src/constants";
+import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
