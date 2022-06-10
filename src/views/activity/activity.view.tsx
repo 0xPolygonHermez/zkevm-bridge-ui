@@ -85,12 +85,16 @@ const Activity: FC = () => {
   useEffect(() => {
     setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
-
   switch (bridgeList.status) {
     case "pending":
     case "loading":
     case "reloading": {
-      return <PageLoader />;
+      return (
+        <>
+          <Header title="Activity" backTo="home" />
+          <PageLoader />
+        </>
+      );
     }
     case "failed": {
       return (

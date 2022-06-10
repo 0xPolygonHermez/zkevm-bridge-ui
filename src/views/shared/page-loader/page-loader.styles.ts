@@ -2,8 +2,8 @@ import { createUseStyles } from "react-jss";
 
 const usePageLoaderStyles = createUseStyles(() => ({
   root: {
-    height: "100vh",
     width: "100%",
+    flex: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

@@ -7,8 +7,8 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     margin: [theme.spacing(8), "auto", 0, "auto"],
   },
   appName: {
+    margin: "0px auto",
     marginTop: theme.spacing(3),
-    margin: "auto",
     padding: [theme.spacing(1.25), theme.spacing(4)],
     background: theme.palette.grey.main,
     borderRadius: 56,

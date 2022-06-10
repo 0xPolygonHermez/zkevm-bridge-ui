@@ -241,7 +241,12 @@ const BridgeDetails: FC = () => {
     case "pending":
     case "loading":
     case "reloading": {
-      return <PageLoader />;
+      return (
+        <>
+          <Header title="Bridge Details" backTo="activity" />
+          <PageLoader />
+        </>
+      );
     }
     case "failed": {
       return <Navigate to={routes.activity.path} replace />;
