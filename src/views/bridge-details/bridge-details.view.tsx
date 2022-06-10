@@ -313,17 +313,15 @@ const BridgeDetails: FC = () => {
               </Typography>
               <Chain chain={to} className={classes.alignRow} />
             </div>
-            {step1EthFee && (
-              <div className={classes.row}>
-                <Typography type="body2" className={classes.alignRow}>
-                  Step 1 Fee ({getChainName(bridge.data.deposit.from)})
-                </Typography>
-                <Typography type="body1" className={classes.alignRow}>
-                  {step1FeeString}
-                </Typography>
-              </div>
-            )}
-            {step2EthFee && (
+            <div className={classes.row}>
+              <Typography type="body2" className={classes.alignRow}>
+                Step 1 Fee ({getChainName(bridge.data.deposit.from)})
+              </Typography>
+              <Typography type="body1" className={classes.alignRow}>
+                {step1FeeString}
+              </Typography>
+            </div>
+            {bridge.data.status === "completed" && (
               <div className={classes.row}>
                 <Typography type="body2" className={classes.alignRow}>
                   Step 2 Fee ({getChainName(bridge.data.deposit.to)})
