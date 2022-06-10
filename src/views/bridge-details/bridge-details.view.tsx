@@ -3,14 +3,15 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
 import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
+import Chain from "src/views/bridge-details/components/chain/chain";
 import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
-import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
-import { ReactComponent as SpinnerIcon } from "src/assets/icons/spinner.svg";
-import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
-import Chain from "src/views/bridge-details/components/chain/chain";
+import Typography from "src/views/shared/typography/typography.view";
 import Error from "src/views/shared/error/error.view";
+import Button from "src/views/shared/button/button.view";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -24,7 +25,6 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
-import Button from "src/views/shared/button/button.view";
 import { getChainTokens } from "src/constants";
 import { FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -238,132 +238,143 @@ const BridgeDetails: FC = () => {
     }
   }, [env, bridge, ethFees, getTokenPrice, callIfMounted]);
 
-  if (bridge.status === "pending" || bridge.status === "loading") {
-    return <SpinnerIcon />;
+  switch (bridge.status) {
+    case "pending":
+    case "loading":
+    case "reloading": {
+      return <PageLoader />;
+    }
+    case "failed": {
+      return <Navigate to={routes.activity.path} replace />;
+    }
+    case "successful": {
+      const {
+        status,
+        deposit: { amount, from, to, token, txHash },
+      } = bridge.data;
+
+      const bridgeTxUrl = `${from.explorerUrl}/tx/${txHash}`;
+      const claimTxUrl =
+        bridge.data.status === "completed"
+          ? `${to.explorerUrl}/tx/${bridge.data.claim.txHash}`
+          : undefined;
+
+      const { step1: step1EthFee, step2: step2EthFee } = ethFees;
+      const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
+
+      const ethToken = getChainTokens(from).find((t) => t.symbol === "ETH");
+
+      if (env === undefined || ethToken === undefined) {
+        return null;
+      }
+
+      const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
+
+      const fiatAmountString = `${currencySymbol}${
+        fiatAmount ? formatFiatAmount(fiatAmount) : "--"
+      }`;
+
+      const step1FeeString = `${
+        step1EthFee ? formatTokenAmount(step1EthFee, ethToken) : "--"
+      } ETH ~ ${currencySymbol}${step1FiatFee ? formatFiatAmount(step1FiatFee) : "--"}`;
+
+      const step2FeeString = `${
+        step2EthFee ? formatTokenAmount(step2EthFee, ethToken) : "--"
+      } ETH ~ ${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`;
+
+      return (
+        <>
+          <Header title="Bridge Details" backTo="activity" />
+          <Card className={classes.card}>
+            <div className={classes.balance}>
+              <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
+              <Typography type="h1">{tokenAmountString}</Typography>
+              <Typography type="h2" className={classes.fiat}>
+                {fiatAmountString}
+              </Typography>
+            </div>
+            <div className={classes.row}>
+              <Typography type="body2" className={classes.alignRow}>
+                Status
+              </Typography>
+              <Typography type="body1" className={classes.alignRow}>
+                <span className={classes.dot} />
+                {getBridgeStatus(status)}
+              </Typography>
+            </div>
+            <div className={classes.row}>
+              <Typography type="body2" className={classes.alignRow}>
+                From
+              </Typography>
+              <Chain chain={from} className={classes.alignRow} />
+            </div>
+            <div className={classes.row}>
+              <Typography type="body2" className={classes.alignRow}>
+                To
+              </Typography>
+              <Chain chain={to} className={classes.alignRow} />
+            </div>
+            {step1EthFee && (
+              <div className={classes.row}>
+                <Typography type="body2" className={classes.alignRow}>
+                  Step 1 Fee ({getChainName(bridge.data.deposit.from)})
+                </Typography>
+                <Typography type="body1" className={classes.alignRow}>
+                  {step1FeeString}
+                </Typography>
+              </div>
+            )}
+            {step2EthFee && (
+              <div className={classes.row}>
+                <Typography type="body2" className={classes.alignRow}>
+                  Step 2 Fee ({getChainName(bridge.data.deposit.to)})
+                </Typography>
+                <Typography type="body1" className={classes.alignRow}>
+                  {step2FeeString}
+                </Typography>
+              </div>
+            )}
+            <div className={classes.row}>
+              <Typography type="body2" className={classes.alignRow}>
+                Track step 1 transaction
+              </Typography>
+              <a
+                href={bridgeTxUrl}
+                target="_blank"
+                className={classes.explorerButton}
+                rel="noreferrer"
+              >
+                <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
+              </a>
+            </div>
+            {claimTxUrl && (
+              <div className={`${classes.row} ${classes.lastRow}`}>
+                <Typography type="body2" className={classes.alignRow}>
+                  Track step 2 transaction
+                </Typography>
+                <a
+                  href={claimTxUrl}
+                  target="_blank"
+                  className={classes.explorerButton}
+                  rel="noreferrer"
+                >
+                  <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
+                </a>
+              </div>
+            )}
+          </Card>
+          {(status === "initiated" || status === "on-hold") && (
+            <div className={classes.finaliseRow}>
+              <Button onClick={onClaim} disabled={status === "initiated"}>
+                Finalise
+              </Button>
+              {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
+            </div>
+          )}
+        </>
+      );
+    }
   }
-
-  if (bridge.status === "failed") {
-    return <Navigate to={routes.activity.path} replace />;
-  }
-
-  const {
-    status,
-    deposit: { amount, from, to, token, txHash },
-  } = bridge.data;
-
-  const bridgeTxUrl = `${from.explorerUrl}/tx/${txHash}`;
-  const claimTxUrl =
-    bridge.data.status === "completed"
-      ? `${to.explorerUrl}/tx/${bridge.data.claim.txHash}`
-      : undefined;
-
-  const { step1: step1EthFee, step2: step2EthFee } = ethFees;
-  const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
-
-  const ethToken = getChainTokens(from).find((t) => t.symbol === "ETH");
-
-  if (env === undefined || ethToken === undefined) {
-    return null;
-  }
-
-  const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
-
-  const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
-
-  const step1FeeString = `${
-    step1EthFee ? formatTokenAmount(step1EthFee, ethToken) : "--"
-  } ETH ~ ${currencySymbol}${step1FiatFee ? formatFiatAmount(step1FiatFee) : "--"}`;
-
-  const step2FeeString = `${
-    step2EthFee ? formatTokenAmount(step2EthFee, ethToken) : "--"
-  } ETH ~ ${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`;
-
-  return (
-    <>
-      <Header title="Bridge Details" backTo="activity" />
-      <Card className={classes.card}>
-        <div className={classes.balance}>
-          <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
-          <Typography type="h1">{tokenAmountString}</Typography>
-          <Typography type="h2" className={classes.fiat}>
-            {fiatAmountString}
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            Status
-          </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            <span className={classes.dot} />
-            {getBridgeStatus(status)}
-          </Typography>
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            From
-          </Typography>
-          <Chain chain={from} className={classes.alignRow} />
-        </div>
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            To
-          </Typography>
-          <Chain chain={to} className={classes.alignRow} />
-        </div>
-        {step1EthFee && (
-          <div className={classes.row}>
-            <Typography type="body2" className={classes.alignRow}>
-              Step 1 Fee ({getChainName(bridge.data.deposit.from)})
-            </Typography>
-            <Typography type="body1" className={classes.alignRow}>
-              {step1FeeString}
-            </Typography>
-          </div>
-        )}
-        {step2EthFee && (
-          <div className={classes.row}>
-            <Typography type="body2" className={classes.alignRow}>
-              Step 2 Fee ({getChainName(bridge.data.deposit.to)})
-            </Typography>
-            <Typography type="body1" className={classes.alignRow}>
-              {step2FeeString}
-            </Typography>
-          </div>
-        )}
-        <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
-            Track step 1 transaction
-          </Typography>
-          <a href={bridgeTxUrl} target="_blank" className={classes.explorerButton} rel="noreferrer">
-            <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
-          </a>
-        </div>
-        {claimTxUrl && (
-          <div className={`${classes.row} ${classes.lastRow}`}>
-            <Typography type="body2" className={classes.alignRow}>
-              Track step 2 transaction
-            </Typography>
-            <a
-              href={claimTxUrl}
-              target="_blank"
-              className={classes.explorerButton}
-              rel="noreferrer"
-            >
-              <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
-            </a>
-          </div>
-        )}
-      </Card>
-      {(status === "initiated" || status === "on-hold") && (
-        <div className={classes.finaliseRow}>
-          <Button onClick={onClaim} disabled={status === "initiated"}>
-            Finalise
-          </Button>
-          {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
-        </div>
-      )}
-    </>
-  );
 };
 
 export default BridgeDetails;
