@@ -22,7 +22,7 @@ import {
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { getDeposits, getClaims, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
+import { getDeposits, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
 import { Env, Chain, Token, Bridge, Deposit, MerkleProof } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
@@ -227,10 +227,7 @@ const BridgeProvider: FC = (props) => {
   const getBridges = useCallback(
     async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
       const apiUrl = env.bridgeApiUrl;
-      const [apiDeposits, apiClaims] = await Promise.all([
-        getDeposits({ apiUrl, ethereumAddress }),
-        getClaims({ apiUrl, ethereumAddress }),
-      ]);
+      const apiDeposits = await getDeposits({ apiUrl, ethereumAddress });
 
       const deposits = await Promise.all(
         apiDeposits.map(async (apiDeposit): Promise<Deposit> => {
@@ -241,6 +238,7 @@ const BridgeProvider: FC = (props) => {
             dest_addr,
             deposit_cnt,
             tx_hash,
+            claim_tx_hash,
             token_addr,
             orig_net,
           } = apiDeposit;
@@ -272,7 +270,8 @@ const BridgeProvider: FC = (props) => {
             fiatAmount: undefined,
             destinationAddress: dest_addr,
             depositCount: deposit_cnt,
-            txHash: tx_hash,
+            depositTxHash: tx_hash,
+            claimTxHash: claim_tx_hash === null ? undefined : claim_tx_hash,
             from,
             to,
             tokenOriginNetwork: orig_net,
@@ -323,21 +322,13 @@ const BridgeProvider: FC = (props) => {
             fiatAmount,
           };
 
-          const apiClaim = apiClaims.find(
-            (claim) =>
-              claim.index === deposit.depositCount && claim.network_id === deposit.to.networkId
-          );
-
           const id = `${deposit.depositCount}-${deposit.to.networkId}`;
 
-          if (apiClaim) {
+          if (partialDeposit.claimTxHash !== undefined) {
             return {
               status: "completed",
               id,
               deposit,
-              claim: {
-                txHash: apiClaim.tx_hash,
-              },
             };
           }
 

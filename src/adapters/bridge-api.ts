@@ -13,6 +13,7 @@ interface DepositInput {
   dest_addr: string;
   deposit_cnt: string;
   tx_hash: string;
+  claim_tx_hash: string;
 }
 
 interface DepositOutput {
@@ -24,18 +25,7 @@ interface DepositOutput {
   dest_addr: string;
   deposit_cnt: number;
   tx_hash: string;
-}
-
-interface ClaimInput {
-  index: string;
-  network_id: number;
-  tx_hash: string;
-}
-
-interface ClaimOutput {
-  index: number;
-  network_id: number;
-  tx_hash: string;
+  claim_tx_hash: string | null;
 }
 
 interface MerkleProof {
@@ -56,6 +46,12 @@ const depositParser = StrictSchema<DepositInput, DepositOutput>()(
     dest_addr: z.string(),
     deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
     tx_hash: z.string(),
+    claim_tx_hash: z
+      .string()
+      .transform((v) => (v.length === 0 ? null : v))
+      .refine((val) => val === null || val.length === 66, {
+        message: "The length of claim_tx_hash must be 66 characters",
+      }),
   })
 );
 
@@ -116,27 +112,6 @@ const getMerkleProofResponseParser = StrictSchema<
 >()(
   z.object({
     proof: merkleProofParser,
-  })
-);
-
-const claimParser = StrictSchema<ClaimInput, ClaimOutput>()(
-  z.object({
-    index: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
-    network_id: z.number(),
-    tx_hash: z.string(),
-  })
-);
-
-const getClaimsResponseParser = StrictSchema<
-  {
-    claims?: ClaimInput[];
-  },
-  {
-    claims?: ClaimOutput[];
-  }
->()(
-  z.object({
-    claims: z.optional(z.array(claimParser)),
   })
 );
 
@@ -224,29 +199,6 @@ export const getMerkleProof = ({
 
       if (parsedData.success) {
         return parsedData.data.proof;
-      } else {
-        throw parsedData.error;
-      }
-    });
-};
-
-interface GetClaimsParams {
-  apiUrl: string;
-  ethereumAddress: string;
-}
-
-export const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimOutput[]> => {
-  return axios
-    .request({
-      baseURL: apiUrl,
-      url: `/claims/${ethereumAddress}`,
-      method: "GET",
-    })
-    .then((res) => {
-      const parsedData = getClaimsResponseParser.safeParse(res.data);
-
-      if (parsedData.success) {
-        return parsedData.data.claims !== undefined ? parsedData.data.claims : [];
       } else {
         throw parsedData.error;
       }

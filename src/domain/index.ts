@@ -85,7 +85,6 @@ export type Bridge =
       status: "completed";
       id: string;
       deposit: Deposit;
-      claim: Claim;
     };
 
 export interface Deposit {
@@ -97,11 +96,8 @@ export interface Deposit {
   tokenOriginNetwork: number;
   destinationAddress: string;
   depositCount: number;
-  txHash: string;
-}
-
-export interface Claim {
-  txHash: string;
+  depositTxHash: string;
+  claimTxHash: string | undefined;
 }
 
 export interface MerkleProof {
