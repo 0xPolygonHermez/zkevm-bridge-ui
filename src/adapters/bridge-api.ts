@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
+import { PAGE_SIZE } from "src/constants";
 
 interface DepositInput {
   token_addr: string;
@@ -118,17 +119,25 @@ const getMerkleProofResponseParser = StrictSchema<
 interface GetDepositsParams {
   apiUrl: string;
   ethereumAddress: string;
+  limit?: number;
+  offset?: number;
 }
 
 export const getDeposits = ({
   apiUrl,
   ethereumAddress,
+  limit = PAGE_SIZE,
+  offset = 0,
 }: GetDepositsParams): Promise<DepositOutput[]> => {
   return axios
     .request({
       baseURL: apiUrl,
       url: `/bridges/${ethereumAddress}`,
       method: "GET",
+      params: {
+        limit,
+        offset,
+      },
     })
     .then((res) => {
       const parsedData = getDepositsResponseParser.safeParse(res.data);

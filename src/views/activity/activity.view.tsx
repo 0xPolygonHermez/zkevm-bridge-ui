@@ -12,7 +12,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { AUTO_REFRESH_RATE } from "src/constants";
+import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
@@ -57,7 +57,7 @@ const Activity: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
-        getBridges({ env, ethereumAddress: account.data })
+        getBridges({ env, ethereumAddress: account.data, limit: PAGE_SIZE, offset: 0 })
           .then((bridges) => {
             callIfMounted(() => {
               setBridgeList({ status: "successful", data: bridges });

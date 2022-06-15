@@ -48,6 +48,8 @@ interface EstimateBridgeGasPriceParams {
 interface GetBridgesParams {
   env: Env;
   ethereumAddress: string;
+  limit: number;
+  offset: number;
 }
 
 interface ComputeWrappedTokenAddressParams {
@@ -225,9 +227,9 @@ const BridgeProvider: FC = (props) => {
   type TokenPrices = Partial<Record<string, Price>>;
 
   const getBridges = useCallback(
-    async ({ env, ethereumAddress }: GetBridgesParams): Promise<Bridge[]> => {
+    async ({ env, ethereumAddress, limit, offset }: GetBridgesParams): Promise<Bridge[]> => {
       const apiUrl = env.bridgeApiUrl;
-      const apiDeposits = await getDeposits({ apiUrl, ethereumAddress });
+      const apiDeposits = await getDeposits({ apiUrl, ethereumAddress, limit, offset });
 
       const deposits = await Promise.all(
         apiDeposits.map(async (apiDeposit): Promise<Deposit> => {

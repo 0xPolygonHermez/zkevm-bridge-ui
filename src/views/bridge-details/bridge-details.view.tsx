@@ -25,7 +25,7 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
-import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
+import { getChainTokens, FIAT_DISPLAY_PRECISION, PAGE_SIZE } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
@@ -112,7 +112,7 @@ const BridgeDetails: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful") {
       // ToDo: Get all the data only for the right bridge
-      void getBridges({ env, ethereumAddress: account.data })
+      void getBridges({ env, ethereumAddress: account.data, limit: PAGE_SIZE, offset: 0 })
         .then((bridges) => {
           const foundBridge = bridges.find((bridge) => {
             return bridge.id === bridgeId;
