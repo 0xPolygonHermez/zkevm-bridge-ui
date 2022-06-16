@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
@@ -121,6 +121,7 @@ interface GetDepositsParams {
   ethereumAddress: string;
   limit?: number;
   offset?: number;
+  cancelToken?: AxiosRequestConfig["cancelToken"];
 }
 
 export const getDeposits = ({
@@ -128,6 +129,7 @@ export const getDeposits = ({
   ethereumAddress,
   limit = PAGE_SIZE,
   offset = 0,
+  cancelToken,
 }: GetDepositsParams): Promise<DepositOutput[]> => {
   return axios
     .request({
@@ -138,6 +140,7 @@ export const getDeposits = ({
         limit,
         offset,
       },
+      cancelToken,
     })
     .then((res) => {
       const parsedData = getDepositsResponseParser.safeParse(res.data);

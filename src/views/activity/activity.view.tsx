@@ -1,4 +1,4 @@
-import { useState, FC, useEffect } from "react";
+import { useState, FC, useEffect, useCallback } from "react";
 
 import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
@@ -20,7 +20,7 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
-  const { getBridges, claim } = useBridgeContext();
+  const { fetchBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], string>>({ status: "pending" });
@@ -57,33 +57,73 @@ const Activity: FC = () => {
     }
   };
 
+  const processFetchBridgesSuccess = useCallback(
+    (bridges: Bridge[]) => {
+      callIfMounted(() => {
+        setBridgeList({ status: "successful", data: bridges });
+      });
+    },
+    [callIfMounted]
+  );
+
+  const processFetchBridgesError = useCallback(
+    (error: unknown) => {
+      callIfMounted(() => {
+        setBridgeList({
+          status: "failed",
+          error: "Something is wrong, we couldn't load the Bridges",
+        });
+        notifyError(error);
+      });
+    },
+    [callIfMounted, notifyError]
+  );
+
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
-        getBridges({ env, ethereumAddress: account.data, limit: PAGE_SIZE, offset: 0 })
-          .then((bridges) => {
-            callIfMounted(() => {
-              setBridgeList({ status: "successful", data: bridges });
-            });
-          })
-          .catch((error) => {
-            callIfMounted(() => {
-              setBridgeList({
-                status: "failed",
-                error: "Something is wrong, we couldn't load the Bridges",
-              });
-              notifyError(error);
-            });
-          });
+        fetchBridges({
+          type: "load",
+          env,
+          ethereumAddress: account.data,
+          limit: PAGE_SIZE,
+          offset: 0,
+        })
+          .then(processFetchBridgesSuccess)
+          .catch(processFetchBridgesError);
       };
-      // const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
       loadBridges();
-
-      // return () => {
-      //   clearInterval(intervalId);
-      // };
     }
-  }, [account, env, getBridges, notifyError, callIfMounted]);
+  }, [account, env, fetchBridges, processFetchBridgesError, processFetchBridgesSuccess]);
+
+  useEffect(() => {
+    if (env && account.status === "successful") {
+      const refreshBridges = () => {
+        if (bridgeList.status === "successful") {
+          fetchBridges({
+            type: "reload",
+            env,
+            ethereumAddress: account.data,
+            bridges: bridgeList.data,
+          })
+            .then(processFetchBridgesSuccess)
+            .catch(processFetchBridgesError);
+        }
+      };
+      const intervalId = setInterval(refreshBridges, AUTO_REFRESH_RATE);
+
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [
+    account,
+    bridgeList,
+    env,
+    fetchBridges,
+    processFetchBridgesError,
+    processFetchBridgesSuccess,
+  ]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);
@@ -102,22 +142,20 @@ const Activity: FC = () => {
         ) {
           setBridgeList({ status: "reloading", data: bridgeList.data });
           setNextFromItem(fromItem + PAGE_SIZE);
-          getBridges({ env, ethereumAddress: account.data, limit: PAGE_SIZE, offset: fromItem })
+          fetchBridges({
+            type: "load",
+            env,
+            ethereumAddress: account.data,
+            limit: PAGE_SIZE,
+            offset: fromItem,
+          })
             .then((bridges) => {
               callIfMounted(() => {
+                processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
                 setEndReached(bridges.length < PAGE_SIZE);
-                setBridgeList({ status: "successful", data: [...bridgeList.data, ...bridges] });
               });
             })
-            .catch((error) => {
-              callIfMounted(() => {
-                setBridgeList({
-                  status: "failed",
-                  error: "Something is wrong, we couldn't load the Bridges",
-                });
-                notifyError(error);
-              });
-            });
+            .catch(processFetchBridgesError);
         }
       }}
     >

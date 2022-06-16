@@ -6,8 +6,8 @@ import {
   ethers,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
-import axios from "axios";
-import { createContext, FC, useContext, useCallback } from "react";
+import axios, { AxiosRequestConfig } from "axios";
+import { createContext, FC, useContext, useCallback, useRef } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -45,12 +45,34 @@ interface EstimateBridgeGasPriceParams {
   destinationAddress: string;
 }
 
-interface GetBridgesParams {
+type GetBridgesParams = {
   env: Env;
   ethereumAddress: string;
   limit: number;
   offset: number;
+  cancelToken?: AxiosRequestConfig["cancelToken"];
+};
+
+interface RefreshBridgesParams {
+  env: Env;
+  ethereumAddress: string;
+  bridges: Bridge[];
 }
+
+type FetchBridgesParams = {
+  env: Env;
+  ethereumAddress: string;
+} & (
+  | {
+      type: "load";
+      limit: number;
+      offset: number;
+    }
+  | {
+      type: "reload";
+      bridges: Bridge[];
+    }
+);
 
 interface ComputeWrappedTokenAddressParams {
   token: Token;
@@ -85,7 +107,7 @@ interface BridgeContext {
     originalTokenAddress: string;
   }>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
-  getBridges: (params: GetBridgesParams) => Promise<Bridge[]>;
+  fetchBridges: (params: FetchBridgesParams) => Promise<Bridge[]>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
@@ -108,7 +130,7 @@ const bridgeContext = createContext<BridgeContext>({
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  getBridges: () => {
+  fetchBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   bridge: () => {
@@ -226,10 +248,24 @@ const BridgeProvider: FC = (props) => {
   type Price = BigNumber | null;
   type TokenPrices = Partial<Record<string, Price>>;
 
+  const refreshCancelTokenSource = useRef(axios.CancelToken.source());
+
   const getBridges = useCallback(
-    async ({ env, ethereumAddress, limit, offset }: GetBridgesParams): Promise<Bridge[]> => {
+    async ({
+      env,
+      ethereumAddress,
+      limit,
+      offset,
+      cancelToken,
+    }: GetBridgesParams): Promise<Bridge[]> => {
       const apiUrl = env.bridgeApiUrl;
-      const apiDeposits = await getDeposits({ apiUrl, ethereumAddress, limit, offset });
+      const apiDeposits = await getDeposits({
+        apiUrl,
+        ethereumAddress,
+        limit,
+        offset,
+        cancelToken,
+      });
 
       const deposits = await Promise.all(
         apiDeposits.map(async (apiDeposit): Promise<Deposit> => {
@@ -364,6 +400,59 @@ const BridgeProvider: FC = (props) => {
       );
     },
     [getTokenPrice, getToken]
+  );
+
+  const REFRESH_PAGE_SIZE = 100;
+
+  const refreshBridges = useCallback(
+    async ({ env, ethereumAddress, bridges }: RefreshBridgesParams): Promise<Bridge[]> => {
+      refreshCancelTokenSource.current = axios.CancelToken.source();
+      const completePages = Math.floor(bridges.length / REFRESH_PAGE_SIZE);
+      const remainderBridges = bridges.length % REFRESH_PAGE_SIZE;
+      const requiredRequests = remainderBridges === 0 ? completePages : completePages + 1;
+      return (
+        await Promise.all(
+          Array(requiredRequests)
+            .fill(null)
+            .map((_, index) => {
+              const offset = index * REFRESH_PAGE_SIZE;
+              const isLast = index + 1 === requiredRequests;
+              const isReminderRequestRequired = isLast && remainderBridges !== 0;
+              const limit = isReminderRequestRequired ? remainderBridges : REFRESH_PAGE_SIZE;
+              return getBridges({
+                env,
+                ethereumAddress,
+                limit,
+                offset,
+                cancelToken: refreshCancelTokenSource.current.token,
+              });
+            })
+        )
+      ).reduce((acc, curr) => [...acc, ...curr], []);
+    },
+    [getBridges]
+  );
+
+  const fetchBridges = useCallback(
+    async (params: FetchBridgesParams): Promise<Bridge[]> => {
+      if (params.type === "load") {
+        // fetching new data prevails over possible reloads in progress so we cancel them
+        refreshCancelTokenSource.current.cancel();
+        return getBridges({
+          env: params.env,
+          ethereumAddress: params.ethereumAddress,
+          limit: params.limit,
+          offset: params.offset,
+        });
+      } else {
+        return refreshBridges({
+          env: params.env,
+          ethereumAddress: params.ethereumAddress,
+          bridges: params.bridges,
+        });
+      }
+    },
+    [getBridges, refreshBridges]
   );
 
   const bridge = useCallback(
@@ -525,7 +614,7 @@ const BridgeProvider: FC = (props) => {
         computeWrappedTokenAddress,
         getNativeTokenInfo,
         estimateBridgeGasPrice,
-        getBridges,
+        fetchBridges,
         bridge,
         claim,
       }}
