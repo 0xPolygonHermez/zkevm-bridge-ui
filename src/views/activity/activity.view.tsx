@@ -97,18 +97,16 @@ const Activity: FC = () => {
   }, [account, env, fetchBridges, processFetchBridgesError, processFetchBridgesSuccess]);
 
   useEffect(() => {
-    if (env && account.status === "successful") {
+    if (env && account.status === "successful" && bridgeList.status === "successful") {
       const refreshBridges = () => {
-        if (bridgeList.status === "successful") {
-          fetchBridges({
-            type: "reload",
-            env,
-            ethereumAddress: account.data,
-            bridges: bridgeList.data,
-          })
-            .then(processFetchBridgesSuccess)
-            .catch(processFetchBridgesError);
-        }
+        fetchBridges({
+          type: "reload",
+          env,
+          ethereumAddress: account.data,
+          bridges: bridgeList.data,
+        })
+          .then(processFetchBridgesSuccess)
+          .catch(processFetchBridgesError);
       };
       const intervalId = setInterval(refreshBridges, AUTO_REFRESH_RATE);
 
