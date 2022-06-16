@@ -45,13 +45,13 @@ interface EstimateBridgeGasPriceParams {
   destinationAddress: string;
 }
 
-type GetBridgesParams = {
+interface GetBridgesParams {
   env: Env;
   ethereumAddress: string;
   limit: number;
   offset: number;
   cancelToken?: AxiosRequestConfig["cancelToken"];
-};
+}
 
 interface RefreshBridgesParams {
   env: Env;
