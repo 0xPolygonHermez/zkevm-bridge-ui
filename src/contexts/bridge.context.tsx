@@ -417,8 +417,8 @@ const BridgeProvider: FC = (props) => {
             .map((_, index) => {
               const offset = index * REFRESH_PAGE_SIZE;
               const isLast = index + 1 === requiredRequests;
-              const isReminderRequestRequired = isLast && remainderBridges !== 0;
-              const limit = isReminderRequestRequired ? remainderBridges : REFRESH_PAGE_SIZE;
+              const isRemainderRequestRequired = isLast && remainderBridges !== 0;
+              const limit = isRemainderRequestRequired ? remainderBridges : REFRESH_PAGE_SIZE;
               return getBridges({
                 env,
                 ethereumAddress,
