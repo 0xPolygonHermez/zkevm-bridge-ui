@@ -59,6 +59,11 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(0.5), theme.spacing(1)],
     lineHeight: `${theme.spacing(1.75)}px`,
   },
+  emptyMessage: {
+    textAlign: "center",
+    whiteSpace: "break-spaces",
+    lineHeight: "26px",
+  },
 }));
 
 export default useActivityStyles;

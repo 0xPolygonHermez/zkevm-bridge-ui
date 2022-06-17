@@ -5,7 +5,6 @@ import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Header from "src/views/shared/header/header.view";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Error from "src/views/shared/error/error.view";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
@@ -22,7 +21,9 @@ const Activity: FC = () => {
   const { getBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
-  const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], string>>({ status: "pending" });
+  const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined>>({
+    status: "pending",
+  });
   const [displayAll, setDisplayAll] = useState(true);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
@@ -67,7 +68,7 @@ const Activity: FC = () => {
             callIfMounted(() => {
               setBridgeList({
                 status: "failed",
-                error: "Something is wrong, we couldn't load the Bridges",
+                error: undefined,
               });
               notifyError(error);
             });
@@ -85,6 +86,9 @@ const Activity: FC = () => {
   useEffect(() => {
     setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
+
+  const EmptyMessage = () => <div className={classes.emptyMessage}>No Bridges found</div>;
+
   switch (bridgeList.status) {
     case "pending":
     case "loading":
@@ -100,7 +104,7 @@ const Activity: FC = () => {
       return (
         <>
           <Header title="Activity" backTo="home" />
-          <Error error={bridgeList.error} />
+          <EmptyMessage />
         </>
       );
     }
@@ -132,14 +136,18 @@ const Activity: FC = () => {
               </Typography>
             </div>
           </div>
-          {filteredList.map((bridge) => (
-            <BridgeCard
-              bridge={bridge}
-              onClaim={() => onClaim(bridge)}
-              networkError={wrongNetworkBridges.includes(bridge.id)}
-              key={bridge.id}
-            />
-          ))}
+          {filteredList.length ? (
+            filteredList.map((bridge) => (
+              <BridgeCard
+                bridge={bridge}
+                onClaim={() => onClaim(bridge)}
+                networkError={wrongNetworkBridges.includes(bridge.id)}
+                key={bridge.id}
+              />
+            ))
+          ) : (
+            <EmptyMessage />
+          )}
         </>
       );
     }
