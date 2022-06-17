@@ -10,11 +10,13 @@ interface InfiniteScrollProps {
   asyncTaskStatus: AsyncTask<never, never>["status"];
   onLoadNextPage: (offset: number) => void;
   fromItem: number;
+  endReached: boolean;
 }
 
 const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   asyncTaskStatus,
   fromItem,
+  endReached,
   children,
   onLoadNextPage,
 }) => {
@@ -49,9 +51,22 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   return (
     <div className={classes.root} ref={ref}>
       {children}
-      {(asyncTaskStatus === "loading" || asyncTaskStatus === "reloading") && (
+      {endReached && asyncTaskStatus === "reloading" && (
         <div className={classes.spinnerWrapper}>
           <Spinner size={24} />
+        </div>
+      )}
+      {endReached === false && (
+        <div className={classes.loadMoreButtonWrapper}>
+          <button
+            className={classes.loadMoreButton}
+            onClick={() => {
+              onLoadNextPage(fromItem);
+            }}
+            disabled={asyncTaskStatus === "reloading"}
+          >
+            {asyncTaskStatus === "reloading" ? <Spinner size={20} color="white" /> : "Load More"}
+          </button>
         </div>
       )}
     </div>

@@ -123,6 +123,7 @@ const Activity: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful" && bridgeList.status === "successful") {
       const refreshBridges = () => {
+        setBridgeList({ status: "reloading", data: bridgeList.data });
         fetchBridges({
           type: "reload",
           env,
@@ -201,6 +202,7 @@ const Activity: FC = () => {
             <InfiniteScroll
               asyncTaskStatus={bridgeList.status}
               fromItem={bridgeList.data.length}
+              endReached={endReached}
               onLoadNextPage={loadNextPage}
             >
               {filteredList.map((bridge) => (
@@ -212,18 +214,6 @@ const Activity: FC = () => {
                 />
               ))}
             </InfiniteScroll>
-            {endReached === false && bridgeList.status === "successful" && (
-              <div className={classes.loadMoreButtonWrapper}>
-                <button
-                  className={classes.loadMoreButton}
-                  onClick={() => {
-                    loadNextPage(bridgeList.data.length);
-                  }}
-                >
-                  Load More
-                </button>
-              </div>
-            )}
           </>
         );
       }
