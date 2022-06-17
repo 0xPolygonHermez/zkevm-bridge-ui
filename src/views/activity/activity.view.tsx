@@ -25,7 +25,6 @@ const Activity: FC = () => {
   const { notifyError } = useErrorContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], string>>({ status: "pending" });
   const [displayAll, setDisplayAll] = useState(true);
-  const [nextFromItem, setNextFromItem] = useState(PAGE_SIZE);
   const [endReached, setEndReached] = useState(false);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
@@ -87,7 +86,6 @@ const Activity: FC = () => {
       endReached === false
     ) {
       setBridgeList({ status: "reloading", data: bridgeList.data });
-      setNextFromItem(fromItem + PAGE_SIZE);
       fetchBridges({
         type: "load",
         env,
@@ -202,7 +200,7 @@ const Activity: FC = () => {
             </div>
             <InfiniteScroll
               asyncTaskStatus={bridgeList.status}
-              fromItem={nextFromItem}
+              fromItem={bridgeList.data.length}
               onLoadNextPage={loadNextPage}
             >
               {filteredList.map((bridge) => (
