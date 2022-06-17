@@ -219,7 +219,7 @@ const Activity: FC = () => {
                 <button
                   className={classes.loadMoreButton}
                   onClick={() => {
-                    loadNextPage(bridgeList.data.length + PAGE_SIZE);
+                    loadNextPage(bridgeList.data.length);
                   }}
                 >
                   Load More
