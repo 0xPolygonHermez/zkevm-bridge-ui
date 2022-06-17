@@ -5,10 +5,11 @@ const THICKNESS = 3;
 
 interface SpinnerProps {
   size?: number;
+  color?: string;
 }
 
-function Spinner({ size }: SpinnerProps): JSX.Element {
-  const classes = useSpinnerStyles({ size: size !== undefined ? size : 48 });
+function Spinner({ size, color }: SpinnerProps): JSX.Element {
+  const classes = useSpinnerStyles({ size: size !== undefined ? size : 48, color });
 
   return (
     <div className={classes.root}>
