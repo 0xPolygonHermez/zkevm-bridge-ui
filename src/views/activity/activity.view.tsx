@@ -26,6 +26,7 @@ const Activity: FC = () => {
     status: "pending",
   });
   const [displayAll, setDisplayAll] = useState(true);
+  const [lastLoadedItem, setLastLoadedItem] = useState(0);
   const [endReached, setEndReached] = useState(false);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
@@ -70,7 +71,7 @@ const Activity: FC = () => {
         env,
         ethereumAddress: account.data,
         limit: PAGE_SIZE,
-        offset: bridgeList.data.length,
+        offset: lastLoadedItem,
       })
         .then((bridges) => {
           callIfMounted(() => {
@@ -85,6 +86,7 @@ const Activity: FC = () => {
   const processFetchBridgesSuccess = useCallback(
     (bridges: Bridge[]) => {
       callIfMounted(() => {
+        setLastLoadedItem(bridges.length);
         setBridgeList({ status: "successful", data: bridges });
       });
     },
@@ -122,14 +124,22 @@ const Activity: FC = () => {
   }, [account, env, fetchBridges, processFetchBridgesError, processFetchBridgesSuccess]);
 
   useEffect(() => {
-    if (env && account.status === "successful" && bridgeList.status === "successful") {
+    if (
+      env &&
+      account.status === "successful" &&
+      (bridgeList.status === "successful" || bridgeList.status === "failed")
+    ) {
       const refreshBridges = () => {
-        setBridgeList({ status: "reloading", data: bridgeList.data });
+        setBridgeList(
+          bridgeList.status === "successful"
+            ? { status: "reloading", data: bridgeList.data }
+            : { status: "loading" }
+        );
         fetchBridges({
           type: "reload",
           env,
           ethereumAddress: account.data,
-          bridges: bridgeList.data,
+          quantity: lastLoadedItem,
         })
           .then(processFetchBridgesSuccess)
           .catch(processFetchBridgesError);
@@ -144,6 +154,7 @@ const Activity: FC = () => {
     account,
     bridgeList,
     env,
+    lastLoadedItem,
     fetchBridges,
     processFetchBridgesError,
     processFetchBridgesSuccess,

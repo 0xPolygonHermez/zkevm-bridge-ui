@@ -56,7 +56,7 @@ interface GetBridgesParams {
 interface RefreshBridgesParams {
   env: Env;
   ethereumAddress: string;
-  bridges: Bridge[];
+  quantity: number;
 }
 
 type FetchBridgesParams = {
@@ -70,7 +70,7 @@ type FetchBridgesParams = {
     }
   | {
       type: "reload";
-      bridges: Bridge[];
+      quantity: number;
     }
 );
 
@@ -405,10 +405,10 @@ const BridgeProvider: FC = (props) => {
   const REFRESH_PAGE_SIZE = 100;
 
   const refreshBridges = useCallback(
-    async ({ env, ethereumAddress, bridges }: RefreshBridgesParams): Promise<Bridge[]> => {
+    async ({ env, ethereumAddress, quantity }: RefreshBridgesParams): Promise<Bridge[]> => {
       refreshCancelTokenSource.current = axios.CancelToken.source();
-      const completePages = Math.floor(bridges.length / REFRESH_PAGE_SIZE);
-      const remainderBridges = bridges.length % REFRESH_PAGE_SIZE;
+      const completePages = Math.floor(quantity / REFRESH_PAGE_SIZE);
+      const remainderBridges = quantity % REFRESH_PAGE_SIZE;
       const requiredRequests = remainderBridges === 0 ? completePages : completePages + 1;
       return (
         await Promise.all(
@@ -448,7 +448,7 @@ const BridgeProvider: FC = (props) => {
         return refreshBridges({
           env: params.env,
           ethereumAddress: params.ethereumAddress,
-          bridges: params.bridges,
+          quantity: params.quantity,
         });
       }
     },
