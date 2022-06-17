@@ -56,6 +56,31 @@ const Activity: FC = () => {
     }
   };
 
+  const onLoadNextPage = () => {
+    if (
+      env &&
+      account.status === "successful" &&
+      bridgeList.status === "successful" &&
+      endReached === false
+    ) {
+      setBridgeList({ status: "reloading", data: bridgeList.data });
+      fetchBridges({
+        type: "load",
+        env,
+        ethereumAddress: account.data,
+        limit: PAGE_SIZE,
+        offset: bridgeList.data.length,
+      })
+        .then((bridges) => {
+          callIfMounted(() => {
+            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
+            setEndReached(bridges.length < PAGE_SIZE);
+          });
+        })
+        .catch(processFetchBridgesError);
+    }
+  };
+
   const processFetchBridgesSuccess = useCallback(
     (bridges: Bridge[]) => {
       callIfMounted(() => {
@@ -77,31 +102,6 @@ const Activity: FC = () => {
     },
     [callIfMounted, notifyError]
   );
-
-  const loadNextPage = (fromItem: number) => {
-    if (
-      env &&
-      account.status === "successful" &&
-      bridgeList.status === "successful" &&
-      endReached === false
-    ) {
-      setBridgeList({ status: "reloading", data: bridgeList.data });
-      fetchBridges({
-        type: "load",
-        env,
-        ethereumAddress: account.data,
-        limit: PAGE_SIZE,
-        offset: fromItem,
-      })
-        .then((bridges) => {
-          callIfMounted(() => {
-            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
-            setEndReached(bridges.length < PAGE_SIZE);
-          });
-        })
-        .catch(processFetchBridgesError);
-    }
-  };
 
   useEffect(() => {
     if (env && account.status === "successful") {
@@ -201,9 +201,8 @@ const Activity: FC = () => {
             </div>
             <InfiniteScroll
               asyncTaskStatus={bridgeList.status}
-              fromItem={bridgeList.data.length}
               endReached={endReached}
-              onLoadNextPage={loadNextPage}
+              onLoadNextPage={onLoadNextPage}
             >
               {filteredList.map((bridge) => (
                 <BridgeCard

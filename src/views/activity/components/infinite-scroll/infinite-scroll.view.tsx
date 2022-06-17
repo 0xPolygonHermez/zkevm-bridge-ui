@@ -8,14 +8,12 @@ const TRESHOLD = 0.9;
 
 interface InfiniteScrollProps {
   asyncTaskStatus: AsyncTask<never, never>["status"];
-  onLoadNextPage: (offset: number) => void;
-  fromItem: number;
+  onLoadNextPage: () => void;
   endReached: boolean;
 }
 
 const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   asyncTaskStatus,
-  fromItem,
   endReached,
   children,
   onLoadNextPage,
@@ -43,10 +41,10 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
 
   React.useEffect(() => {
     if (scrollReachedEnd && asyncTaskStatus === "successful") {
-      onLoadNextPage(fromItem);
+      onLoadNextPage();
     }
     setScrollReachedEnd(false);
-  }, [fromItem, asyncTaskStatus, scrollReachedEnd, onLoadNextPage]);
+  }, [asyncTaskStatus, scrollReachedEnd, onLoadNextPage]);
 
   return (
     <div className={classes.root} ref={ref}>
@@ -60,9 +58,7 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
         <div className={classes.loadMoreButtonWrapper}>
           <button
             className={classes.loadMoreButton}
-            onClick={() => {
-              onLoadNextPage(fromItem);
-            }}
+            onClick={onLoadNextPage}
             disabled={asyncTaskStatus === "reloading"}
           >
             {asyncTaskStatus === "reloading" ? <Spinner size={20} color="white" /> : "Load More"}
