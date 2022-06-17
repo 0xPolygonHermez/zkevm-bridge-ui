@@ -79,6 +79,32 @@ const Activity: FC = () => {
     [callIfMounted, notifyError]
   );
 
+  const loadNextPage = (fromItem: number) => {
+    if (
+      env &&
+      account.status === "successful" &&
+      bridgeList.status === "successful" &&
+      endReached === false
+    ) {
+      setBridgeList({ status: "reloading", data: bridgeList.data });
+      setNextFromItem(fromItem + PAGE_SIZE);
+      fetchBridges({
+        type: "load",
+        env,
+        ethereumAddress: account.data,
+        limit: PAGE_SIZE,
+        offset: fromItem,
+      })
+        .then((bridges) => {
+          callIfMounted(() => {
+            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
+            setEndReached(bridges.length < PAGE_SIZE);
+          });
+        })
+        .catch(processFetchBridgesError);
+    }
+  };
+
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
@@ -127,104 +153,84 @@ const Activity: FC = () => {
     setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
 
-  return (
-    <InfiniteScroll
-      asyncTaskStatus={bridgeList.status}
-      fromItem={nextFromItem}
-      onLoadNextPage={(fromItem) => {
-        if (
-          env &&
-          account.status === "successful" &&
-          bridgeList.status === "successful" &&
-          endReached === false
-        ) {
-          setBridgeList({ status: "reloading", data: bridgeList.data });
-          setNextFromItem(fromItem + PAGE_SIZE);
-          fetchBridges({
-            type: "load",
-            env,
-            ethereumAddress: account.data,
-            limit: PAGE_SIZE,
-            offset: fromItem,
-          })
-            .then((bridges) => {
-              callIfMounted(() => {
-                processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
-                setEndReached(bridges.length < PAGE_SIZE);
-              });
-            })
-            .catch(processFetchBridgesError);
-        }
-      }}
-    >
-      {(() => {
-        switch (bridgeList.status) {
-          case "pending":
-          case "loading": {
-            return (
-              <>
-                <Header title="Activity" backTo="home" />
-                <PageLoader />
-              </>
-            );
-          }
-          case "failed": {
-            return (
-              <>
-                <Header title="Activity" backTo="home" />
-                <Error error={bridgeList.error} />
-              </>
-            );
-          }
-          case "successful":
-          case "reloading": {
-            const pendingBridges = bridgeList.data.filter(
-              (bridge) => bridge.status !== "completed"
-            );
-            const filteredList = displayAll ? bridgeList.data : pendingBridges;
-
-            return (
-              <>
-                <Header title="Activity" backTo="home" />
-                <div className={classes.selectorBoxes}>
-                  <div
-                    className={`${classes.selectorBox} ${classes.allBox}`}
-                    onClick={onDisplayAll}
-                  >
-                    <Typography type="body1" className={classes.status}>
-                      All
-                    </Typography>
-                    <Typography type="body2" className={classes.numberAllBox}>
-                      {bridgeList.data.length}
-                    </Typography>
-                  </div>
-                  <div
-                    className={`${classes.selectorBox} ${classes.pendingBox}`}
-                    onClick={onDisplayPending}
-                  >
-                    <Typography type="body1" className={classes.status}>
-                      Pending
-                    </Typography>
-                    <Typography type="body2" className={classes.numberPendingBox}>
-                      {pendingBridges.length}
-                    </Typography>
-                  </div>
-                </div>
-                {filteredList.map((bridge) => (
-                  <BridgeCard
-                    bridge={bridge}
-                    onClaim={() => onClaim(bridge)}
-                    networkError={wrongNetworkBridges.includes(bridge.id)}
-                    key={bridge.id}
-                  />
-                ))}
-              </>
-            );
-          }
-        }
-      })()}
-    </InfiniteScroll>
-  );
+  return (() => {
+    switch (bridgeList.status) {
+      case "pending":
+      case "loading": {
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
+            <PageLoader />
+          </>
+        );
+      }
+      case "failed": {
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
+            <Error error={bridgeList.error} />
+          </>
+        );
+      }
+      case "successful":
+      case "reloading": {
+        const pendingBridges = bridgeList.data.filter((bridge) => bridge.status !== "completed");
+        const filteredList = displayAll ? bridgeList.data : pendingBridges;
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
+            <div className={classes.selectorBoxes}>
+              <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
+                <Typography type="body1" className={classes.status}>
+                  All
+                </Typography>
+                <Typography type="body2" className={classes.numberAllBox}>
+                  {bridgeList.data.length}
+                </Typography>
+              </div>
+              <div
+                className={`${classes.selectorBox} ${classes.pendingBox}`}
+                onClick={onDisplayPending}
+              >
+                <Typography type="body1" className={classes.status}>
+                  Pending
+                </Typography>
+                <Typography type="body2" className={classes.numberPendingBox}>
+                  {pendingBridges.length}
+                </Typography>
+              </div>
+            </div>
+            <InfiniteScroll
+              asyncTaskStatus={bridgeList.status}
+              fromItem={nextFromItem}
+              onLoadNextPage={loadNextPage}
+            >
+              {filteredList.map((bridge) => (
+                <BridgeCard
+                  bridge={bridge}
+                  onClaim={() => onClaim(bridge)}
+                  networkError={wrongNetworkBridges.includes(bridge.id)}
+                  key={bridge.id}
+                />
+              ))}
+            </InfiniteScroll>
+            {endReached === false && bridgeList.status === "successful" && (
+              <div className={classes.loadMoreButtonWrapper}>
+                <button
+                  className={classes.loadMoreButton}
+                  onClick={() => {
+                    loadNextPage(bridgeList.data.length + PAGE_SIZE);
+                  }}
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
+        );
+      }
+    }
+  })();
 };
 
 export default Activity;
