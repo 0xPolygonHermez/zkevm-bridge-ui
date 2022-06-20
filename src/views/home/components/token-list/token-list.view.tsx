@@ -9,7 +9,7 @@ import Portal from "src/views/shared/portal/portal.view";
 import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import Error from "src/views/shared/error/error.view";
-import { getCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
+import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -27,7 +27,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const { getTokenFromAddress } = useBridgeContext();
   const classes = useListStyles();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([
-    ...getCustomTokens().filter((token) => token.chainId === chain.chainId),
+    ...getChainCustomTokens(chain),
     ...tokens,
   ]);
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({ status: "pending" });
@@ -52,7 +52,7 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
   const onSearchInputValueChange = (value: string): void => {
     setSearchInputValue(value);
 
-    const all = [...getCustomTokens(), ...tokens];
+    const all = [...getChainCustomTokens(chain), ...tokens];
     const filtered = all.filter(getTokenFilterByTerm(value));
     setFilteredTokens(filtered);
     setCustomToken({ status: "pending" });
@@ -100,7 +100,8 @@ const TokenList: FC<TokenListProps> = ({ tokens, selected, chain, onSelectToken,
             {filteredTokens.slice(0, 20).map((token) => {
               const isEnvToken = tokens.find((tkn) => tkn.address === token.address) !== undefined;
               const isCustomToken =
-                getCustomTokens().find((tkn) => tkn.address === token.address) !== undefined;
+                getChainCustomTokens(chain).find((tkn) => tkn.address === token.address) !==
+                undefined;
               const isSelected = token.address === selected.address;
               return (
                 <div className={classes.tokenWrapper} key={token.address}>
