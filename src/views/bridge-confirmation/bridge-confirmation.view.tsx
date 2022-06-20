@@ -22,6 +22,7 @@ import { getCurrency } from "src/adapters/storage";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { useUIContext } from "src/contexts/ui.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
@@ -36,6 +37,7 @@ const BridgeConfirmation: FC = () => {
   const { notifyError } = useErrorContext();
   const { bridge } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
+  const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [fiatAmount, setFiatAmount] = useState<BigNumber>();
@@ -54,6 +56,10 @@ const BridgeConfirmation: FC = () => {
         destinationAddress: account.data,
       })
         .then(() => {
+          openSnackbar({
+            type: "success-msg",
+            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
+          });
           navigate(routes.activity.path);
           setFormData(undefined);
         })
