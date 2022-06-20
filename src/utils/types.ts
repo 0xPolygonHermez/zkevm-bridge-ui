@@ -38,12 +38,6 @@ export function isAsyncTaskDataAvailable<D, E>(
 
 export type Exact<T, U> = [T, U] extends [U, T] ? true : false;
 
-export function isMetamaskInsufficientAllowanceError(
-  error: unknown
-): error is errorAdapter.MetamaskInsufficientAllowanceError {
-  return errorAdapter.metamaskInsufficientAllowanceError.safeParse(error).success;
-}
-
 export function isMetamaskUserRejectedRequestError(
   error: unknown
 ): error is errorAdapter.MetamaskUserRejectedRequestError {

@@ -13,10 +13,7 @@ import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
-import {
-  isMetamaskUserRejectedRequestError,
-  isMetamaskInsufficientAllowanceError,
-} from "src/utils/types";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
 import { useBridgeContext } from "src/contexts/bridge.context";
@@ -59,26 +56,17 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
-            if (isMetamaskInsufficientAllowanceError(error)) {
-              const network = getChainName(from);
-              callIfMounted(() => {
-                setError(
-                  `You do not have enough Ether in ${network} to pay the "Allowance" transaction fee. Please send some Ether to ${network} and try again`
-                );
-              });
-            } else {
-              void parseError(error).then((parsed) => {
-                if (parsed === "wrong-network") {
-                  callIfMounted(() => {
-                    setError(`Switch to ${getChainName(from)} to continue`);
-                  });
-                } else {
-                  callIfMounted(() => {
-                    notifyError(error);
-                  });
-                }
-              });
-            }
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                callIfMounted(() => {
+                  setError(`Switch to ${getChainName(from)} to continue`);
+                });
+              } else {
+                callIfMounted(() => {
+                  notifyError(error);
+                });
+              }
+            });
           }
         });
     }
