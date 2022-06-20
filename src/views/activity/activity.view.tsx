@@ -10,6 +10,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
@@ -22,6 +23,7 @@ const Activity: FC = () => {
   const { fetchBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
+  const { openSnackbar } = useUIContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined>>({
     status: "pending",
   });
@@ -40,21 +42,28 @@ const Activity: FC = () => {
       claim({
         deposit,
         merkleProof,
-      }).catch((error) => {
-        if (isMetamaskUserRejectedRequestError(error) === false) {
-          void parseError(error).then((parsed) => {
-            if (parsed === "wrong-network") {
-              callIfMounted(() => {
-                setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
-              });
-            } else {
-              callIfMounted(() => {
-                notifyError(error);
-              });
-            }
+      })
+        .then(() => {
+          openSnackbar({
+            type: "success-msg",
+            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
           });
-        }
-      });
+        })
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                callIfMounted(() => {
+                  setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
+                });
+              } else {
+                callIfMounted(() => {
+                  notifyError(error);
+                });
+              }
+            });
+          }
+        });
     }
   };
 
