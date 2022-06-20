@@ -22,10 +22,15 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     maxWidth: "644px",
   },
   message: {
-    textAlign: "center",
-    margin: [0, theme.spacing(1)],
+    whiteSpace: "break-spaces",
+    lineHeight: "24px",
+    margin: [0, theme.spacing(1.5)],
     color: theme.palette.white,
     flex: 1,
+  },
+  messageIcon: {
+    width: "24px",
+    height: "24px",
   },
   closeButton: {
     border: "none",
