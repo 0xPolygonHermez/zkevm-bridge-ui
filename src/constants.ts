@@ -22,7 +22,7 @@ export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
-export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
+export const SNACKBAR_AUTO_HIDE_DURATION = 8000;
 
 export const AUTO_REFRESH_RATE = 15000;
 
