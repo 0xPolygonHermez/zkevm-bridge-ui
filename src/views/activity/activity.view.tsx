@@ -67,6 +67,29 @@ const Activity: FC = () => {
     }
   };
 
+  const processFetchBridgesSuccess = useCallback(
+    (bridges: Bridge[]) => {
+      callIfMounted(() => {
+        setLastLoadedItem(bridges.length);
+        setBridgeList({ status: "successful", data: bridges });
+      });
+    },
+    [callIfMounted]
+  );
+
+  const processFetchBridgesError = useCallback(
+    (error: unknown) => {
+      callIfMounted(() => {
+        setBridgeList({
+          status: "failed",
+          error: undefined,
+        });
+        notifyError(error);
+      });
+    },
+    [callIfMounted, notifyError]
+  );
+
   const onLoadNextPage = () => {
     if (
       env &&
@@ -92,29 +115,6 @@ const Activity: FC = () => {
     }
   };
 
-  const processFetchBridgesSuccess = useCallback(
-    (bridges: Bridge[]) => {
-      callIfMounted(() => {
-        setLastLoadedItem(bridges.length);
-        setBridgeList({ status: "successful", data: bridges });
-      });
-    },
-    [callIfMounted]
-  );
-
-  const processFetchBridgesError = useCallback(
-    (error: unknown) => {
-      callIfMounted(() => {
-        setBridgeList({
-          status: "failed",
-          error: undefined,
-        });
-        notifyError(error);
-      });
-    },
-    [callIfMounted, notifyError]
-  );
-
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
@@ -125,12 +125,24 @@ const Activity: FC = () => {
           limit: PAGE_SIZE,
           offset: 0,
         })
-          .then(processFetchBridgesSuccess)
+          .then((bridges) => {
+            callIfMounted(() => {
+              processFetchBridgesSuccess(bridges);
+              setEndReached(bridges.length < PAGE_SIZE);
+            });
+          })
           .catch(processFetchBridgesError);
       };
       loadBridges();
     }
-  }, [account, env, fetchBridges, processFetchBridgesError, processFetchBridgesSuccess]);
+  }, [
+    account,
+    env,
+    callIfMounted,
+    fetchBridges,
+    processFetchBridgesError,
+    processFetchBridgesSuccess,
+  ]);
 
   useEffect(() => {
     if (
@@ -150,7 +162,12 @@ const Activity: FC = () => {
           ethereumAddress: account.data,
           quantity: lastLoadedItem,
         })
-          .then(processFetchBridgesSuccess)
+          .then((bridges) => {
+            callIfMounted(() => {
+              processFetchBridgesSuccess(bridges);
+              setEndReached(bridges.length < PAGE_SIZE);
+            });
+          })
           .catch(processFetchBridgesError);
       };
       const intervalId = setInterval(refreshBridges, AUTO_REFRESH_RATE);
@@ -167,6 +184,7 @@ const Activity: FC = () => {
     fetchBridges,
     processFetchBridgesError,
     processFetchBridgesSuccess,
+    callIfMounted,
   ]);
 
   useEffect(() => {
