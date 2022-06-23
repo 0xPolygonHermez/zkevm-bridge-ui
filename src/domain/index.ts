@@ -21,6 +21,8 @@ export interface Token {
   logoURI: string;
 }
 
+export type TokenWithBalance = Token & { balance: BigNumber | undefined };
+
 export interface Env {
   bridgeApiUrl: string;
   fiatExchangeRates: {
