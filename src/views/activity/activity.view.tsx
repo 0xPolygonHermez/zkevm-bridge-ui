@@ -36,10 +36,8 @@ const Activity: FC = () => {
 
   const onClaim = (bridge: Bridge) => {
     if (bridge.status === "on-hold") {
-      const { deposit, merkleProof } = bridge;
       claim({
-        deposit,
-        merkleProof,
+        bridge,
       }).catch((error) => {
         if (isMetamaskUserRejectedRequestError(error) === false) {
           void parseError(error).then((parsed) => {

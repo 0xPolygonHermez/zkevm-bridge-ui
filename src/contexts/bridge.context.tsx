@@ -22,9 +22,9 @@ import {
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { getDeposits, getClaimStatus, getMerkleProof } from "src/adapters/bridge-api";
+import { getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
-import { Env, Chain, Token, Bridge, Deposit, MerkleProof } from "src/domain";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
 
 interface GetTokenFromAddressParams {
@@ -94,8 +94,7 @@ interface BridgeParams {
 }
 
 interface ClaimParams {
-  deposit: Deposit;
-  merkleProof: MerkleProof;
+  bridge: OnHoldBridge;
 }
 
 interface BridgeContext {
@@ -279,6 +278,7 @@ const BridgeProvider: FC = (props) => {
             claim_tx_hash,
             token_addr,
             orig_net,
+            ready_for_claim,
           } = apiDeposit;
 
           const from = env.chains.find((chain) => chain.networkId === network_id);
@@ -309,10 +309,15 @@ const BridgeProvider: FC = (props) => {
             destinationAddress: dest_addr,
             depositCount: deposit_cnt,
             depositTxHash: tx_hash,
-            claimTxHash: claim_tx_hash === null ? undefined : claim_tx_hash,
             from,
             to,
             tokenOriginNetwork: orig_net,
+            claim:
+              claim_tx_hash !== null
+                ? { status: "claimed", txHash: claim_tx_hash }
+                : ready_for_claim
+                ? { status: "ready" }
+                : { status: "pending" },
           };
         })
       );
@@ -338,7 +343,19 @@ const BridgeProvider: FC = (props) => {
 
       return Promise.all(
         deposits.map(async (partialDeposit): Promise<Bridge> => {
-          const tokenPrice = tokenPrices[partialDeposit.token.address];
+          const {
+            token,
+            amount,
+            destinationAddress,
+            depositCount,
+            depositTxHash,
+            from,
+            to,
+            tokenOriginNetwork,
+            claim,
+          } = partialDeposit;
+
+          const tokenPrice = tokenPrices[token.address];
 
           const fiatAmount =
             tokenPrice !== undefined && tokenPrice !== null
@@ -348,52 +365,66 @@ const BridgeProvider: FC = (props) => {
                     precision: FIAT_DISPLAY_PRECISION,
                   },
                   {
-                    value: partialDeposit.amount,
-                    precision: partialDeposit.token.decimals,
+                    value: amount,
+                    precision: token.decimals,
                   },
                   FIAT_DISPLAY_PRECISION
                 )
               : undefined;
 
-          const deposit: Deposit = {
-            ...partialDeposit,
-            fiatAmount,
-          };
+          const id = `${depositCount}-${to.networkId}`;
 
-          const id = `${deposit.depositCount}-${deposit.to.networkId}`;
-
-          if (partialDeposit.claimTxHash !== undefined) {
+          if (claim.status === "claimed") {
             return {
               status: "completed",
               id,
-              deposit,
+              token,
+              amount,
+              destinationAddress,
+              depositCount,
+              depositTxHash,
+              from,
+              to,
+              tokenOriginNetwork,
+              claimTxHash: claim.txHash,
+              fiatAmount,
             };
           }
 
-          const claimStatus = await getClaimStatus({
-            apiUrl,
-            networkId: deposit.from.networkId,
-            depositCount: deposit.depositCount,
-          });
-
-          if (claimStatus === false) {
+          if (claim.status === "pending") {
             return {
               status: "initiated",
               id,
-              deposit,
+              token,
+              amount,
+              destinationAddress,
+              depositCount,
+              depositTxHash,
+              from,
+              to,
+              tokenOriginNetwork,
+              fiatAmount,
             };
           }
 
           const merkleProof = await getMerkleProof({
             apiUrl,
-            networkId: deposit.from.networkId,
-            depositCount: deposit.depositCount,
+            networkId: from.networkId,
+            depositCount: depositCount,
           });
 
           return {
             status: "on-hold",
             id,
-            deposit,
+            token,
+            amount,
+            destinationAddress,
+            depositCount,
+            depositTxHash,
+            from,
+            to,
+            tokenOriginNetwork,
+            fiatAmount,
             merkleProof,
           };
         })
@@ -509,8 +540,21 @@ const BridgeProvider: FC = (props) => {
 
   const claim = useCallback(
     ({
-      deposit: { token, amount, tokenOriginNetwork, to, destinationAddress, depositCount: index },
-      merkleProof: { merkleProof, exitRootNumber, l2ExitRootNumber, mainExitRoot, rollupExitRoot },
+      bridge: {
+        token,
+        amount,
+        tokenOriginNetwork,
+        to,
+        destinationAddress,
+        depositCount: index,
+        merkleProof: {
+          merkleProof,
+          exitRootNumber,
+          l2ExitRootNumber,
+          mainExitRoot,
+          rollupExitRoot,
+        },
+      },
     }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");

@@ -71,23 +71,34 @@ export type Message =
       parsed: string;
     };
 
-export type Bridge =
-  | {
-      status: "initiated";
-      id: string;
-      deposit: Deposit;
-    }
-  | {
-      status: "on-hold";
-      id: string;
-      deposit: Deposit;
-      merkleProof: MerkleProof;
-    }
-  | {
-      status: "completed";
-      id: string;
-      deposit: Deposit;
-    };
+interface BridgeCommonFields {
+  id: string;
+  token: Token;
+  amount: BigNumber;
+  fiatAmount: BigNumber | undefined;
+  from: Chain;
+  to: Chain;
+  tokenOriginNetwork: number;
+  destinationAddress: string;
+  depositCount: number;
+  depositTxHash: string;
+}
+
+export type InitiatedBridge = BridgeCommonFields & {
+  status: "initiated";
+};
+
+export type OnHoldBridge = BridgeCommonFields & {
+  status: "on-hold";
+  merkleProof: MerkleProof;
+};
+
+export type CompletedBridge = BridgeCommonFields & {
+  status: "completed";
+  claimTxHash: string;
+};
+
+export type Bridge = InitiatedBridge | OnHoldBridge | CompletedBridge;
 
 export interface Deposit {
   token: Token;
@@ -99,7 +110,17 @@ export interface Deposit {
   destinationAddress: string;
   depositCount: number;
   depositTxHash: string;
-  claimTxHash: string | undefined;
+  claim:
+    | {
+        status: "pending";
+      }
+    | {
+        status: "ready";
+      }
+    | {
+        status: "claimed";
+        txHash: string;
+      };
 }
 
 export interface MerkleProof {
