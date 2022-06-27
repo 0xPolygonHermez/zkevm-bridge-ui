@@ -35,17 +35,6 @@ export const jsonRpcError = StrictSchema<JsonRpcError>()(
   })
 );
 
-export interface MetamaskInsufficientAllowanceError {
-  code: -32603;
-}
-
-export const metamaskInsufficientAllowanceError =
-  StrictSchema<MetamaskInsufficientAllowanceError>()(
-    z.object({
-      code: z.literal(-32603),
-    })
-  );
-
 export interface MetamaskUserRejectedRequestError {
   code: 4001;
   message: string;
