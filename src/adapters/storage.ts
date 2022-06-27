@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as constants from "src/constants";
-import { Currency, Token } from "src/domain";
+import { Currency, Token, Chain } from "src/domain";
 
 // Currency
 
@@ -51,6 +51,10 @@ export function getCustomTokens(): Token[] {
     defaultValue: [],
     parser: z.array(tokenParser),
   });
+}
+
+export function getChainCustomTokens(chain: Chain): Token[] {
+  return getCustomTokens().filter((token) => token.chainId === chain.chainId);
 }
 
 export function setCustomTokens(tokens: Token[]): Token[] {
