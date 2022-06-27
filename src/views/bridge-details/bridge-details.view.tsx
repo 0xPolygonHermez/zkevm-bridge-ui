@@ -35,13 +35,13 @@ interface Fees {
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
   const step1Promise = bridge.deposit.from.provider
-    .getTransaction(bridge.deposit.txHash)
+    .getTransaction(bridge.deposit.depositTxHash)
     .then(calculateTransactionResponseFee);
 
   const step2Promise =
-    bridge.status === "completed"
+    bridge.deposit.claimTxHash !== undefined
       ? bridge.deposit.to.provider
-          .getTransaction(bridge.claim.txHash)
+          .getTransaction(bridge.deposit.claimTxHash)
           .then(calculateTransactionResponseFee)
       : Promise.resolve(undefined);
 
@@ -57,7 +57,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { getBridges, claim } = useBridgeContext();
+  const { fetchBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -112,7 +112,13 @@ const BridgeDetails: FC = () => {
   useEffect(() => {
     if (env && account.status === "successful") {
       // ToDo: Get all the data only for the right bridge
-      void getBridges({ env, ethereumAddress: account.data })
+      void fetchBridges({
+        type: "load",
+        env,
+        ethereumAddress: account.data,
+        limit: 100,
+        offset: 0,
+      })
         .then((bridges) => {
           const foundBridge = bridges.find((bridge) => {
             return bridge.id === bridgeId;
@@ -135,7 +141,7 @@ const BridgeDetails: FC = () => {
         })
         .catch(notifyError);
     }
-  }, [account, env, bridgeId, notifyError, getBridges, callIfMounted]);
+  }, [account, env, bridgeId, notifyError, fetchBridges, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -254,14 +260,12 @@ const BridgeDetails: FC = () => {
     case "successful": {
       const {
         status,
-        deposit: { amount, from, to, token, txHash },
+        deposit: { amount, from, to, token, depositTxHash, claimTxHash },
       } = bridge.data;
 
-      const bridgeTxUrl = `${from.explorerUrl}/tx/${txHash}`;
+      const bridgeTxUrl = `${from.explorerUrl}/tx/${depositTxHash}`;
       const claimTxUrl =
-        bridge.data.status === "completed"
-          ? `${to.explorerUrl}/tx/${bridge.data.claim.txHash}`
-          : undefined;
+        claimTxHash !== undefined ? `${to.explorerUrl}/tx/${claimTxHash}` : undefined;
 
       const { step1: step1EthFee, step2: step2EthFee } = ethFees;
       const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;

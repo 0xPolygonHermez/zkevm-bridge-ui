@@ -1,5 +1,6 @@
-import { useState, FC, useEffect } from "react";
+import { useState, FC, useEffect, useCallback } from "react";
 
+import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -11,20 +12,22 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { parseError } from "src/adapters/error";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { AUTO_REFRESH_RATE } from "src/constants";
+import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
-  const { getBridges, claim } = useBridgeContext();
+  const { fetchBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined>>({
     status: "pending",
   });
   const [displayAll, setDisplayAll] = useState(true);
+  const [lastLoadedItem, setLastLoadedItem] = useState(0);
+  const [endReached, setEndReached] = useState(false);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
@@ -55,33 +58,125 @@ const Activity: FC = () => {
     }
   };
 
+  const processFetchBridgesSuccess = useCallback(
+    (bridges: Bridge[]) => {
+      callIfMounted(() => {
+        setLastLoadedItem(bridges.length);
+        setBridgeList({ status: "successful", data: bridges });
+      });
+    },
+    [callIfMounted]
+  );
+
+  const processFetchBridgesError = useCallback(
+    (error: unknown) => {
+      callIfMounted(() => {
+        setBridgeList({
+          status: "failed",
+          error: undefined,
+        });
+        notifyError(error);
+      });
+    },
+    [callIfMounted, notifyError]
+  );
+
+  const onLoadNextPage = () => {
+    if (
+      env &&
+      account.status === "successful" &&
+      bridgeList.status === "successful" &&
+      endReached === false
+    ) {
+      setBridgeList({ status: "reloading", data: bridgeList.data });
+      fetchBridges({
+        type: "load",
+        env,
+        ethereumAddress: account.data,
+        limit: PAGE_SIZE,
+        offset: lastLoadedItem,
+      })
+        .then((bridges) => {
+          callIfMounted(() => {
+            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
+            setEndReached(bridges.length < PAGE_SIZE);
+          });
+        })
+        .catch(processFetchBridgesError);
+    }
+  };
+
   useEffect(() => {
     if (env && account.status === "successful") {
       const loadBridges = () => {
-        getBridges({ env, ethereumAddress: account.data })
+        fetchBridges({
+          type: "load",
+          env,
+          ethereumAddress: account.data,
+          limit: PAGE_SIZE,
+          offset: 0,
+        })
           .then((bridges) => {
             callIfMounted(() => {
-              setBridgeList({ status: "successful", data: bridges });
+              processFetchBridgesSuccess(bridges);
+              setEndReached(bridges.length < PAGE_SIZE);
             });
           })
-          .catch((error) => {
-            callIfMounted(() => {
-              setBridgeList({
-                status: "failed",
-                error: undefined,
-              });
-              notifyError(error);
-            });
-          });
+          .catch(processFetchBridgesError);
       };
-      const intervalId = setInterval(loadBridges, AUTO_REFRESH_RATE);
       loadBridges();
+    }
+  }, [
+    account,
+    env,
+    callIfMounted,
+    fetchBridges,
+    processFetchBridgesError,
+    processFetchBridgesSuccess,
+  ]);
+
+  useEffect(() => {
+    if (
+      env &&
+      account.status === "successful" &&
+      (bridgeList.status === "successful" || bridgeList.status === "failed")
+    ) {
+      const refreshBridges = () => {
+        setBridgeList(
+          bridgeList.status === "successful"
+            ? { status: "reloading", data: bridgeList.data }
+            : { status: "loading" }
+        );
+        fetchBridges({
+          type: "reload",
+          env,
+          ethereumAddress: account.data,
+          quantity: lastLoadedItem,
+        })
+          .then((bridges) => {
+            callIfMounted(() => {
+              processFetchBridgesSuccess(bridges);
+              setEndReached(bridges.length < PAGE_SIZE);
+            });
+          })
+          .catch(processFetchBridgesError);
+      };
+      const intervalId = setInterval(refreshBridges, AUTO_REFRESH_RATE);
 
       return () => {
         clearInterval(intervalId);
       };
     }
-  }, [account, env, getBridges, notifyError, callIfMounted]);
+  }, [
+    account,
+    bridgeList,
+    env,
+    lastLoadedItem,
+    fetchBridges,
+    processFetchBridgesError,
+    processFetchBridgesSuccess,
+    callIfMounted,
+  ]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);
@@ -89,69 +184,76 @@ const Activity: FC = () => {
 
   const EmptyMessage = () => <div className={classes.emptyMessage}>No Bridges found</div>;
 
-  switch (bridgeList.status) {
-    case "pending":
-    case "loading":
-    case "reloading": {
-      return (
-        <>
-          <Header title="Activity" backTo="home" />
-          <PageLoader />
-        </>
-      );
-    }
-    case "failed": {
-      return (
-        <>
-          <Header title="Activity" backTo="home" />
-          <EmptyMessage />
-        </>
-      );
-    }
-    case "successful": {
-      const pendingBridges = bridgeList.data.filter((bridge) => bridge.status !== "completed");
-      const filteredList = displayAll ? bridgeList.data : pendingBridges;
-
-      return (
-        <>
-          <Header title="Activity" backTo="home" />
-          <div className={classes.selectorBoxes}>
-            <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-              <Typography type="body1" className={classes.status}>
-                All
-              </Typography>
-              <Typography type="body2" className={classes.numberAllBox}>
-                {bridgeList.data.length}
-              </Typography>
-            </div>
-            <div
-              className={`${classes.selectorBox} ${classes.pendingBox}`}
-              onClick={onDisplayPending}
-            >
-              <Typography type="body1" className={classes.status}>
-                Pending
-              </Typography>
-              <Typography type="body2" className={classes.numberPendingBox}>
-                {pendingBridges.length}
-              </Typography>
-            </div>
-          </div>
-          {filteredList.length ? (
-            filteredList.map((bridge) => (
-              <BridgeCard
-                bridge={bridge}
-                onClaim={() => onClaim(bridge)}
-                networkError={wrongNetworkBridges.includes(bridge.id)}
-                key={bridge.id}
-              />
-            ))
-          ) : (
+  return (() => {
+    switch (bridgeList.status) {
+      case "pending":
+      case "loading": {
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
+            <PageLoader />
+          </>
+        );
+      }
+      case "failed": {
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
             <EmptyMessage />
-          )}
-        </>
-      );
+          </>
+        );
+      }
+      case "successful":
+      case "reloading": {
+        const pendingBridges = bridgeList.data.filter((bridge) => bridge.status !== "completed");
+        const filteredList = displayAll ? bridgeList.data : pendingBridges;
+        return (
+          <>
+            <Header title="Activity" backTo="home" />
+            <div className={classes.selectorBoxes}>
+              <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
+                <Typography type="body1" className={classes.status}>
+                  All
+                </Typography>
+                <Typography type="body2" className={classes.numberAllBox}>
+                  {bridgeList.data.length}
+                </Typography>
+              </div>
+              <div
+                className={`${classes.selectorBox} ${classes.pendingBox}`}
+                onClick={onDisplayPending}
+              >
+                <Typography type="body1" className={classes.status}>
+                  Pending
+                </Typography>
+                <Typography type="body2" className={classes.numberPendingBox}>
+                  {pendingBridges.length}
+                </Typography>
+              </div>
+            </div>
+            {filteredList.length ? (
+              <InfiniteScroll
+                asyncTaskStatus={bridgeList.status}
+                endReached={endReached}
+                onLoadNextPage={onLoadNextPage}
+              >
+                {filteredList.map((bridge) => (
+                  <BridgeCard
+                    bridge={bridge}
+                    onClaim={() => onClaim(bridge)}
+                    networkError={wrongNetworkBridges.includes(bridge.id)}
+                    key={bridge.id}
+                  />
+                ))}
+              </InfiniteScroll>
+            ) : (
+              <EmptyMessage />
+            )}
+          </>
+        );
+      }
     }
-  }
+  })();
 };
 
 export default Activity;

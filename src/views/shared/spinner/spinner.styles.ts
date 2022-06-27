@@ -4,6 +4,7 @@ import { Theme } from "src/styles/theme";
 
 interface StyleProps {
   size: number;
+  color?: string;
 }
 
 const useSpinnerStyles = createUseStyles((theme: Theme) => ({
@@ -19,16 +20,18 @@ const useSpinnerStyles = createUseStyles((theme: Theme) => ({
   svg: {
     animation: "$spin 0.8s linear infinite",
   },
-  topCircle: {
-    stroke: theme.palette.primary.main,
+  topCircle: ({ color = theme.palette.primary.main }: StyleProps) => ({
+    stroke: color,
     strokeLinecap: "round",
     strokeDasharray: "30px 200px",
     strokeDashoffset: "0px",
-  },
-  bottomCircle: {
-    stroke: theme.palette.primary.main,
-    strokeOpacity: 0.2,
-  },
+  }),
+  bottomCircle: ({ color = theme.palette.primary.main }: StyleProps) => ({
+    bottomCircle: {
+      stroke: color,
+      strokeOpacity: 0.2,
+    },
+  }),
 }));
 
 export default useSpinnerStyles;

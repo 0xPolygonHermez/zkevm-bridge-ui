@@ -26,6 +26,8 @@ export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
 export const AUTO_REFRESH_RATE = 15000;
 
+export const PAGE_SIZE = 25;
+
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",
   network: "entry.1632331664",
