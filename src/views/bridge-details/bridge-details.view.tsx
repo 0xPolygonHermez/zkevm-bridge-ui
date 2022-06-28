@@ -37,11 +37,19 @@ interface Fees {
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
   const step1Promise = bridge.from.provider
     .getTransaction(bridge.depositTxHash)
-    .then(calculateTransactionResponseFee);
+    .then((txResponse) => {
+      return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
+    })
+    .catch(() => undefined);
 
   const step2Promise =
     bridge.status === "completed"
-      ? bridge.to.provider.getTransaction(bridge.claimTxHash).then(calculateTransactionResponseFee)
+      ? bridge.to.provider
+          .getTransaction(bridge.claimTxHash)
+          .then((txResponse) => {
+            return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
+          })
+          .catch(() => undefined)
       : Promise.resolve(undefined);
 
   return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({
