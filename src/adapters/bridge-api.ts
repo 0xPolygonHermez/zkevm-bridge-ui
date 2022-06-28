@@ -59,6 +59,19 @@ const depositParser = StrictSchema<DepositInput, DepositOutput>()(
   })
 );
 
+const getDepositResponseParser = StrictSchema<
+  {
+    deposit: DepositInput;
+  },
+  {
+    deposit: DepositOutput;
+  }
+>()(
+  z.object({
+    deposit: depositParser,
+  })
+);
+
 const getDepositsResponseParser = StrictSchema<
   {
     deposits?: DepositInput[];
@@ -162,7 +175,7 @@ export const getDeposit = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/deposit`,
+      url: `/bridge`,
       method: "GET",
       params: {
         net_id: networkId,
@@ -170,10 +183,10 @@ export const getDeposit = ({
       },
     })
     .then((res) => {
-      const parsedData = depositParser.safeParse(res.data);
+      const parsedData = getDepositResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data;
+        return parsedData.data.deposit;
       } else {
         throw parsedData.error;
       }
