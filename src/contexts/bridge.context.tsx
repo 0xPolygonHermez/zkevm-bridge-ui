@@ -21,8 +21,9 @@ import {
 } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
+import { serializeBridgeId } from "src/utils/codecs";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { getDeposits, getMerkleProof } from "src/adapters/bridge-api";
+import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
@@ -44,6 +45,12 @@ interface EstimateBridgeGasPriceParams {
   to: Chain;
   destinationAddress: string;
 }
+
+type GetBridgeParams = {
+  env: Env;
+  networkId: number;
+  depositCount: number;
+};
 
 interface GetBridgesParams {
   env: Env;
@@ -106,6 +113,7 @@ interface BridgeContext {
     originalTokenAddress: string;
   }>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
+  getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<Bridge[]>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
@@ -127,6 +135,9 @@ const bridgeContext = createContext<BridgeContext>({
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   estimateBridgeGasPrice: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
+  getBridge: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   fetchBridges: () => {
@@ -248,6 +259,137 @@ const BridgeProvider: FC = (props) => {
   type TokenPrices = Partial<Record<string, Price>>;
 
   const refreshCancelTokenSource = useRef(axios.CancelToken.source());
+
+  const getBridge = useCallback(
+    async ({ env, networkId, depositCount }: GetBridgeParams): Promise<Bridge> => {
+      const apiUrl = env.bridgeApiUrl;
+      const apiDeposit = await getDeposit({
+        apiUrl,
+        networkId,
+        depositCount,
+      });
+
+      const {
+        network_id,
+        dest_net,
+        amount,
+        dest_addr,
+        deposit_cnt,
+        tx_hash,
+        claim_tx_hash,
+        token_addr,
+        orig_net,
+        ready_for_claim,
+      } = apiDeposit;
+
+      const from = env.chains.find((chain) => chain.networkId === network_id);
+      if (from === undefined) {
+        throw new Error(
+          `The specified network_id "${network_id}" can not be found in the list of supported Chains`
+        );
+      }
+
+      const to = env.chains.find((chain) => chain.networkId === dest_net);
+      if (to === undefined) {
+        throw new Error(
+          `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
+        );
+      }
+
+      const token = await getToken({
+        env,
+        tokenAddress: token_addr,
+        originNetwork: orig_net,
+        chain: from,
+      });
+
+      const claim: Deposit["claim"] =
+        claim_tx_hash !== null
+          ? { status: "claimed", txHash: claim_tx_hash }
+          : ready_for_claim
+          ? { status: "ready" }
+          : { status: "pending" };
+
+      const tokenPrice: BigNumber | undefined = await getTokenPrice({
+        token,
+        chain: from,
+      }).catch(() => undefined);
+
+      const fiatAmount =
+        tokenPrice &&
+        multiplyAmounts(
+          {
+            value: tokenPrice,
+            precision: FIAT_DISPLAY_PRECISION,
+          },
+          {
+            value: BigNumber.from(amount),
+            precision: token.decimals,
+          },
+          FIAT_DISPLAY_PRECISION
+        );
+
+      const id = serializeBridgeId({
+        depositCount,
+        networkId,
+      });
+
+      switch (claim.status) {
+        case "pending": {
+          return {
+            status: "initiated",
+            id,
+            from,
+            to,
+            token,
+            fiatAmount,
+            amount: BigNumber.from(amount),
+            destinationAddress: dest_addr,
+            depositCount: deposit_cnt,
+            depositTxHash: tx_hash,
+            tokenOriginNetwork: orig_net,
+          };
+        }
+        case "ready": {
+          return {
+            status: "on-hold",
+            id,
+            from,
+            to,
+            token,
+            fiatAmount,
+            amount: BigNumber.from(amount),
+            destinationAddress: dest_addr,
+            depositCount: deposit_cnt,
+            depositTxHash: tx_hash,
+            tokenOriginNetwork: orig_net,
+            merkleProof: await getMerkleProof({
+              apiUrl,
+              networkId,
+              depositCount,
+            }),
+          };
+        }
+        case "claimed": {
+          return {
+            status: "completed",
+            id,
+            from,
+            to,
+            token,
+            fiatAmount,
+            amount: BigNumber.from(amount),
+            destinationAddress: dest_addr,
+            depositCount: deposit_cnt,
+            depositTxHash: tx_hash,
+            tokenOriginNetwork: orig_net,
+            claimTxHash: claim.txHash,
+          };
+        }
+      }
+    },
+    [getTokenPrice, getToken]
+  );
 
   const getBridges = useCallback(
     async ({
@@ -372,7 +514,10 @@ const BridgeProvider: FC = (props) => {
                 )
               : undefined;
 
-          const id = `${depositCount}-${to.networkId}`;
+          const id = serializeBridgeId({
+            depositCount,
+            networkId: from.networkId,
+          });
 
           if (claim.status === "claimed") {
             return {
@@ -661,6 +806,7 @@ const BridgeProvider: FC = (props) => {
         computeWrappedTokenAddress,
         getNativeTokenInfo,
         estimateBridgeGasPrice,
+        getBridge,
         fetchBridges,
         bridge,
         claim,
