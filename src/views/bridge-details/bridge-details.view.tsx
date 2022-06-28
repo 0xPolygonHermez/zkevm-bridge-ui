@@ -23,6 +23,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
+import { parseBridgeId } from "src/utils/codecs";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
@@ -55,7 +56,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { fetchBridges, claim } = useBridgeContext();
+  const { claim, getBridge } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -107,37 +108,42 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && account.status === "successful") {
-      // ToDo: Get all the data only for the right bridge
-      void fetchBridges({
-        type: "load",
-        env,
-        ethereumAddress: account.data,
-        limit: 100,
-        offset: 0,
-      })
-        .then((bridges) => {
-          const foundBridge = bridges.find((bridge) => {
-            return bridge.id === bridgeId;
-          });
-          if (foundBridge) {
+      const parsedBridgeId = parseBridgeId(bridgeId);
+      if (parsedBridgeId.success) {
+        const { depositCount, networkId } = parsedBridgeId.data;
+        void getBridge({
+          env,
+          depositCount,
+          networkId,
+        })
+          .then((bridge) => {
             callIfMounted(() => {
               setBridge({
                 status: "successful",
-                data: foundBridge,
+                data: bridge,
               });
             });
-          } else {
+          })
+          .catch((error) => {
             callIfMounted(() => {
+              notifyError(error);
               setBridge({
                 status: "failed",
                 error: "Bridge not found",
               });
             });
-          }
-        })
-        .catch(notifyError);
+          });
+      } else {
+        callIfMounted(() => {
+          notifyError(parsedBridgeId.error);
+          setBridge({
+            status: "failed",
+            error: "Bridge not found",
+          });
+        });
+      }
     }
-  }, [account, env, bridgeId, notifyError, fetchBridges, callIfMounted]);
+  }, [account, env, bridgeId, notifyError, getBridge, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
