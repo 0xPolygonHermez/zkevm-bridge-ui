@@ -62,7 +62,7 @@ const TokenList: FC<TokenListProps> = ({
             }}
           />
           <div className={classes.list}>
-            {tokens.slice(0, 20).map((token) => {
+            {tokens.map((token) => {
               const isImportedCustomToken = isChainCustomToken(token, chain);
               const isNonImportedCustomToken =
                 !isImportedCustomToken &&
