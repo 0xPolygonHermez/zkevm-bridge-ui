@@ -1,6 +1,5 @@
 import React from "react";
 
-import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
@@ -22,8 +21,6 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
       case "error":
       case "error-msg":
         return <ErrorIcon className={classes.messageIcon} />;
-      case "info-msg":
-        return <InfoIcon className={classes.messageIcon} />;
       case "success-msg":
         return <SuccessIcon className={classes.messageIcon} />;
     }
