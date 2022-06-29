@@ -62,7 +62,7 @@ export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
 // User notifications
 export type Message =
   | {
-      type: "info-msg" | "success-msg" | "error-msg";
+      type: "success-msg" | "error-msg";
       text: string;
     }
   | {
