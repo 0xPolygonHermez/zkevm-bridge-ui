@@ -41,8 +41,9 @@ const TokenList: FC<TokenListProps> = ({
   const classes = useListStyles();
 
   const onOutsideClick = (event: MouseEvent) => {
-    if (event.target !== event.currentTarget) return;
-    onClose();
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
   };
 
   const isLoading = customToken.status === "loading";
