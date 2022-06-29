@@ -114,7 +114,10 @@ interface BridgeContext {
   }>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
-  fetchBridges: (params: FetchBridgesParams) => Promise<Bridge[]>;
+  fetchBridges: (params: FetchBridgesParams) => Promise<{
+    bridges: Bridge[];
+    total: number;
+  }>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
@@ -398,9 +401,12 @@ const BridgeProvider: FC = (props) => {
       limit,
       offset,
       cancelToken,
-    }: GetBridgesParams): Promise<Bridge[]> => {
+    }: GetBridgesParams): Promise<{
+      bridges: Bridge[];
+      total: number;
+    }> => {
       const apiUrl = env.bridgeApiUrl;
-      const apiDeposits = await getDeposits({
+      const { deposits: apiDeposits, total } = await getDeposits({
         apiUrl,
         ethereumAddress,
         limit,
@@ -483,7 +489,7 @@ const BridgeProvider: FC = (props) => {
         Promise.resolve({})
       );
 
-      return Promise.all(
+      const bridges = await Promise.all(
         deposits.map(async (partialDeposit): Promise<Bridge> => {
           const {
             token,
@@ -574,6 +580,11 @@ const BridgeProvider: FC = (props) => {
           };
         })
       );
+
+      return {
+        bridges,
+        total,
+      };
     },
     [getTokenPrice, getToken]
   );
@@ -581,7 +592,14 @@ const BridgeProvider: FC = (props) => {
   const REFRESH_PAGE_SIZE = 100;
 
   const refreshBridges = useCallback(
-    async ({ env, ethereumAddress, quantity }: RefreshBridgesParams): Promise<Bridge[]> => {
+    async ({
+      env,
+      ethereumAddress,
+      quantity,
+    }: RefreshBridgesParams): Promise<{
+      bridges: Bridge[];
+      total: number;
+    }> => {
       refreshCancelTokenSource.current = axios.CancelToken.source();
       const completePages = Math.floor(quantity / REFRESH_PAGE_SIZE);
       const remainderBridges = quantity % REFRESH_PAGE_SIZE;
@@ -604,13 +622,21 @@ const BridgeProvider: FC = (props) => {
               });
             })
         )
-      ).reduce((acc, curr) => [...acc, ...curr], []);
+      ).reduce((acc, curr) => ({ bridges: [...acc.bridges, ...curr.bridges], total: curr.total }), {
+        bridges: [],
+        total: 0,
+      });
     },
     [getBridges]
   );
 
   const fetchBridges = useCallback(
-    async (params: FetchBridgesParams): Promise<Bridge[]> => {
+    async (
+      params: FetchBridgesParams
+    ): Promise<{
+      bridges: Bridge[];
+      total: number;
+    }> => {
       if (params.type === "load") {
         // fetching new data prevails over possible reloads in progress so we cancel them
         refreshCancelTokenSource.current.cancel();

@@ -75,13 +75,16 @@ const getDepositResponseParser = StrictSchema<
 const getDepositsResponseParser = StrictSchema<
   {
     deposits?: DepositInput[];
+    total_cnt?: string;
   },
   {
     deposits?: DepositOutput[];
+    total_cnt?: number;
   }
 >()(
   z.object({
     deposits: z.optional(z.array(depositParser)),
+    total_cnt: z.optional(z.string().transform((v) => z.number().parse(Number(v)))),
   })
 );
 
@@ -138,7 +141,10 @@ export const getDeposits = ({
   limit = PAGE_SIZE,
   offset = 0,
   cancelToken,
-}: GetDepositsParams): Promise<DepositOutput[]> => {
+}: GetDepositsParams): Promise<{
+  deposits: DepositOutput[];
+  total: number;
+}> => {
   return axios
     .request({
       baseURL: apiUrl,
@@ -154,7 +160,10 @@ export const getDeposits = ({
       const parsedData = getDepositsResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.deposits !== undefined ? parsedData.data.deposits : [];
+        return {
+          deposits: parsedData.data.deposits !== undefined ? parsedData.data.deposits : [],
+          total: parsedData.data.total_cnt !== undefined ? parsedData.data.total_cnt : 0,
+        };
       } else {
         throw parsedData.error;
       }

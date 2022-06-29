@@ -103,10 +103,12 @@ const Activity: FC = () => {
         limit: PAGE_SIZE,
         offset: lastLoadedItem,
       })
-        .then((bridges) => {
+        .then((response) => {
           callIfMounted(() => {
-            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
-            setEndReached(bridges.length < PAGE_SIZE);
+            const { bridges, total } = response;
+            const mergedBridges = [...bridgeList.data, ...bridges];
+            processFetchBridgesSuccess(mergedBridges);
+            setEndReached(mergedBridges.length === total);
           });
         })
         .catch(processFetchBridgesError);
@@ -123,10 +125,11 @@ const Activity: FC = () => {
           limit: PAGE_SIZE,
           offset: 0,
         })
-          .then((bridges) => {
+          .then((response) => {
             callIfMounted(() => {
+              const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length < PAGE_SIZE);
+              setEndReached(bridges.length === total);
             });
           })
           .catch(processFetchBridgesError);
@@ -160,10 +163,11 @@ const Activity: FC = () => {
           ethereumAddress: account.data,
           quantity: lastLoadedItem,
         })
-          .then((bridges) => {
+          .then((response) => {
             callIfMounted(() => {
+              const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length < PAGE_SIZE);
+              setEndReached(bridges.length === total);
             });
           })
           .catch(processFetchBridgesError);
