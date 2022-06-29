@@ -23,7 +23,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
-import { parseBridgeId } from "src/utils/codecs";
+import { deserializeBridgeId } from "src/utils/serializers";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
@@ -116,7 +116,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && account.status === "successful") {
-      const parsedBridgeId = parseBridgeId(bridgeId);
+      const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
         void getBridge({

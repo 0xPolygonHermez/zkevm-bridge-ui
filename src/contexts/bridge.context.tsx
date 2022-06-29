@@ -21,7 +21,7 @@ import {
 } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
-import { serializeBridgeId } from "src/utils/codecs";
+import { serializeBridgeId } from "src/utils/serializers";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens } from "src/adapters/storage";

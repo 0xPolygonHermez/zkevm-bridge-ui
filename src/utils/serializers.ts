@@ -4,13 +4,13 @@ import { StrictSchema } from "src/utils/type-safety";
 
 type SerializedBridgeId = string;
 
-interface ParsedBridgeId {
+interface BridgeId {
   networkId: number;
   depositCount: number;
 }
 
-const serializedBridgeIdParser = StrictSchema<SerializedBridgeId, ParsedBridgeId>()(
-  z.string().transform((bridgeId): ParsedBridgeId => {
+const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
+  z.string().transform((bridgeId): BridgeId => {
     const [networkIdString, depositCountString] = bridgeId.split("-");
     const networkId = z.number().parse(Number(networkIdString));
     const depositCount = z.number().parse(Number(depositCountString));
@@ -21,15 +21,15 @@ const serializedBridgeIdParser = StrictSchema<SerializedBridgeId, ParsedBridgeId
   })
 );
 
-const parseBridgeId = (
+const deserializeBridgeId = (
   value: unknown
-): z.SafeParseReturnType<SerializedBridgeId, ParsedBridgeId> => {
-  return serializedBridgeIdParser.safeParse(value);
+): z.SafeParseReturnType<SerializedBridgeId, BridgeId> => {
+  return bridgeIdParser.safeParse(value);
 };
 
-const serializeBridgeId = (parsedBridgeId: ParsedBridgeId): SerializedBridgeId => {
+const serializeBridgeId = (parsedBridgeId: BridgeId): SerializedBridgeId => {
   const { networkId, depositCount } = parsedBridgeId;
   return `${networkId}-${depositCount}`;
 };
 
-export { parseBridgeId, serializeBridgeId };
+export { deserializeBridgeId, serializeBridgeId };
