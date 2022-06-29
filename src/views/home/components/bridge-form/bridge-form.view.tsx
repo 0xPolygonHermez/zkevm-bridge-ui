@@ -63,7 +63,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   });
   const [chainList, setChainList] = useState<Chain[]>();
   const [tokenList, setTokenList] = useState<TokenWithBalance[]>();
-  const [tokensWithBalance, setTokensWithBalance] = useState<TokenWithBalance[]>();
+  const [tokens, setTokens] = useState<TokenWithBalance[]>();
   const [tokenListSearchInputValue, setTokenListSearchInputValue] = useState<string>("");
   const [tokenListCustomToken, setTokenListCustomToken] = useState<
     AsyncTask<TokenWithBalance, string>
@@ -104,7 +104,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   };
 
   const onTokenDropdownClick = () => {
-    setTokenList(tokensWithBalance);
+    setTokenList(tokens);
   };
 
   const onTokenListTokenSelected = (token: TokenWithBalance) => {
@@ -161,28 +161,28 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   };
 
   const onTokenListImportToken = (tokenWithBalance: TokenWithBalance) => {
-    if (tokensWithBalance) {
+    if (tokens) {
       const { name, symbol, address, decimals, chainId, logoURI } = tokenWithBalance;
       addCustomToken({ name, symbol, address, decimals, chainId, logoURI });
-      const newTokensWithBalance = [tokenWithBalance, ...tokensWithBalance];
-      setTokensWithBalance(newTokensWithBalance);
+      const newTokensWithBalance = [tokenWithBalance, ...tokens];
+      setTokens(newTokensWithBalance);
       updateTokenList(newTokensWithBalance, tokenListSearchInputValue);
     }
   };
 
   const onTokenListRemoveToken = (token: TokenWithBalance) => {
-    if (tokensWithBalance) {
+    if (tokens) {
       removeCustomToken(token);
-      const newTokensWithBalance = tokensWithBalance.filter((tkn) => tkn.address !== token.address);
-      setTokensWithBalance(newTokensWithBalance);
+      const newTokensWithBalance = tokens.filter((tkn) => tkn.address !== token.address);
+      setTokens(newTokensWithBalance);
       updateTokenList(newTokensWithBalance, tokenListSearchInputValue);
     }
   };
 
   const onTokenListSearchInputChange = (value: string): void => {
-    if (tokensWithBalance) {
+    if (tokens) {
       setTokenListSearchInputValue(value);
-      updateTokenList(tokensWithBalance, value);
+      updateTokenList(tokens, value);
     }
   };
 
@@ -229,7 +229,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         )
       ).then((tokensWithBalance) => {
         callIfMounted(() => {
-          setTokensWithBalance(tokensWithBalance);
+          setTokens(tokensWithBalance);
         });
       });
     }
@@ -367,7 +367,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     return null;
   }
 
-  const fromBalance = tokensWithBalance?.find((tkn) => tkn.address === token.address)?.balance;
+  const fromBalance = tokens?.find((tkn) => tkn.address === token.address)?.balance;
 
   const tokenListSearchError =
     tokenListCustomToken.status === "failed"
