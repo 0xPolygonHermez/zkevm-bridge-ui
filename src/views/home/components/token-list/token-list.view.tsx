@@ -63,54 +63,56 @@ const TokenList: FC<TokenListProps> = ({
             }}
           />
           <div className={classes.list}>
-            {tokens.map((token) => {
-              const isImportedCustomToken = isChainCustomToken(token, chain);
-              const isNonImportedCustomToken =
-                !isImportedCustomToken &&
-                customToken.status === "successful" &&
-                customToken.data.address === token.address;
-              const isSelected = token.address === selected.address;
-              return (
-                <div className={classes.tokenWrapper} key={token.address}>
-                  <button
-                    className={classes.tokenMainButton}
-                    disabled={isSelected}
-                    onClick={() => onSelectToken(token)}
-                  >
-                    <Icon url={token.logoURI} size={24} />
-                    <Typography type="body1">{`${token.name} (${
-                      token.balance ? formatTokenAmount(token.balance, token) : "--"
-                    } ${token.symbol})`}</Typography>
-                  </button>
-                  {isImportedCustomToken && (
-                    <button
-                      className={classes.tokenAccessoryButton}
-                      disabled={isSelected}
-                      onClick={() => onRemoveTokenClick(token)}
-                    >
-                      <Typography type="body1">Remove</Typography>
-                    </button>
-                  )}
-                  {isNonImportedCustomToken && (
-                    <button
-                      className={classes.tokenAccessoryButton}
-                      disabled={isSelected}
-                      onClick={() => {
-                        onImportTokenClick(token);
-                      }}
-                    >
-                      <Typography type="body1">Import</Typography>
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-            {isLoading && (
+            {isLoading ? (
               <Typography className={classes.loading} type="body1">
                 Loading...
               </Typography>
+            ) : error ? (
+              <Error error={error} type="body2" className={classes.error} />
+            ) : (
+              tokens.map((token) => {
+                const isImportedCustomToken = isChainCustomToken(token, chain);
+                const isNonImportedCustomToken =
+                  !isImportedCustomToken &&
+                  customToken.status === "successful" &&
+                  customToken.data.address === token.address;
+                const isSelected = token.address === selected.address;
+                return (
+                  <div className={classes.tokenWrapper} key={token.address}>
+                    <button
+                      className={classes.tokenMainButton}
+                      disabled={isSelected}
+                      onClick={() => onSelectToken(token)}
+                    >
+                      <Icon url={token.logoURI} size={24} />
+                      <Typography type="body1">{`${token.name} (${
+                        token.balance ? formatTokenAmount(token.balance, token) : "--"
+                      } ${token.symbol})`}</Typography>
+                    </button>
+                    {isImportedCustomToken && (
+                      <button
+                        className={classes.tokenAccessoryButton}
+                        disabled={isSelected}
+                        onClick={() => onRemoveTokenClick(token)}
+                      >
+                        <Typography type="body1">Remove</Typography>
+                      </button>
+                    )}
+                    {isNonImportedCustomToken && (
+                      <button
+                        className={classes.tokenAccessoryButton}
+                        disabled={isSelected}
+                        onClick={() => {
+                          onImportTokenClick(token);
+                        }}
+                      >
+                        <Typography type="body1">Import</Typography>
+                      </button>
+                    )}
+                  </div>
+                );
+              })
             )}
-            {!isLoading && error && <Error error={error} type="body2" className={classes.error} />}
           </div>
         </Card>
       </div>
