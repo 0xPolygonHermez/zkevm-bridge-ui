@@ -520,22 +520,6 @@ const BridgeProvider: FC = (props) => {
         });
 
         switch (claim.status) {
-          case "claimed": {
-            return {
-              status: "completed",
-              id,
-              token,
-              amount,
-              destinationAddress,
-              depositCount,
-              depositTxHash,
-              from,
-              to,
-              tokenOriginNetwork,
-              claimTxHash: claim.txHash,
-              fiatAmount,
-            };
-          }
           case "pending": {
             return {
               status: "initiated",
@@ -563,6 +547,22 @@ const BridgeProvider: FC = (props) => {
               from,
               to,
               tokenOriginNetwork,
+              fiatAmount,
+            };
+          }
+          case "claimed": {
+            return {
+              status: "completed",
+              id,
+              token,
+              amount,
+              destinationAddress,
+              depositCount,
+              depositTxHash,
+              from,
+              to,
+              tokenOriginNetwork,
+              claimTxHash: claim.txHash,
               fiatAmount,
             };
           }
