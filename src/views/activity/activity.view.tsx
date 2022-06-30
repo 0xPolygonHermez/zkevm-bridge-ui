@@ -242,8 +242,7 @@ const Activity: FC = () => {
             </div>
             {filteredList.length ? (
               <InfiniteScroll
-                asyncTaskStatus={bridgeList.status}
-                endReached={bridgeList.data.length === total}
+                isLoading={bridgeList.status === "reloading"}
                 onLoadNextPage={onLoadNextPage}
               >
                 {filteredList.map((bridge) => (
