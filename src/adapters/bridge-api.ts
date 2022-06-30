@@ -15,6 +15,7 @@ interface DepositInput {
   deposit_cnt: string;
   tx_hash: string;
   claim_tx_hash: string;
+  ready_for_claim: boolean;
 }
 
 interface DepositOutput {
@@ -27,6 +28,7 @@ interface DepositOutput {
   deposit_cnt: number;
   tx_hash: string;
   claim_tx_hash: string | null;
+  ready_for_claim: boolean;
 }
 
 interface MerkleProof {
@@ -53,6 +55,20 @@ const depositParser = StrictSchema<DepositInput, DepositOutput>()(
       .refine((val) => val === null || val.length === 66, {
         message: "The length of claim_tx_hash must be 66 characters",
       }),
+    ready_for_claim: z.boolean(),
+  })
+);
+
+const getDepositResponseParser = StrictSchema<
+  {
+    deposit: DepositInput;
+  },
+  {
+    deposit: DepositOutput;
+  }
+>()(
+  z.object({
+    deposit: depositParser,
   })
 );
 
@@ -66,14 +82,6 @@ const getDepositsResponseParser = StrictSchema<
 >()(
   z.object({
     deposits: z.optional(z.array(depositParser)),
-  })
-);
-
-const getClaimStatusResponseParser = StrictSchema<{
-  ready?: boolean;
-}>()(
-  z.object({
-    ready: z.optional(z.boolean()),
   })
 );
 
@@ -153,21 +161,21 @@ export const getDeposits = ({
     });
 };
 
-interface GetClaimStatusParams {
+interface GetDepositParams {
   apiUrl: string;
   networkId: number;
   depositCount: number;
 }
 
-export const getClaimStatus = ({
+export const getDeposit = ({
   apiUrl,
   networkId,
   depositCount,
-}: GetClaimStatusParams): Promise<boolean> => {
+}: GetDepositParams): Promise<DepositOutput> => {
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/claim-status`,
+      url: `/bridge`,
       method: "GET",
       params: {
         net_id: networkId,
@@ -175,10 +183,10 @@ export const getClaimStatus = ({
       },
     })
     .then((res) => {
-      const parsedData = getClaimStatusResponseParser.safeParse(res.data);
+      const parsedData = getDepositResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.ready === true;
+        return parsedData.data.deposit;
       } else {
         throw parsedData.error;
       }

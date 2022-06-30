@@ -21,11 +21,7 @@ export interface BridgeCardProps {
 }
 
 const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
-  const {
-    status,
-    id,
-    deposit: { to, amount, token, fiatAmount },
-  } = bridge;
+  const { status, id, to, amount, token, fiatAmount } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 

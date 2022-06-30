@@ -38,10 +38,8 @@ const Activity: FC = () => {
 
   const onClaim = (bridge: Bridge) => {
     if (bridge.status === "on-hold") {
-      const { deposit, merkleProof } = bridge;
       claim({
-        deposit,
-        merkleProof,
+        bridge,
       })
         .then(() => {
           openSnackbar({

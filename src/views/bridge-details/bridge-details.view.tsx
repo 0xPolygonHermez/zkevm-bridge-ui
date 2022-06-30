@@ -23,6 +23,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
+import { deserializeBridgeId } from "src/utils/serializers";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
@@ -34,15 +35,21 @@ interface Fees {
 }
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
-  const step1Promise = bridge.deposit.from.provider
-    .getTransaction(bridge.deposit.depositTxHash)
-    .then(calculateTransactionResponseFee);
+  const step1Promise = bridge.from.provider
+    .getTransaction(bridge.depositTxHash)
+    .then((txResponse) => {
+      return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
+    })
+    .catch(() => undefined);
 
   const step2Promise =
-    bridge.deposit.claimTxHash !== undefined
-      ? bridge.deposit.to.provider
-          .getTransaction(bridge.deposit.claimTxHash)
-          .then(calculateTransactionResponseFee)
+    bridge.status === "completed"
+      ? bridge.to.provider
+          .getTransaction(bridge.claimTxHash)
+          .then((txResponse) => {
+            return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
+          })
+          .catch(() => undefined)
       : Promise.resolve(undefined);
 
   return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({
@@ -57,7 +64,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { fetchBridges, claim } = useBridgeContext();
+  const { claim, getBridge } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -75,11 +82,7 @@ const BridgeDetails: FC = () => {
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
-      const { deposit, merkleProof } = bridge.data;
-      claim({
-        deposit,
-        merkleProof,
-      })
+      claim({ bridge: bridge.data })
         .then(() => {
           navigate(routes.activity.path);
         })
@@ -88,7 +91,9 @@ const BridgeDetails: FC = () => {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
                 callIfMounted(() => {
-                  setIncorrectNetworkMessage(`Switch to ${getChainName(deposit.to)} to continue`);
+                  setIncorrectNetworkMessage(
+                    `Switch to ${getChainName(bridge.data.to)} to continue`
+                  );
                 });
               } else {
                 callIfMounted(() => {
@@ -103,7 +108,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (bridge.status === "successful") {
-      if (bridge.data.deposit.to.chainId === connectedProvider?.chainId) {
+      if (bridge.data.to.chainId === connectedProvider?.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }
@@ -111,37 +116,42 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && account.status === "successful") {
-      // ToDo: Get all the data only for the right bridge
-      void fetchBridges({
-        type: "load",
-        env,
-        ethereumAddress: account.data,
-        limit: 100,
-        offset: 0,
-      })
-        .then((bridges) => {
-          const foundBridge = bridges.find((bridge) => {
-            return bridge.id === bridgeId;
-          });
-          if (foundBridge) {
+      const parsedBridgeId = deserializeBridgeId(bridgeId);
+      if (parsedBridgeId.success) {
+        const { depositCount, networkId } = parsedBridgeId.data;
+        void getBridge({
+          env,
+          depositCount,
+          networkId,
+        })
+          .then((bridge) => {
             callIfMounted(() => {
               setBridge({
                 status: "successful",
-                data: foundBridge,
+                data: bridge,
               });
             });
-          } else {
+          })
+          .catch((error) => {
             callIfMounted(() => {
+              notifyError(error);
               setBridge({
                 status: "failed",
                 error: "Bridge not found",
               });
             });
-          }
-        })
-        .catch(notifyError);
+          });
+      } else {
+        callIfMounted(() => {
+          notifyError(parsedBridgeId.error);
+          setBridge({
+            status: "failed",
+            error: "Bridge not found",
+          });
+        });
+      }
     }
-  }, [account, env, bridgeId, notifyError, fetchBridges, callIfMounted]);
+  }, [account, env, bridgeId, notifyError, getBridge, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -161,9 +171,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
-      const {
-        deposit: { amount, from, token },
-      } = bridge.data;
+      const { amount, from, token } = bridge.data;
 
       // fiat amount
       getTokenPrice({ token, chain: from })
@@ -194,9 +202,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env !== undefined && bridge.status === "successful") {
-      const {
-        deposit: { from },
-      } = bridge.data;
+      const { from } = bridge.data;
 
       // fiat fees
       const token = getChainTokens(from).find((t) => t.symbol === "WETH");
@@ -258,14 +264,13 @@ const BridgeDetails: FC = () => {
       return <Navigate to={routes.activity.path} replace />;
     }
     case "successful": {
-      const {
-        status,
-        deposit: { amount, from, to, token, depositTxHash, claimTxHash },
-      } = bridge.data;
+      const { status, amount, from, to, token, depositTxHash } = bridge.data;
 
       const bridgeTxUrl = `${from.explorerUrl}/tx/${depositTxHash}`;
       const claimTxUrl =
-        claimTxHash !== undefined ? `${to.explorerUrl}/tx/${claimTxHash}` : undefined;
+        bridge.data.status === "completed"
+          ? `${to.explorerUrl}/tx/${bridge.data.claimTxHash}`
+          : undefined;
 
       const { step1: step1EthFee, step2: step2EthFee } = ethFees;
       const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
@@ -324,7 +329,7 @@ const BridgeDetails: FC = () => {
             </div>
             <div className={classes.row}>
               <Typography type="body2" className={classes.alignRow}>
-                Step 1 Fee ({getChainName(bridge.data.deposit.from)})
+                Step 1 Fee ({getChainName(bridge.data.from)})
               </Typography>
               <Typography type="body1" className={classes.alignRow}>
                 {step1FeeString}
@@ -333,7 +338,7 @@ const BridgeDetails: FC = () => {
             {bridge.data.status === "completed" && (
               <div className={classes.row}>
                 <Typography type="body2" className={classes.alignRow}>
-                  Step 2 Fee ({getChainName(bridge.data.deposit.to)})
+                  Step 2 Fee ({getChainName(bridge.data.to)})
                 </Typography>
                 <Typography type="body1" className={classes.alignRow}>
                   {step2FeeString}
