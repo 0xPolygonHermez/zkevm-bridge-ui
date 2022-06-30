@@ -366,11 +366,6 @@ const BridgeProvider: FC = (props) => {
             depositCount: deposit_cnt,
             depositTxHash: tx_hash,
             tokenOriginNetwork: orig_net,
-            merkleProof: await getMerkleProof({
-              apiUrl,
-              networkId,
-              depositCount,
-            }),
           };
         }
         case "claimed": {
@@ -489,43 +484,43 @@ const BridgeProvider: FC = (props) => {
         Promise.resolve({})
       );
 
-      const bridges = await Promise.all(
-        deposits.map(async (partialDeposit): Promise<Bridge> => {
-          const {
-            token,
-            amount,
-            destinationAddress,
-            depositCount,
-            depositTxHash,
-            from,
-            to,
-            tokenOriginNetwork,
-            claim,
-          } = partialDeposit;
+      const bridges = deposits.map((partialDeposit): Bridge => {
+        const {
+          token,
+          amount,
+          destinationAddress,
+          depositCount,
+          depositTxHash,
+          from,
+          to,
+          tokenOriginNetwork,
+          claim,
+        } = partialDeposit;
 
-          const tokenPrice = tokenPrices[token.address];
+        const tokenPrice = tokenPrices[token.address];
 
-          const fiatAmount =
-            tokenPrice !== undefined && tokenPrice !== null
-              ? multiplyAmounts(
-                  {
-                    value: tokenPrice,
-                    precision: FIAT_DISPLAY_PRECISION,
-                  },
-                  {
-                    value: amount,
-                    precision: token.decimals,
-                  },
-                  FIAT_DISPLAY_PRECISION
-                )
-              : undefined;
+        const fiatAmount =
+          tokenPrice !== undefined && tokenPrice !== null
+            ? multiplyAmounts(
+                {
+                  value: tokenPrice,
+                  precision: FIAT_DISPLAY_PRECISION,
+                },
+                {
+                  value: amount,
+                  precision: token.decimals,
+                },
+                FIAT_DISPLAY_PRECISION
+              )
+            : undefined;
 
-          const id = serializeBridgeId({
-            depositCount,
-            networkId: from.networkId,
-          });
+        const id = serializeBridgeId({
+          depositCount,
+          networkId: from.networkId,
+        });
 
-          if (claim.status === "claimed") {
+        switch (claim.status) {
+          case "claimed": {
             return {
               status: "completed",
               id,
@@ -541,8 +536,7 @@ const BridgeProvider: FC = (props) => {
               fiatAmount,
             };
           }
-
-          if (claim.status === "pending") {
+          case "pending": {
             return {
               status: "initiated",
               id,
@@ -557,29 +551,23 @@ const BridgeProvider: FC = (props) => {
               fiatAmount,
             };
           }
-
-          const merkleProof = await getMerkleProof({
-            apiUrl,
-            networkId: from.networkId,
-            depositCount: depositCount,
-          });
-
-          return {
-            status: "on-hold",
-            id,
-            token,
-            amount,
-            destinationAddress,
-            depositCount,
-            depositTxHash,
-            from,
-            to,
-            tokenOriginNetwork,
-            fiatAmount,
-            merkleProof,
-          };
-        })
-      );
+          case "ready": {
+            return {
+              status: "on-hold",
+              id,
+              token,
+              amount,
+              destinationAddress,
+              depositCount,
+              depositTxHash,
+              from,
+              to,
+              tokenOriginNetwork,
+              fiatAmount,
+            };
+          }
+        }
+      });
 
       return {
         bridges,
@@ -711,21 +699,7 @@ const BridgeProvider: FC = (props) => {
 
   const claim = useCallback(
     ({
-      bridge: {
-        token,
-        amount,
-        tokenOriginNetwork,
-        to,
-        destinationAddress,
-        depositCount: index,
-        merkleProof: {
-          merkleProof,
-          exitRootNumber,
-          l2ExitRootNumber,
-          mainExitRoot,
-          rollupExitRoot,
-        },
-      },
+      bridge: { token, amount, tokenOriginNetwork, from, to, destinationAddress, depositCount },
     }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
@@ -741,19 +715,28 @@ const BridgeProvider: FC = (props) => {
 
       const isL2Claim = to.key === "polygon-hermez";
 
+      const apiUrl = env.bridgeApiUrl;
+      const networkId = from.networkId;
+
       const executeClaim = () =>
-        contract.claim(
-          token.address,
-          amount,
-          tokenOriginNetwork,
-          to.networkId,
-          destinationAddress,
-          merkleProof,
-          index,
-          isL2Claim ? l2ExitRootNumber : exitRootNumber,
-          mainExitRoot,
-          rollupExitRoot,
-          isL2Claim ? { gasPrice: 0 } : {}
+        getMerkleProof({
+          apiUrl,
+          networkId,
+          depositCount,
+        }).then(({ merkleProof, exitRootNumber, l2ExitRootNumber, mainExitRoot, rollupExitRoot }) =>
+          contract.claim(
+            token.address,
+            amount,
+            tokenOriginNetwork,
+            to.networkId,
+            destinationAddress,
+            merkleProof,
+            depositCount,
+            isL2Claim ? l2ExitRootNumber : exitRootNumber,
+            mainExitRoot,
+            rollupExitRoot,
+            isL2Claim ? { gasPrice: 0 } : {}
+          )
         );
 
       if (to.chainId === connectedProvider.chainId) {

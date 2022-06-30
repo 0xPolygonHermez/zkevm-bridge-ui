@@ -90,7 +90,6 @@ export type InitiatedBridge = BridgeCommonFields & {
 
 export type OnHoldBridge = BridgeCommonFields & {
   status: "on-hold";
-  merkleProof: MerkleProof;
 };
 
 export type CompletedBridge = BridgeCommonFields & {
