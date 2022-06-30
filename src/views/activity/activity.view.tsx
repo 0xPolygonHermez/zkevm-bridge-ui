@@ -102,9 +102,8 @@ const Activity: FC = () => {
         ethereumAddress: account.data,
         quantity: lastLoadedItem + PAGE_SIZE,
       })
-        .then((response) => {
+        .then(({ bridges, total }) => {
           callIfMounted(() => {
-            const { bridges, total } = response;
             processFetchBridgesSuccess(bridges);
             setTotal(total);
           });
@@ -123,9 +122,8 @@ const Activity: FC = () => {
           limit: PAGE_SIZE,
           offset: 0,
         })
-          .then((response) => {
+          .then(({ bridges, total }) => {
             callIfMounted(() => {
-              const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
               setTotal(total);
             });
@@ -161,9 +159,8 @@ const Activity: FC = () => {
           ethereumAddress: account.data,
           quantity: lastLoadedItem,
         })
-          .then((response) => {
+          .then(({ bridges, total }) => {
             callIfMounted(() => {
-              const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
               setTotal(total);
             });
