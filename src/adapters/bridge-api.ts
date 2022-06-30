@@ -216,7 +216,7 @@ export const getMerkleProof = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/merkle-proofs`,
+      url: `/merkle-proof`,
       method: "GET",
       params: {
         net_id: networkId,
