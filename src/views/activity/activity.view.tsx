@@ -29,7 +29,7 @@ const Activity: FC = () => {
   });
   const [displayAll, setDisplayAll] = useState(true);
   const [lastLoadedItem, setLastLoadedItem] = useState(0);
-  const [endReached, setEndReached] = useState(false);
+  const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
@@ -93,7 +93,7 @@ const Activity: FC = () => {
       env &&
       account.status === "successful" &&
       bridgeList.status === "successful" &&
-      endReached === false
+      bridgeList.data.length < total
     ) {
       setBridgeList({ status: "reloading", data: bridgeList.data });
       fetchBridges({
@@ -106,7 +106,7 @@ const Activity: FC = () => {
           callIfMounted(() => {
             const { bridges, total } = response;
             processFetchBridgesSuccess(bridges);
-            setEndReached(bridges.length === total);
+            setTotal(total);
           });
         })
         .catch(processFetchBridgesError);
@@ -127,7 +127,7 @@ const Activity: FC = () => {
             callIfMounted(() => {
               const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length === total);
+              setTotal(total);
             });
           })
           .catch(processFetchBridgesError);
@@ -165,7 +165,7 @@ const Activity: FC = () => {
             callIfMounted(() => {
               const { bridges, total } = response;
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length === total);
+              setTotal(total);
             });
           })
           .catch(processFetchBridgesError);
@@ -243,7 +243,7 @@ const Activity: FC = () => {
             {filteredList.length ? (
               <InfiniteScroll
                 asyncTaskStatus={bridgeList.status}
-                endReached={endReached}
+                endReached={bridgeList.data.length === total}
                 onLoadNextPage={onLoadNextPage}
               >
                 {filteredList.map((bridge) => (
