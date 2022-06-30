@@ -97,18 +97,16 @@ const Activity: FC = () => {
     ) {
       setBridgeList({ status: "reloading", data: bridgeList.data });
       fetchBridges({
-        type: "load",
+        type: "reload",
         env,
         ethereumAddress: account.data,
-        limit: PAGE_SIZE,
-        offset: lastLoadedItem,
+        quantity: lastLoadedItem + PAGE_SIZE,
       })
         .then((response) => {
           callIfMounted(() => {
             const { bridges, total } = response;
-            const mergedBridges = [...bridgeList.data, ...bridges];
-            processFetchBridgesSuccess(mergedBridges);
-            setEndReached(mergedBridges.length === total);
+            processFetchBridgesSuccess(bridges);
+            setEndReached(bridges.length === total);
           });
         })
         .catch(processFetchBridgesError);
