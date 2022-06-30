@@ -76,13 +76,13 @@ type FetchBridgesParams = {
 
 interface ComputeWrappedTokenAddressParams {
   token: Token;
-  nativeTokenChain: Chain;
-  wrappedTokenChain: Chain;
+  nativeChain: Chain;
+  otherChain: Chain;
 }
 
 interface GetNativeTokenInfoParams {
-  wrappedToken: Token;
-  tokenChain: Chain;
+  token: Token;
+  chain: Chain;
 }
 
 interface BridgeParams {
@@ -567,19 +567,19 @@ const BridgeProvider: FC = (props) => {
     return await erc20Contract.balanceOf(accountAddress);
   };
 
+  /**
+   * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
+   */
   const computeWrappedTokenAddress = async ({
     token,
-    nativeTokenChain,
-    wrappedTokenChain,
+    nativeChain,
+    otherChain,
   }: ComputeWrappedTokenAddressParams): Promise<string> => {
-    const bridgeContract = Bridge__factory.connect(
-      wrappedTokenChain.contractAddress,
-      wrappedTokenChain.provider
-    );
+    const bridgeContract = Bridge__factory.connect(otherChain.contractAddress, otherChain.provider);
     const tokenImplementationAddress = await bridgeContract.tokenImplementation();
     const salt = ethers.utils.solidityKeccak256(
       ["uint32", "address"],
-      [nativeTokenChain.networkId, token.address]
+      [nativeChain.networkId, token.address]
     );
     // Bytecode proxy from this blog https://blog.openzeppelin.com/deep-dive-into-the-minimal-proxy-contract/
     const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
@@ -590,17 +590,20 @@ const BridgeProvider: FC = (props) => {
     return ethers.utils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
   };
 
+  /**
+   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
+   */
   const getNativeTokenInfo = ({
-    wrappedToken,
-    tokenChain,
+    token,
+    chain,
   }: GetNativeTokenInfoParams): Promise<{
     originalNetwork: number;
     originalTokenAddress: string;
   }> => {
-    const bridgeContract = Bridge__factory.connect(tokenChain.contractAddress, tokenChain.provider);
-    return bridgeContract.addressToTokenInfo(wrappedToken.address).then((tokenInfo) => {
+    const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
+    return bridgeContract.addressToTokenInfo(token.address).then((tokenInfo) => {
       if (tokenInfo.originalTokenAddress === ethers.constants.AddressZero) {
-        throw new Error(`Can not find a native token for ${wrappedToken.name}`);
+        throw new Error(`Can not find a native token for ${token.name}`);
       }
       return tokenInfo;
     });

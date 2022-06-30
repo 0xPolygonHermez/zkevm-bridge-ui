@@ -57,6 +57,10 @@ export function getChainCustomTokens(chain: Chain): Token[] {
   return getCustomTokens().filter((token) => token.chainId === chain.chainId);
 }
 
+export function isChainCustomToken(token: Token, chain: Chain): boolean {
+  return getChainCustomTokens(chain).find((tkn) => tkn.address === token.address) !== undefined;
+}
+
 export function setCustomTokens(tokens: Token[]): Token[] {
   return setStorageByKey({
     key: CUSTOM_TOKENS_KEY,
