@@ -4,13 +4,15 @@ import { Theme } from "src/styles/theme";
 
 const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
   card: {
+    width: "100%",
+    maxWidth: theme.maxWidth,
     padding: theme.spacing(2),
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     gap: theme.spacing(1),
     [theme.breakpoints.upSm]: {
-      margin: [theme.spacing(3), 0],
+      margin: [theme.spacing(3), "auto"],
       padding: theme.spacing(3),
     },
   },

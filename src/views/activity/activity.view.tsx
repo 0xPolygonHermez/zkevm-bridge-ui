@@ -215,26 +215,28 @@ const Activity: FC = () => {
         const filteredList = displayAll ? bridgeList.data : pendingBridges;
         return (
           <>
-            <Header title="Activity" backTo="home" />
-            <div className={classes.selectorBoxes}>
-              <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-                <Typography type="body1" className={classes.status}>
-                  All
-                </Typography>
-                <Typography type="body2" className={classes.numberAllBox}>
-                  {bridgeList.data.length}
-                </Typography>
-              </div>
-              <div
-                className={`${classes.selectorBox} ${classes.pendingBox}`}
-                onClick={onDisplayPending}
-              >
-                <Typography type="body1" className={classes.status}>
-                  Pending
-                </Typography>
-                <Typography type="body2" className={classes.numberPendingBox}>
-                  {pendingBridges.length}
-                </Typography>
+            <div className={classes.stickyContent}>
+              <Header title="Activity" backTo="home" />
+              <div className={classes.selectorBoxes}>
+                <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
+                  <Typography type="body1" className={classes.status}>
+                    All
+                  </Typography>
+                  <Typography type="body2" className={classes.numberAllBox}>
+                    {bridgeList.data.length}
+                  </Typography>
+                </div>
+                <div
+                  className={`${classes.selectorBox} ${classes.pendingBox}`}
+                  onClick={onDisplayPending}
+                >
+                  <Typography type="body1" className={classes.status}>
+                    Pending
+                  </Typography>
+                  <Typography type="body2" className={classes.numberPendingBox}>
+                    {pendingBridges.length}
+                  </Typography>
+                </div>
               </div>
             </div>
             {filteredList.length ? (

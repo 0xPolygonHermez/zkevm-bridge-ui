@@ -4,9 +4,11 @@ import { Theme } from "src/styles/theme";
 
 const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
+    width: "100%",
+    maxWidth: theme.maxWidth,
     display: "flex",
     alignItems: "center",
-    marginTop: theme.spacing(2),
+    margin: [theme.spacing(2), "auto"],
   },
   logoWrapper: {
     flex: 1,

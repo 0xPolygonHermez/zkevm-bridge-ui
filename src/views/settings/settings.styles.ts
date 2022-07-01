@@ -8,7 +8,8 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
   },
   card: {
-    marginTop: theme.spacing(5),
+    maxWidth: theme.maxWidth,
+    margin: [theme.spacing(5), "auto"],
   },
   currenciesRow: {
     padding: theme.spacing(2),

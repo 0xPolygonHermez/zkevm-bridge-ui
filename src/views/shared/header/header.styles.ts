@@ -4,8 +4,10 @@ import { Theme } from "src/styles/theme";
 
 const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
+    width: "100%",
+    maxWidth: theme.maxWidth,
     display: "flex",
-    margin: [theme.spacing(3), 0],
+    margin: [theme.spacing(3), "auto"],
     alignItems: "center",
     justifyContent: "space-between",
   },

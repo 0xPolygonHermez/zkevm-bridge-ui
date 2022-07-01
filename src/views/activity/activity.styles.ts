@@ -7,9 +7,11 @@ interface StylesProps {
 }
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  selectorBoxes: {
-    display: "flex",
-    marginTop: theme.spacing(1),
+  stickyContent: {
+    top: 0,
+    position: "sticky",
+    background: theme.palette.grey.light,
+    borderBottom: `${theme.palette.grey.main} 1px solid`,
   },
   numberAllBox: {
     display: "flex",
@@ -28,6 +30,11 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     padding: [0, theme.spacing(1)],
     borderRadius: 6,
     lineHeight: `${theme.spacing(1.75)}px`,
+  },
+  selectorBoxes: {
+    maxWidth: theme.maxWidth,
+    display: "flex",
+    margin: [theme.spacing(2), "auto"],
   },
   selectorBox: {
     display: "flex",
