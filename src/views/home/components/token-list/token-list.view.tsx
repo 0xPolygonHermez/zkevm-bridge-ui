@@ -7,7 +7,6 @@ import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
 import { Token, TokenWithBalance, Chain } from "src/domain";
 import Error from "src/views/shared/error/error.view";
-import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 
@@ -28,15 +27,12 @@ interface TokenListProps {
 const TokenList: FC<TokenListProps> = ({
   tokens,
   selected,
-  chain,
   searchInputValue,
   error,
   customToken,
   onSelectToken,
   onClose,
   onSearchInputValueChange,
-  onImportTokenClick,
-  onRemoveTokenClick,
 }) => {
   const classes = useListStyles();
 
@@ -71,45 +67,25 @@ const TokenList: FC<TokenListProps> = ({
               <Error error={error} type="body2" className={classes.error} />
             ) : (
               tokens.map((token) => {
-                const isImportedCustomToken = isChainCustomToken(token, chain);
-                const isNonImportedCustomToken =
-                  !isImportedCustomToken &&
-                  customToken.status === "successful" &&
-                  customToken.data.address === token.address;
                 const isSelected = token.address === selected.address;
+
                 return (
-                  <div className={classes.tokenWrapper} key={token.address}>
-                    <button
-                      className={classes.tokenMainButton}
-                      disabled={isSelected}
-                      onClick={() => onSelectToken(token)}
-                    >
-                      <Icon url={token.logoURI} size={24} />
-                      <Typography type="body1">{`${token.name} (${
-                        token.balance ? formatTokenAmount(token.balance, token) : "--"
-                      } ${token.symbol})`}</Typography>
-                    </button>
-                    {isImportedCustomToken && (
-                      <button
-                        className={classes.tokenAccessoryButton}
-                        disabled={isSelected}
-                        onClick={() => onRemoveTokenClick(token)}
-                      >
-                        <Typography type="body1">Remove</Typography>
-                      </button>
-                    )}
-                    {isNonImportedCustomToken && (
-                      <button
-                        className={classes.tokenAccessoryButton}
-                        disabled={isSelected}
-                        onClick={() => {
-                          onImportTokenClick(token);
-                        }}
-                      >
-                        <Typography type="body1">Import</Typography>
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    key={token.address}
+                    className={classes.tokenButton}
+                    disabled={isSelected}
+                    onClick={() => onSelectToken(token)}
+                  >
+                    <div className={classes.tokenInfo}>
+                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                      <Typography type="body1">{token.name}</Typography>
+                    </div>
+                    <Typography type="body2" className={classes.tokenBalance}>
+                      {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
+                        token.symbol
+                      }`}
+                    </Typography>
+                  </button>
                 );
               })
             )}
