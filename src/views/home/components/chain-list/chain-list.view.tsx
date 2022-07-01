@@ -9,12 +9,11 @@ import { getChainName } from "src/utils/labels";
 
 interface ChainListProps {
   chains: Chain[];
-  selected: Chain;
   onClick: (chain: Chain) => void;
   onClose: () => void;
 }
 
-const ChainList: FC<ChainListProps> = ({ chains, selected, onClick, onClose }) => {
+const ChainList: FC<ChainListProps> = ({ chains, onClick, onClose }) => {
   const classes = useListStyles();
 
   const onOutsideClick = (event: React.MouseEvent) => {
@@ -27,13 +26,8 @@ const ChainList: FC<ChainListProps> = ({ chains, selected, onClick, onClose }) =
       <div className={classes.background} onClick={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.list}>
-            {chains.slice(0, 20).map((chain) => (
-              <button
-                className={classes.button}
-                key={chain.key}
-                disabled={chain.key === selected.key}
-                onClick={() => onClick(chain)}
-              >
+            {chains.map((chain) => (
+              <button className={classes.button} key={chain.key} onClick={() => onClick(chain)}>
                 <chain.Icon className={classes.icon} />
                 <Typography type="body1">{getChainName(chain)}</Typography>
               </button>

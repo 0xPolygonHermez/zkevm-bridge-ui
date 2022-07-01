@@ -458,7 +458,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       {chains && (
         <ChainList
           chains={chains}
-          selected={selectedChains.from}
           onClick={onChainButtonClick}
           onClose={() => setChains(undefined)}
         />
