@@ -5,7 +5,7 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
-import { Token, TokenWithBalance, Chain } from "src/domain";
+import { TokenWithBalance, Chain } from "src/domain";
 import Error from "src/views/shared/error/error.view";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -15,7 +15,6 @@ interface TokenListProps {
   customToken: AsyncTask<TokenWithBalance, string>;
   error: string | undefined;
   searchInputValue: string;
-  selected: Token;
   tokens: TokenWithBalance[];
   onClose: () => void;
   onImportTokenClick: (token: TokenWithBalance) => void;
@@ -26,7 +25,6 @@ interface TokenListProps {
 
 const TokenList: FC<TokenListProps> = ({
   tokens,
-  selected,
   searchInputValue,
   error,
   customToken,
@@ -66,28 +64,23 @@ const TokenList: FC<TokenListProps> = ({
             ) : error ? (
               <Error error={error} type="body2" className={classes.error} />
             ) : (
-              tokens.map((token) => {
-                const isSelected = token.address === selected.address;
-
-                return (
-                  <button
-                    key={token.address}
-                    className={classes.tokenButton}
-                    disabled={isSelected}
-                    onClick={() => onSelectToken(token)}
-                  >
-                    <div className={classes.tokenInfo}>
-                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
-                      <Typography type="body1">{token.name}</Typography>
-                    </div>
-                    <Typography type="body2" className={classes.tokenBalance}>
-                      {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
-                        token.symbol
-                      }`}
-                    </Typography>
-                  </button>
-                );
-              })
+              tokens.map((token) => (
+                <button
+                  key={token.address}
+                  className={classes.tokenButton}
+                  onClick={() => onSelectToken(token)}
+                >
+                  <div className={classes.tokenInfo}>
+                    <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                    <Typography type="body1">{token.name}</Typography>
+                  </div>
+                  <Typography type="body2" className={classes.tokenBalance}>
+                    {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
+                      token.symbol
+                    }`}
+                  </Typography>
+                </button>
+              ))
             )}
           </div>
         </Card>

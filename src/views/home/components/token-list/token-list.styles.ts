@@ -58,13 +58,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       background: theme.palette.grey.main,
     },
-    "&:disabled": {
-      background: theme.palette.disabled,
-      cursor: "default",
-    },
-    "&:disabled *": {
-      color: theme.palette.white,
-    },
   },
   tokenInfo: {
     display: "flex",

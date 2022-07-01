@@ -469,7 +469,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           customToken={tokenListCustomToken}
           error={tokenListSearchError}
           searchInputValue={tokenListSearchInputValue}
-          selected={token}
           tokens={filteredTokens}
           onClose={onTokenListClosed}
           onImportTokenClick={onTokenListImportToken}
