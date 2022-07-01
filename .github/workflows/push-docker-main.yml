@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   build:
@@ -22,24 +22,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push for integration
-        id: docker_build_integration
+      - name: Build and push for internal-testnet
+        id: docker_build_itestnet
         uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hermeznetwork/bridge-ui:1.5-integration
+          tags: hermeznetwork/bridge-ui:1.5-itestnet
           build-args: |
-            ENVIRONMENT=integration
-            REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY}}
-
-      - name: Build and push for frontend-testnet
-        id: docker_build_fetestnet
-        uses: docker/build-push-action@v2
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: hermeznetwork/bridge-ui:1.5-fetestnet
-          build-args: |
-            ENVIRONMENT=fetestnet
+            ENVIRONMENT=internal-testnet
             REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY}}
