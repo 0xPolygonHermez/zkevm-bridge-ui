@@ -678,7 +678,7 @@ const BridgeProvider: FC = (props) => {
           );
           const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
           if (allowance.lt(amount)) {
-            await erc20Contract.approve(from.contractAddress, amount);
+            await erc20Contract.approve(from.contractAddress, ethersConstants.MaxUint256);
           }
         }
         return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);

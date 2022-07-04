@@ -47,11 +47,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       background: theme.palette.grey.main,
     },
-    "&:disabled": {
-      cursor: "initial",
-      background: theme.palette.grey.light,
-      opacity: 0.5,
-    },
   },
   icon: {
     width: "24px",

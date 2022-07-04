@@ -41,46 +41,33 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.grey.dark,
     },
   },
-  tokenWrapper: {
+  tokenButton: {
+    width: "100%",
     display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
     background: theme.palette.grey.light,
     borderRadius: 8,
+    overflow: "hidden",
+    border: "none",
+    cursor: "pointer",
+    padding: theme.spacing(2),
     "&:not(:first-of-type)": {
       marginTop: theme.spacing(1),
     },
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
   },
-  tokenMainButton: {
-    cursor: "pointer",
-    border: "none",
-    padding: theme.spacing(2),
+  tokenInfo: {
     display: "flex",
-    flex: 1,
     alignItems: "center",
-    gap: theme.spacing(1),
-    borderRadius: [8, 0, 0, 8],
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-    "&:disabled": {
-      background: "transparent",
-      cursor: "initial",
-      opacity: 0.5,
-    },
   },
-  tokenAccessoryButton: {
-    cursor: "pointer",
-    border: "none",
-    minWidth: 100,
-    padding: theme.spacing(2),
-    borderRadius: [0, 8, 8, 0],
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-    "&:disabled": {
-      background: "transparent",
-      cursor: "initial",
-      opacity: 0.5,
-    },
+  tokenIcon: {
+    marginRight: theme.spacing(1),
+  },
+  tokenBalance: {
+    color: theme.palette.black,
   },
   loading: {
     lineHeight: "48px",
