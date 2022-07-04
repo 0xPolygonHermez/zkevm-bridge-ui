@@ -11,6 +11,8 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     top: 0,
     position: "sticky",
     background: theme.palette.grey.light,
+  },
+  stickyContentBorder: {
     borderBottom: `${theme.palette.grey.main} 1px solid`,
   },
   numberAllBox: {

@@ -1,4 +1,4 @@
-import { useState, FC, useEffect, useCallback } from "react";
+import { useState, FC, useEffect, useCallback, useRef } from "react";
 
 import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
@@ -16,6 +16,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import useIntersection from "src/hooks/use-intersection";
 
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -32,6 +33,14 @@ const Activity: FC = () => {
   const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
+
+  const headerBorderObserved = useRef<HTMLDivElement>(null);
+  const headerBorderTarget = useRef<HTMLDivElement>(null);
+  useIntersection({
+    observed: headerBorderObserved,
+    target: headerBorderTarget,
+    className: classes.stickyContentBorder,
+  });
 
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
@@ -215,7 +224,8 @@ const Activity: FC = () => {
         const filteredList = displayAll ? bridgeList.data : pendingBridges;
         return (
           <>
-            <div className={classes.stickyContent}>
+            <div ref={headerBorderObserved}></div>
+            <div className={classes.stickyContent} ref={headerBorderTarget}>
               <Header title="Activity" backTo="home" />
               <div className={classes.selectorBoxes}>
                 <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
