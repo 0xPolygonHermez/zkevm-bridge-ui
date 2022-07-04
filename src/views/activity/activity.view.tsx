@@ -1,6 +1,7 @@
 import { useState, FC, useEffect, useCallback, useRef } from "react";
 
 import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
+import Card from "src/views/shared/card/card.view";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -197,25 +198,50 @@ const Activity: FC = () => {
     setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
 
-  const EmptyMessage = () => <div className={classes.emptyMessage}>No Bridges found</div>;
+  const EmptyMessage = () => (
+    <Card className={classes.emptyMessage}>Bridge activity will be shown here</Card>
+  );
+
+  const Tabs = ({ all, pending }: { all: number; pending: number }) => (
+    <div className={classes.selectorBoxes}>
+      <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
+        <Typography type="body1" className={classes.status}>
+          All
+        </Typography>
+        <Typography type="body2" className={classes.numberAllBox}>
+          {all}
+        </Typography>
+      </div>
+      <div className={`${classes.selectorBox} ${classes.pendingBox}`} onClick={onDisplayPending}>
+        <Typography type="body1" className={classes.status}>
+          Pending
+        </Typography>
+        <Typography type="body2" className={classes.numberPendingBox}>
+          {pending}
+        </Typography>
+      </div>
+    </div>
+  );
 
   return (() => {
     switch (bridgeList.status) {
       case "pending":
       case "loading": {
         return (
-          <>
+          <div className={classes.contentWrapper}>
             <Header title="Activity" backTo="home" />
+            <Tabs all={0} pending={0} />
             <PageLoader />
-          </>
+          </div>
         );
       }
       case "failed": {
         return (
-          <>
+          <div className={classes.contentWrapper}>
             <Header title="Activity" backTo="home" />
+            <Tabs all={0} pending={0} />
             <EmptyMessage />
-          </>
+          </div>
         );
       }
       case "successful":
@@ -228,30 +254,7 @@ const Activity: FC = () => {
             <div className={classes.stickyContent} ref={headerBorderTarget}>
               <div className={classes.contentWrapper}>
                 <Header title="Activity" backTo="home" />
-                <div className={classes.selectorBoxes}>
-                  <div
-                    className={`${classes.selectorBox} ${classes.allBox}`}
-                    onClick={onDisplayAll}
-                  >
-                    <Typography type="body1" className={classes.status}>
-                      All
-                    </Typography>
-                    <Typography type="body2" className={classes.numberAllBox}>
-                      {bridgeList.data.length}
-                    </Typography>
-                  </div>
-                  <div
-                    className={`${classes.selectorBox} ${classes.pendingBox}`}
-                    onClick={onDisplayPending}
-                  >
-                    <Typography type="body1" className={classes.status}>
-                      Pending
-                    </Typography>
-                    <Typography type="body2" className={classes.numberPendingBox}>
-                      {pendingBridges.length}
-                    </Typography>
-                  </div>
-                </div>
+                <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
               </div>
             </div>
             <div className={classes.contentWrapper}>

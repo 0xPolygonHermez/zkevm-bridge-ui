@@ -74,6 +74,9 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
   emptyMessage: {
     textAlign: "center",
     lineHeight: "26px",
+    maxWidth: theme.maxWidth,
+    padding: 100,
+    margin: "auto",
   },
 }));
 
