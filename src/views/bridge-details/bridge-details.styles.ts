@@ -98,6 +98,9 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
       fill: theme.palette.white,
     },
   },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+  },
 }));
 
 export default useBridgeDetailsStyles;

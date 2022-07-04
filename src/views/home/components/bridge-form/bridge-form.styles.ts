@@ -4,7 +4,7 @@ import { Theme } from "src/styles/theme";
 
 const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   form: {
-    margin: [theme.spacing(5), "auto"],
+    margin: [theme.spacing(5), "auto", 0, "auto"],
     maxWidth: theme.maxWidth,
   },
   card: {

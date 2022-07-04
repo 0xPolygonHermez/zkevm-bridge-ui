@@ -226,46 +226,53 @@ const Activity: FC = () => {
           <>
             <div ref={headerBorderObserved}></div>
             <div className={classes.stickyContent} ref={headerBorderTarget}>
-              <Header title="Activity" backTo="home" />
-              <div className={classes.selectorBoxes}>
-                <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-                  <Typography type="body1" className={classes.status}>
-                    All
-                  </Typography>
-                  <Typography type="body2" className={classes.numberAllBox}>
-                    {bridgeList.data.length}
-                  </Typography>
-                </div>
-                <div
-                  className={`${classes.selectorBox} ${classes.pendingBox}`}
-                  onClick={onDisplayPending}
-                >
-                  <Typography type="body1" className={classes.status}>
-                    Pending
-                  </Typography>
-                  <Typography type="body2" className={classes.numberPendingBox}>
-                    {pendingBridges.length}
-                  </Typography>
+              <div className={classes.contentWrapper}>
+                <Header title="Activity" backTo="home" />
+                <div className={classes.selectorBoxes}>
+                  <div
+                    className={`${classes.selectorBox} ${classes.allBox}`}
+                    onClick={onDisplayAll}
+                  >
+                    <Typography type="body1" className={classes.status}>
+                      All
+                    </Typography>
+                    <Typography type="body2" className={classes.numberAllBox}>
+                      {bridgeList.data.length}
+                    </Typography>
+                  </div>
+                  <div
+                    className={`${classes.selectorBox} ${classes.pendingBox}`}
+                    onClick={onDisplayPending}
+                  >
+                    <Typography type="body1" className={classes.status}>
+                      Pending
+                    </Typography>
+                    <Typography type="body2" className={classes.numberPendingBox}>
+                      {pendingBridges.length}
+                    </Typography>
+                  </div>
                 </div>
               </div>
             </div>
-            {filteredList.length ? (
-              <InfiniteScroll
-                isLoading={bridgeList.status === "reloading"}
-                onLoadNextPage={onLoadNextPage}
-              >
-                {filteredList.map((bridge) => (
-                  <BridgeCard
-                    bridge={bridge}
-                    onClaim={() => onClaim(bridge)}
-                    networkError={wrongNetworkBridges.includes(bridge.id)}
-                    key={bridge.id}
-                  />
-                ))}
-              </InfiniteScroll>
-            ) : (
-              <EmptyMessage />
-            )}
+            <div className={classes.contentWrapper}>
+              {filteredList.length ? (
+                <InfiniteScroll
+                  isLoading={bridgeList.status === "reloading"}
+                  onLoadNextPage={onLoadNextPage}
+                >
+                  {filteredList.map((bridge) => (
+                    <BridgeCard
+                      bridge={bridge}
+                      onClaim={() => onClaim(bridge)}
+                      networkError={wrongNetworkBridges.includes(bridge.id)}
+                      key={bridge.id}
+                    />
+                  ))}
+                </InfiniteScroll>
+              ) : (
+                <EmptyMessage />
+              )}
+            </div>
           </>
         );
       }

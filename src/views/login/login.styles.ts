@@ -28,6 +28,11 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
   cardHeaderCentered: {
     textAlign: "center",
   },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+    display: "flex",
+    flexDirection: "column",
+  },
 }));
 
 export default useLoginStyles;

@@ -296,7 +296,7 @@ const BridgeDetails: FC = () => {
       } ETH ~ ${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`;
 
       return (
-        <>
+        <div className={classes.contentWrapper}>
           <Header title="Bridge Details" backTo="activity" />
           <Card className={classes.card}>
             <div className={classes.balance}>
@@ -382,7 +382,7 @@ const BridgeDetails: FC = () => {
               {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
             </div>
           )}
-        </>
+        </div>
       );
     }
   }

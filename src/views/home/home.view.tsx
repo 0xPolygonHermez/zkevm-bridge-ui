@@ -27,7 +27,7 @@ const Home = (): JSX.Element => {
   };
 
   return (
-    <>
+    <div className={classes.contentWrapper}>
       <Header />
       {account.status === "successful" && (
         <>
@@ -43,7 +43,7 @@ const Home = (): JSX.Element => {
           />
         </>
       )}
-    </>
+    </div>
   );
 };
 

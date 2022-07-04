@@ -68,6 +68,9 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(0.5), theme.spacing(1)],
     lineHeight: `${theme.spacing(1.75)}px`,
   },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+  },
   emptyMessage: {
     textAlign: "center",
     lineHeight: "26px",

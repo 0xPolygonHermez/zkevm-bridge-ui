@@ -92,6 +92,9 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     fontSize: 14,
     cursor: "pointer",
   },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+  },
 }));
 
 export default useBridgeConfirmationStyles;
