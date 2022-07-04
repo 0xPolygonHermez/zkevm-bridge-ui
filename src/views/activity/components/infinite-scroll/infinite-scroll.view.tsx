@@ -53,7 +53,7 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({ children, isLoading, on
       {children}
       {isLoading && (
         <div className={classes.spinnerWrapper}>
-          <Spinner size={24} />
+          <Spinner size={32} />
         </div>
       )}
     </div>
