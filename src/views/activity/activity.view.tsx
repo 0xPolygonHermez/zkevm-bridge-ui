@@ -29,7 +29,7 @@ const Activity: FC = () => {
   });
   const [displayAll, setDisplayAll] = useState(true);
   const [lastLoadedItem, setLastLoadedItem] = useState(0);
-  const [endReached, setEndReached] = useState(false);
+  const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
@@ -93,20 +93,19 @@ const Activity: FC = () => {
       env &&
       account.status === "successful" &&
       bridgeList.status === "successful" &&
-      endReached === false
+      bridgeList.data.length < total
     ) {
       setBridgeList({ status: "reloading", data: bridgeList.data });
       fetchBridges({
-        type: "load",
+        type: "reload",
         env,
         ethereumAddress: account.data,
-        limit: PAGE_SIZE,
-        offset: lastLoadedItem,
+        quantity: lastLoadedItem + PAGE_SIZE,
       })
-        .then((bridges) => {
+        .then(({ bridges, total }) => {
           callIfMounted(() => {
-            processFetchBridgesSuccess([...bridgeList.data, ...bridges]);
-            setEndReached(bridges.length < PAGE_SIZE);
+            processFetchBridgesSuccess(bridges);
+            setTotal(total);
           });
         })
         .catch(processFetchBridgesError);
@@ -123,10 +122,10 @@ const Activity: FC = () => {
           limit: PAGE_SIZE,
           offset: 0,
         })
-          .then((bridges) => {
+          .then(({ bridges, total }) => {
             callIfMounted(() => {
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length < PAGE_SIZE);
+              setTotal(total);
             });
           })
           .catch(processFetchBridgesError);
@@ -160,10 +159,10 @@ const Activity: FC = () => {
           ethereumAddress: account.data,
           quantity: lastLoadedItem,
         })
-          .then((bridges) => {
+          .then(({ bridges, total }) => {
             callIfMounted(() => {
               processFetchBridgesSuccess(bridges);
-              setEndReached(bridges.length < PAGE_SIZE);
+              setTotal(total);
             });
           })
           .catch(processFetchBridgesError);
@@ -240,8 +239,7 @@ const Activity: FC = () => {
             </div>
             {filteredList.length ? (
               <InfiniteScroll
-                asyncTaskStatus={bridgeList.status}
-                endReached={endReached}
+                isLoading={bridgeList.status === "reloading"}
                 onLoadNextPage={onLoadNextPage}
               >
                 {filteredList.map((bridge) => (
