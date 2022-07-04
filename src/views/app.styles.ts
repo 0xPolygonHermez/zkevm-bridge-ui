@@ -72,6 +72,9 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
       textDecoration: "none",
       color: "inherit",
     },
+    "input[type='search']::-webkit-search-cancel-button": {
+      "-webkit-appearance": "none",
+    },
   },
 }));
 

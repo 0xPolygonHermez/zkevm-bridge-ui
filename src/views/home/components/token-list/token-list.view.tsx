@@ -1,4 +1,4 @@
-import { FC, MouseEvent } from "react";
+import { FC, MouseEvent, useEffect, useRef } from "react";
 
 import useListStyles from "src/views/home/components/token-list/token-list.styles";
 import Card from "src/views/shared/card/card.view";
@@ -9,6 +9,9 @@ import { TokenWithBalance, Chain } from "src/domain";
 import Error from "src/views/shared/error/error.view";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
+import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
+import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
+import { ReactComponent as XMarkBoldIcon } from "src/assets/icons/xmark-bold.svg";
 
 interface TokenListProps {
   chain: Chain;
@@ -33,6 +36,7 @@ const TokenList: FC<TokenListProps> = ({
   onSearchInputValueChange,
 }) => {
   const classes = useListStyles();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
@@ -42,20 +46,43 @@ const TokenList: FC<TokenListProps> = ({
 
   const isLoading = customToken.status === "loading";
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   return (
     <Portal>
-      <div className={classes.background} onClick={onOutsideClick}>
+      <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
-          <input
-            placeholder="Search or paste address"
-            type="search"
-            className={classes.searchInput}
-            value={searchInputValue}
-            autoFocus
-            onChange={(event) => {
-              onSearchInputValueChange(event.target.value);
-            }}
-          />
+          <div className={classes.header}>
+            <Typography type="h2">Select token</Typography>
+            <button className={classes.closeButton} onClick={onClose}>
+              <XMarkIcon className={classes.closeButtonIcon} />
+            </button>
+          </div>
+          <div className={classes.searchInputContainer}>
+            <MagnifyingGlassIcon className={classes.searchIcon} />
+            <input
+              ref={inputRef}
+              placeholder="Enter token name or address"
+              type="search"
+              className={classes.searchInput}
+              value={searchInputValue}
+              onChange={(event) => {
+                onSearchInputValueChange(event.target.value);
+              }}
+            />
+            {searchInputValue !== "" && (
+              <button
+                className={classes.clearSearchButton}
+                onClick={() => onSearchInputValueChange("")}
+              >
+                <XMarkBoldIcon />
+              </button>
+            )}
+          </div>
           <div className={classes.list}>
             {isLoading ? (
               <Typography className={classes.loading} type="body1">
