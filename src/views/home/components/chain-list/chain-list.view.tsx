@@ -6,6 +6,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Portal from "src/views/shared/portal/portal.view";
 import { Chain } from "src/domain";
 import { getChainName } from "src/utils/labels";
+import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 
 interface ChainListProps {
   chains: Chain[];
@@ -23,8 +24,14 @@ const ChainList: FC<ChainListProps> = ({ chains, onClick, onClose }) => {
 
   return (
     <Portal>
-      <div className={classes.background} onClick={onOutsideClick}>
+      <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
+          <div className={classes.header}>
+            <Typography type="h2">Select chain</Typography>
+            <button className={classes.closeButton} onClick={onClose}>
+              <XMarkIcon className={classes.closeButtonIcon} />
+            </button>
+          </div>
           <div className={classes.list}>
             {chains.map((chain) => (
               <button className={classes.button} key={chain.key} onClick={() => onClick(chain)}>
