@@ -45,7 +45,7 @@ const Settings: FC = () => {
   }
 
   return (
-    <>
+    <div className={classes.contentWrapper}>
       <Header title="Settings" backTo="home" />
       <Typography type="body2" className={classes.subtitle}>
         Polygon Hermez Bridge v{env.version}
@@ -87,7 +87,7 @@ const Settings: FC = () => {
           <Typography type="body2">Disconnect your wallet</Typography>
         </div>
       </Card>
-    </>
+    </div>
   );
 };
 

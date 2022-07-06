@@ -20,13 +20,13 @@ const useSpinnerStyles = createUseStyles((theme: Theme) => ({
   svg: {
     animation: "$spin 0.8s linear infinite",
   },
-  topCircle: ({ color = theme.palette.primary.main }: StyleProps) => ({
+  topCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
     stroke: color,
     strokeLinecap: "round",
     strokeDasharray: "30px 200px",
     strokeDashoffset: "0px",
   }),
-  bottomCircle: ({ color = theme.palette.primary.main }: StyleProps) => ({
+  bottomCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
     bottomCircle: {
       stroke: color,
       strokeOpacity: 0.2,

@@ -8,9 +8,6 @@ interface StylesProps {
 }
 
 const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
-  card: {
-    padding: theme.spacing(3),
-  },
   dot: {
     width: 6,
     height: 6,
@@ -25,6 +22,12 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
       }
     },
     borderRadius: "50%",
+  },
+  card: {
+    padding: theme.spacing(3),
+    width: "100%",
+    maxWidth: theme.maxWidth,
+    margin: [0, "auto"],
   },
   balance: {
     display: "flex",
@@ -94,6 +97,9 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
     "& path": {
       fill: theme.palette.white,
     },
+  },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
   },
 }));
 

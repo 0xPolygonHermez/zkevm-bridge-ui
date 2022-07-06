@@ -1,6 +1,7 @@
-import { useState, FC, useEffect, useCallback } from "react";
+import { useState, FC, useEffect, useCallback, useRef } from "react";
 
 import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
+import Card from "src/views/shared/card/card.view";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import useActivityStyles from "src/views/activity/activity.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -16,6 +17,7 @@ import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import useIntersection from "src/hooks/use-intersection";
 
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -32,6 +34,14 @@ const Activity: FC = () => {
   const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
+
+  const headerBorderObserved = useRef<HTMLDivElement>(null);
+  const headerBorderTarget = useRef<HTMLDivElement>(null);
+  useIntersection({
+    observed: headerBorderObserved,
+    target: headerBorderTarget,
+    className: classes.stickyContentBorder,
+  });
 
   const onDisplayAll = () => setDisplayAll(true);
   const onDisplayPending = () => setDisplayAll(false);
@@ -188,25 +198,50 @@ const Activity: FC = () => {
     setWrongNetworkBridges([]);
   }, [connectedProvider?.chainId]);
 
-  const EmptyMessage = () => <div className={classes.emptyMessage}>No Bridges found</div>;
+  const EmptyMessage = () => (
+    <Card className={classes.emptyMessage}>Bridge activity will be shown here</Card>
+  );
+
+  const Tabs = ({ all, pending }: { all: number; pending: number }) => (
+    <div className={classes.selectorBoxes}>
+      <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
+        <Typography type="body1" className={classes.status}>
+          All
+        </Typography>
+        <Typography type="body2" className={classes.numberAllBox}>
+          {all}
+        </Typography>
+      </div>
+      <div className={`${classes.selectorBox} ${classes.pendingBox}`} onClick={onDisplayPending}>
+        <Typography type="body1" className={classes.status}>
+          Pending
+        </Typography>
+        <Typography type="body2" className={classes.numberPendingBox}>
+          {pending}
+        </Typography>
+      </div>
+    </div>
+  );
 
   return (() => {
     switch (bridgeList.status) {
       case "pending":
       case "loading": {
         return (
-          <>
+          <div className={classes.contentWrapper}>
             <Header title="Activity" backTo="home" />
+            <Tabs all={0} pending={0} />
             <PageLoader />
-          </>
+          </div>
         );
       }
       case "failed": {
         return (
-          <>
+          <div className={classes.contentWrapper}>
             <Header title="Activity" backTo="home" />
+            <Tabs all={0} pending={0} />
             <EmptyMessage />
-          </>
+          </div>
         );
       }
       case "successful":
@@ -215,45 +250,32 @@ const Activity: FC = () => {
         const filteredList = displayAll ? bridgeList.data : pendingBridges;
         return (
           <>
-            <Header title="Activity" backTo="home" />
-            <div className={classes.selectorBoxes}>
-              <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-                <Typography type="body1" className={classes.status}>
-                  All
-                </Typography>
-                <Typography type="body2" className={classes.numberAllBox}>
-                  {bridgeList.data.length}
-                </Typography>
-              </div>
-              <div
-                className={`${classes.selectorBox} ${classes.pendingBox}`}
-                onClick={onDisplayPending}
-              >
-                <Typography type="body1" className={classes.status}>
-                  Pending
-                </Typography>
-                <Typography type="body2" className={classes.numberPendingBox}>
-                  {pendingBridges.length}
-                </Typography>
+            <div ref={headerBorderObserved}></div>
+            <div className={classes.stickyContent} ref={headerBorderTarget}>
+              <div className={classes.contentWrapper}>
+                <Header title="Activity" backTo="home" />
+                <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
               </div>
             </div>
-            {filteredList.length ? (
-              <InfiniteScroll
-                isLoading={bridgeList.status === "reloading"}
-                onLoadNextPage={onLoadNextPage}
-              >
-                {filteredList.map((bridge) => (
-                  <BridgeCard
-                    bridge={bridge}
-                    onClaim={() => onClaim(bridge)}
-                    networkError={wrongNetworkBridges.includes(bridge.id)}
-                    key={bridge.id}
-                  />
-                ))}
-              </InfiniteScroll>
-            ) : (
-              <EmptyMessage />
-            )}
+            <div className={classes.contentWrapper}>
+              {filteredList.length ? (
+                <InfiniteScroll
+                  isLoading={bridgeList.status === "reloading"}
+                  onLoadNextPage={onLoadNextPage}
+                >
+                  {filteredList.map((bridge) => (
+                    <BridgeCard
+                      bridge={bridge}
+                      onClaim={() => onClaim(bridge)}
+                      networkError={wrongNetworkBridges.includes(bridge.id)}
+                      key={bridge.id}
+                    />
+                  ))}
+                </InfiniteScroll>
+              ) : (
+                <EmptyMessage />
+              )}
+            </div>
           </>
         );
       }

@@ -164,7 +164,7 @@ const BridgeConfirmation: FC = () => {
   }`;
 
   return (
-    <>
+    <div className={classes.contentWrapper}>
       <Header title="Confirm Bridge" backTo="home" />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.icon} />
@@ -195,7 +195,7 @@ const BridgeConfirmation: FC = () => {
         <Button onClick={onClick}>Bridge</Button>
         {error && <Error error={error} />}
       </div>
-    </>
+    </div>
   );
 };
 

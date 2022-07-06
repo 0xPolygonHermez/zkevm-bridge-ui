@@ -19,13 +19,19 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
   card: {
     display: "flex",
     flexDirection: "column",
-    margin: [theme.spacing(3), 0],
+    margin: [theme.spacing(3), "auto"],
+    maxWidth: theme.maxWidth,
   },
   cardHeader: {
     padding: [theme.spacing(3), theme.spacing(4), theme.spacing(2)],
   },
   cardHeaderCentered: {
     textAlign: "center",
+  },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+    display: "flex",
+    flexDirection: "column",
   },
 }));
 

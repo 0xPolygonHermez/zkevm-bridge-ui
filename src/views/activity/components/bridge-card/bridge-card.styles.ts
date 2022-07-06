@@ -4,8 +4,9 @@ import { Theme } from "src/styles/theme";
 
 const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   card: {
+    maxWidth: theme.maxWidth,
     padding: [theme.spacing(2), theme.spacing(3)],
-    marginTop: theme.spacing(2),
+    margin: [theme.spacing(2), "auto"],
     cursor: "pointer",
     "&:hover": {
       backgroundColor: theme.palette.grey.main,

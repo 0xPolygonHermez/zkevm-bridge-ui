@@ -15,6 +15,11 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     width: 20,
     marginRight: theme.spacing(1),
   },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+    display: "flex",
+    flexDirection: "column",
+  },
 }));
 
 export default useHomeStyles;

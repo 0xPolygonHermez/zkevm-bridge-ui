@@ -41,7 +41,7 @@ const Login: FC = () => {
   }, [account, state, navigate]);
 
   return (
-    <>
+    <div className={classes.contentWrapper}>
       <PolygonHermezLogo className={classes.logo} />
       <Typography type="body1" className={classes.appName}>
         Bridge
@@ -69,7 +69,7 @@ const Login: FC = () => {
         </Card>
         {account.status === "failed" && <Error error={account.error} />}
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,4 +1,5 @@
 const theme = {
+  maxWidth: 644,
   palette: {
     primary: {
       main: "#7b3fe4",
