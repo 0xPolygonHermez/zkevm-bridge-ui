@@ -1,12 +1,10 @@
 ---
 name: Report a bug
-about: Something with bridge-ui is not working as expected
+about: Something with zkevm-bridge-ui is not working as expected
 title: ''
 labels: 'type: bug'
 assignees: ''
 ---
-
-<!-- 🎉 Thanks for the bug report!! 🎉 -->
 
 ## Summary of Bug
 

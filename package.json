@@ -1,5 +1,5 @@
 {
-  "name": "bridge-ui",
+  "name": "zkevm-bridge-ui",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
