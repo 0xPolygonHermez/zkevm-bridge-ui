@@ -11,7 +11,7 @@ import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
-import { ReactComponent as XMarkBoldIcon } from "src/assets/icons/xmark-bold.svg";
+import { ReactComponent as XMarkBoldIcon } from "src/assets/icons/xmark.svg";
 
 interface TokenListProps {
   chain: Chain;

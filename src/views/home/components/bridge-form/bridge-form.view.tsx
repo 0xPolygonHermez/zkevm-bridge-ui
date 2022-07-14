@@ -387,7 +387,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           <div className={classes.box}>
             <Typography type="body2">From</Typography>
             <button
-              className={`${classes.chainSelector} ${classes.chainSelectorButton}`}
+              className={classes.chainSelector}
               onClick={() => setChains(env.chains)}
               type="button"
             >
@@ -396,7 +396,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               <CaretDown />
             </button>
           </div>
-          <div className={`${classes.box} ${classes.alignRight}`}>
+          <div className={classes.box}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
               {`${fromBalance ? formatTokenAmount(fromBalance, token) : "--"} ${token.symbol}`}
@@ -419,9 +419,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         </div>
       </Card>
       <div className={classes.arrowRow}>
-        <div className={classes.arrowDownIcon}>
-          <ArrowDown />
-        </div>
+        <ArrowDown className={classes.arrowDownIcon} />
       </div>
       <Card className={classes.card}>
         <div className={classes.row}>
@@ -432,7 +430,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
             </div>
           </div>
-          <div className={`${classes.box} ${classes.alignRight}`}>
+          <div className={classes.box}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
               {`${balanceTo ? formatTokenAmount(balanceTo, token) : "--"} ${token.symbol}`}

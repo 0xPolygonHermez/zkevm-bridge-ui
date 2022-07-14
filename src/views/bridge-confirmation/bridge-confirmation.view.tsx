@@ -45,6 +45,7 @@ const BridgeConfirmation: FC = () => {
   const onClick = () => {
     if (formData && account.status === "successful") {
       const { token, amount, from, to } = formData;
+
       bridge({
         from,
         token,
@@ -154,11 +155,8 @@ const BridgeConfirmation: FC = () => {
   }
 
   const { token, amount, from, to, estimatedFee } = formData;
-
   const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
-
   const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
-
   const feeString = `${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
     fiatFee ? formatFiatAmount(fiatFee) : "--"
   }`;
@@ -167,28 +165,28 @@ const BridgeConfirmation: FC = () => {
     <div className={classes.contentWrapper}>
       <Header title="Confirm Bridge" backTo="home" />
       <Card className={classes.card}>
-        <Icon url={token.logoURI} size={46} className={classes.icon} />
+        <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
         <Typography type="h1">{tokenAmountString}</Typography>
-        <Typography type="h2" className={classes.fiat}>
+        <Typography type="body2" className={classes.fiat}>
           {fiatAmountString}
         </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <formData.from.Icon /> {getChainName(from)}
+            <formData.from.Icon />
+            <Typography type="body1">{getChainName(from)}</Typography>
           </div>
-          <ArrowRightIcon className={classes.arrow} />
+          <ArrowRightIcon className={classes.arrowIcon} />
           <div className={classes.chainBox}>
-            <formData.to.Icon /> {getChainName(to)}
+            <formData.to.Icon />
+            <Typography type="body1">{getChainName(to)}</Typography>
           </div>
         </div>
-        <div className={classes.fees}>
-          <Typography type="body2" className={classes.betweenFees}>
-            Estimated gas fee
-          </Typography>
-          <Typography type="body1" className={classes.fee}>
+        <div className={classes.feeBlock}>
+          <Typography type="body2">Estimated gas fee</Typography>
+          <div className={classes.fee}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            {feeString}
-          </Typography>
+            <Typography type="body1">{feeString}</Typography>
+          </div>
         </div>
       </Card>
       <div className={classes.button}>

@@ -17,7 +17,6 @@ const Header: FC<HeaderProps> = ({ title, backTo }) => {
 
   return (
     <header className={classes.header}>
-      <div className={classes.sideButton} />
       <Typography type="h1">{title}</Typography>
       <Link to={route} className={classes.sideButton}>
         <CloseIcon className={classes.icon} />

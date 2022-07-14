@@ -8,7 +8,7 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     maxWidth: theme.maxWidth,
     display: "flex",
     alignItems: "center",
-    margin: [theme.spacing(2), "auto"],
+    margin: [theme.spacing(2), "auto", 0],
   },
   logoWrapper: {
     flex: 1,

@@ -4,28 +4,42 @@ import { Theme } from "src/styles/theme";
 
 const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
+    position: "relative",
     width: "100%",
     maxWidth: theme.maxWidth,
     display: "flex",
-    margin: [theme.spacing(3), "auto"],
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    margin: [theme.spacing(1.5), "auto", 0],
+    padding: [theme.spacing(0.75), 0],
+    [theme.breakpoints.upSm]: {
+      margin: [theme.spacing(3), "auto", 0],
+    },
   },
   sideButton: {
-    width: theme.spacing(5),
-  },
-  icon: {
-    width: "100%",
-    height: theme.spacing(5),
-    padding: theme.spacing(1.25),
-    backgroundColor: theme.palette.white,
-    borderRadius: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    position: "absolute",
+    right: 0,
     cursor: "pointer ",
+    transition: theme.hoverTransition,
+    backgroundColor: theme.palette.white,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 50,
+    padding: theme.spacing(1),
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
+    },
+    [theme.breakpoints.upSm]: {
+      padding: theme.spacing(1.25),
+    },
+  },
+  icon: {
+    width: theme.spacing(2),
+    height: theme.spacing(2),
+    [theme.breakpoints.upSm]: {
+      width: theme.spacing(2.5),
+      height: theme.spacing(2.5),
     },
   },
 }));

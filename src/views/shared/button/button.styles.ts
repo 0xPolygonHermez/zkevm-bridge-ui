@@ -13,6 +13,7 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
     border: "none",
     width: "260px",
     cursor: "pointer",
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
     },

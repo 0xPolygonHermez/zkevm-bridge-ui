@@ -5,9 +5,12 @@ import { Theme } from "src/styles/theme";
 const useAmountInputStyles = createUseStyles((theme: Theme) => ({
   wrapper: {
     display: "flex",
-    marginLeft: theme.spacing(2.5),
+    marginLeft: theme.spacing(1),
     alignItems: "center",
     flex: 1,
+    [theme.breakpoints.upSm]: {
+      marginLeft: theme.spacing(2.5),
+    },
   },
   amountInput: {
     width: "100%",

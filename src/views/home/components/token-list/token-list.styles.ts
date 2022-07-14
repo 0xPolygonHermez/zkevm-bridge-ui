@@ -99,6 +99,7 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     border: "none",
     cursor: "pointer",
     padding: theme.spacing(2),
+    transition: theme.hoverTransition,
     "&:not(:first-of-type)": {
       marginTop: theme.spacing(1),
     },

@@ -4,8 +4,8 @@ import { Theme } from "src/styles/theme";
 
 const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   form: {
-    margin: [theme.spacing(5), "auto", 0, "auto"],
     maxWidth: theme.maxWidth,
+    margin: "auto",
   },
   card: {
     padding: [theme.spacing(2), theme.spacing(3)],
@@ -19,9 +19,7 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     justifyContent: "space-between",
     flexDirection: "column",
-  },
-  alignRight: {
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   chainSelector: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],
@@ -31,14 +29,16 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 8,
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: theme.spacing(0.75),
     border: "none",
     background: "none",
-  },
-  chainSelectorButton: {
     cursor: "pointer",
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.light,
+    },
+    [theme.breakpoints.upSm]: {
+      gap: theme.spacing(1.25),
     },
   },
   middleRow: {
@@ -48,12 +48,14 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   },
   tokenSelector: {
     display: "flex",
+    alignItems: "center",
     gap: theme.spacing(1),
-    padding: [theme.spacing(1.75), theme.spacing(1)],
+    padding: [theme.spacing(1), theme.spacing(1.25)],
     backgroundColor: theme.palette.grey.light,
     borderRadius: 8,
     border: "none",
     cursor: "pointer",
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
@@ -64,11 +66,11 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     },
   },
   icons: {
-    width: "20px",
-    height: "20px",
+    width: 20,
+    height: 20,
     [theme.breakpoints.upSm]: {
-      width: "24px",
-      height: "24px",
+      width: 24,
+      height: 24,
     },
   },
   arrowRow: {
@@ -84,6 +86,8 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     borderRadius: "50%",
     display: "flex",
     [theme.breakpoints.upSm]: {
+      width: 40,
+      height: 40,
       padding: theme.spacing(0.5),
     },
   },
