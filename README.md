@@ -45,3 +45,7 @@ To manually/locally generate a Docker image and having an env file named *.env.l
 ```sh
 docker build . --build-arg ENVIRONMENT=local -t zkevm-bridge-ui:local
 ```
+
+## Disclaimer
+
+This code has not yet been audited, and should not be used in any production systems.
