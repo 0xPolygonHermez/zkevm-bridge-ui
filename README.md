@@ -36,7 +36,7 @@ cp .env.example .env
 
 ## Docker image
 
-A [GitHub actionk](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images
+A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images
 to DockerHub on updates to **develop** branch.
 
 
