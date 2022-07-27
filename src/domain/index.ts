@@ -3,7 +3,7 @@ import { ComponentType } from "react";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 export interface Chain {
-  key: "ethereum" | "polygon-hermez";
+  key: "ethereum" | "polygon-zkevm";
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;

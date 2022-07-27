@@ -1,8 +1,8 @@
-# Polygon Hermez Bridge UI
+# zkEVM Bridge UI
 
-Polygon Hermez Bridge provides a simple UI to get started with the Polygon Hermez Network. It supports depositing and withdrawing ETH and ERC-20 tokens in Polygon Hermez.
+The zkEVM Bridge UI provides a simple user interface to bridge ETH and your favorite ERC-20 tokens from Ethereum to the Polygon zkEVM and back.
 
-## Installation
+## Development
 
 Clone the repo:
 
@@ -22,26 +22,36 @@ Install project dependencies:
 npm install
 ```
 
-Create the required `.env` file from the example provided in the repo:
+Finally, to be able to run the project, you need to create a `.env` file which should contain all the required environment variables.
+
+If you want to create it from scratch, you can copy the `.env.example` and then override each environment variable by your own:
 
 ```sh
 cp .env.example .env
 ```
 
+If you want to connect to some knwon environment, we provide three prefilled `.env` files, which you can also use to create your `.env` file:
 
-## License
+- `.env.integration`: Locally deployed zkEVM.
+- `.env.internal-testnet`: Official internal testnet, which is used to do the official demos.
+- `.env.fetestnet`:  Internal testnet used by us, the zkEVM Bridge UI team to speed up the development.
 
-`zkevm-bridge-ui` is part of the Polygon Hermez project copyright 2022 HermezDAO and published with AGPL-3 license. Please check the LICENSE file for more details.
-
+Take into account that regardless the option you choose, you will need to manually add the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain [here](https://exchangeratesapi.io/). If you omit it, you won't be able to see token prices converted to your local fiat currency.
 
 ## Docker image
 
-A [GitHub actionk](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images
-to DockerHub on updates to **develop** branch.
+A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images to DockerHub on updates to **develop** branch.
 
-
-To manually/locally generate a Docker image and having an env file named *.env.local*, you can run from repo root folder:
+To locally generate a Docker image of the zkEVM Bridge UI, you can just run the following command:
 
 ```sh
-docker build . --build-arg ENVIRONMENT=local -t zkevm-bridge-ui:local
+docker build . --build-arg ENVIRONMENT=integration --build-arg REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=XXXX -t zkevm-bridge-ui:local
 ```
+
+The `ENVIRONMENT` build-arg is just the name of any of the supported environments:
+
+- `integration`
+- `internal-testnet`
+- `fetestnet`
+
+And as we've seen before in the [development section](#development), you will also need to provide the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable as a build-arg.

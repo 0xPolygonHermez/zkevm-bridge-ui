@@ -4,7 +4,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { Chain, Currency, Token } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
-import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
+import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
@@ -73,7 +73,7 @@ export const getChains = ({
         explorerUrl: ethereum.explorerUrl,
       },
       {
-        key: "polygon-hermez",
+        key: "polygon-zkevm",
         networkId: polygonHermez.networkId,
         Icon: PolygonHermezChainIcon,
         provider: polygonHermezProvider,

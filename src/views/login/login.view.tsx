@@ -7,7 +7,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
-import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-hermez-logo.svg";
+import { ReactComponent as PolygonHermezLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 import { WalletName } from "src/domain";
