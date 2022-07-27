@@ -40,7 +40,7 @@ Take into account that regardless the option you choose, you will need to manual
 
 ## Docker image
 
-A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images to DockerHub on updates to **develop** branch.
+A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically generate and push images to DockerHub on updates to the **develop** branch.
 
 To locally generate a Docker image of the zkEVM Bridge UI, you can just run the following command:
 
@@ -55,3 +55,7 @@ The `ENVIRONMENT` build-arg is just the name of any of the supported environment
 - `fetestnet`
 
 And as we've seen before in the [development section](#development), you will also need to provide the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable as a build-arg.
+
+## Disclaimer
+
+This code has not yet been audited, and should not be used in any production environment.
