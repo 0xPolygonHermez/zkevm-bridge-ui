@@ -5,13 +5,14 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
-import { TokenWithBalance, Chain } from "src/domain";
 import Error from "src/views/shared/error/error.view";
+import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as XMarkBoldIcon } from "src/assets/icons/xmark.svg";
+import { TokenWithBalance, Chain } from "src/domain";
 
 interface TokenListProps {
   chain: Chain;
@@ -27,13 +28,15 @@ interface TokenListProps {
 }
 
 const TokenList: FC<TokenListProps> = ({
-  tokens,
-  searchInputValue,
-  error,
+  chain,
   customToken,
-  onSelectToken,
+  error,
+  searchInputValue,
+  tokens,
   onClose,
+  onImportTokenClick,
   onSearchInputValueChange,
+  onSelectToken,
 }) => {
   const classes = useListStyles();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -91,23 +94,44 @@ const TokenList: FC<TokenListProps> = ({
             ) : error ? (
               <Error error={error} type="body2" className={classes.error} />
             ) : (
-              tokens.map((token) => (
-                <button
-                  key={token.address}
-                  className={classes.tokenButton}
-                  onClick={() => onSelectToken(token)}
-                >
-                  <div className={classes.tokenInfo}>
-                    <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
-                    <Typography type="body1">{token.name}</Typography>
+              tokens.map((token) => {
+                const isImportedCustomToken = isChainCustomToken(token, chain);
+                const isNonImportedCustomToken =
+                  !isImportedCustomToken &&
+                  customToken.status === "successful" &&
+                  customToken.data.address === token.address;
+                return (
+                  <div key={token.address} className={classes.tokenButtonWrapper}>
+                    <button
+                      role="button"
+                      className={classes.tokenButton}
+                      onClick={() => onSelectToken(token)}
+                    >
+                      <div className={classes.tokenInfo}>
+                        <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                        <Typography type="body1">{token.name}</Typography>
+                      </div>
+                    </button>
+
+                    {isNonImportedCustomToken ? (
+                      <button
+                        className={classes.addTokenButton}
+                        onClick={() => {
+                          onImportTokenClick(token);
+                        }}
+                      >
+                        <Typography type="body1">Add token</Typography>
+                      </button>
+                    ) : (
+                      <Typography type="body2" className={classes.tokenBalance}>
+                        {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
+                          token.symbol
+                        }`}
+                      </Typography>
+                    )}
                   </div>
-                  <Typography type="body2" className={classes.tokenBalance}>
-                    {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
-                      token.symbol
-                    }`}
-                  </Typography>
-                </button>
-              ))
+                );
+              })
             )}
           </div>
         </Card>

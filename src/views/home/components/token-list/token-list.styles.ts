@@ -88,9 +88,14 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.grey.dark,
     },
   },
+  tokenButtonWrapper: {
+    position: "relative",
+    "&:not(:first-of-type)": {
+      marginTop: theme.spacing(1),
+    },
+  },
   tokenButton: {
     width: "100%",
-    display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     background: theme.palette.grey.light,
@@ -100,9 +105,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     cursor: "pointer",
     padding: theme.spacing(2),
     transition: theme.hoverTransition,
-    "&:not(:first-of-type)": {
-      marginTop: theme.spacing(1),
-    },
     "&:hover": {
       background: theme.palette.grey.main,
     },
@@ -114,8 +116,25 @@ const useListStyles = createUseStyles((theme: Theme) => ({
   tokenIcon: {
     marginRight: theme.spacing(1),
   },
+  addTokenButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    border: "none",
+    minWidth: 120,
+    cursor: "pointer",
+    borderRadius: 8,
+    background: theme.palette.white,
+    padding: 8,
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+  },
   tokenBalance: {
     color: theme.palette.black,
+    position: "absolute",
+    top: 20,
+    right: 16,
   },
   loading: {
     lineHeight: "48px",
