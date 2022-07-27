@@ -65,7 +65,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     marginRight: theme.spacing(1),
   },
   clearSearchButton: {
-    background: theme.palette.disabled,
     border: 0,
     padding: theme.spacing(0.5),
     borderRadius: "50%",
@@ -73,6 +72,20 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    width: 16,
+    height: 16,
+    transition: theme.hoverTransition,
+    background: theme.palette.grey.dark,
+    "&:hover": {
+      background: theme.palette.black,
+    },
+  },
+  clearSearchButtonIcon: {
+    "& rect": {
+      fill: theme.palette.white,
+      strokeWidth: 2,
+      stroke: theme.palette.white,
+    },
   },
   list: {
     overflowY: "auto",

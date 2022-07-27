@@ -11,7 +11,6 @@ import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
-import { ReactComponent as XMarkBoldIcon } from "src/assets/icons/xmark.svg";
 import { TokenWithBalance, Chain } from "src/domain";
 
 interface TokenListProps {
@@ -82,7 +81,7 @@ const TokenList: FC<TokenListProps> = ({
                 className={classes.clearSearchButton}
                 onClick={() => onSearchInputValueChange("")}
               >
-                <XMarkBoldIcon />
+                <XMarkIcon className={classes.clearSearchButtonIcon} />
               </button>
             )}
           </div>
