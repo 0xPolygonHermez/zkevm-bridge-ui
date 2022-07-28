@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 /// <reference types="react-scripts" />
 
 import { ExternalProvider, TransactionResponse } from "@ethersproject/providers";
