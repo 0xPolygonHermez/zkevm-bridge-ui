@@ -11,19 +11,19 @@ import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
-import { TokenWithBalance, Chain } from "src/domain";
+import { Token, Chain } from "src/domain";
 
 interface TokenListProps {
   chain: Chain;
-  customToken: AsyncTask<TokenWithBalance, string>;
+  customToken: AsyncTask<Token, string>;
   error: string | undefined;
   searchInputValue: string;
-  tokens: TokenWithBalance[];
+  tokens: Token[];
   onClose: () => void;
-  onImportTokenClick: (token: TokenWithBalance) => void;
-  onRemoveTokenClick: (token: TokenWithBalance) => void;
+  onImportTokenClick: (token: Token) => void;
+  onRemoveTokenClick: (token: Token) => void;
   onSearchInputValueChange: (value: string) => void;
-  onSelectToken: (token: TokenWithBalance) => void;
+  onSelectToken: (token: Token) => void;
 }
 
 const TokenList: FC<TokenListProps> = ({
