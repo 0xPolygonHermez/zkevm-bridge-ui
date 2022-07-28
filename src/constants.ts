@@ -45,7 +45,7 @@ export const ETH_TOKEN_LOGO_URI =
 
 export const getChains = ({
   ethereum,
-  polygonZkEVM: polygonZkEVM,
+  polygonZkEVM,
 }: {
   ethereum: {
     rpcUrl: string;
