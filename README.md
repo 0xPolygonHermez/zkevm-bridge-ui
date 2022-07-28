@@ -30,13 +30,13 @@ If you want to create it from scratch, you can copy the `.env.example` and then 
 cp .env.example .env
 ```
 
-If you want to connect to some knwon environment, we provide three prefilled `.env` files, which you can also use to create your `.env` file:
+If you want to connect to some known environment, we provide three prefilled `.env` files, which you can also use to create your `.env` file:
 
 - `.env.integration`: Locally deployed zkEVM.
 - `.env.internal-testnet`: Official internal testnet, which is used to do the official demos.
 - `.env.fetestnet`:  Internal testnet used by us, the zkEVM Bridge UI team to speed up the development.
 
-Take into account that regardless the option you choose, you will need to manually add the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain [here](https://exchangeratesapi.io/). If you omit it, you won't be able to see token prices converted to your local fiat currency.
+Take into account that regardless of the option you choose, you will need to manually add the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain [here](https://exchangeratesapi.io/). If you omit it, you won't be able to see token prices converted to your local fiat currency.
 
 ## Docker image
 
