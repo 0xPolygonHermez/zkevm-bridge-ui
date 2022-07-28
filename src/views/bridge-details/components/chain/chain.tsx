@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
-import { ReactComponent as HermezChainIcon } from "src/assets/icons/chains/polygon-hermez-chain.svg";
+import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import Typography from "src/views/shared/typography/typography.view";
 import useChainStyles from "src/views/bridge-details/components/chain/chain.styles";
 import * as domain from "src/domain";
@@ -17,13 +17,13 @@ const Chain: FC<ChainProps> = ({ chain, className }) => {
   if (chain.key === "ethereum") {
     return (
       <Typography type="body1" className={className}>
-        <EthChainIcon /> Ethereum chain
+        <EthChainIcon /> Ethereum
       </Typography>
     );
   } else {
     return (
       <Typography type="body1" className={className}>
-        <HermezChainIcon className={classes.hermezChain} /> Polygon Hermez chain
+        <PolygonZkEVMChainIcon className={classes.hermezChain} /> Polygon zkEVM
       </Typography>
     );
   }

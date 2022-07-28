@@ -16,6 +16,10 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
     flexDirection: "column",
   },
+  logo: {
+    height: 36,
+    width: 36,
+  },
   appName: {
     marginTop: theme.spacing(0.5),
     color: theme.palette.black,
