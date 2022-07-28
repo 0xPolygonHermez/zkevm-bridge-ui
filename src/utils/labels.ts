@@ -15,8 +15,8 @@ export function getChainName(chain: Chain): string {
   switch (chain.key) {
     case "ethereum":
       return "Ethereum";
-    case "polygon-hermez":
-      return "Polygon Hermez";
+    case "polygon-zkevm":
+      return "Polygon zkEVM";
   }
 }
 

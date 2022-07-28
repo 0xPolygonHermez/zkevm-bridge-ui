@@ -713,7 +713,7 @@ const BridgeProvider: FC = (props) => {
         connectedProvider.provider.getSigner()
       );
 
-      const isL2Claim = to.key === "polygon-hermez";
+      const isL2Claim = to.key === "polygon-zkevm";
 
       const apiUrl = env.bridgeApiUrl;
       const networkId = from.networkId;
