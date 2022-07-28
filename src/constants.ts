@@ -4,7 +4,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { Chain, Currency, Token } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
-import { ReactComponent as PolygonHermezChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
+import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
@@ -45,14 +45,14 @@ export const ETH_TOKEN_LOGO_URI =
 
 export const getChains = ({
   ethereum,
-  polygonHermez,
+  polygonZkEVM: polygonZkEVM,
 }: {
   ethereum: {
     rpcUrl: string;
     explorerUrl: string;
     contractAddress: string;
   };
-  polygonHermez: {
+  polygonZkEVM: {
     rpcUrl: string;
     explorerUrl: string;
     contractAddress: string;
@@ -60,9 +60,9 @@ export const getChains = ({
   };
 }): Promise<[Chain, Chain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
-  const polygonHermezProvider = new JsonRpcProvider(polygonHermez.rpcUrl);
-  return Promise.all([ethereumProvider.getNetwork(), polygonHermezProvider.getNetwork()]).then(
-    ([ethereumNetwork, polygonHermezNetwork]) => [
+  const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
+  return Promise.all([ethereumProvider.getNetwork(), polygonZkEVMProvider.getNetwork()]).then(
+    ([ethereumNetwork, polygonZkEVMNetwork]) => [
       {
         key: "ethereum",
         networkId: 0,
@@ -74,12 +74,12 @@ export const getChains = ({
       },
       {
         key: "polygon-zkevm",
-        networkId: polygonHermez.networkId,
-        Icon: PolygonHermezChainIcon,
-        provider: polygonHermezProvider,
-        chainId: polygonHermezNetwork.chainId,
-        contractAddress: polygonHermez.contractAddress,
-        explorerUrl: polygonHermez.explorerUrl,
+        networkId: polygonZkEVM.networkId,
+        Icon: PolygonZkEVMChainIcon,
+        provider: polygonZkEVMProvider,
+        chainId: polygonZkEVMNetwork.chainId,
+        contractAddress: polygonZkEVM.contractAddress,
+        explorerUrl: polygonZkEVM.explorerUrl,
       },
     ]
   );

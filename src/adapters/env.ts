@@ -33,7 +33,7 @@ const envToDomain = ({
   REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
   REACT_APP_VERSION,
 }: Env): Promise<domain.Env> => {
-  const polygonHermezNetworkId = z
+  const polygonZkEVMNetworkId = z
     .number()
     .positive()
     .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
@@ -44,8 +44,8 @@ const envToDomain = ({
       explorerUrl: REACT_APP_ETHEREUM_EXPLORER_URL,
       contractAddress: REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
     },
-    polygonHermez: {
-      networkId: polygonHermezNetworkId,
+    polygonZkEVM: {
+      networkId: polygonZkEVMNetworkId,
       rpcUrl: REACT_APP_POLYGON_HERMEZ_RPC_URL,
       explorerUrl: REACT_APP_POLYGON_EXPLORER_URL,
       contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
