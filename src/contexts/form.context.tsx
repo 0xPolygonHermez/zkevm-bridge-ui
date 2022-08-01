@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useMemo, useState } from "react";
+import { createContext, FC, PropsWithChildren, useContext, useMemo, useState } from "react";
 
 import { FormData } from "src/domain";
 
@@ -15,7 +15,7 @@ const formContextDefaultValue: FormContext = {
 
 const formContext = createContext<FormContext>(formContextDefaultValue);
 
-const FormProvider: FC = (props) => {
+const FormProvider: FC<PropsWithChildren> = (props) => {
   const [formData, setFormData] = useState<FormData>();
 
   const value = useMemo(() => {

@@ -1,6 +1,6 @@
 import { createUseStyles } from "react-jss";
 
-const usePageLoaderStyles = createUseStyles(() => ({
+const usePageLoaderStyles = createUseStyles({
   root: {
     width: "100%",
     flex: 1,
@@ -8,6 +8,6 @@ const usePageLoaderStyles = createUseStyles(() => ({
     alignItems: "center",
     justifyContent: "center",
   },
-}));
+});
 
 export default usePageLoaderStyles;

@@ -1,10 +1,10 @@
-import { FC } from "react";
+import { FC, PropsWithChildren } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 
-const PrivateRoute: FC = ({ children }) => {
+const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
   const { connectedProvider: provider } = useProvidersContext();
   const { pathname } = useLocation();
 

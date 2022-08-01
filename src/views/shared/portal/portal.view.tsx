@@ -1,9 +1,9 @@
-import { FC, useEffect, useState } from "react";
+import { FC, PropsWithChildren, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
 import usePortalStyles from "src/views/shared/portal/portal.styles";
 
-const Portal: FC = ({ children }) => {
+const Portal: FC<PropsWithChildren> = ({ children }) => {
   const classes = usePortalStyles();
   const portalRoot = document.querySelector("#fullscreen-modal");
   const [divElement] = useState(() => {
