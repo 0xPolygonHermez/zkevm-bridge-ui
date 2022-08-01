@@ -16,7 +16,7 @@ node_modules
 dist
 
 # System files
-.DS_Store
+**/.DS_Store
 
 # Generated types
 src/types
