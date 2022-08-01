@@ -2,8 +2,9 @@
   "compilerOptions": {
     "composite": true,
     "module": "es6",
-    "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", ".eslintrc.json"]
 }
