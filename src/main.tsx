@@ -7,7 +7,13 @@ import "normalize.css/normalize.css";
 import theme from "src/styles/theme";
 import App from "src/views/app.view";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const container = document.getElementById("root");
+
+if (container === null) {
+  throw new Error("Root container doesn't exist");
+}
+
+ReactDOM.createRoot(container).render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
