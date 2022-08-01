@@ -16,6 +16,9 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    open: true,
+  },
   resolve: {
     alias: [{ find: "src", replacement: path.resolve(__dirname, "src") }],
   },
