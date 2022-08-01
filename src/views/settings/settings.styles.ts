@@ -3,10 +3,6 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  subtitle: {
-    marginTop: theme.spacing(-2),
-    textAlign: "center",
-  },
   card: {
     maxWidth: theme.maxWidth,
     margin: [theme.spacing(5), "auto", 0, "auto"],

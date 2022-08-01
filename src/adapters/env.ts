@@ -33,10 +33,7 @@ const envToDomain = ({
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_VERSION,
 }: Env): Promise<domain.Env> => {
-  const polygonHermezNetworkId = z
-    .number()
-    .positive()
-    .parse(Number(VITE_POLYGON_HERMEZ_NETWORK_ID));
+  const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_HERMEZ_NETWORK_ID));
 
   return getChains({
     ethereum: {
@@ -44,8 +41,8 @@ const envToDomain = ({
       explorerUrl: VITE_ETHEREUM_EXPLORER_URL,
       contractAddress: VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
     },
-    polygonHermez: {
-      networkId: polygonHermezNetworkId,
+    polygonZkEVM: {
+      networkId: polygonZkEVMNetworkId,
       rpcUrl: VITE_POLYGON_HERMEZ_RPC_URL,
       explorerUrl: VITE_POLYGON_EXPLORER_URL,
       contractAddress: VITE_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,

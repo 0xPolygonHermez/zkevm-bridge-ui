@@ -46,10 +46,11 @@ const Settings: FC = () => {
 
   return (
     <div className={classes.contentWrapper}>
-      <Header title="Settings" backTo="home" />
-      <Typography type="body2" className={classes.subtitle}>
-        Polygon Hermez Bridge v{env.version}
-      </Typography>
+      <Header
+        title="Settings"
+        backTo="home"
+        Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{env.version}</Typography>}
+      />
       <Card className={classes.card}>
         <div className={classes.currenciesRow}>
           <Typography type="body1" className={classes.row}>

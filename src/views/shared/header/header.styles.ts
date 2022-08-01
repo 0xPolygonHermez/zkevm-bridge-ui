@@ -8,16 +8,24 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
     maxWidth: theme.maxWidth,
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     margin: [theme.spacing(1.5), "auto", 0],
-    padding: [theme.spacing(0.75), 0],
     [theme.breakpoints.upSm]: {
       margin: [theme.spacing(3), "auto", 0],
     },
   },
+  titleWrapper: {
+    width: "100%",
+    padding: [theme.spacing(0.75), 0],
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   sideButton: {
     position: "absolute",
+    top: 0,
     right: 0,
     cursor: "pointer ",
     transition: theme.hoverTransition,
@@ -41,6 +49,9 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
       width: theme.spacing(2.5),
       height: theme.spacing(2.5),
     },
+  },
+  subtitleWrapper: {
+    marginTop: theme.spacing(1.25),
   },
 }));
 

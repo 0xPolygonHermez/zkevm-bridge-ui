@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FC } from "react";
 
-import { ReactComponent as PolygonHermezIcon } from "src/assets/icons/polygon-hermez.svg";
+import { ReactComponent as PolygonZkEVMIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { ReactComponent as SettingIcon } from "src/assets/icons/setting.svg";
 import { ReactComponent as ClockIcon } from "src/assets/icons/clock.svg";
 import useHeaderStyles from "src/views/home/components/header/header.styles";
@@ -19,7 +19,7 @@ const Header: FC = () => {
         </Typography>
       </Link>
       <div className={classes.logoWrapper}>
-        <PolygonHermezIcon />
+        <PolygonZkEVMIcon className={classes.logo} />
         <Typography type="body2" className={classes.appName}>
           Bridge
         </Typography>

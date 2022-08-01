@@ -27,7 +27,7 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     width: "100%",
     maxWidth: theme.maxWidth,
-    margin: [0, "auto"],
+    margin: [theme.spacing(5), "auto", 0],
   },
   balance: {
     display: "flex",
