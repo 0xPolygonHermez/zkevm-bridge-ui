@@ -192,7 +192,7 @@ const TokenList: FC<TokenListProps> = ({
           <div className={classes.background} onMouseDown={onOutsideClick}>
             <Card className={classes.card}>
               <div className={classes.header}>
-                <Typography type="h2">Add token</Typography>
+                <Typography type="h2">{`Add ${screen.token.name} (${screen.token.symbol})`}</Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
                 </button>
@@ -226,7 +226,7 @@ const TokenList: FC<TokenListProps> = ({
           <div className={classes.background} onMouseDown={onOutsideClick}>
             <Card className={classes.card}>
               <div className={classes.header}>
-                <Typography type="h2">Token details</Typography>
+                <Typography type="h2">{`${screen.token.name} (${screen.token.symbol})`}</Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
                 </button>
