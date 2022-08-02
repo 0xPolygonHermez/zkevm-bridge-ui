@@ -13,6 +13,7 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
+import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 
@@ -156,11 +157,24 @@ const TokenList: FC<TokenListProps> = ({
                             <Typography type="body1">Add token</Typography>
                           </button>
                         ) : (
-                          <Typography type="body2" className={classes.tokenBalance}>
-                            {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
-                              token.symbol
-                            }`}
-                          </Typography>
+                          <div className={classes.tokenRightElements}>
+                            <Typography type="body2" className={classes.tokenBalance}>
+                              {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
+                                token.symbol
+                              }`}
+                            </Typography>
+                            <button
+                              className={classes.tokenInfoButton}
+                              onClick={() => {
+                                setScreen({
+                                  type: "token-details",
+                                  token: token,
+                                });
+                              }}
+                            >
+                              <InfoIcon />
+                            </button>
+                          </div>
                         )}
                       </div>
                     );
@@ -217,6 +231,7 @@ const TokenList: FC<TokenListProps> = ({
                   <XMarkIcon className={classes.closeButtonIcon} />
                 </button>
               </div>
+              <TokenDetails token={screen.token} className={classes.tokenDetails} />
             </Card>
           </div>
         </Portal>

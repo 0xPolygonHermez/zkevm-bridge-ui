@@ -143,11 +143,28 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
   },
+  tokenRightElements: {
+    position: "absolute",
+    top: 12,
+    right: theme.spacing(2),
+    display: "flex",
+    alignItems: "center",
+  },
   tokenBalance: {
     color: theme.palette.black,
-    position: "absolute",
-    top: 20,
-    right: 16,
+    marginRight: theme.spacing(1),
+  },
+  tokenInfoButton: {
+    border: "none",
+    height: 32,
+    width: 32,
+    padding: 8,
+    background: "transparent",
+    cursor: "pointer",
+    borderRadius: "50%",
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
   },
   loading: {
     lineHeight: "48px",
