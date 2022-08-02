@@ -8,6 +8,7 @@ import { copyToClipboard } from "src/utils/browser";
 import { Token } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
 import { ReactComponent as CopyIcon } from "src/assets/icons/copy.svg";
+import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 
 interface TokenDetailsProps {
   token: Token;
@@ -110,8 +111,8 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
           <nativeTokenChain.Icon />
           {`${nativeTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
         </Typography>
-        <div className={classes.alignRowRight}>
-          <Typography type="body1" className={classes.alignRow}>
+        <div className={classes.rowRightBlock}>
+          <Typography type="body1" className={classes.tokenAddress}>
             {getPartiallyHiddenEthereumAddress(nativeTokenAddress)}
           </Typography>
           <button
@@ -120,8 +121,16 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
               copyToClipboard(nativeTokenAddress);
             }}
           >
-            <CopyIcon />
+            <CopyIcon className={classes.copyIcon} />
           </button>
+          <a
+            className={classes.button}
+            href={`${nativeTokenChain.explorerUrl}/address/${nativeTokenAddress}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <NewWindowIcon className={classes.newWindowIcon} />
+          </a>
         </div>
       </div>
     ) : null;
@@ -133,8 +142,8 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
             <wrappedTokenChain.Icon />
             {`${wrappedTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
           </Typography>
-          <div className={classes.alignRowRight}>
-            <Typography type="body1" className={classes.alignRow}>
+          <div className={classes.rowRightBlock}>
+            <Typography type="body1" className={classes.tokenAddress}>
               {getPartiallyHiddenEthereumAddress(wrappedTokenAddress)}
             </Typography>
             <button
@@ -143,8 +152,16 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
                 copyToClipboard(wrappedTokenAddress);
               }}
             >
-              <CopyIcon />
+              <CopyIcon className={classes.copyIcon} />
             </button>
+            <a
+              className={classes.button}
+              href={`${wrappedTokenChain.explorerUrl}/address/${wrappedTokenAddress}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <NewWindowIcon className={classes.newWindowIcon} />
+            </a>
           </div>
         </div>
       ) : null;

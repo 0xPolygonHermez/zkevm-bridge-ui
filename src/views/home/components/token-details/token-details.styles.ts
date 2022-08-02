@@ -24,10 +24,15 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     gap: theme.spacing(1),
   },
-  alignRowRight: {
+  rowRightBlock: {
+    display: "flex",
+    alignItems: "center",
+  },
+  tokenAddress: {
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
+    padding: [0, 8],
   },
   button: {
     border: "none",
@@ -39,6 +44,22 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
     borderRadius: "50%",
     "&:hover": {
       background: theme.palette.grey.main,
+    },
+  },
+  copyIcon: {
+    width: 16,
+    height: 16,
+    "& path": {
+      fill: theme.palette.grey.dark,
+    },
+  },
+  newWindowIcon: {
+    width: 16,
+    height: 16,
+    "& path": {
+      fill: theme.palette.grey.dark,
+      stroke: theme.palette.grey.dark,
+      strokeWidth: 1,
     },
   },
 }));
