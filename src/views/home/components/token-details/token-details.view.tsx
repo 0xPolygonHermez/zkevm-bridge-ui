@@ -4,8 +4,10 @@ import { constants as ethersConstants } from "ethers";
 import useTokenDetailsStyles from "src/views/home/components/token-details/token-details.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
+import { copyToClipboard } from "src/utils/browser";
 import { Token } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
+import { ReactComponent as CopyIcon } from "src/assets/icons/copy.svg";
 
 interface TokenDetailsProps {
   token: Token;
@@ -108,9 +110,19 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
           <nativeTokenChain.Icon />
           {`${nativeTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
         </Typography>
-        <Typography type="body1" className={classes.alignRow}>
-          {getPartiallyHiddenEthereumAddress(nativeTokenAddress)}
-        </Typography>
+        <div className={classes.alignRowRight}>
+          <Typography type="body1" className={classes.alignRow}>
+            {getPartiallyHiddenEthereumAddress(nativeTokenAddress)}
+          </Typography>
+          <button
+            className={classes.button}
+            onClick={() => {
+              copyToClipboard(nativeTokenAddress);
+            }}
+          >
+            <CopyIcon />
+          </button>
+        </div>
       </div>
     ) : null;
 
@@ -121,9 +133,19 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
             <wrappedTokenChain.Icon />
             {`${wrappedTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
           </Typography>
-          <Typography type="body1" className={classes.alignRow}>
-            {getPartiallyHiddenEthereumAddress(wrappedTokenAddress)}
-          </Typography>
+          <div className={classes.alignRowRight}>
+            <Typography type="body1" className={classes.alignRow}>
+              {getPartiallyHiddenEthereumAddress(wrappedTokenAddress)}
+            </Typography>
+            <button
+              className={classes.button}
+              onClick={() => {
+                copyToClipboard(wrappedTokenAddress);
+              }}
+            >
+              <CopyIcon />
+            </button>
+          </div>
         </div>
       ) : null;
 

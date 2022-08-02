@@ -24,6 +24,23 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     gap: theme.spacing(1),
   },
+  alignRowRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+  },
+  button: {
+    border: "none",
+    height: 32,
+    width: 32,
+    padding: 8,
+    background: "transparent",
+    cursor: "pointer",
+    borderRadius: "50%",
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+  },
 }));
 
 export default useTokenDetailsStyles;
