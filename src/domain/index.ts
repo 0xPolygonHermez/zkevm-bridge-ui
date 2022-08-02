@@ -20,6 +20,10 @@ export interface Token {
   chainId: number;
   logoURI: string;
   balance?: BigNumber;
+  wrappedToken?: {
+    address: string;
+    chainId: number;
+  };
 }
 
 export interface Env {

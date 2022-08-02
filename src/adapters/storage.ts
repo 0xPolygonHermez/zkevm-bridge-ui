@@ -20,7 +20,7 @@ export function setCurrency(currency: Currency): Currency {
 
 // Custom Tokens
 
-const tokenParser = StrictSchema<Token>()(
+const tokenParser = StrictSchema<Omit<Token, "balance">>()(
   z.object({
     name: z.string(),
     symbol: z.string(),
@@ -28,6 +28,12 @@ const tokenParser = StrictSchema<Token>()(
     decimals: z.number(),
     chainId: z.number(),
     logoURI: z.string(),
+    wrappedToken: z
+      .object({
+        address: z.string(),
+        chainId: z.number(),
+      })
+      .optional(),
   })
 );
 
@@ -54,7 +60,11 @@ export function getCustomTokens(): Token[] {
 }
 
 export function getChainCustomTokens(chain: Chain): Token[] {
-  return getCustomTokens().filter((token) => token.chainId === chain.chainId);
+  return getCustomTokens().filter(
+    (token) =>
+      token.chainId === chain.chainId ||
+      (token.wrappedToken && token.wrappedToken.chainId === chain.chainId)
+  );
 }
 
 export function isChainCustomToken(token: Token, chain: Chain): boolean {

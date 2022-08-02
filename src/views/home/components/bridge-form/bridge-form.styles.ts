@@ -15,11 +15,17 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "space-between",
     paddingBottom: theme.spacing(0.5),
   },
-  box: {
+  leftBox: {
     display: "flex",
     justifyContent: "space-between",
     flexDirection: "column",
     alignItems: "flex-start",
+  },
+  rightBox: {
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "flex-end",
   },
   chainSelector: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],

@@ -7,7 +7,16 @@ import {
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
-import { createContext, FC, useContext, useCallback, useRef } from "react";
+import {
+  createContext,
+  FC,
+  useContext,
+  useCallback,
+  useRef,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -15,18 +24,19 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import {
-  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
   getEtherToken,
+  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
   FIAT_DISPLAY_PRECISION,
 } from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
+import { selectTokenAddress } from "src/utils/tokens";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
-import { getCustomTokens } from "src/adapters/storage";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
+import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
+import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 
 interface GetTokenFromAddressParams {
   address: string;
@@ -37,6 +47,21 @@ interface GetErc20TokenBalanceParams {
   chain: Chain;
   tokenAddress: string;
   accountAddress: string;
+}
+
+interface ComputeWrappedTokenAddressParams {
+  token: Token;
+  nativeChain: Chain;
+  otherChain: Chain;
+}
+
+interface GetNativeTokenInfoParams {
+  token: Token;
+  chain: Chain;
+}
+
+interface AddWrappedTokenParams {
+  token: Token;
 }
 
 interface EstimateBridgeGasPriceParams {
@@ -81,17 +106,6 @@ type FetchBridgesParams = {
     }
 );
 
-interface ComputeWrappedTokenAddressParams {
-  token: Token;
-  nativeChain: Chain;
-  otherChain: Chain;
-}
-
-interface GetNativeTokenInfoParams {
-  token: Token;
-  chain: Chain;
-}
-
 interface BridgeParams {
   from: Chain;
   token: Token;
@@ -105,6 +119,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
+  tokens?: Token[];
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
   computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
@@ -112,6 +127,7 @@ interface BridgeContext {
     originalNetwork: number;
     originalTokenAddress: string;
   }>;
+  addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
@@ -137,6 +153,9 @@ const bridgeContext = createContext<BridgeContext>({
   getNativeTokenInfo: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
+  addWrappedToken: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -158,6 +177,7 @@ const BridgeProvider: FC = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
+  const [tokens, setTokens] = useState<Token[]>();
 
   const getTokenFromAddress = useCallback(
     async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
@@ -199,7 +219,7 @@ const BridgeProvider: FC = (props) => {
   );
 
   const estimateBridgeGasPrice = useCallback(
-    ({ from, token, to, destinationAddress }: EstimateBridgeGasPriceParams) => {
+    ({ from, to, token, destinationAddress }: EstimateBridgeGasPriceParams) => {
       const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -210,7 +230,7 @@ const BridgeProvider: FC = (props) => {
       }
 
       return contract.estimateGas
-        .bridge(token.address, amount, to.networkId, destinationAddress, {
+        .bridge(selectTokenAddress(token, from), amount, to.networkId, destinationAddress, {
           ...overrides,
           from: destinationAddress,
         })
@@ -235,8 +255,10 @@ const BridgeProvider: FC = (props) => {
       originNetwork: number;
       chain: Chain;
     }): Promise<Token> => {
-      const token = [...getCustomTokens(), getEtherToken(chain), ...erc20Tokens].find(
-        (token) => token.address === tokenAddress
+      const token = [...getCustomTokens(), ...(tokens || [getEtherToken(chain)])].find(
+        (token) =>
+          token.address === tokenAddress ||
+          (token.wrappedToken && token.wrappedToken.address === tokenAddress)
       );
       if (token) {
         return token;
@@ -255,7 +277,7 @@ const BridgeProvider: FC = (props) => {
         }
       }
     },
-    [getTokenFromAddress]
+    [tokens, getTokenFromAddress]
   );
 
   type Price = BigNumber | null;
@@ -661,19 +683,19 @@ const BridgeProvider: FC = (props) => {
         from.contractAddress,
         connectedProvider.provider.getSigner()
       );
-      const overrides: PayableOverrides =
-        token.address === ethersConstants.AddressZero ? { value: amount } : {};
+
+      const isTokenEther = token.address === ethersConstants.AddressZero;
+
+      const overrides: PayableOverrides = isTokenEther ? { value: amount } : {};
 
       const executeBridge = async () => {
-        const isTokenEther = token.address === ethersConstants.AddressZero;
-
         if (!isTokenEther) {
           if (account.status !== "successful") {
             throw new Error("The account address is not available");
           }
 
           const erc20Contract = Erc20__factory.connect(
-            token.address,
+            selectTokenAddress(token, from),
             connectedProvider.provider.getSigner()
           );
           const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
@@ -681,7 +703,13 @@ const BridgeProvider: FC = (props) => {
             await erc20Contract.approve(from.contractAddress, ethersConstants.MaxUint256);
           }
         }
-        return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
+        return contract.bridge(
+          selectTokenAddress(token, from),
+          amount,
+          to.networkId,
+          destinationAddress,
+          overrides
+        );
       };
 
       if (from.chainId === connectedProvider.chainId) {
@@ -807,22 +835,118 @@ const BridgeProvider: FC = (props) => {
     });
   };
 
-  return (
-    <bridgeContext.Provider
-      value={{
-        getTokenFromAddress,
-        getErc20TokenBalance,
-        computeWrappedTokenAddress,
-        getNativeTokenInfo,
-        estimateBridgeGasPrice,
-        getBridge,
-        fetchBridges,
-        bridge,
-        claim,
-      }}
-      {...props}
-    />
+  /**
+   * Provided a token, if its property wrappedAddresses is missing, adds it and returns the new token
+   */
+  const addWrappedToken = useCallback(
+    ({ token }: AddWrappedTokenParams): Promise<Token> => {
+      if (token.wrappedToken) {
+        return Promise.resolve(token);
+      } else {
+        const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
+        const polygonZkEVMChain = env?.chains.find((chain) => chain.key === "polygon-zkevm");
+        if (!ethereumChain || !polygonZkEVMChain) {
+          return Promise.resolve(token);
+        }
+
+        const nativeChain =
+          token.chainId === ethereumChain.chainId ? ethereumChain : polygonZkEVMChain;
+        const wrappedChain =
+          nativeChain.chainId === ethereumChain.chainId ? polygonZkEVMChain : ethereumChain;
+
+        // first we check if the provided address belongs to a wrapped token
+        return getNativeTokenInfo({ token, chain: nativeChain })
+          .then(({ originalNetwork, originalTokenAddress }) => {
+            // if this is the case we use originalTokenAddress as native and token.address as wrapped
+            const originalTokenChain = env?.chains.find(
+              (chain) => chain.networkId === originalNetwork
+            );
+            if (originalTokenChain === undefined) {
+              throw Error(
+                `Could not find a chain that matched the originalNetwork ${originalNetwork}`
+              );
+            } else {
+              const newToken: Token = {
+                ...token,
+                address: originalTokenAddress,
+                chainId: originalTokenChain.chainId,
+                wrappedToken: {
+                  address: token.address,
+                  chainId: nativeChain.chainId,
+                },
+              };
+              return newToken;
+            }
+          })
+          .catch(() => {
+            // if the provided address is native we compute the wrapped address
+            return computeWrappedTokenAddress({
+              token,
+              nativeChain,
+              otherChain: wrappedChain,
+            })
+              .then((wrappedAddress) => {
+                const newToken: Token = {
+                  ...token,
+                  wrappedToken: {
+                    address: wrappedAddress,
+                    chainId: wrappedChain.chainId,
+                  },
+                };
+                return newToken;
+              })
+              .catch(() => Promise.resolve(token));
+          });
+      }
+    },
+    [env]
   );
+
+  // initialize tokens
+  useEffect(() => {
+    const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
+    if (ethereumChain) {
+      Promise.all(
+        erc20Tokens
+          .filter((token) => token.chainId === ethereumChain.chainId)
+          .map((token) => addWrappedToken({ token }))
+      )
+        .then((chainErc20Tokens) => {
+          const tokens = [getEtherToken(ethereumChain), ...chainErc20Tokens];
+          cleanupCustomTokens(tokens);
+          setTokens(tokens);
+        })
+        .catch(() => ({}));
+    }
+  }, [addWrappedToken, env]);
+
+  const value = useMemo(
+    () => ({
+      tokens,
+      getTokenFromAddress,
+      getErc20TokenBalance,
+      computeWrappedTokenAddress,
+      getNativeTokenInfo,
+      addWrappedToken,
+      estimateBridgeGasPrice,
+      getBridge,
+      fetchBridges,
+      bridge,
+      claim,
+    }),
+    [
+      tokens,
+      getTokenFromAddress,
+      addWrappedToken,
+      estimateBridgeGasPrice,
+      getBridge,
+      fetchBridges,
+      bridge,
+      claim,
+    ]
+  );
+
+  return <bridgeContext.Provider value={value} {...props} />;
 };
 
 const useBridgeContext = (): BridgeContext => {
