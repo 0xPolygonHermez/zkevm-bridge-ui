@@ -206,6 +206,24 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.primary.dark,
     },
   },
+  deleteTokenButton: {
+    display: "flex",
+    justifyContent: "center",
+    gap: theme.spacing(2),
+    margin: theme.spacing(2),
+    backgroundColor: theme.palette.grey.light,
+    color: theme.palette.black,
+    fontSize: "20px",
+    lineHeight: "24px",
+    padding: theme.spacing(1),
+    borderRadius: 9,
+    border: "none",
+    cursor: "pointer",
+    transition: theme.hoverTransition,
+    "&:hover": {
+      backgroundColor: theme.palette.grey.main,
+    },
+  },
 }));
 
 export default useListStyles;

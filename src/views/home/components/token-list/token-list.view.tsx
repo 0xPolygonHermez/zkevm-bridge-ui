@@ -14,6 +14,7 @@ import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
+import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
 import { Token, Chain } from "src/domain";
 import { useBridgeContext } from "src/contexts/bridge.context";
 
@@ -51,6 +52,7 @@ const TokenList: FC<TokenListProps> = ({
   tokens,
   onClose,
   onImportTokenClick,
+  onRemoveTokenClick,
   onSearchInputValueChange,
   onSelectToken,
 }) => {
@@ -221,6 +223,7 @@ const TokenList: FC<TokenListProps> = ({
       );
     }
     case "token-details": {
+      const isImportedCustomToken = isChainCustomToken(screen.token, chain);
       return (
         <Portal>
           <div className={classes.background} onMouseDown={onOutsideClick}>
@@ -232,6 +235,19 @@ const TokenList: FC<TokenListProps> = ({
                 </button>
               </div>
               <TokenDetails token={screen.token} className={classes.tokenDetails} />
+              {isImportedCustomToken && (
+                <button
+                  className={classes.deleteTokenButton}
+                  onClick={() => {
+                    onRemoveTokenClick(screen.token);
+                    setScreen({
+                      type: "token-list",
+                    });
+                  }}
+                >
+                  <DeleteIcon /> <Typography type="body1">Remove custom token</Typography>
+                </button>
+              )}
             </Card>
           </div>
         </Portal>

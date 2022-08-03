@@ -170,12 +170,15 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     }
   };
 
-  const onTokenListRemoveToken = (token: Token) => {
+  const onTokenListRemoveToken = (tokenToRemove: Token) => {
     if (tokens) {
-      removeCustomToken(token);
-      const newTokensWithBalance = tokens.filter((tkn) => tkn.address !== token.address);
+      removeCustomToken(tokenToRemove);
+      const newTokensWithBalance = tokens.filter((tkn) => tkn.address !== tokenToRemove.address);
       setTokens(newTokensWithBalance);
       updateTokenList(newTokensWithBalance, tokenListSearchInputValue);
+      if (selectedChains && tokenToRemove.address === token?.address) {
+        setToken(getEtherToken(selectedChains.from));
+      }
     }
   };
 
