@@ -2,9 +2,11 @@
 node-modules
 dist
 .husky
+.github
 deployment
 public
 scripts
+src/types
 
 # Ignore files
 package-lock.json
