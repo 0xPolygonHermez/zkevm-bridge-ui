@@ -10,6 +10,7 @@ import Error from "src/views/shared/error/error.view";
 import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
+import { ReactComponent as ArrowLeft } from "src/assets/icons/arrow-left.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
@@ -194,6 +195,16 @@ const TokenList: FC<TokenListProps> = ({
           <div className={classes.background} onMouseDown={onOutsideClick}>
             <Card className={classes.card}>
               <div className={classes.header}>
+                <button
+                  className={classes.backButton}
+                  onClick={() => {
+                    setScreen({
+                      type: "token-list",
+                    });
+                  }}
+                >
+                  <ArrowLeft className={classes.backButtonIcon} />
+                </button>
                 <Typography type="h2">{`Add ${screen.token.name} (${screen.token.symbol})`}</Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
@@ -229,6 +240,16 @@ const TokenList: FC<TokenListProps> = ({
           <div className={classes.background} onMouseDown={onOutsideClick}>
             <Card className={classes.card}>
               <div className={classes.header}>
+                <button
+                  className={classes.backButton}
+                  onClick={() => {
+                    setScreen({
+                      type: "token-list",
+                    });
+                  }}
+                >
+                  <ArrowLeft className={classes.backButtonIcon} />
+                </button>
                 <Typography type="h2">{`${screen.token.name} (${screen.token.symbol})`}</Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
