@@ -192,8 +192,8 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     lineHeight: "48px",
   },
   error: {
-    padding: theme.spacing(1),
-    lineHeight: "26px",
+    padding: theme.spacing(12),
+    textAlign: "center",
   },
   disclaimerBox: {
     display: "flex",

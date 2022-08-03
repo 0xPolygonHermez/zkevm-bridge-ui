@@ -347,9 +347,9 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   const tokenListSearchError =
     tokenListCustomToken.status === "failed"
-      ? tokenListCustomToken.error
+      ? "Token not supported"
       : tokenListSearchInputValue.length > 0 && filteredTokens && filteredTokens.length === 0
-      ? `The input "${tokenListSearchInputValue}" produced no matches`
+      ? "No result found"
       : undefined;
 
   return (

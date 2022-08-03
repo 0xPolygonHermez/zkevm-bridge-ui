@@ -6,7 +6,6 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
-import Error from "src/views/shared/error/error.view";
 import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -117,7 +116,9 @@ const TokenList: FC<TokenListProps> = ({
                     Loading...
                   </Typography>
                 ) : error ? (
-                  <Error error={error} type="body2" className={classes.error} />
+                  <Typography type="body2" className={classes.error}>
+                    {error}
+                  </Typography>
                 ) : (
                   tokens.map((token) => {
                     const isImportedCustomToken = isChainCustomToken(token, chain);
