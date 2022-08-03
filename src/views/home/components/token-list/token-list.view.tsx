@@ -205,7 +205,10 @@ const TokenList: FC<TokenListProps> = ({
                 >
                   <ArrowLeft className={classes.backButtonIcon} />
                 </button>
-                <Typography type="h2">{`Add ${screen.token.name} (${screen.token.symbol})`}</Typography>
+                <Icon url={screen.token.logoURI} className={classes.tokenIcon} size={28} />
+                <Typography type="h2">
+                  {`Add ${screen.token.name} (${screen.token.symbol})`}
+                </Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
                 </button>
@@ -250,6 +253,7 @@ const TokenList: FC<TokenListProps> = ({
                 >
                   <ArrowLeft className={classes.backButtonIcon} />
                 </button>
+                <Icon url={screen.token.logoURI} className={classes.tokenIcon} size={28} />
                 <Typography type="h2">{`${screen.token.name} (${screen.token.symbol})`}</Typography>
                 <button className={classes.closeButton} onClick={onClose}>
                   <XMarkIcon className={classes.closeButtonIcon} />
