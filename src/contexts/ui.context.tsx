@@ -1,4 +1,12 @@
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 import { Message } from "src/domain";
 
@@ -31,7 +39,7 @@ const uiContextDefaultValue: UIContext = {
 
 const uiContext = createContext<UIContext>(uiContextDefaultValue);
 
-const UIProvider: FC = (props) => {
+const UIProvider: FC<PropsWithChildren> = (props) => {
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     status: "closed",
   });

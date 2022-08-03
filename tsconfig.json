@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "useDefineForClassFields": true,
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": false,
+    "allowJs": false,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -17,5 +18,9 @@
     "jsx": "react-jsx",
     "baseUrl": "."
   },
-  "include": ["src"]
+  "include": ["src", "vite.config.ts"],
+  "paths": {
+    "src/*": ["src/*"]
+  },
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

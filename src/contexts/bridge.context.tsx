@@ -7,7 +7,7 @@ import {
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
-import { createContext, FC, useContext, useCallback, useRef } from "react";
+import { createContext, FC, useContext, useCallback, useRef, PropsWithChildren } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -154,7 +154,7 @@ const bridgeContext = createContext<BridgeContext>({
   },
 });
 
-const BridgeProvider: FC = (props) => {
+const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();

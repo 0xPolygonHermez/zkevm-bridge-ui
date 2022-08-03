@@ -1,4 +1,13 @@
-import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
@@ -38,10 +47,12 @@ const providersContext = createContext<ProvidersContext>({
   },
 });
 
-const ProvidersProvider: FC = (props) => {
+const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const navigate = useNavigate();
-  const [connectedProvider, setConnectedProvider] =
-    useState<{ provider: Web3Provider; chainId: number }>();
+  const [connectedProvider, setConnectedProvider] = useState<{
+    provider: Web3Provider;
+    chainId: number;
+  }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { notifyError } = useErrorContext();

@@ -55,7 +55,7 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 56,
   },
   arrowIcon: {
-    transform: `rotate(90deg)`,
+    transform: "rotate(90deg)",
     [theme.breakpoints.upSm]: {
       transform: "none",
       margin: [0, theme.spacing(1)],

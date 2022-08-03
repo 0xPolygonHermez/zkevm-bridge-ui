@@ -184,7 +184,7 @@ export const getDeposit = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/bridge`,
+      url: "/bridge",
       method: "GET",
       params: {
         net_id: networkId,
@@ -216,7 +216,7 @@ export const getMerkleProof = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/merkle-proof`,
+      url: "/merkle-proof",
       method: "GET",
       params: {
         net_id: networkId,

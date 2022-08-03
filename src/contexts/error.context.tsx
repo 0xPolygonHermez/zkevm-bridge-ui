@@ -1,4 +1,4 @@
-import { createContext, FC, useCallback, useContext, useMemo } from "react";
+import { createContext, FC, PropsWithChildren, useCallback, useContext, useMemo } from "react";
 
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
@@ -17,7 +17,7 @@ const errorContextDefaultValue: ErrorContext = {
 
 const errorContext = createContext<ErrorContext>(errorContextDefaultValue);
 
-const ErrorProvider: FC = (props) => {
+const ErrorProvider: FC<PropsWithChildren> = (props) => {
   const { openSnackbar } = useUIContext();
 
   const notifyError = useCallback(

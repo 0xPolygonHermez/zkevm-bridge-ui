@@ -1,4 +1,13 @@
-import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { pack, keccak256 } from "@ethersproject/solidity";
@@ -55,7 +64,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
   },
 });
 
-const PriceOracleProvider: FC = (props) => {
+const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
