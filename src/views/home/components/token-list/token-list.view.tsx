@@ -6,6 +6,7 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
+import Spinner from "src/views/shared/spinner/spinner.view";
 import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
@@ -112,11 +113,11 @@ const TokenList: FC<TokenListProps> = ({
               </div>
               <div className={classes.list}>
                 {isLoading ? (
-                  <Typography className={classes.loading} type="body1">
-                    Loading...
-                  </Typography>
+                  <div className={classes.centeredElement}>
+                    <Spinner size={24} />
+                  </div>
                 ) : error ? (
-                  <Typography type="body2" className={classes.error}>
+                  <Typography type="body2" className={classes.centeredElement}>
                     {error}
                   </Typography>
                 ) : (

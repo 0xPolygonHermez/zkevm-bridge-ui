@@ -188,12 +188,11 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
   },
-  loading: {
-    lineHeight: "48px",
-  },
-  error: {
-    padding: theme.spacing(12),
-    textAlign: "center",
+  centeredElement: {
+    height: 250,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   disclaimerBox: {
     display: "flex",
