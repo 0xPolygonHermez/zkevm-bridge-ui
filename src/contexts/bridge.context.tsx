@@ -802,18 +802,7 @@ const BridgeProvider: FC = (props) => {
     otherChain,
   }: ComputeWrappedTokenAddressParams): Promise<string> => {
     const bridgeContract = Bridge__factory.connect(otherChain.contractAddress, otherChain.provider);
-    const tokenImplementationAddress = await bridgeContract.tokenImplementation();
-    const salt = ethers.utils.solidityKeccak256(
-      ["uint32", "address"],
-      [nativeChain.networkId, token.address]
-    );
-    // Bytecode proxy from this blog https://blog.openzeppelin.com/deep-dive-into-the-minimal-proxy-contract/
-    const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
-      2
-    )}5af43d82803e903d91602b57fd5bf3`;
-    const hashInitCode = ethers.utils.keccak256(minimalBytecodeProxy);
-
-    return ethers.utils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
+    return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
   };
 
   /**
