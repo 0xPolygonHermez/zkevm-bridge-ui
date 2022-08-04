@@ -10,8 +10,7 @@ ARG VITE_FIAT_EXCHANGE_RATES_API_KEY
 RUN mv .env.${ENVIRONMENT} .env && \
     npm run build
 
-
 FROM nginx:1.19 as production
 
 COPY --from=build /app/deployment/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html

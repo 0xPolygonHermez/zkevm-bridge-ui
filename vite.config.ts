@@ -10,7 +10,7 @@ export default defineConfig({
     svgr(),
     checker({
       typescript: true,
-      eslint: { lintCommand: "eslint --ext .ts,.tsx ." },
+      eslint: { lintCommand: 'eslint "./src/**/*.{ts,tsx}"' },
     }),
   ],
   server: {
