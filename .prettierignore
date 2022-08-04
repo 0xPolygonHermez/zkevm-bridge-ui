@@ -1,9 +1,12 @@
-# Ignore everything
-/*
-
-# Except these files
-!src
-!*.json
-
-# And then ignore
+# Ignore folders
+node-modules
+dist
+.husky
+.github
+deployment
+public
+scripts
 src/types
+
+# Ignore files
+package-lock.json

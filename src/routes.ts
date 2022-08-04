@@ -12,27 +12,27 @@ const routes = {
     isPrivate: true,
   },
   login: {
-    path: "/login" as const,
+    path: "/login",
     Component: Login,
     isPrivate: false,
   },
   settings: {
-    path: "/settings" as const,
+    path: "/settings",
     Component: Settings,
     isPrivate: true,
   },
   activity: {
-    path: "/activity" as const,
+    path: "/activity",
     Component: Activity,
     isPrivate: true,
   },
   bridgeDetails: {
-    path: "/bridge-details/:bridgeId" as const,
+    path: "/bridge-details/:bridgeId",
     Component: BridgeDetails,
     isPrivate: true,
   },
   bridgeConfirmation: {
-    path: "/bridge-confirmation" as const,
+    path: "/bridge-confirmation",
     Component: BridgeConfirmation,
     isPrivate: true,
   },

@@ -13,9 +13,10 @@ import {
   useContext,
   useCallback,
   useRef,
-  useEffect,
   useState,
+  useEffect,
   useMemo,
+  PropsWithChildren,
 } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
@@ -173,7 +174,7 @@ const bridgeContext = createContext<BridgeContext>({
   },
 });
 
-const BridgeProvider: FC = (props) => {
+const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();

@@ -1,4 +1,12 @@
-import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { loadEnv } from "src/adapters/env";
 import { Env } from "src/domain";
@@ -6,7 +14,7 @@ import { useErrorContext } from "src/contexts/error.context";
 
 const envContext = createContext<Env | undefined>(undefined);
 
-const EnvProvider: FC = (props) => {
+const EnvProvider: FC<PropsWithChildren> = (props) => {
   const [env, setEnv] = useState<Env>();
   const { notifyError } = useErrorContext();
 

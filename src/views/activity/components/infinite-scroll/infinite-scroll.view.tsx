@@ -1,14 +1,14 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
 
 import Spinner from "src/views/shared/spinner/spinner.view";
 import useInfiniteScrollStyles from "src/views/activity/components/infinite-scroll/infinite-scroll.styles";
 
 const TRESHOLD = 0.9;
 
-interface InfiniteScrollProps {
+type InfiniteScrollProps = PropsWithChildren<{
   isLoading: boolean;
   onLoadNextPage: () => void;
-}
+}>;
 
 const InfiniteScroll: React.FC<InfiniteScrollProps> = ({ children, isLoading, onLoadNextPage }) => {
   const classes = useInfiniteScrollStyles();

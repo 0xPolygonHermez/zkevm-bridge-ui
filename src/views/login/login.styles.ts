@@ -4,11 +4,10 @@ import { Theme } from "src/styles/theme";
 
 const useLoginStyles = createUseStyles((theme: Theme) => ({
   logo: {
-    margin: [theme.spacing(8), "auto", 0, "auto"],
+    margin: [theme.spacing(8), "auto", theme.spacing(3), "auto"],
   },
   appName: {
     margin: "0px auto",
-    marginTop: theme.spacing(3),
     padding: [theme.spacing(1.25), theme.spacing(4)],
     background: theme.palette.grey.main,
     borderRadius: 56,

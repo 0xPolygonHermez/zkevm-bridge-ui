@@ -31,4 +31,4 @@ jobs:
           tags: hermeznetwork/bridge-ui:1.5-itestnet
           build-args: |
             ENVIRONMENT=internal-testnet
-            REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.REACT_APP_FIAT_EXCHANGE_RATES_API_KEY}}
+            VITE_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.VITE_FIAT_EXCHANGE_RATES_API_KEY}}
