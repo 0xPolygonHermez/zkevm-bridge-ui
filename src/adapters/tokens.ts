@@ -4,7 +4,7 @@ import axios from "axios";
 import { StrictSchema } from "src/utils/type-safety";
 import { Token } from "src/domain";
 
-export const getErc20Tokens = (): Promise<Token[]> => {
+export const getEthereumErc20Tokens = (): Promise<Token[]> => {
   return axios
     .request({
       baseURL: "src/assets/ethereum-erc20-tokens.json",

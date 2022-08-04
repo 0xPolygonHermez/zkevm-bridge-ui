@@ -37,7 +37,7 @@ import { selectTokenAddress } from "src/utils/tokens";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
-import { getErc20Tokens } from "src/adapters/tokens";
+import { getEthereumErc20Tokens } from "src/adapters/tokens";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 
 interface GetTokenFromAddressParams {
@@ -906,15 +906,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   useEffect(() => {
     const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
     if (ethereumChain) {
-      getErc20Tokens()
-        .then((erc20Tokens) =>
+      getEthereumErc20Tokens()
+        .then((ethereumErc20Tokens) =>
           Promise.all(
-            erc20Tokens
+            ethereumErc20Tokens
               .filter((token) => token.chainId === ethereumChain.chainId)
               .map((token) => addWrappedToken({ token }))
           )
-            .then((chainErc20Tokens) => {
-              const tokens = [getEtherToken(ethereumChain), ...chainErc20Tokens];
+            .then((chainTokens) => {
+              const tokens = [getEtherToken(ethereumChain), ...chainTokens];
               cleanupCustomTokens(tokens);
               setTokens(tokens);
             })
