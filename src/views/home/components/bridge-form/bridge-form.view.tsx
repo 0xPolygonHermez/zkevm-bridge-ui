@@ -120,35 +120,42 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       filteredTokens.length === 0
     ) {
       setTokenListCustomToken({ status: "loading" });
+      const setBalanceAndListCustomToken = (token: Token) => {
+        getTokenBalance(token, selectedChains.from)
+          .then((balance) => {
+            callIfMounted(() => {
+              setFilteredTokens([{ ...token, balance }]);
+              callIfMounted(() => {
+                setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
+              });
+            });
+          })
+          .catch(() => {
+            callIfMounted(() => {
+              setFilteredTokens([{ ...token, balance: undefined }]);
+            });
+          });
+      };
       void getTokenFromAddress({
         address: tokenListSearchTerm,
         chain: selectedChains.from,
       })
-        .then((token) => {
-          getTokenBalance(token, selectedChains.from)
-            .then((balance) => {
-              callIfMounted(() => {
-                setFilteredTokens([{ ...token, balance }]);
-                callIfMounted(() => {
-                  setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
-                });
-              });
-            })
-            .catch(() => {
-              callIfMounted(() => {
-                setFilteredTokens([{ ...token, balance: undefined }]);
-              });
-            });
-        })
+        .then(setBalanceAndListCustomToken)
         .catch(() =>
-          callIfMounted(() => {
-            setTokenListCustomToken({
-              status: "failed",
-              error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
-                selectedChains.from
-              )} chain with id ${selectedChains.from.chainId}`,
-            });
+          getTokenFromAddress({
+            address: tokenListSearchTerm,
+            chain: selectedChains.to,
           })
+            .then(setBalanceAndListCustomToken)
+            .catch(() =>
+              callIfMounted(() => {
+                setTokenListCustomToken({
+                  status: "failed",
+                  error:
+                    "The token contract cannot be called on any network. Please make sure the contract is deployed on a network.",
+                });
+              })
+            )
         );
     }
   };
