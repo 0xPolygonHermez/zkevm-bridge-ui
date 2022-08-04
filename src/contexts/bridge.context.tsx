@@ -230,12 +230,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       if (token.wrappedToken) {
         return Promise.resolve(token);
       } else {
-        const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
-        const polygonZkEVMChain = env?.chains.find((chain) => chain.key === "polygon-zkevm");
-        if (!ethereumChain || !polygonZkEVMChain) {
-          return Promise.resolve(token);
+        if (!env) {
+          throw Error("The env is not available");
         }
-
+        const ethereumChain = env.chains[0];
+        const polygonZkEVMChain = env.chains[1];
         const nativeChain =
           token.chainId === ethereumChain.chainId ? ethereumChain : polygonZkEVMChain;
         const wrappedChain =
@@ -343,7 +342,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           });
         } else {
           throw new Error(
-            `The token with the address "${tokenAddress}" could not be found in the list of supported and the provided network id "${originNetwork}" is not supported`
+            `The token with the address "${tokenAddress}" could not be found in the list of supported Tokens and the provided network id "${originNetwork}" is not supported`
           );
         }
       }
@@ -904,8 +903,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   // initialize tokens
   useEffect(() => {
-    const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
-    if (ethereumChain) {
+    if (env) {
+      const ethereumChain = env.chains[0];
       getEthereumErc20Tokens()
         .then((ethereumErc20Tokens) =>
           Promise.all(
