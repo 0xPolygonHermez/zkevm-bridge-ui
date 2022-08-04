@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
 import * as constants from "src/constants";
 import { Currency, Token, Chain } from "src/domain";
-
+import { tokenParser } from "src/adapters/tokens";
 // Currency
 
 export function getCurrency(): Currency {
@@ -19,23 +18,6 @@ export function setCurrency(currency: Currency): Currency {
 }
 
 // Custom Tokens
-
-const tokenParser = StrictSchema<Omit<Token, "balance">>()(
-  z.object({
-    name: z.string(),
-    symbol: z.string(),
-    address: z.string(),
-    decimals: z.number(),
-    chainId: z.number(),
-    logoURI: z.string(),
-    wrappedToken: z
-      .object({
-        address: z.string(),
-        chainId: z.number(),
-      })
-      .optional(),
-  })
-);
 
 const CUSTOM_TOKENS_KEY = "customTokens";
 

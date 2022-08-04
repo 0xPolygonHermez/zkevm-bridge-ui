@@ -22,6 +22,7 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import {
@@ -34,9 +35,9 @@ import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { erc20Tokens } from "src/assets/erc20-tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
+import { getErc20Tokens } from "src/adapters/tokens";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 
 interface GetTokenFromAddressParams {
@@ -176,6 +177,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
+  const { notifyError } = useErrorContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [tokens, setTokens] = useState<Token[]>();
@@ -896,19 +898,23 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   useEffect(() => {
     const ethereumChain = env?.chains.find((chain) => chain.key === "ethereum");
     if (ethereumChain) {
-      Promise.all(
-        erc20Tokens
-          .filter((token) => token.chainId === ethereumChain.chainId)
-          .map((token) => addWrappedToken({ token }))
-      )
-        .then((chainErc20Tokens) => {
-          const tokens = [getEtherToken(ethereumChain), ...chainErc20Tokens];
-          cleanupCustomTokens(tokens);
-          setTokens(tokens);
-        })
-        .catch(() => ({}));
+      getErc20Tokens()
+        .then((erc20Tokens) =>
+          Promise.all(
+            erc20Tokens
+              .filter((token) => token.chainId === ethereumChain.chainId)
+              .map((token) => addWrappedToken({ token }))
+          )
+            .then((chainErc20Tokens) => {
+              const tokens = [getEtherToken(ethereumChain), ...chainErc20Tokens];
+              cleanupCustomTokens(tokens);
+              setTokens(tokens);
+            })
+            .catch(notifyError)
+        )
+        .catch(notifyError);
     }
-  }, [addWrappedToken, env]);
+  }, [env, addWrappedToken, notifyError]);
 
   const value = useMemo(
     () => ({
