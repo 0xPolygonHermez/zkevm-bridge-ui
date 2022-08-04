@@ -125,9 +125,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           .then((balance) => {
             callIfMounted(() => {
               setFilteredTokens([{ ...token, balance }]);
-              callIfMounted(() => {
-                setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
-              });
+              setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
             });
           })
           .catch(() => {
