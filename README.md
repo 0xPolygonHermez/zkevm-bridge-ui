@@ -54,7 +54,7 @@ generate and push images to DockerHub on updates to the **develop** branch.
 To locally generate a Docker image of the zkEVM Bridge UI, you can just run the following command:
 
 ```sh
-docker build . --build-arg ENVIRONMENT=integration --build-arg REACT_APP_FIAT_EXCHANGE_RATES_API_KEY=XXXX -t zkevm-bridge-ui:local
+docker build . --build-arg ENVIRONMENT=integration --build-arg VITE_FIAT_EXCHANGE_RATES_API_KEY=XXXX -t zkevm-bridge-ui:local
 ```
 
 The `ENVIRONMENT` build-arg is just the name of any of the supported environments:

@@ -8,7 +8,7 @@
     "prepare": "husky install",
     "postinstall": "npm run generate-contract-types",
     "format": "prettier --write .",
-    "lint": "eslint --ext .ts,.tsx .",
+    "lint": "eslint './src/**/*.{ts,tsx}'",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
