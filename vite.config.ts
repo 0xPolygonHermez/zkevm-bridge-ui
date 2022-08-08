@@ -6,7 +6,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      fastRefresh: false,
+    }),
     svgr(),
     checker({
       typescript: true,
