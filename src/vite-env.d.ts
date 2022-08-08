@@ -7,6 +7,8 @@ declare global {
   interface Window {
     ethereum?: ExternalProvider;
   }
+
+  const bridgeVersion: string;
 }
 
 declare module "@ethersproject/providers" {

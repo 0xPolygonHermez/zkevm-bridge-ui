@@ -21,7 +21,7 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "src", replacement: path.resolve(__dirname, "src") }],
   },
-  define: { global: "window" },
+  define: { global: "window", bridgeVersion: JSON.stringify(process.env.npm_package_version) },
   build: {
     rollupOptions: {
       external: ["jss-plugin-window"],
