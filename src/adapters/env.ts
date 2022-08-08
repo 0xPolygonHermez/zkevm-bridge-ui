@@ -16,7 +16,6 @@ interface Env {
   VITE_BRIDGE_API_URL: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL: string;
   VITE_FIAT_EXCHANGE_RATES_API_KEY: string;
-  VITE_VERSION: string;
 }
 
 const envToDomain = ({
@@ -31,7 +30,6 @@ const envToDomain = ({
   VITE_BRIDGE_API_URL,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
-  VITE_VERSION,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_HERMEZ_NETWORK_ID));
 
@@ -63,7 +61,6 @@ const envToDomain = ({
         }),
       },
       chains,
-      version: VITE_VERSION,
     };
   });
 };
@@ -82,7 +79,6 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_BRIDGE_API_URL: z.string().url(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url(),
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
-      VITE_VERSION: z.string(),
     })
     .transform(envToDomain)
 );

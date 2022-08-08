@@ -31,7 +31,6 @@ export interface Env {
     usdcToken: Token;
   };
   chains: [Chain, Chain];
-  version: string;
 }
 
 export interface RouterState {
