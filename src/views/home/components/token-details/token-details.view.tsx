@@ -17,8 +17,8 @@ interface TokenDetailsProps {
 
 const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
   const classes = useTokenDetailsStyles();
-
   const env = useEnvContext();
+
   if (!env) {
     return null;
   }
