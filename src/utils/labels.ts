@@ -20,6 +20,19 @@ export function getChainName(chain: Chain): string {
   }
 }
 
+export function getNetworkName(chain: Chain) {
+  switch (chain.chainId) {
+    case 1:
+      return "Mainnet" as const;
+    case 4:
+      return "Rinkeby" as const;
+    case 5:
+      return "Goerli" as const;
+    default:
+      return undefined;
+  }
+}
+
 export function getDeploymentName(chain: Chain): string | undefined {
   switch (chain.chainId) {
     case 1:

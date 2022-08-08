@@ -8,9 +8,10 @@ import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
+import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
-import { getDeploymentName } from "src/utils/labels";
+import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
 import { WalletName } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
@@ -49,6 +50,11 @@ const Login: FC = () => {
 
   const deploymentName = getDeploymentName(env.chains[0]);
   const appName = deploymentName ? `Bridge ${deploymentName}` : "Bridge";
+  const networkName = getNetworkName(env.chains[0]);
+  const networkInfo =
+    networkName !== undefined &&
+    networkName !== "Mainnet" &&
+    `Connect with ${networkName} testnet environment`;
 
   return (
     <div className={classes.contentWrapper}>
@@ -77,6 +83,12 @@ const Login: FC = () => {
             </>
           )}
         </Card>
+        {networkInfo && (
+          <div className={classes.networkInfo}>
+            <InfoIcon />
+            <Typography type="body2">{networkInfo}</Typography>
+          </div>
+        )}
         {account.status === "failed" && <Error error={account.error} />}
       </div>
     </div>
