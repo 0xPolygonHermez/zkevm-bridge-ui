@@ -49,7 +49,7 @@ const Settings: FC = () => {
       <Header
         title="Settings"
         backTo="home"
-        Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{env.version}</Typography>}
+        Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{bridgeVersion}</Typography>}
       />
       <Card className={classes.card}>
         <div className={classes.currenciesRow}>
