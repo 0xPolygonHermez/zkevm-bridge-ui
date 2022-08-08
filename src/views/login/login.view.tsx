@@ -9,6 +9,8 @@ import WalletList from "src/views/login/components/wallet-list/wallet-list.view"
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useEnvContext } from "src/contexts/env.context";
+import { getDeploymentName } from "src/utils/labels";
 import routes from "src/routes";
 import { WalletName } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
@@ -18,6 +20,7 @@ const Login: FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectProvider, account } = useProvidersContext();
+  const env = useEnvContext();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   const onConnectProvider = (walletName: WalletName) => {
@@ -40,11 +43,18 @@ const Login: FC = () => {
     }
   }, [account, state, navigate]);
 
+  if (!env) {
+    return null;
+  }
+
+  const deploymentName = getDeploymentName(env.chains[0]);
+  const appName = deploymentName ? `Bridge ${deploymentName}` : "Bridge";
+
   return (
     <div className={classes.contentWrapper}>
       <PolygonZkEVMLogo className={classes.logo} />
       <Typography type="body1" className={classes.appName}>
-        Bridge
+        {appName}
       </Typography>
       <div className={classes.cardWrap}>
         <Card className={classes.card}>

@@ -20,6 +20,19 @@ export function getChainName(chain: Chain): string {
   }
 }
 
+export function getDeploymentName(chain: Chain): string | undefined {
+  switch (chain.chainId) {
+    case 1:
+      return "Mainnet";
+    case 4:
+      return "Testnet";
+    case 5:
+      return "Internal Testnet";
+    default:
+      return undefined;
+  }
+}
+
 type CurrencySymbol = "€" | "$" | "¥" | "£";
 
 export function getCurrencySymbol(currency: Currency): CurrencySymbol {
