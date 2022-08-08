@@ -1,16 +1,14 @@
 import { z } from "zod";
-import axios from "axios";
 
 import { StrictSchema } from "src/utils/type-safety";
 import { Token } from "src/domain";
+import ethereumErc20Tokens from "src/assets/ethereum-erc20-tokens.json";
 
 export const getEthereumErc20Tokens = (): Promise<Token[]> => {
-  return axios
-    .request({
-      baseURL: "src/assets/ethereum-erc20-tokens.json",
-      method: "GET",
-    })
-    .then((res) => z.array(tokenParser).parse(res.data));
+  const decodedEthereumErc20Tokens = z.array(tokenParser).safeParse(ethereumErc20Tokens);
+  return decodedEthereumErc20Tokens.success
+    ? Promise.resolve(decodedEthereumErc20Tokens.data)
+    : Promise.reject(decodedEthereumErc20Tokens.error);
 };
 
 export const tokenParser = StrictSchema<Omit<Token, "balance">>()(
