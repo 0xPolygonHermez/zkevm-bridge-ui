@@ -3,7 +3,7 @@ import { constants as ethersConstants } from "ethers";
 
 import useTokenDetailsStyles from "src/views/home/components/token-details/token-details.styles";
 import Typography from "src/views/shared/typography/typography.view";
-import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
+import { getShortEthereumAddress } from "src/utils/addresses";
 import { copyToClipboard } from "src/utils/browser";
 import { Token } from "src/domain";
 import { useEnvContext } from "src/contexts/env.context";
@@ -67,7 +67,7 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
           L1 token address
         </Typography>
         <Typography type="body1" className={classes.alignRow}>
-          {getPartiallyHiddenEthereumAddress(ethersConstants.AddressZero)}
+          {getShortEthereumAddress(ethersConstants.AddressZero)}
         </Typography>
       </div>
     );
@@ -79,7 +79,7 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
           L2 token address
         </Typography>
         <Typography type="body1" className={classes.alignRow}>
-          {getPartiallyHiddenEthereumAddress(ethersConstants.AddressZero)}
+          {getShortEthereumAddress(ethersConstants.AddressZero)}
         </Typography>
       </div>
     );
@@ -113,7 +113,7 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
         </Typography>
         <div className={classes.rowRightBlock}>
           <Typography type="body1" className={classes.tokenAddress}>
-            {getPartiallyHiddenEthereumAddress(nativeTokenAddress)}
+            {getShortEthereumAddress(nativeTokenAddress)}
           </Typography>
           <button
             className={classes.button}
@@ -144,7 +144,7 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
           </Typography>
           <div className={classes.rowRightBlock}>
             <Typography type="body1" className={classes.tokenAddress}>
-              {getPartiallyHiddenEthereumAddress(wrappedTokenAddress)}
+              {getShortEthereumAddress(wrappedTokenAddress)}
             </Typography>
             <button
               className={classes.button}

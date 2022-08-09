@@ -5,4 +5,11 @@ const getPartiallyHiddenEthereumAddress = (ethereumAddress: string): string => {
   return `${firstAddressSlice} ･･･ ${secondAddressSlice}`;
 };
 
-export { getPartiallyHiddenEthereumAddress };
+const getShortEthereumAddress = (ethereumAddress: string): string => {
+  const firstAddressSlice = ethereumAddress.slice(0, 7);
+  const secondAddressSlice = ethereumAddress.slice(ethereumAddress.length - 5);
+
+  return `${firstAddressSlice}...${secondAddressSlice}`;
+};
+
+export { getPartiallyHiddenEthereumAddress, getShortEthereumAddress };
