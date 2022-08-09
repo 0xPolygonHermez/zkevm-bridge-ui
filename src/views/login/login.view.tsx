@@ -13,7 +13,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
-import { WalletName } from "src/domain";
+import { WalletName, EthereumChainId } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
 
 const Login: FC = () => {
@@ -48,12 +48,13 @@ const Login: FC = () => {
     return null;
   }
 
-  const deploymentName = getDeploymentName(env.chains[0]);
-  const appName = deploymentName ? `Bridge ${deploymentName}` : "Bridge";
-  const networkName = getNetworkName(env.chains[0]);
+  const ethereumChain = env.chains[0];
+  const deploymentName = getDeploymentName(ethereumChain);
+  const networkName = getNetworkName(ethereumChain);
+  const appName = deploymentName !== undefined ? `Bridge ${deploymentName}` : "Bridge";
   const networkInfo =
     networkName !== undefined &&
-    networkName !== "Mainnet" &&
+    ethereumChain.chainId !== EthereumChainId.MAINNET &&
     `Connect with ${networkName} testnet environment`;
 
   return (
