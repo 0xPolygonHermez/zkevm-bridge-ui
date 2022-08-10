@@ -13,7 +13,6 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
-import { Erc20__factory } from "src/types/contracts/erc-20";
 import {
   BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
   getEtherToken,
@@ -27,6 +26,7 @@ import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api
 import { getCustomTokens } from "src/adapters/storage";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { erc20Tokens } from "src/assets/erc20-tokens";
+import { Erc20__factory } from "src/types/contracts/erc-20";
 
 interface GetTokenFromAddressParams {
   address: string;
@@ -156,7 +156,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, account, changeNetwork } = useProvidersContext();
+  const { connectedProvider, changeNetwork } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
 
   const getTokenFromAddress = useCallback(
@@ -665,22 +665,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       const executeBridge = async () => {
-        const isTokenEther = token.address === ethersConstants.AddressZero;
-
-        if (!isTokenEther) {
-          if (account.status !== "successful") {
-            throw new Error("The account address is not available");
-          }
-
-          const erc20Contract = Erc20__factory.connect(
-            token.address,
-            connectedProvider.provider.getSigner()
-          );
-          const allowance = await erc20Contract.allowance(account.data, from.contractAddress);
-          if (allowance.lt(amount)) {
-            await erc20Contract.approve(from.contractAddress, ethersConstants.MaxUint256);
-          }
-        }
         return contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
       };
 
@@ -694,7 +678,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeBridge);
       }
     },
-    [connectedProvider, account, changeNetwork]
+    [connectedProvider, changeNetwork]
   );
 
   const claim = useCallback(

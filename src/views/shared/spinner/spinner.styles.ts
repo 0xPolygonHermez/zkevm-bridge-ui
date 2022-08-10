@@ -27,10 +27,8 @@ const useSpinnerStyles = createUseStyles((theme: Theme) => ({
     strokeDashoffset: "0px",
   }),
   bottomCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
-    bottomCircle: {
-      stroke: color,
-      strokeOpacity: 0.2,
-    },
+    stroke: color,
+    strokeOpacity: 0.2,
   }),
 }));
 

@@ -8,7 +8,6 @@ import Header from "src/views/shared/header/header.view";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
-import Button from "src/views/shared/button/button.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
@@ -25,6 +24,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { ETH_TOKEN_LOGO_URI, getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import BridgeButton from "src/views/bridge-confirmation/components/bridge-button.view";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -42,7 +42,7 @@ const BridgeConfirmation: FC = () => {
   const [error, setError] = useState<string>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
-  const onClick = () => {
+  const onBridge = () => {
     if (formData && account.status === "successful") {
       const { token, amount, from, to } = formData;
 
@@ -190,7 +190,14 @@ const BridgeConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        <Button onClick={onClick}>Bridge</Button>
+        {account.status === "successful" && (
+          <BridgeButton
+            from={formData.from}
+            token={formData.token}
+            account={account.data}
+            onBridge={onBridge}
+          />
+        )}
         {error && <Error error={error} />}
       </div>
     </div>
