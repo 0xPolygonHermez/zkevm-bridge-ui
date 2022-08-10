@@ -1,4 +1,4 @@
-import { Bridge, Chain, Currency } from "src/domain";
+import { Bridge, Chain, Currency, EthereumChainId } from "src/domain";
 
 export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
@@ -17,6 +17,32 @@ export function getChainName(chain: Chain): string {
       return "Ethereum";
     case "polygon-zkevm":
       return "Polygon zkEVM";
+  }
+}
+
+export function getNetworkName(chain: Chain): string | undefined {
+  switch (chain.chainId) {
+    case EthereumChainId.MAINNET:
+      return "Mainnet";
+    case EthereumChainId.RINKEBY:
+      return "Rinkeby";
+    case EthereumChainId.GOERLI:
+      return "Goerli";
+    default:
+      return undefined;
+  }
+}
+
+export function getDeploymentName(chain: Chain): string | undefined {
+  switch (chain.chainId) {
+    case EthereumChainId.MAINNET:
+      return "Mainnet";
+    case EthereumChainId.RINKEBY:
+      return "Testnet";
+    case EthereumChainId.GOERLI:
+      return "Internal Testnet";
+    default:
+      return undefined;
   }
 }
 
