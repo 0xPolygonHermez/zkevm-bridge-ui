@@ -36,12 +36,19 @@ const isPermitSupported = async ({
 
 interface ApproveParams {
   token: Token;
+  amount: BigNumber;
   provider: Web3Provider;
   owner: string;
   spender: string;
 }
 
-const approve = async ({ token, provider, owner, spender }: ApproveParams): Promise<void> => {
+const approve = async ({
+  token,
+  amount,
+  provider,
+  owner,
+  spender,
+}: ApproveParams): Promise<void> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot perfom an approve on ETH");
   }
@@ -49,6 +56,7 @@ const approve = async ({ token, provider, owner, spender }: ApproveParams): Prom
   const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
   const hasAllowance = await isContractAllowedToSpendToken({
     token,
+    amount,
     provider,
     owner,
     spender,
@@ -63,6 +71,7 @@ const approve = async ({ token, provider, owner, spender }: ApproveParams): Prom
 
 interface IsContractAllowedToSpendTokenParams {
   token: Token;
+  amount: BigNumber;
   provider: JsonRpcProvider;
   owner: string;
   spender: string;
@@ -70,6 +79,7 @@ interface IsContractAllowedToSpendTokenParams {
 
 const isContractAllowedToSpendToken = async ({
   token,
+  amount,
   provider,
   owner,
   spender,
@@ -81,7 +91,7 @@ const isContractAllowedToSpendToken = async ({
   const erc20Contract = Erc20__factory.connect(token.address, provider);
   const allowance = await erc20Contract.allowance(owner, spender);
 
-  return allowance.eq(ethersConstants.MaxUint256);
+  return allowance.gte(amount);
 };
 
 interface PermitParams {

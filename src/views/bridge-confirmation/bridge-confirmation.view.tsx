@@ -1,9 +1,8 @@
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BigNumber } from "ethers";
+import { BigNumber, constants as ethersConstants } from "ethers";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
-import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import Header from "src/views/shared/header/header.view";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
@@ -12,7 +11,7 @@ import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
-import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
 import { useBridgeContext } from "src/contexts/bridge.context";
@@ -24,7 +23,10 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import BridgeButton from "src/views/bridge-confirmation/components/bridge-button.view";
+import { approve, isContractAllowedToSpendToken } from "src/adapters/ethereum";
+import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
+import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
+import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -40,44 +42,39 @@ const BridgeConfirmation: FC = () => {
   const [fiatAmount, setFiatAmount] = useState<BigNumber>();
   const [fiatFee, setFiatFee] = useState<BigNumber>();
   const [error, setError] = useState<string>();
+  const [hasAllowanceTask, setHasAllowanceTask] = useState<AsyncTask<boolean, string>>({
+    status: "pending",
+  });
+  const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
+    status: "pending",
+  });
   const currencySymbol = getCurrencySymbol(getCurrency());
 
-  const onBridge = () => {
-    if (formData && account.status === "successful") {
-      const { token, amount, from, to } = formData;
+  useEffect(() => {
+    if (
+      formData &&
+      account.status === "successful" &&
+      formData.token.address !== ethersConstants.AddressZero
+    ) {
+      const { from, token, amount } = formData;
 
-      bridge({
-        from,
-        token,
-        amount,
-        to,
-        destinationAddress: account.data,
+      setHasAllowanceTask({ status: "loading" });
+      void isContractAllowedToSpendToken({
+        provider: from.provider,
+        token: token,
+        amount: amount,
+        owner: account.data,
+        spender: from.contractAddress,
       })
-        .then(() => {
-          openSnackbar({
-            type: "success-msg",
-            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
-          });
-          navigate(routes.activity.path);
-          setFormData(undefined);
-        })
+        .then((isAllowed) => setHasAllowanceTask({ status: "successful", data: isAllowed }))
         .catch((error) => {
-          if (isMetamaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                callIfMounted(() => {
-                  setError(`Switch to ${getChainName(from)} to continue`);
-                });
-              } else {
-                callIfMounted(() => {
-                  notifyError(error);
-                });
-              }
-            });
-          }
+          void parseError(error).then((parsed) => {
+            setHasAllowanceTask({ status: "failed", error: parsed });
+            notifyError(parsed);
+          });
         });
     }
-  };
+  }, [formData, account, notifyError]);
 
   useEffect(() => {
     if (formData) {
@@ -150,6 +147,67 @@ const BridgeConfirmation: FC = () => {
     }
   }, [env, formData, getTokenPrice, callIfMounted, tokens]);
 
+  const onApprove = () => {
+    if (connectedProvider && account.status === "successful") {
+      setApprovalTask({ status: "loading" });
+      void approve({
+        token,
+        owner: account.data,
+        spender: from.contractAddress,
+        provider: connectedProvider.provider,
+        amount,
+      })
+        .then(() => setApprovalTask({ status: "successful", data: null }))
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error)) {
+            setApprovalTask({ status: "pending" });
+          } else {
+            void parseError(error).then((parsed) => {
+              setApprovalTask({ status: "failed", error: parsed });
+              notifyError(parsed);
+            });
+          }
+        });
+    }
+  };
+
+  const onBridge = () => {
+    if (formData && account.status === "successful") {
+      const { token, amount, from, to } = formData;
+
+      bridge({
+        from,
+        token,
+        amount,
+        to,
+        destinationAddress: account.data,
+      })
+        .then(() => {
+          openSnackbar({
+            type: "success-msg",
+            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
+          });
+          navigate(routes.activity.path);
+          setFormData(undefined);
+        })
+        .catch((error) => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            void parseError(error).then((parsed) => {
+              if (parsed === "wrong-network") {
+                callIfMounted(() => {
+                  setError(`Switch to ${getChainName(from)} to continue`);
+                });
+              } else {
+                callIfMounted(() => {
+                  notifyError(error);
+                });
+              }
+            });
+          }
+        });
+    }
+  };
+
   if (!formData || !env) {
     return null;
   }
@@ -190,14 +248,14 @@ const BridgeConfirmation: FC = () => {
         </div>
       </Card>
       <div className={classes.button}>
-        {account.status === "successful" && (
-          <BridgeButton
-            from={formData.from}
-            token={formData.token}
-            account={account.data}
-            onBridge={onBridge}
-          />
-        )}
+        <BridgeButton
+          token={token}
+          hasAllowanceTask={hasAllowanceTask}
+          approvalTask={approvalTask}
+          onApprove={onApprove}
+          onBridge={onBridge}
+        />
+        <ApprovalInfo token={token} hasAllowanceTask={hasAllowanceTask} />
         {error && <Error error={error} />}
       </div>
     </div>

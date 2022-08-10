@@ -23,7 +23,7 @@ const Button: FC<ButtonProps> = ({ children, type, disabled, isLoading, onClick 
       {children}
       {isLoading && (
         <span className={classes.spinner}>
-          <Spinner size={18} color="#fff" />
+          <Spinner size={24} color="#fff" />
         </span>
       )}
     </button>
