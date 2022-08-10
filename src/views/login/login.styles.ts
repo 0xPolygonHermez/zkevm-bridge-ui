@@ -3,6 +3,11 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useLoginStyles = createUseStyles((theme: Theme) => ({
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+    display: "flex",
+    flexDirection: "column",
+  },
   logo: {
     margin: [theme.spacing(8), "auto", theme.spacing(3), "auto"],
   },
@@ -27,10 +32,15 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
   cardHeaderCentered: {
     textAlign: "center",
   },
-  contentWrapper: {
-    padding: [0, theme.spacing(2)],
+  networkInfo: {
+    color: theme.palette.black,
+    background: theme.palette.grey.main,
+    borderRadius: "8px",
     display: "flex",
-    flexDirection: "column",
+    padding: theme.spacing(2),
+    gap: theme.spacing(1),
+    margin: "auto",
+    maxWidth: theme.maxWidth,
   },
 }));
 

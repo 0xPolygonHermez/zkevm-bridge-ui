@@ -188,6 +188,11 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
   },
+  tokenInfoButtonIcon: {
+    "& path": {
+      fill: theme.palette.grey.dark,
+    },
+  },
   centeredElement: {
     height: 250,
     display: "flex",

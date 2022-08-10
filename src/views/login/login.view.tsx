@@ -8,9 +8,12 @@ import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
+import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useEnvContext } from "src/contexts/env.context";
+import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
-import { WalletName } from "src/domain";
+import { WalletName, EthereumChainId } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
 
 const Login: FC = () => {
@@ -18,6 +21,7 @@ const Login: FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectProvider, account } = useProvidersContext();
+  const env = useEnvContext();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   const onConnectProvider = (walletName: WalletName) => {
@@ -40,11 +44,24 @@ const Login: FC = () => {
     }
   }, [account, state, navigate]);
 
+  if (!env) {
+    return null;
+  }
+
+  const ethereumChain = env.chains[0];
+  const deploymentName = getDeploymentName(ethereumChain);
+  const networkName = getNetworkName(ethereumChain);
+  const appName = deploymentName !== undefined ? `Bridge ${deploymentName}` : "Bridge";
+  const networkInfo =
+    networkName !== undefined &&
+    ethereumChain.chainId !== EthereumChainId.MAINNET &&
+    `Connect with ${networkName} testnet environment`;
+
   return (
     <div className={classes.contentWrapper}>
       <PolygonZkEVMLogo className={classes.logo} />
       <Typography type="body1" className={classes.appName}>
-        Bridge
+        {appName}
       </Typography>
       <div className={classes.cardWrap}>
         <Card className={classes.card}>
@@ -67,6 +84,12 @@ const Login: FC = () => {
             </>
           )}
         </Card>
+        {networkInfo && (
+          <div className={classes.networkInfo}>
+            <InfoIcon />
+            <Typography type="body2">{networkInfo}</Typography>
+          </div>
+        )}
         {account.status === "failed" && <Error error={account.error} />}
       </div>
     </div>

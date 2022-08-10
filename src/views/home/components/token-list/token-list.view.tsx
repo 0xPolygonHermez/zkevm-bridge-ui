@@ -177,7 +177,7 @@ const TokenList: FC<TokenListProps> = ({
                                 });
                               }}
                             >
-                              <InfoIcon />
+                              <InfoIcon className={classes.tokenInfoButtonIcon}/>
                             </button>
                           </div>
                         )}
