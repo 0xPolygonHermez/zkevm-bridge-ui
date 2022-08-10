@@ -2,10 +2,8 @@ import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
 import { Chain, Currency, Token } from "src/domain";
-import { erc20Tokens } from "src/assets/erc20-tokens";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { cleanupCustomTokens } from "src/adapters/storage";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
@@ -94,13 +92,6 @@ export const getEtherToken = (chain: Chain): Token => {
     decimals: 18,
     logoURI: ETH_TOKEN_LOGO_URI,
   };
-};
-
-export const getChainTokens = (chain: Chain): Token[] => {
-  const chainErc20Tokens: Token[] = erc20Tokens.filter((token) => token.chainId === chain.chainId);
-  const tokens = [getEtherToken(chain), ...chainErc20Tokens];
-  cleanupCustomTokens(tokens);
-  return tokens;
 };
 
 export const getUsdcToken = ({

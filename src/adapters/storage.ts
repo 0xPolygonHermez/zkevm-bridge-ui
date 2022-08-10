@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
 import * as constants from "src/constants";
 import { Currency, Token, Chain } from "src/domain";
-
+import { tokenParser } from "src/adapters/tokens";
 // Currency
 
 export function getCurrency(): Currency {
@@ -19,17 +18,6 @@ export function setCurrency(currency: Currency): Currency {
 }
 
 // Custom Tokens
-
-const tokenParser = StrictSchema<Token>()(
-  z.object({
-    name: z.string(),
-    symbol: z.string(),
-    address: z.string(),
-    decimals: z.number(),
-    chainId: z.number(),
-    logoURI: z.string(),
-  })
-);
 
 const CUSTOM_TOKENS_KEY = "customTokens";
 
@@ -54,7 +42,11 @@ export function getCustomTokens(): Token[] {
 }
 
 export function getChainCustomTokens(chain: Chain): Token[] {
-  return getCustomTokens().filter((token) => token.chainId === chain.chainId);
+  return getCustomTokens().filter(
+    (token) =>
+      token.chainId === chain.chainId ||
+      (token.wrappedToken && token.wrappedToken.chainId === chain.chainId)
+  );
 }
 
 export function isChainCustomToken(token: Token, chain: Chain): boolean {

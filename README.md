@@ -42,7 +42,7 @@ can also use to create your `.env` file:
   development.
 
 Take into account that regardless of the option you choose, you will need to manually add the
-`REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain
+`VITE_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain
 [here](https://exchangeratesapi.io/). If you omit it, you won't be able to see token prices
 converted to your local fiat currency.
 
@@ -64,7 +64,7 @@ The `ENVIRONMENT` build-arg is just the name of any of the supported environment
 - `fetestnet`
 
 And as we've seen before in the [development section](#development), you will also need to provide
-the `REACT_APP_FIAT_EXCHANGE_RATES_API_KEY` environment variable as a build-arg.
+the `VITE_FIAT_EXCHANGE_RATES_API_KEY` environment variable as a build-arg.
 
 ## Disclaimer
 

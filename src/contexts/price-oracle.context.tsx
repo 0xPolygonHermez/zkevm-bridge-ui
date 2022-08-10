@@ -15,6 +15,7 @@ import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { useBridgeContext } from "src/contexts/bridge.context";
 import { multiplyAmounts } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
@@ -27,7 +28,6 @@ import { getFiatExchangeRates } from "src/adapters/fiat-exchange-rates-api";
 import { getCurrency } from "src/adapters/storage";
 import { Token, Chain } from "src/domain";
 import {
-  getChainTokens,
   UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS,
   UNISWAP_V2_ROUTER_02_INIT_CODE_HASH,
   UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
@@ -67,6 +67,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
+  const { tokens } = useBridgeContext();
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
   const [uniswapV2Router02Contract, setUniswapV2Router02Contract] = useState<UniswapV2Router02>();
 
@@ -74,7 +75,7 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
     async ({ token, chain }: GetTokenPriceParams): Promise<BigNumber> => {
       const erc20Token =
         token.address === ethers.constants.AddressZero
-          ? getChainTokens(chain).find((t) => t.symbol === "WETH")
+          ? tokens?.find((t) => t.symbol === "WETH")
           : token;
 
       if (!erc20Token) {
@@ -137,7 +138,7 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
 
       return price;
     },
-    [env, fiatExchangeRates, uniswapV2Router02Contract]
+    [env, fiatExchangeRates, tokens, uniswapV2Router02Contract]
   );
 
   useEffect(() => {

@@ -19,9 +19,12 @@ export interface Token {
   decimals: number;
   chainId: number;
   logoURI: string;
+  balance?: BigNumber;
+  wrappedToken?: {
+    address: string;
+    chainId: number;
+  };
 }
-
-export type TokenWithBalance = Token & { balance: BigNumber | undefined };
 
 export interface Env {
   bridgeApiUrl: string;
