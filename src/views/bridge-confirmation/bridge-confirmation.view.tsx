@@ -159,7 +159,10 @@ const BridgeConfirmation: FC = () => {
         provider: connectedProvider.provider,
         amount,
       })
-        .then(() => setApprovalTask({ status: "successful", data: null }))
+        .then(() => {
+          setApprovalTask({ status: "successful", data: null });
+          setHasAllowanceTask({ status: "successful", data: true });
+        })
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error)) {
             setApprovalTask({ status: "pending" });
