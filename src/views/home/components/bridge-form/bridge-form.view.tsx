@@ -23,10 +23,11 @@ import {
 } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
-import { getChainTokens } from "src/constants";
+import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
-import { Chain, Token, TokenWithBalance, FormData } from "src/domain";
+import { Chain, Token, FormData } from "src/domain";
+import { getEtherToken } from "src/constants";
 
 interface BridgeFormProps {
   account: string;
@@ -48,8 +49,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const {
     estimateBridgeGasPrice,
     getErc20TokenBalance,
-    computeWrappedTokenAddress,
-    getNativeTokenInfo,
+    tokens: defaultTokens,
     getTokenFromAddress,
   } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
@@ -62,28 +62,26 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     status: "pending",
   });
   const [chains, setChains] = useState<Chain[]>();
-  const [tokens, setTokens] = useState<TokenWithBalance[]>();
-  const [filteredTokens, setFilteredTokens] = useState<TokenWithBalance[]>();
+  const [tokens, setTokens] = useState<Token[]>();
+  const [filteredTokens, setFilteredTokens] = useState<Token[]>();
   const [tokenListSearchInputValue, setTokenListSearchInputValue] = useState<string>("");
-  const [tokenListCustomToken, setTokenListCustomToken] = useState<
-    AsyncTask<TokenWithBalance, string>
-  >({
+  const [tokenListCustomToken, setTokenListCustomToken] = useState<AsyncTask<Token, string>>({
     status: "pending",
   });
 
-  const getTokens = (chain: Chain) => {
-    return [...getChainCustomTokens(chain), ...getChainTokens(chain)];
-  };
+  const getTokens = useCallback(
+    (chain: Chain) => {
+      return [...getChainCustomTokens(chain), ...(defaultTokens || [getEtherToken(chain)])];
+    },
+    [defaultTokens]
+  );
 
-  const getTokenFilterByTerm = (term: string) => (token: TokenWithBalance) =>
+  const getTokenFilterByTerm = (term: string) => (token: Token) =>
     term.length === 0 ||
     token.address.toLowerCase().includes(term.toLowerCase()) ||
+    (token.wrappedToken && token.wrappedToken.address.toLowerCase().includes(term.toLowerCase())) ||
     token.name.toLowerCase().includes(term.toLowerCase()) ||
     token.symbol.toLowerCase().includes(term.toLowerCase());
-
-  const getEtherToken = (chain: Chain): Token | undefined => {
-    return getTokens(chain).find((token) => token.address === ethersConstants.AddressZero);
-  };
 
   const onAmountInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
     setAmount(amount);
@@ -96,7 +94,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
       if (to) {
         setSelectedChains({ from, to });
-        setToken(getEtherToken(from));
         setChains(undefined);
         setAmount(undefined);
       }
@@ -107,13 +104,13 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     setFilteredTokens(tokens);
   };
 
-  const onTokenListTokenSelected = (token: TokenWithBalance) => {
+  const onTokenListTokenSelected = (token: Token) => {
     setToken(token);
     setFilteredTokens(undefined);
     setAmount(undefined);
   };
 
-  const updateTokenList = (tokensWithBalance: TokenWithBalance[], tokenListSearchTerm: string) => {
+  const updateTokenList = (tokensWithBalance: Token[], tokenListSearchTerm: string) => {
     const filteredTokens = tokensWithBalance.filter(getTokenFilterByTerm(tokenListSearchTerm));
     setFilteredTokens(filteredTokens);
     setTokenListCustomToken({ status: "pending" });
@@ -123,37 +120,40 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       filteredTokens.length === 0
     ) {
       setTokenListCustomToken({ status: "loading" });
+      const setBalanceAndListCustomToken = (token: Token) => {
+        getTokenBalance(token, selectedChains.from)
+          .then((balance) => {
+            callIfMounted(() => {
+              setFilteredTokens([{ ...token, balance }]);
+              setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
+            });
+          })
+          .catch(() => {
+            callIfMounted(() => {
+              setFilteredTokens([{ ...token, balance: undefined }]);
+            });
+          });
+      };
       void getTokenFromAddress({
         address: tokenListSearchTerm,
         chain: selectedChains.from,
       })
-        .then((token) => {
-          getTokenBalance(token, selectedChains.from)
-            .then((balance) => {
-              callIfMounted(() => {
-                const tokenWithBalance: TokenWithBalance = { ...token, balance };
-                setFilteredTokens([tokenWithBalance]);
-                callIfMounted(() => {
-                  setTokenListCustomToken({ status: "successful", data: tokenWithBalance });
-                });
-              });
-            })
-            .catch(() => {
-              callIfMounted(() => {
-                const tokenWithBalance: TokenWithBalance = { ...token, balance: undefined };
-                setFilteredTokens([tokenWithBalance]);
-              });
-            });
-        })
+        .then(setBalanceAndListCustomToken)
         .catch(() =>
-          callIfMounted(() => {
-            setTokenListCustomToken({
-              status: "failed",
-              error: `The token can not be imported: A problem occurred calling the provided contract on the ${getChainName(
-                selectedChains.from
-              )} chain with id ${selectedChains.from.chainId}`,
-            });
+          getTokenFromAddress({
+            address: tokenListSearchTerm,
+            chain: selectedChains.to,
           })
+            .then(setBalanceAndListCustomToken)
+            .catch(() =>
+              callIfMounted(() => {
+                setTokenListCustomToken({
+                  status: "failed",
+                  error:
+                    "The token contract cannot be called on any network. Please make sure the contract is deployed on a network.",
+                });
+              })
+            )
         );
     }
   };
@@ -164,22 +164,26 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     setTokenListSearchInputValue("");
   };
 
-  const onTokenListImportToken = (tokenWithBalance: TokenWithBalance) => {
+  const onTokenListImportToken = (token: Token) => {
     if (tokens) {
-      const { name, symbol, address, decimals, chainId, logoURI } = tokenWithBalance;
-      addCustomToken({ name, symbol, address, decimals, chainId, logoURI });
-      const newTokensWithBalance = [tokenWithBalance, ...tokens];
+      // we don't want to store the balance of the user in the local storage
+      const { name, symbol, address, decimals, chainId, logoURI, wrappedToken } = token;
+      addCustomToken({ name, symbol, address, decimals, chainId, logoURI, wrappedToken });
+      const newTokensWithBalance = [token, ...tokens];
       setTokens(newTokensWithBalance);
       updateTokenList(newTokensWithBalance, tokenListSearchInputValue);
     }
   };
 
-  const onTokenListRemoveToken = (token: TokenWithBalance) => {
+  const onTokenListRemoveToken = (tokenToRemove: Token) => {
     if (tokens) {
-      removeCustomToken(token);
-      const newTokensWithBalance = tokens.filter((tkn) => tkn.address !== token.address);
+      removeCustomToken(tokenToRemove);
+      const newTokensWithBalance = tokens.filter((tkn) => tkn.address !== tokenToRemove.address);
       setTokens(newTokensWithBalance);
       updateTokenList(newTokensWithBalance, tokenListSearchInputValue);
+      if (selectedChains && tokenToRemove.address === token?.address) {
+        setToken(getEtherToken(selectedChains.from));
+      }
     }
   };
 
@@ -210,7 +214,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       } else {
         return getErc20TokenBalance({
           chain: chain,
-          tokenAddress: token.address,
+          tokenAddress: selectTokenAddress(token, chain),
           accountAddress: account,
         });
       }
@@ -226,7 +230,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       const tokens = getTokens(selectedChains.from);
       void Promise.all(
         tokens.map(
-          (token: Token): Promise<TokenWithBalance> =>
+          (token: Token): Promise<Token> =>
             getTokenBalance(token, selectedChains.from)
               .then((balance) => ({ ...token, balance }))
               .catch(() => ({ ...token, balance: undefined }))
@@ -237,7 +241,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         });
       });
     }
-  }, [selectedChains, callIfMounted, getTokenBalance]);
+  }, [selectedChains, callIfMounted, getTokenBalance, getTokens]);
 
   useEffect(() => {
     /*
@@ -260,51 +264,24 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
             });
           });
       } else {
-        // We first assume that we have a wrapped Token selected in From and look for its
-        // native version, which will correspond to the token of the chain selected in To
-        void getNativeTokenInfo({
-          token: token,
-          chain: selectedChains.from,
+        getErc20TokenBalance({
+          chain: selectedChains.to,
+          tokenAddress: selectTokenAddress(token, selectedChains.to),
+          accountAddress: account,
         })
-          .then((tokenInfo) => tokenInfo.originalTokenAddress)
-          .catch(() =>
-            // Since we could not find a native version of the token selected in From, we know the token
-            // is already native to From and can safely compute the address of the wrapped token in To
-            computeWrappedTokenAddress({
-              token,
-              nativeChain: selectedChains.from,
-              otherChain: selectedChains.to,
+          .then((balance) =>
+            callIfMounted(() => {
+              setBalanceTo(balance);
             })
           )
-          .then((toTokenAddress) =>
-            getErc20TokenBalance({
-              chain: selectedChains.to,
-              tokenAddress: toTokenAddress,
-              accountAddress: account,
+          .catch(() =>
+            callIfMounted(() => {
+              setBalanceTo(undefined);
             })
-              .then((balance) =>
-                callIfMounted(() => {
-                  setBalanceTo(balance);
-                })
-              )
-              .catch(() =>
-                callIfMounted(() => {
-                  setBalanceTo(undefined);
-                })
-              )
           );
       }
     }
-  }, [
-    selectedChains,
-    account,
-    token,
-    getErc20TokenBalance,
-    notifyError,
-    computeWrappedTokenAddress,
-    getNativeTokenInfo,
-    callIfMounted,
-  ]);
+  }, [selectedChains, account, token, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
     /*
@@ -375,16 +352,16 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   const tokenListSearchError =
     tokenListCustomToken.status === "failed"
-      ? tokenListCustomToken.error
+      ? "Token not supported"
       : tokenListSearchInputValue.length > 0 && filteredTokens && filteredTokens.length === 0
-      ? `The input "${tokenListSearchInputValue}" produced no matches`
+      ? "No result found"
       : undefined;
 
   return (
     <form className={classes.form} onSubmit={onFormSubmit}>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <div className={classes.box}>
+          <div className={classes.leftBox}>
             <Typography type="body2">From</Typography>
             <button
               className={classes.chainSelector}
@@ -396,7 +373,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               <CaretDown />
             </button>
           </div>
-          <div className={classes.box}>
+          <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
               {`${fromBalance ? formatTokenAmount(fromBalance, token) : "--"} ${token.symbol}`}
@@ -423,14 +400,14 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       </div>
       <Card className={classes.card}>
         <div className={classes.row}>
-          <div className={classes.box}>
+          <div className={classes.leftBox}>
             <Typography type="body2">To</Typography>
             <div className={classes.chainSelector}>
               <selectedChains.to.Icon />
               <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
             </div>
           </div>
-          <div className={classes.box}>
+          <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
               {`${balanceTo ? formatTokenAmount(balanceTo, token) : "--"} ${token.symbol}`}

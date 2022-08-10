@@ -22,7 +22,7 @@ import { useUIContext } from "src/contexts/ui.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
-import { ETH_TOKEN_LOGO_URI, getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
+import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button.view";
 
@@ -32,7 +32,7 @@ const BridgeConfirmation: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { bridge } = useBridgeContext();
+  const { bridge, tokens } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -121,7 +121,7 @@ const BridgeConfirmation: FC = () => {
           })
         );
       // fiat fee
-      const weth = getChainTokens(from).find((t) => t.symbol === "WETH");
+      const weth = tokens?.find((t) => t.symbol === "WETH");
       if (weth) {
         getTokenPrice({ token: weth, chain: from })
           .then((tokenPrice) => {
@@ -148,7 +148,7 @@ const BridgeConfirmation: FC = () => {
           );
       }
     }
-  }, [env, formData, getTokenPrice, callIfMounted]);
+  }, [env, formData, getTokenPrice, callIfMounted, tokens]);
 
   if (!formData || !env) {
     return null;

@@ -26,7 +26,7 @@ import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
-import { getChainTokens, FIAT_DISPLAY_PRECISION } from "src/constants";
+import { FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 interface Fees {
@@ -64,7 +64,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { claim, getBridge } = useBridgeContext();
+  const { claim, getBridge, tokens } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
@@ -205,7 +205,7 @@ const BridgeDetails: FC = () => {
       const { from } = bridge.data;
 
       // fiat fees
-      const token = getChainTokens(from).find((t) => t.symbol === "WETH");
+      const token = tokens?.find((t) => t.symbol === "WETH");
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
@@ -247,7 +247,7 @@ const BridgeDetails: FC = () => {
           );
       }
     }
-  }, [env, bridge, ethFees, getTokenPrice, callIfMounted]);
+  }, [env, bridge, ethFees, getTokenPrice, callIfMounted, tokens]);
 
   switch (bridge.status) {
     case "pending":
@@ -275,7 +275,7 @@ const BridgeDetails: FC = () => {
       const { step1: step1EthFee, step2: step2EthFee } = ethFees;
       const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
 
-      const ethToken = getChainTokens(from).find((t) => t.symbol === "ETH");
+      const ethToken = tokens?.find((t) => t.symbol === "ETH");
 
       if (env === undefined || ethToken === undefined) {
         return null;

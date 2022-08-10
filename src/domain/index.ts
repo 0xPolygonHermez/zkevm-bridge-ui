@@ -19,9 +19,12 @@ export interface Token {
   decimals: number;
   chainId: number;
   logoURI: string;
+  balance?: BigNumber;
+  wrappedToken?: {
+    address: string;
+    chainId: number;
+  };
 }
-
-export type TokenWithBalance = Token & { balance: BigNumber | undefined };
 
 export interface Env {
   bridgeApiUrl: string;
@@ -35,6 +38,12 @@ export interface Env {
 
 export interface RouterState {
   redirectUrl: string;
+}
+
+export enum EthereumChainId {
+  MAINNET = 1,
+  RINKEBY = 4,
+  GOERLI = 5,
 }
 
 export enum WalletName {
