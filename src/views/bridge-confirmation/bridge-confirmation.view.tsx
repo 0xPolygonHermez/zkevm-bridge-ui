@@ -50,6 +50,7 @@ const BridgeConfirmation: FC = () => {
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
     status: "pending",
   });
+  const [isUserSigningBridge, setIsUserSigningBridge] = useState(false);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -180,6 +181,7 @@ const BridgeConfirmation: FC = () => {
     if (formData && account.status === "successful") {
       const { token, amount, from, to } = formData;
 
+      setIsUserSigningBridge(true);
       bridge({
         from,
         token,
@@ -196,6 +198,7 @@ const BridgeConfirmation: FC = () => {
           setFormData(undefined);
         })
         .catch((error) => {
+          setIsUserSigningBridge(false);
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
@@ -257,6 +260,7 @@ const BridgeConfirmation: FC = () => {
           token={token}
           hasAllowanceTask={hasAllowanceTask}
           approvalTask={approvalTask}
+          isUserSigningBridge={isUserSigningBridge}
           onApprove={onApprove}
           onBridge={onBridge}
         />

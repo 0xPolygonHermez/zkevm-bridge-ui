@@ -264,12 +264,13 @@ const Activity: FC = () => {
                   onLoadNextPage={onLoadNextPage}
                 >
                   {filteredList.map((bridge) => (
-                    <BridgeCard
-                      bridge={bridge}
-                      onClaim={() => onClaim(bridge)}
-                      networkError={wrongNetworkBridges.includes(bridge.id)}
-                      key={bridge.id}
-                    />
+                    <div className={classes.bridgeCardwrapper} key={bridge.id}>
+                      <BridgeCard
+                        bridge={bridge}
+                        onClaim={() => onClaim(bridge)}
+                        networkError={wrongNetworkBridges.includes(bridge.id)}
+                      />
+                    </div>
                   ))}
                 </InfiniteScroll>
               ) : (
