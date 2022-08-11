@@ -39,7 +39,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     padding: theme.spacing(2),
     gap: theme.spacing(1),
-    margin: "auto",
+    margin: [0, "auto", theme.spacing(2)],
     maxWidth: theme.maxWidth,
   },
 }));
