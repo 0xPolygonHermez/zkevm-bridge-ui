@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber, constants as ethersConstants } from "ethers";
+import { splitSignature } from "ethers/lib/utils";
 
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
 import { Token } from "src/domain";
-import { splitSignature } from "ethers/lib/utils";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
@@ -50,7 +50,7 @@ const approve = async ({
   spender,
 }: ApproveParams): Promise<void> => {
   if (token.address === ethersConstants.AddressZero) {
-    throw new Error("Cannot perfom an approve on ETH");
+    throw new Error("Cannot perform an approve on ETH");
   }
 
   const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
@@ -110,7 +110,7 @@ const permit = async ({
   value,
 }: PermitParams): Promise<string> => {
   if (token.address === ethersConstants.AddressZero) {
-    return Promise.reject(new Error("Cannot perfom an approve on ETH"));
+    throw new Error("Cannot perform a permit on ETH");
   }
 
   const erc20PermitContract = Erc20Permit__factory.connect(token.address, provider.getSigner());
