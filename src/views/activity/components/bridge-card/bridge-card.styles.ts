@@ -6,7 +6,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   card: {
     maxWidth: theme.maxWidth,
     padding: [theme.spacing(2), theme.spacing(3)],
-    margin: [theme.spacing(2), "auto"],
+    margin: "auto",
     cursor: "pointer",
     transition: theme.hoverTransition,
     "&:hover": {
