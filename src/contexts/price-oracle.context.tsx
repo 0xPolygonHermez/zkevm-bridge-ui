@@ -15,7 +15,6 @@ import { getCreate2Address } from "@ethersproject/address";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { multiplyAmounts } from "src/utils/amounts";
 import { getChainName } from "src/utils/labels";
 import {
@@ -33,6 +32,7 @@ import {
   UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS,
   FIAT_DISPLAY_PRECISION,
 } from "src/constants";
+import { useTokensContext } from "src/contexts/tokens.context";
 
 const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }): string => {
   const [token0, token1] = tokenA.address < tokenB.address ? [tokenA, tokenB] : [tokenB, tokenA];
@@ -67,7 +67,7 @@ const priceOracleContext = createContext<PriceOracleContext>({
 const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { tokens } = useBridgeContext();
+  const { tokens } = useTokensContext();
   const [fiatExchangeRates, setFiatExchangeRates] = useState<FiatExchangeRates>();
   const [uniswapV2Router02Contract, setUniswapV2Router02Contract] = useState<UniswapV2Router02>();
 

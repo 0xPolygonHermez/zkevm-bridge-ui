@@ -28,6 +28,7 @@ import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useTokensContext } from "src/contexts/tokens.context";
 
 interface Fees {
   step1?: BigNumber;
@@ -64,7 +65,8 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { claim, getBridge, tokens } = useBridgeContext();
+  const { claim, getBridge } = useBridgeContext();
+  const { tokens } = useTokensContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();

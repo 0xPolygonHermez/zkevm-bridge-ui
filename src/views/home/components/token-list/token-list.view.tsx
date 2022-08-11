@@ -17,7 +17,7 @@ import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
 import { Token, Chain } from "src/domain";
-import { useBridgeContext } from "src/contexts/bridge.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 
 type Screen =
   | {
@@ -58,7 +58,7 @@ const TokenList: FC<TokenListProps> = ({
   onSelectToken,
 }) => {
   const classes = useListStyles();
-  const { addWrappedToken } = useBridgeContext();
+  const { addWrappedToken } = useTokensContext();
   const inputRef = useRef<HTMLInputElement>(null);
   const [screen, setScreen] = useState<Screen>({
     type: "token-list",
@@ -177,7 +177,7 @@ const TokenList: FC<TokenListProps> = ({
                                 });
                               }}
                             >
-                              <InfoIcon className={classes.tokenInfoButtonIcon}/>
+                              <InfoIcon className={classes.tokenInfoButtonIcon} />
                             </button>
                           </div>
                         )}

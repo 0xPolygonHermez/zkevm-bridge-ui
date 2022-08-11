@@ -86,6 +86,11 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     padding: [0, theme.spacing(2)],
   },
+  infoMessage: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+  },
 }));
 
 export default useBridgeConfirmationStyles;

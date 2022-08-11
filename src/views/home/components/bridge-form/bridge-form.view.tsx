@@ -28,6 +28,7 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
+import { useTokensContext } from "src/contexts/tokens.context";
 
 interface BridgeFormProps {
   account: string;
@@ -46,12 +47,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const {
-    estimateBridgeGasPrice,
-    getErc20TokenBalance,
-    tokens: defaultTokens,
-    getTokenFromAddress,
-  } = useBridgeContext();
+  const { estimateBridgeGasPrice } = useBridgeContext();
+  const { getErc20TokenBalance, tokens: defaultTokens, getTokenFromAddress } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
   const [inputError, setInputError] = useState<string>();
