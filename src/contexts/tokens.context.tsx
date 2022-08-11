@@ -22,6 +22,7 @@ import { getEthereumErc20Tokens } from "src/adapters/tokens";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { getEtherToken } from "src/constants";
 import * as ethereum from "src/adapters/ethereum";
+import { useProvidersContext } from "src/contexts/providers.context";
 
 interface AddWrappedTokenParams {
   token: Token;
@@ -54,6 +55,7 @@ interface IsContractAllowedToSpendTokenParams {
 }
 
 interface ApproveParams {
+  from: Chain;
   token: Token;
   amount: BigNumber;
   provider: Web3Provider;
@@ -98,6 +100,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const { getNativeTokenInfo, computeWrappedTokenAddress } = useBridgeContext();
+  const { connectedProvider, changeNetwork } = useProvidersContext();
   const [tokens, setTokens] = useState<Token[]>();
 
   /**
@@ -239,9 +242,27 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     []
   );
 
-  const approve = useCallback(({ token, amount, provider, owner, spender }: ApproveParams) => {
-    return ethereum.approve({ token, amount, provider, owner, spender });
-  }, []);
+  const approve = useCallback(
+    ({ from, token, amount, provider, owner, spender }: ApproveParams) => {
+      if (connectedProvider === undefined) {
+        throw new Error("Connected provider is not available");
+      }
+
+      const executeApprove = async () =>
+        ethereum.approve({ token, amount, provider, owner, spender });
+
+      if (from.chainId === connectedProvider.chainId) {
+        return executeApprove();
+      } else {
+        return changeNetwork(from)
+          .catch(() => {
+            throw "wrong-network";
+          })
+          .then(executeApprove);
+      }
+    },
+    [connectedProvider, changeNetwork]
+  );
 
   // initialize tokens
   useEffect(() => {

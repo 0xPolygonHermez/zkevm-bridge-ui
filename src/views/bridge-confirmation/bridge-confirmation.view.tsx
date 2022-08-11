@@ -23,7 +23,6 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { approve, isContractAllowedToSpendToken } from "src/adapters/ethereum";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
@@ -41,6 +40,7 @@ const BridgeConfirmation: FC = () => {
   const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
+  const { approve, isContractAllowedToSpendToken } = useTokensContext();
   const [fiatAmount, setFiatAmount] = useState<BigNumber>();
   const [fiatFee, setFiatFee] = useState<BigNumber>();
   const [error, setError] = useState<string>();
@@ -76,7 +76,7 @@ const BridgeConfirmation: FC = () => {
           });
         });
     }
-  }, [formData, account, notifyError]);
+  }, [formData, account, isContractAllowedToSpendToken, notifyError]);
 
   useEffect(() => {
     if (formData) {
@@ -153,6 +153,7 @@ const BridgeConfirmation: FC = () => {
     if (connectedProvider && account.status === "successful") {
       setApprovalTask({ status: "loading" });
       void approve({
+        from,
         token,
         owner: account.data,
         spender: from.contractAddress,
