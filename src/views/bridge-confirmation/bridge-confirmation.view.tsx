@@ -266,7 +266,9 @@ const BridgeConfirmation: FC = () => {
           onApprove={onApprove}
           onBridge={onBridge}
         />
-        <ApprovalInfo token={token} hasAllowanceTask={hasAllowanceTask} />
+        {token.address !== ethersConstants.AddressZero &&
+          hasAllowanceTask.status === "successful" &&
+          !hasAllowanceTask.data && <ApprovalInfo />}
         {error && <Error error={error} />}
       </div>
     </div>
