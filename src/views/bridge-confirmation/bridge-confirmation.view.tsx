@@ -169,8 +169,13 @@ const BridgeConfirmation: FC = () => {
             setApprovalTask({ status: "pending" });
           } else {
             void parseError(error).then((parsed) => {
-              setApprovalTask({ status: "failed", error: parsed });
-              notifyError(parsed);
+              if (parsed === "wrong-network") {
+                setError(`Switch to ${getChainName(from)} to continue`);
+                setApprovalTask({ status: "pending" });
+              } else {
+                setApprovalTask({ status: "failed", error: parsed });
+                notifyError(parsed);
+              }
             });
           }
         });
