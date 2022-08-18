@@ -1,5 +1,6 @@
-import { FC, useEffect, useState, useCallback } from "react";
+import { FC, useEffect, useState, useCallback, useMemo } from "react";
 import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -16,6 +17,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
@@ -26,14 +28,13 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
+import { formDataRouterStateParser } from "src/adapters/browser";
 import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
-import { useTokensContext } from "src/contexts/tokens.context";
+import routes from "src/routes";
 
 interface BridgeFormProps {
   account: string;
-  formData?: FormData;
-  resetForm: () => void;
   onSubmit: (formData: FormData) => void;
 }
 
@@ -42,7 +43,9 @@ interface SelectedChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmit }) => {
+const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
+  const { state: routerState } = useLocation();
+  const navigate = useNavigate();
   const callIfMounted = useCallIfMounted();
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
@@ -65,6 +68,16 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const [tokenListCustomToken, setTokenListCustomToken] = useState<AsyncTask<Token, string>>({
     status: "pending",
   });
+
+  const parsedFormData = useMemo(
+    () => (env ? formDataRouterStateParser(env).safeParse(routerState) : undefined),
+    [env, routerState]
+  );
+  if (parsedFormData?.success === false) {
+    notifyError(parsedFormData.error);
+  }
+  const formData =
+    parsedFormData?.success && parsedFormData.data !== null ? parsedFormData.data : undefined;
 
   const getTokens = useCallback(
     (chain: Chain) => {
@@ -221,7 +234,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   useEffect(() => {
     /*
-     *  Load the balances of the tokens
+     *  Load the balances of all the tokens in the primary network (From)
      */
     if (selectedChains) {
       const tokens = getTokens(selectedChains.from);
@@ -242,7 +255,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   useEffect(() => {
     /*
-     *  Get the token balance of the secondary network (To)
+     *  Load the balance of the selected token in the secondary network (To)
      */
     if (selectedChains && token) {
       const isTokenEther = token.address === ethersConstants.AddressZero;
@@ -284,29 +297,30 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     /*
      * Load the default values after the network is changed
      */
-    if (env && connectedProvider && formData === undefined) {
+    if (env && connectedProvider) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
       if (from && to) {
         setSelectedChains({ from, to });
         setToken(getEtherToken(from));
+        setAmount(undefined);
       }
-      setAmount(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedProvider, env]);
 
   useEffect(() => {
     /*
-     *  Restore the previous values of the form after closing the confirmation window
+     *  Restore the previous values of the form when FormData is available
      */
     if (formData) {
-      setSelectedChains({ from: formData.from, to: formData.to });
-      setToken(formData.token);
-      setAmount(formData.amount);
-      resetForm();
+      const { from, to, token, amount } = formData;
+      setSelectedChains({ from, to });
+      setToken(token);
+      setAmount(amount);
+      // This is an ugly hack but I don't know of any other way to reset the router state ¯\_(ツ)_/¯
+      navigate(routes.home.path, { replace: true });
     }
-  }, [formData, resetForm]);
+  }, [navigate, formData]);
 
   useEffect(() => {
     /*

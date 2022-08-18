@@ -1,5 +1,5 @@
-import { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FC, useEffect, useState, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { BigNumber, constants as ethersConstants } from "ethers";
 
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
@@ -14,29 +14,29 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
+import { formDataRouterStateParser, serializeFormData } from "src/adapters/browser";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { useTokensContext } from "src/contexts/tokens.context";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
+  const { state: routerState } = useLocation();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
   const { bridge } = useBridgeContext();
   const { tokens } = useTokensContext();
-  const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
@@ -51,6 +51,16 @@ const BridgeConfirmation: FC = () => {
     status: "pending",
   });
   const currencySymbol = getCurrencySymbol(getCurrency());
+
+  const parsedFormData = useMemo(
+    () => (env ? formDataRouterStateParser(env).safeParse(routerState) : undefined),
+    [env, routerState]
+  );
+  if (parsedFormData?.success === false) {
+    notifyError(parsedFormData.error);
+  }
+  const formData =
+    parsedFormData?.success && parsedFormData.data !== null ? parsedFormData.data : undefined;
 
   useEffect(() => {
     if (
@@ -93,7 +103,7 @@ const BridgeConfirmation: FC = () => {
   }, [navigate, formData]);
 
   useEffect(() => {
-    if (env !== undefined && formData) {
+    if (formData) {
       const { token, amount, from, estimatedFee } = formData;
       // fiat amount
       getTokenPrice({ token, chain: from })
@@ -147,11 +157,12 @@ const BridgeConfirmation: FC = () => {
           );
       }
     }
-  }, [env, formData, getTokenPrice, callIfMounted, tokens]);
+  }, [formData, getTokenPrice, callIfMounted, tokens]);
 
   const onApprove = () => {
-    if (connectedProvider && account.status === "successful") {
+    if (connectedProvider && account.status === "successful" && formData) {
       setApprovalTask({ status: "loading" });
+      const { token, amount, from } = formData;
       void approve({
         from,
         token,
@@ -199,7 +210,6 @@ const BridgeConfirmation: FC = () => {
             text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
           });
           navigate(routes.activity.path);
-          setFormData(undefined);
         })
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
@@ -232,7 +242,10 @@ const BridgeConfirmation: FC = () => {
 
   return (
     <div className={classes.contentWrapper}>
-      <Header title="Confirm Bridge" backTo="home" />
+      <Header
+        title="Confirm Bridge"
+        backTo={{ routeKey: "home", state: serializeFormData(formData) }}
+      />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
         <Typography type="h1">{tokenAmountString}</Typography>
@@ -241,12 +254,12 @@ const BridgeConfirmation: FC = () => {
         </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <formData.from.Icon />
+            <from.Icon />
             <Typography type="body1">{getChainName(from)}</Typography>
           </div>
           <ArrowRightIcon className={classes.arrowIcon} />
           <div className={classes.chainBox}>
-            <formData.to.Icon />
+            <to.Icon />
             <Typography type="body1">{getChainName(to)}</Typography>
           </div>
         </div>

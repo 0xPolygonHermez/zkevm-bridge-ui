@@ -36,9 +36,28 @@ export interface Env {
   chains: [Chain, Chain];
 }
 
-export interface RouterState {
+export interface FormData {
+  from: Chain;
+  to: Chain;
+  token: Token;
+  amount: BigNumber;
+  estimatedFee: BigNumber;
+}
+
+// A serializable version of FormData
+export interface FormDataRouterState {
+  from: Chain["key"];
+  to: Chain["key"];
+  token: Token;
+  amount: string;
+  estimatedFee: string;
+}
+
+export interface RedirectRouterState {
   redirectUrl: string;
 }
+
+export type RouterState = RedirectRouterState | FormDataRouterState;
 
 export enum EthereumChainId {
   MAINNET = 1,
@@ -136,12 +155,4 @@ export interface MerkleProof {
   l2ExitRootNumber: number;
   mainExitRoot: string;
   rollupExitRoot: string;
-}
-
-export interface FormData {
-  from: Chain;
-  to: Chain;
-  token: Token;
-  amount: BigNumber;
-  estimatedFee: BigNumber;
 }

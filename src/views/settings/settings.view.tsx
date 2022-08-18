@@ -48,7 +48,7 @@ const Settings: FC = () => {
     <div className={classes.contentWrapper}>
       <Header
         title="Settings"
-        backTo="home"
+        backTo={{ routeKey: "home" }}
         Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{bridgeVersion}</Typography>}
       />
       <Card className={classes.card}>

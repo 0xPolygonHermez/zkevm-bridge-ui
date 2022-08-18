@@ -229,7 +229,7 @@ const Activity: FC = () => {
       case "loading": {
         return (
           <div className={classes.contentWrapper}>
-            <Header title="Activity" backTo="home" />
+            <Header title="Activity" backTo={{ routeKey: "home" }} />
             <Tabs all={0} pending={0} />
             <PageLoader />
           </div>
@@ -238,7 +238,7 @@ const Activity: FC = () => {
       case "failed": {
         return (
           <div className={classes.contentWrapper}>
-            <Header title="Activity" backTo="home" />
+            <Header title="Activity" backTo={{ routeKey: "home" }} />
             <Tabs all={0} pending={0} />
             <EmptyMessage />
           </div>
@@ -253,7 +253,7 @@ const Activity: FC = () => {
             <div ref={headerBorderObserved}></div>
             <div className={classes.stickyContent} ref={headerBorderTarget}>
               <div className={classes.contentWrapper}>
-                <Header title="Activity" backTo="home" />
+                <Header title="Activity" backTo={{ routeKey: "home" }} />
                 <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
               </div>
             </div>

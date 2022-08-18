@@ -7,23 +7,17 @@ import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useFormContext } from "src/contexts/form.context";
 import { FormData } from "src/domain";
+import { serializeFormData } from "src/adapters/browser";
 import routes from "src/routes";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
-  const { formData, setFormData } = useFormContext();
   const { account } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
-    setFormData(formData);
-    navigate(routes.bridgeConfirmation.path);
-  };
-
-  const resetForm = () => {
-    setFormData(undefined);
+    navigate(routes.bridgeConfirmation.path, { state: serializeFormData(formData) });
   };
 
   return (
@@ -35,12 +29,7 @@ const Home = (): JSX.Element => {
             <MetaMaskIcon className={classes.metaMaskIcon} />
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
-          <BridgeForm
-            onSubmit={onFormSubmit}
-            formData={formData}
-            resetForm={resetForm}
-            account={account.data}
-          />
+          <BridgeForm onSubmit={onFormSubmit} account={account.data} />
         </>
       )}
     </div>

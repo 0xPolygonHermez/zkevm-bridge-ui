@@ -11,15 +11,15 @@ import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-log
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
+import { redirectRouterStateParser } from "src/adapters/browser";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
 import { WalletName, EthereumChainId } from "src/domain";
-import { routerStateParser } from "src/adapters/browser";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state: routerState } = useLocation();
   const { connectProvider, account } = useProvidersContext();
   const env = useEnvContext();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
@@ -34,15 +34,13 @@ const Login: FC = () => {
       setSelectedWallet(undefined);
     }
     if (account.status === "successful") {
-      const routerState = routerStateParser.safeParse(state);
-
-      if (routerState.success) {
-        navigate(routerState.data.redirectUrl, { replace: true });
-      } else {
-        navigate(routes.home.path, { replace: true });
-      }
+      const parsedRedirectRouterState = redirectRouterStateParser.safeParse(routerState);
+      const url = parsedRedirectRouterState.success
+        ? parsedRedirectRouterState.data.redirectUrl
+        : routes.home.path;
+      navigate(url, { replace: true });
     }
-  }, [account, state, navigate]);
+  }, [account, routerState, navigate]);
 
   if (!env) {
     return null;
