@@ -15,15 +15,14 @@ const chainKeyParser = StrictSchema<Chain["key"]>()(
 
 const formDataRouterStateParser = (env: Env) =>
   StrictSchema<FormDataRouterState | null, FormData | null>()(
-    StrictSchema<FormDataRouterState>()(
-      z.object({
+    z
+      .object({
         from: chainKeyParser,
         to: chainKeyParser,
         token: tokenParser,
         amount: z.string(),
         estimatedFee: z.string(),
       })
-    )
       .nullable()
       .transform((formData, ctx) => {
         if (formData === null) {
