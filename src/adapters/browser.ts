@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { BigNumber } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
 import { tokenParser } from "src/adapters/tokens";
 import { Env, RedirectRouterState, FormData, FormDataRouterState, Chain } from "src/domain";
-import { BigNumber } from "ethers";
 
 const redirectRouterStateParser = StrictSchema<RedirectRouterState>()(
   z.object({ redirectUrl: z.string() })
