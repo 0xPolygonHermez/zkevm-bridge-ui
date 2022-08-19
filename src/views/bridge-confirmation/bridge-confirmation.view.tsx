@@ -22,7 +22,7 @@ import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
+import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
@@ -79,10 +79,8 @@ const BridgeConfirmation: FC = () => {
   }, [formData, account, isContractAllowedToSpendToken, notifyError]);
 
   useEffect(() => {
-    if (formData) {
-      if (formData.from.chainId === connectedProvider?.chainId) {
-        setError(undefined);
-      }
+    if (formData && formData.from.chainId === connectedProvider?.chainId) {
+      setError(undefined);
     }
   }, [connectedProvider, formData]);
 
@@ -227,7 +225,8 @@ const BridgeConfirmation: FC = () => {
   const { token, amount, from, to, estimatedFee } = formData;
   const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
   const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
-  const feeString = `${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
+  const eth = getEtherToken(from);
+  const feeString = `${formatTokenAmount(estimatedFee, eth)} ${eth.symbol} ~ ${currencySymbol}${
     fiatFee ? formatFiatAmount(fiatFee) : "--"
   }`;
 
