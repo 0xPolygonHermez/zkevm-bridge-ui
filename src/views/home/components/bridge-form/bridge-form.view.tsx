@@ -375,7 +375,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
           <div className={classes.leftBox}>
             <Typography type="body2">From</Typography>
             <button
-              className={classes.chainSelector}
+              className={classes.fromChain}
               onClick={() => setChains(env.chains)}
               type="button"
             >
@@ -413,7 +413,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
         <div className={classes.row}>
           <div className={classes.leftBox}>
             <Typography type="body2">To</Typography>
-            <div className={classes.chainSelector}>
+            <div className={classes.toChain}>
               <selectedChains.to.Icon />
               <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
             </div>
