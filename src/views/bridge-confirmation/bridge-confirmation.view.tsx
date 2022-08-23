@@ -35,12 +35,22 @@ import {
   getEtherToken,
 } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import useFade from "src/hooks/use-fade";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
 
+const USE_FADE_DURATION_IN_SECONDS = 0.5;
+
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
+  const {
+    isVisible: areFeeAndAmountVisible,
+    setVisible: setFeeAndAmountVisible,
+    getClasses: getUseFadeClasses,
+  } = useFade({
+    fadeDurationInSeconds: USE_FADE_DURATION_IN_SECONDS,
+  });
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const { state: routerState } = useLocation();
@@ -210,9 +220,9 @@ const BridgeConfirmation: FC = () => {
      * Get estimated fee
      */
     const estimateFee = () => {
-      setEstimatedFee((currentEstimatedFee) =>
-        currentEstimatedFee.status === "successful"
-          ? { status: "reloading", data: currentEstimatedFee.data }
+      setEstimatedFee((oldFee) =>
+        oldFee.status === "successful"
+          ? { status: "reloading", data: oldFee.data }
           : { status: "loading" }
       );
       if (formData && isAsyncTaskDataAvailable(account)) {
@@ -222,9 +232,21 @@ const BridgeConfirmation: FC = () => {
           token: formData.token,
           destinationAddress: account.data,
         })
-          .then((estimatedFee) => {
+          .then((newFee) => {
             callIfMounted(() => {
-              setEstimatedFee({ status: "successful", data: estimatedFee });
+              setEstimatedFee((oldFee) => {
+                const areFeesEqual = isAsyncTaskDataAvailable(oldFee) && oldFee.data.eq(newFee);
+                if (areFeesEqual) {
+                  return { status: "successful", data: newFee };
+                } else {
+                  setFeeAndAmountVisible(false);
+                  setTimeout(() => {
+                    setEstimatedFee({ status: "successful", data: newFee });
+                    setFeeAndAmountVisible(true);
+                  }, USE_FADE_DURATION_IN_SECONDS * 1000);
+                  return oldFee;
+                }
+              });
             });
           })
           .catch((error) => {
@@ -249,7 +271,14 @@ const BridgeConfirmation: FC = () => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [account, formData, estimateBridgeGasPrice, notifyError, callIfMounted]);
+  }, [
+    account,
+    formData,
+    estimateBridgeGasPrice,
+    notifyError,
+    callIfMounted,
+    setFeeAndAmountVisible,
+  ]);
 
   const onApprove = () => {
     if (connectedProvider && account.status === "successful" && formData) {
@@ -289,13 +318,13 @@ const BridgeConfirmation: FC = () => {
     }
   };
 
-  const onBridge = () => {
+  const onBridge = (maxPossibleAmountConsideringFee: BigNumber) => {
     if (formData && isAsyncTaskDataAvailable(account)) {
-      const { token, amount, from, to } = formData;
+      const { token, from, to } = formData;
       bridge({
         from,
         token,
-        amount,
+        amount: maxPossibleAmountConsideringFee,
         to,
         destinationAddress: account.data,
       })
@@ -372,6 +401,18 @@ const BridgeConfirmation: FC = () => {
     etherToken.symbol
   } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
 
+  const { visibleProps: useFadeDefaultVisibleProps, invisibleProps: useFadeDefaultInvisibleProps } =
+    getUseFadeClasses();
+  const useFadeDefaultProps = areFeeAndAmountVisible
+    ? useFadeDefaultVisibleProps
+    : useFadeDefaultInvisibleProps;
+
+  const { visibleProps: useFadeFiatVisibleProps, invisibleProps: useFadeFiatInvisibleProps } =
+    getUseFadeClasses(classes.fiat);
+  const useFadeFiatProps = areFeeAndAmountVisible
+    ? useFadeFiatVisibleProps
+    : useFadeFiatInvisibleProps;
+
   return (
     <div className={classes.contentWrapper}>
       <Header
@@ -380,8 +421,10 @@ const BridgeConfirmation: FC = () => {
       />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography type="h1">{tokenAmountString}</Typography>
-        <Typography type="body2" className={classes.fiat}>
+        <Typography {...useFadeDefaultProps} type="h1">
+          {tokenAmountString}
+        </Typography>
+        <Typography {...useFadeFiatProps} type="body2">
           {fiatAmountString}
         </Typography>
         <div className={classes.chainsRow}>
@@ -398,8 +441,10 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1">{feeString}</Typography>
+            <Icon {...useFadeDefaultProps} url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Typography type="body1" {...useFadeDefaultProps}>
+              {feeString}
+            </Typography>
           </div>
         </div>
       </Card>
@@ -409,7 +454,7 @@ const BridgeConfirmation: FC = () => {
           hasAllowanceTask={hasAllowanceTask}
           approvalTask={approvalTask}
           onApprove={onApprove}
-          onBridge={onBridge}
+          onBridge={() => onBridge(maxPossibleAmountConsideringFee)}
         />
         {token.address !== ethersConstants.AddressZero &&
           hasAllowanceTask.status === "successful" &&
