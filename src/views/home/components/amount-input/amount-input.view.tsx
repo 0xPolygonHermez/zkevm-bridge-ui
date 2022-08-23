@@ -1,4 +1,4 @@
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 
@@ -7,38 +7,28 @@ import Typography from "src/views/shared/typography/typography.view";
 import { Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 
-interface onChangeParams {
-  amount?: BigNumber;
-  error?: string;
-}
-
 interface AmountInputProps {
   value?: BigNumber;
   token: Token;
   balance: BigNumber;
-  fee?: BigNumber;
-  onChange: (params: onChangeParams) => void;
+  onChange: (params: { amount?: BigNumber; error?: string }) => void;
 }
 
-const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChange }) => {
+const AmountInput: FC<AmountInputProps> = ({ value, token, balance, onChange }) => {
   const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
-  const [actualFee, setActualFee] = useState<BigNumber>();
   const classes = useAmountInputStyles(inputValue.length);
 
   const updateAmountInput = useCallback(
     (amount?: BigNumber) => {
-      if (amount && actualFee) {
-        const newAmountWithFee = amount.add(actualFee);
-        const isNewAmountWithFeeMoreThanFunds = newAmountWithFee.gt(balance);
-        const error = isNewAmountWithFeeMoreThanFunds ? "Insufficient balance" : undefined;
-
+      if (amount) {
+        const error = amount.gt(balance) ? "Insufficient balance" : undefined;
         return onChange({ amount, error });
       } else {
         return onChange({});
       }
     },
-    [actualFee, balance, onChange]
+    [balance, onChange]
   );
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -57,45 +47,23 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
     }
   };
 
-  const handleSendAll = () => {
-    if (actualFee) {
-      const maxAmountWithoutFee = balance.sub(actualFee);
-
-      if (maxAmountWithoutFee.gt(0)) {
-        const newValue = formatTokenAmount(maxAmountWithoutFee, token);
-
-        setInputValue(newValue);
-        updateAmountInput(maxAmountWithoutFee);
-      }
+  const handleMax = () => {
+    if (balance.gt(0)) {
+      setInputValue(formatTokenAmount(balance, token));
+      updateAmountInput(balance);
     }
   };
 
   useEffect(() => {
-    // TODO Find a way to react to this event without checking undefined
     if (value === undefined) {
       setInputValue("");
       updateAmountInput();
     }
   }, [value, updateAmountInput]);
 
-  useEffect(() => {
-    if (fee !== undefined) {
-      if (token.address === ethersConstants.AddressZero) {
-        setActualFee(fee);
-      } else {
-        setActualFee(BigNumber.from(0));
-      }
-    }
-  }, [fee, token]);
-
   return (
     <div className={classes.wrapper}>
-      <button
-        className={classes.maxButton}
-        type="button"
-        disabled={fee === undefined}
-        onClick={handleSendAll}
-      >
+      <button className={classes.maxButton} type="button" onClick={handleMax}>
         <Typography type="body2" className={classes.maxText}>
           MAX
         </Typography>
@@ -103,7 +71,6 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, fee, onChang
       <input
         className={classes.amountInput}
         value={inputValue}
-        disabled={fee === undefined}
         placeholder="0.00"
         autoFocus
         onChange={handleInputChange}

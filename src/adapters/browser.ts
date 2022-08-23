@@ -21,7 +21,6 @@ const formDataRouterStateParser = (env: Env) =>
         to: chainKeyParser,
         token: tokenParser,
         amount: z.string(),
-        estimatedFee: z.string(),
       })
       .nullable()
       .transform((formData, ctx) => {
@@ -53,19 +52,17 @@ const formDataRouterStateParser = (env: Env) =>
           to,
           token: formData.token,
           amount: BigNumber.from(formData.amount),
-          estimatedFee: BigNumber.from(formData.estimatedFee),
         };
       })
   );
 
 export function serializeFormData(formData: FormData): FormDataRouterState {
-  const { from, to, token, amount, estimatedFee } = formData;
+  const { from, to, token, amount } = formData;
   return {
     from: from.key,
     to: to.key,
     token,
     amount: amount.toString(),
-    estimatedFee: estimatedFee.toString(),
   };
 }
 

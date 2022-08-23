@@ -41,7 +41,6 @@ export interface FormData {
   to: Chain;
   token: Token;
   amount: BigNumber;
-  estimatedFee: BigNumber;
 }
 
 // A serializable version of FormData
@@ -50,7 +49,6 @@ export interface FormDataRouterState {
   to: Chain["key"];
   token: Token;
   amount: string;
-  estimatedFee: string;
 }
 
 export interface RedirectRouterState {
