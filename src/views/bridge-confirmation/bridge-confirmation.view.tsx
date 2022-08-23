@@ -7,6 +7,7 @@ import Header from "src/views/shared/header/header.view";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
@@ -352,7 +353,7 @@ const BridgeConfirmation: FC = () => {
   };
 
   if (!env || !formData || !tokenBalance || !isAsyncTaskDataAvailable(estimatedFee)) {
-    return null;
+    return <PageLoader />;
   }
 
   const { token, amount, from, to } = formData;
