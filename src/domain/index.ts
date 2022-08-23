@@ -143,5 +143,4 @@ export interface FormData {
   to: Chain;
   token: Token;
   amount: BigNumber;
-  estimatedFee: BigNumber;
 }

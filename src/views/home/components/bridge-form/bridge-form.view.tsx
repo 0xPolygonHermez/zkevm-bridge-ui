@@ -13,15 +13,10 @@ import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Button from "src/views/shared/button/button.view";
 import { useEnvContext } from "src/contexts/env.context";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import {
-  AsyncTask,
-  isAsyncTaskDataAvailable,
-  isEthersInsufficientFundsError,
-} from "src/utils/types";
+import { AsyncTask } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
@@ -47,7 +42,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { estimateBridgeGasPrice } = useBridgeContext();
   const { getErc20TokenBalance, tokens: defaultTokens, getTokenFromAddress } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
@@ -55,9 +49,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const [selectedChains, setSelectedChains] = useState<SelectedChains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
-  const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
-    status: "pending",
-  });
   const [chains, setChains] = useState<Chain[]>();
   const [tokens, setTokens] = useState<Token[]>();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>();
@@ -193,13 +184,12 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedChains && token && amount && estimatedFee.status === "successful") {
+    if (selectedChains && token && amount) {
       onSubmit({
         token: token,
         from: selectedChains.from,
         to: selectedChains.to,
         amount: amount,
-        estimatedFee: estimatedFee.data,
       });
     }
   };
@@ -300,37 +290,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
     }
   }, [formData, resetForm]);
 
-  useEffect(() => {
-    // Get gas price estimates
-    if (selectedChains && token) {
-      estimateBridgeGasPrice({
-        from: selectedChains.from,
-        to: selectedChains.to,
-        token,
-        destinationAddress: account,
-      })
-        .then((estimatedFee) => {
-          callIfMounted(() => {
-            setEstimatedFee({ status: "successful", data: estimatedFee });
-          });
-        })
-        .catch((error) => {
-          if (isEthersInsufficientFundsError(error)) {
-            callIfMounted(() => {
-              setEstimatedFee({
-                status: "failed",
-                error: "You don't have enough ETH to pay for the fees",
-              });
-            });
-          } else {
-            callIfMounted(() => {
-              notifyError(error);
-            });
-          }
-        });
-    }
-  }, [account, selectedChains, token, estimateBridgeGasPrice, notifyError, callIfMounted]);
-
   if (!env || !selectedChains || !token) {
     return null;
   }
@@ -377,7 +336,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
             value={amount}
             token={token}
             balance={fromBalance || BigNumber.from(0)}
-            fee={isAsyncTaskDataAvailable(estimatedFee) ? estimatedFee.data : undefined}
             onChange={onAmountInputChange}
           />
         </div>
@@ -403,19 +361,10 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         </div>
       </Card>
       <div className={classes.button}>
-        <Button
-          type="submit"
-          disabled={
-            !amount ||
-            amount.isZero() ||
-            inputError !== undefined ||
-            estimatedFee.status === "failed"
-          }
-        >
+        <Button type="submit" disabled={!amount || amount.isZero() || inputError !== undefined}>
           Continue
         </Button>
-        {amount && inputError && estimatedFee.status !== "failed" && <Error error={inputError} />}
-        {estimatedFee.status === "failed" && <Error error={estimatedFee.error} />}
+        {amount && inputError && <Error error={inputError} />}
       </div>
       {chains && (
         <ChainList
