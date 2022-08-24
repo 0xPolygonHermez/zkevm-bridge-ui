@@ -36,7 +36,6 @@ import {
   getEtherToken,
 } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import useFade from "src/hooks/use-fade";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
@@ -45,14 +44,9 @@ const USE_FADE_DURATION_IN_SECONDS = 0.5;
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
-  const {
-    isVisible: areFeeAndAmountVisible,
-    setVisible: setFeeAndAmountVisible,
-    getClasses: getUseFadeClasses,
-  } = useFade({
+  const classes = useBridgeConfirmationStyles({
     fadeDurationInSeconds: USE_FADE_DURATION_IN_SECONDS,
   });
-  const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const { state: routerState } = useLocation();
   const env = useEnvContext();
@@ -63,6 +57,7 @@ const BridgeConfirmation: FC = () => {
   const { getTokenPrice } = usePriceOracleContext();
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
+  const [isFadeVisible, setIsFadeVisible] = useState(true);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
@@ -240,10 +235,10 @@ const BridgeConfirmation: FC = () => {
                 if (areFeesEqual) {
                   return { status: "successful", data: newFee };
                 } else {
-                  setFeeAndAmountVisible(false);
+                  setIsFadeVisible(false);
                   setTimeout(() => {
                     setEstimatedFee({ status: "successful", data: newFee });
-                    setFeeAndAmountVisible(true);
+                    setIsFadeVisible(true);
                   }, USE_FADE_DURATION_IN_SECONDS * 1000);
                   return oldFee;
                 }
@@ -272,14 +267,7 @@ const BridgeConfirmation: FC = () => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [
-    account,
-    formData,
-    estimateBridgeGasPrice,
-    notifyError,
-    callIfMounted,
-    setFeeAndAmountVisible,
-  ]);
+  }, [account, formData, estimateBridgeGasPrice, notifyError, callIfMounted, setIsFadeVisible]);
 
   const onApprove = () => {
     if (connectedProvider && account.status === "successful" && formData) {
@@ -402,17 +390,7 @@ const BridgeConfirmation: FC = () => {
     etherToken.symbol
   } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
 
-  const { visibleProps: useFadeDefaultVisibleProps, invisibleProps: useFadeDefaultInvisibleProps } =
-    getUseFadeClasses();
-  const useFadeDefaultProps = areFeeAndAmountVisible
-    ? useFadeDefaultVisibleProps
-    : useFadeDefaultInvisibleProps;
-
-  const { visibleProps: useFadeFiatVisibleProps, invisibleProps: useFadeFiatInvisibleProps } =
-    getUseFadeClasses(classes.fiat);
-  const useFadeFiatProps = areFeeAndAmountVisible
-    ? useFadeFiatVisibleProps
-    : useFadeFiatInvisibleProps;
+  const fade = isFadeVisible ? classes.fadeIn : classes.fadeOut;
 
   return (
     <div className={classes.contentWrapper}>
@@ -422,10 +400,10 @@ const BridgeConfirmation: FC = () => {
       />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography {...useFadeDefaultProps} type="h1">
+        <Typography className={fade} type="h1">
           {tokenAmountString}
         </Typography>
-        <Typography {...useFadeFiatProps} type="body2">
+        <Typography className={`${classes.fiat} ${fade}`} type="body2">
           {fiatAmountString}
         </Typography>
         <div className={classes.chainsRow}>
@@ -442,8 +420,8 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon {...useFadeDefaultProps} url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1" {...useFadeDefaultProps}>
+            <Icon className={fade} url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Typography type="body1" className={fade}>
               {feeString}
             </Typography>
           </div>
