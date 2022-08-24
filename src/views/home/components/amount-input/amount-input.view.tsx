@@ -46,6 +46,9 @@ const AmountInput: FC<AmountInputProps> = ({ value, token, balance, onChange }) 
     if (balance.gt(0)) {
       setInputValue(formatTokenAmount(balance, token));
       processOnChangeCallback(balance);
+    } else {
+      setInputValue("");
+      processOnChangeCallback();
     }
   };
 
