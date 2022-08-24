@@ -58,6 +58,7 @@ const BridgeConfirmation: FC = () => {
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
   const [isFadeVisible, setIsFadeVisible] = useState(true);
+  const [isBridgeButtonDisabled, setIsBridgeButtonDisabled] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxPossibleAmountConsideringFee, setMaxPossibleAmountConsideringFee] =
     useState<BigNumber>();
@@ -239,29 +240,41 @@ const BridgeConfirmation: FC = () => {
                 if (areFeesEqual) {
                   return { status: "successful", data: newFee };
                 } else {
+                  const isFirstLoad = oldFee.status === "loading";
+                  if (!isFirstLoad) {
+                    setIsFadeVisible(false);
+                    setIsBridgeButtonDisabled(true);
+                  }
                   const isTokenEther = token.address === ethersConstants.AddressZero;
                   const remainder = amount.add(newFee).sub(tokenBalance);
                   const isRemainderPositive = !remainder.isNegative();
                   const newMaxPossibleAmountConsideringFee =
                     isTokenEther && isRemainderPositive ? amount.sub(remainder) : amount;
+                  const msTimeout = USE_FADE_DURATION_IN_SECONDS * 1000;
 
                   setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
                     const areAmountsEqual =
                       oldMaxPossibleAmountConsideringFee !== undefined &&
                       oldMaxPossibleAmountConsideringFee.eq(newMaxPossibleAmountConsideringFee);
-                    setShouldUpdateAmount(!areAmountsEqual);
-                    setTimeout(() => {
-                      setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
-                    }, USE_FADE_DURATION_IN_SECONDS * 1000);
+                    if (areAmountsEqual) {
+                      setShouldUpdateAmount(false);
+                    } else {
+                      setShouldUpdateAmount(true);
+                      setTimeout(() => {
+                        setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
+                      }, msTimeout);
+                    }
                     return oldMaxPossibleAmountConsideringFee;
                   });
 
                   setTimeout(() => {
                     setEstimatedFee({ status: "successful", data: newFee });
                     setIsFadeVisible(true);
-                  }, USE_FADE_DURATION_IN_SECONDS * 1000);
+                    setTimeout(() => {
+                      setIsBridgeButtonDisabled(false);
+                    }, msTimeout);
+                  }, msTimeout);
 
-                  setIsFadeVisible(false);
                   return oldFee;
                 }
               });
@@ -461,6 +474,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <BridgeButton
+          isDisabled={isBridgeButtonDisabled}
           token={token}
           hasAllowanceTask={hasAllowanceTask}
           approvalTask={approvalTask}
