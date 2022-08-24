@@ -432,7 +432,7 @@ const BridgeConfirmation: FC = () => {
     etherToken.symbol
   } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
 
-  const fade = isFadeVisible ? classes.fadeIn : classes.fadeOut;
+  const fadeClass = isFadeVisible ? classes.fadeIn : classes.fadeOut;
 
   return (
     <div className={classes.contentWrapper}>
@@ -442,11 +442,11 @@ const BridgeConfirmation: FC = () => {
       />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography className={shouldUpdateAmount ? fade : ""} type="h1">
+        <Typography className={shouldUpdateAmount ? fadeClass : ""} type="h1">
           {tokenAmountString}
         </Typography>
         <Typography
-          className={shouldUpdateAmount ? `${classes.fiat} ${fade}` : classes.fiat}
+          className={shouldUpdateAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
           type="body2"
         >
           {fiatAmountString}
@@ -465,8 +465,8 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon className={fade} url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1" className={fade}>
+            <Icon className={fadeClass} url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Typography type="body1" className={fadeClass}>
               {feeString}
             </Typography>
           </div>
