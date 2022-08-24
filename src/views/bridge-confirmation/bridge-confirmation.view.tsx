@@ -40,9 +40,13 @@ import BridgeButton from "src/views/bridge-confirmation/components/bridge-button
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
 
+const FADE_DURATION_IN_SECONDS = 0.5;
+
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
-  const classes = useBridgeConfirmationStyles();
+  const classes = useBridgeConfirmationStyles({
+    fadeDurationInSeconds: FADE_DURATION_IN_SECONDS,
+  });
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -53,6 +57,7 @@ const BridgeConfirmation: FC = () => {
   const { getTokenPrice } = usePriceOracleContext();
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
+  const [isFadeVisible, setIsFadeVisible] = useState(true);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
@@ -214,9 +219,21 @@ const BridgeConfirmation: FC = () => {
           token: formData.token,
           destinationAddress: account.data,
         })
-          .then((estimatedFee) => {
+          .then((newFee) => {
             callIfMounted(() => {
-              setEstimatedFee({ status: "successful", data: estimatedFee });
+              setEstimatedFee((oldFee) => {
+                const areFeesEqual = isAsyncTaskDataAvailable(oldFee) && oldFee.data.eq(newFee);
+                if (areFeesEqual) {
+                  return { status: "successful", data: newFee };
+                } else {
+                  setIsFadeVisible(false);
+                  setTimeout(() => {
+                    setEstimatedFee({ status: "successful", data: newFee });
+                    setIsFadeVisible(true);
+                  }, FADE_DURATION_IN_SECONDS * 1000);
+                  return oldFee;
+                }
+              });
             });
           })
           .catch((error) => {
@@ -365,13 +382,17 @@ const BridgeConfirmation: FC = () => {
     etherToken.symbol
   } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
 
+  const fade = isFadeVisible ? classes.fadeIn : classes.fadeOut;
+
   return (
     <div className={classes.contentWrapper}>
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography type="h1">{tokenAmountString}</Typography>
-        <Typography type="body2" className={classes.fiat}>
+        <Typography className={fade} type="h1">
+          {tokenAmountString}
+        </Typography>
+        <Typography className={`${classes.fiat} ${fade}`} type="body2">
           {fiatAmountString}
         </Typography>
         <div className={classes.chainsRow}>
@@ -388,8 +409,10 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1">{feeString}</Typography>
+            <Icon className={fade} url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Typography type="body1" className={fade}>
+              {feeString}
+            </Typography>
           </div>
         </div>
       </Card>
