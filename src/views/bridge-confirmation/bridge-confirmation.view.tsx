@@ -56,9 +56,11 @@ const BridgeConfirmation: FC = () => {
     () => (env ? formDataRouterStateParser(env).safeParse(routerState) : undefined),
     [env, routerState]
   );
+
   if (parsedFormData?.success === false) {
     notifyError(parsedFormData.error);
   }
+
   const formData =
     parsedFormData?.success && parsedFormData.data !== null ? parsedFormData.data : undefined;
 

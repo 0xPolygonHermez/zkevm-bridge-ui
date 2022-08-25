@@ -1,6 +1,6 @@
-import { FC, useEffect, useState, useCallback, useMemo } from "react";
+import { FC, useEffect, useState, useCallback } from "react";
 import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
@@ -28,13 +28,12 @@ import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
-import { formDataRouterStateParser } from "src/adapters/browser";
 import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
-import routes from "src/routes";
 
 interface BridgeFormProps {
   account: string;
+  initialFormData: FormData | null;
   onSubmit: (formData: FormData) => void;
 }
 
@@ -43,8 +42,7 @@ interface SelectedChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
-  const { state: routerState } = useLocation();
+const BridgeForm: FC<BridgeFormProps> = ({ account, initialFormData, onSubmit }) => {
   const navigate = useNavigate();
   const callIfMounted = useCallIfMounted();
   const classes = useBridgeFormStyles();
@@ -68,16 +66,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
   const [tokenListCustomToken, setTokenListCustomToken] = useState<AsyncTask<Token, string>>({
     status: "pending",
   });
-
-  const parsedFormData = useMemo(
-    () => (env ? formDataRouterStateParser(env).safeParse(routerState) : undefined),
-    [env, routerState]
-  );
-  if (parsedFormData?.success === false) {
-    notifyError(parsedFormData.error);
-  }
-  const formData =
-    parsedFormData?.success && parsedFormData.data !== null ? parsedFormData.data : undefined;
 
   const getTokens = useCallback(
     (chain: Chain) => {
@@ -233,9 +221,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
   );
 
   useEffect(() => {
-    /*
-     *  Load the balances of all the tokens in the primary network (From)
-     */
+    //  Load the balances of all the tokens in the primary network (From)
     if (selectedChains) {
       const tokens = getTokens(selectedChains.from);
       void Promise.all(
@@ -254,9 +240,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
   }, [selectedChains, callIfMounted, getTokenBalance, getTokens]);
 
   useEffect(() => {
-    /*
-     *  Load the balance of the selected token in the secondary network (To)
-     */
+    //  Load the balance of the selected token in the secondary network (To)
     if (selectedChains && token) {
       const isTokenEther = token.address === ethersConstants.AddressZero;
       if (isTokenEther) {
@@ -294,9 +278,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
   }, [selectedChains, account, token, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    /*
-     * Load the default values after the network is changed
-     */
+    // Load the default values after the network is changed
     if (env && connectedProvider) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
@@ -309,23 +291,18 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, onSubmit }) => {
   }, [connectedProvider, env]);
 
   useEffect(() => {
-    /*
-     *  Restore the previous values of the form when FormData is available
-     */
-    if (formData) {
-      const { from, to, token, amount } = formData;
+    // Load default form values
+    if (initialFormData) {
+      const { from, to, token, amount } = initialFormData;
+
       setSelectedChains({ from, to });
       setToken(token);
       setAmount(amount);
-      // This is an ugly hack but I don't know of any other way to reset the router state ¯\_(ツ)_/¯
-      navigate(routes.home.path, { replace: true });
     }
-  }, [navigate, formData]);
+  }, [navigate, initialFormData]);
 
   useEffect(() => {
-    /*
-     * Get gas price estimates
-     */
+    // Get gas price estimates
     if (selectedChains && token) {
       estimateBridgeGasPrice({
         from: selectedChains.from,
