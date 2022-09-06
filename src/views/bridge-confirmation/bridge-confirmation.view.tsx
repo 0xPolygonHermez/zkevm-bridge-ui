@@ -205,9 +205,7 @@ const BridgeConfirmation: FC = () => {
   }, [formData, tokens, estimatedFee, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
-    /*
-     * Get estimated fee
-     */
+    // Get estimated fee
     const estimateFee = () => {
       setEstimatedFee((currentEstimatedFee) =>
         currentEstimatedFee.status === "successful"
