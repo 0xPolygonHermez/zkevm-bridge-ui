@@ -78,9 +78,7 @@ const BridgeConfirmation: FC = () => {
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
-    /*
-     *  Load the balance of the token when it's not available
-     */
+    // Load the balance of the token when it's not available
     if (formData?.token.balance) {
       setTokenBalance(formData.token.balance);
     } else if (formData && isAsyncTaskDataAvailable(account)) {
