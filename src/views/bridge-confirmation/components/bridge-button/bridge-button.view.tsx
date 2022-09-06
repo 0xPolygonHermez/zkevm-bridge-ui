@@ -6,6 +6,7 @@ import Button from "src/views/shared/button/button.view";
 import { Token } from "src/domain";
 
 interface BridgeButtonProps {
+  isDisabled?: boolean;
   hasAllowanceTask: AsyncTask<boolean, string>;
   approvalTask: AsyncTask<null, string>;
   token: Token;
@@ -14,13 +15,18 @@ interface BridgeButtonProps {
 }
 
 const BridgeButton: FC<BridgeButtonProps> = ({
+  isDisabled = false,
   token,
   hasAllowanceTask,
   approvalTask,
   onApprove,
   onBridge,
 }) => {
-  const bridgeButton = <Button onClick={onBridge}>Bridge</Button>;
+  const bridgeButton = (
+    <Button onClick={onBridge} disabled={isDisabled}>
+      Bridge
+    </Button>
+  );
 
   if (token.address === ethersConstants.AddressZero) {
     return bridgeButton;

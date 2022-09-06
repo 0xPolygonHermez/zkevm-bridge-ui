@@ -557,7 +557,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       refreshCancelTokenSource.current = axios.CancelToken.source();
       const completePages = Math.floor(quantity / REFRESH_PAGE_SIZE);
       const remainderBridges = quantity % REFRESH_PAGE_SIZE;
-      const requiredRequests = remainderBridges === 0 ? completePages : completePages + 1;
+      const requiredRequests = Math.max(
+        remainderBridges === 0 ? completePages : completePages + 1,
+        1
+      );
       return (
         await Promise.all(
           Array(requiredRequests)

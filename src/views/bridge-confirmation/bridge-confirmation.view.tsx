@@ -7,11 +7,18 @@ import Header from "src/views/shared/header/header.view";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getChainName, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { selectTokenAddress } from "src/utils/tokens";
+import {
+  AsyncTask,
+  isMetamaskUserRejectedRequestError,
+  isAsyncTaskDataAvailable,
+  isEthersInsufficientFundsError,
+} from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
 import { useBridgeContext } from "src/contexts/bridge.context";
@@ -21,28 +28,43 @@ import { useUIContext } from "src/contexts/ui.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
-import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION } from "src/constants";
+import { useTokensContext } from "src/contexts/tokens.context";
+import {
+  ETH_TOKEN_LOGO_URI,
+  FIAT_DISPLAY_PRECISION,
+  AUTO_REFRESH_RATE,
+  getEtherToken,
+} from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { useTokensContext } from "src/contexts/tokens.context";
+
+const FADE_DURATION_IN_SECONDS = 0.5;
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
-  const classes = useBridgeConfirmationStyles();
+  const classes = useBridgeConfirmationStyles({
+    fadeDurationInSeconds: FADE_DURATION_IN_SECONDS,
+  });
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { bridge } = useBridgeContext();
-  const { tokens } = useTokensContext();
+  const { bridge, estimateBridgeGasPrice } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const { approve, isContractAllowedToSpendToken } = useTokensContext();
-  const [fiatAmount, setFiatAmount] = useState<BigNumber>();
-  const [fiatFee, setFiatFee] = useState<BigNumber>();
+  const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
+    useTokensContext();
+  const [isFadeVisible, setIsFadeVisible] = useState(true);
+  const [isBridgeButtonDisabled, setIsBridgeButtonDisabled] = useState(false);
+  const [tokenBalance, setTokenBalance] = useState<BigNumber>();
+  const [maxPossibleAmountConsideringFee, setMaxPossibleAmountConsideringFee] =
+    useState<BigNumber>();
+  const [shouldUpdateAmount, setShouldUpdateAmount] = useState(false);
+  const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
+  const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
   const [hasAllowanceTask, setHasAllowanceTask] = useState<AsyncTask<boolean, string>>({
     status: "pending",
@@ -50,7 +72,51 @@ const BridgeConfirmation: FC = () => {
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
     status: "pending",
   });
+  const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
   const currencySymbol = getCurrencySymbol(getCurrency());
+
+  useEffect(() => {
+    // Load the balance of the token when it's not available
+    if (formData?.token.balance) {
+      setTokenBalance(formData.token.balance);
+    } else if (formData && isAsyncTaskDataAvailable(account)) {
+      const { from, token } = formData;
+      const isTokenEther = token.address === ethersConstants.AddressZero;
+      if (isTokenEther) {
+        void from.provider
+          .getBalance(account.data)
+          .then((balance) =>
+            callIfMounted(() => {
+              setTokenBalance(balance);
+            })
+          )
+          .catch((error) => {
+            callIfMounted(() => {
+              notifyError(error);
+              setTokenBalance(undefined);
+            });
+          });
+      } else {
+        getErc20TokenBalance({
+          chain: from,
+          tokenAddress: selectTokenAddress(token, from),
+          accountAddress: account.data,
+        })
+          .then((balance) =>
+            callIfMounted(() => {
+              setTokenBalance(balance);
+            })
+          )
+          .catch(() =>
+            callIfMounted(() => {
+              setTokenBalance(undefined);
+            })
+          );
+      }
+    }
+  }, [account, formData, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (
@@ -68,21 +134,25 @@ const BridgeConfirmation: FC = () => {
         owner: account.data,
         spender: from.contractAddress,
       })
-        .then((isAllowed) => setHasAllowanceTask({ status: "successful", data: isAllowed }))
+        .then((isAllowed) =>
+          callIfMounted(() => {
+            setHasAllowanceTask({ status: "successful", data: isAllowed });
+          })
+        )
         .catch((error) => {
           void parseError(error).then((parsed) => {
-            setHasAllowanceTask({ status: "failed", error: parsed });
-            notifyError(parsed);
+            callIfMounted(() => {
+              setHasAllowanceTask({ status: "failed", error: parsed });
+              notifyError(parsed);
+            });
           });
         });
     }
-  }, [formData, account, isContractAllowedToSpendToken, notifyError]);
+  }, [formData, account, isContractAllowedToSpendToken, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (formData) {
-      if (formData.from.chainId === connectedProvider?.chainId) {
-        setError(undefined);
-      }
+    if (formData && formData.from.chainId === connectedProvider?.chainId) {
+      setError(undefined);
     }
   }, [connectedProvider, formData]);
 
@@ -93,65 +163,146 @@ const BridgeConfirmation: FC = () => {
   }, [navigate, formData]);
 
   useEffect(() => {
-    if (env !== undefined && formData) {
-      const { token, amount, from, estimatedFee } = formData;
-      // fiat amount
-      getTokenPrice({ token, chain: from })
-        .then((tokenPrice) => {
+    if (formData) {
+      const { token, from } = formData;
+      const etherToken = getEtherToken(from);
+      const isTokenEther = token.address === ethersConstants.AddressZero;
+
+      // Get the fiat price of Ether
+      getTokenPrice({ token: etherToken, chain: from })
+        .then((etherPrice) => {
           callIfMounted(() => {
-            setFiatAmount(
-              multiplyAmounts(
-                {
-                  value: tokenPrice,
-                  precision: FIAT_DISPLAY_PRECISION,
-                },
-                {
-                  value: amount,
-                  precision: token.decimals,
-                },
-                FIAT_DISPLAY_PRECISION
-              )
-            );
+            setEtherTokenFiatPrice(etherPrice);
+            if (isTokenEther) {
+              setBridgedTokenFiatPrice(etherPrice);
+            }
           });
         })
         .catch(() =>
           callIfMounted(() => {
-            setFiatAmount(undefined);
+            setEtherTokenFiatPrice(undefined);
+            if (isTokenEther) {
+              setBridgedTokenFiatPrice(undefined);
+            }
           })
         );
-      // fiat fee
-      const weth = tokens?.find((t) => t.symbol === "WETH");
-      if (weth) {
-        getTokenPrice({ token: weth, chain: from })
+
+      // Get the fiat price of the bridged token when it's not Ether
+      if (!isTokenEther) {
+        getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
             callIfMounted(() => {
-              setFiatFee(
-                multiplyAmounts(
-                  {
-                    value: tokenPrice,
-                    precision: FIAT_DISPLAY_PRECISION,
-                  },
-                  {
-                    value: estimatedFee,
-                    precision: weth.decimals,
-                  },
-                  FIAT_DISPLAY_PRECISION
-                )
-              );
+              setBridgedTokenFiatPrice(tokenPrice);
             });
           })
           .catch(() =>
             callIfMounted(() => {
-              setFiatFee(undefined);
+              setBridgedTokenFiatPrice(undefined);
             })
           );
       }
     }
-  }, [env, formData, getTokenPrice, callIfMounted, tokens]);
+  }, [formData, tokens, estimatedFee, getTokenPrice, callIfMounted]);
+
+  useEffect(() => {
+    // Get estimated fee
+    const estimateFee = () => {
+      setEstimatedFee((currentEstimatedFee) =>
+        currentEstimatedFee.status === "successful"
+          ? { status: "reloading", data: currentEstimatedFee.data }
+          : { status: "loading" }
+      );
+      if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
+        const { token, amount, from, to } = formData;
+        estimateBridgeGasPrice({
+          from: from,
+          to: to,
+          token: token,
+          destinationAddress: account.data,
+        })
+          .then((newFee) => {
+            callIfMounted(() => {
+              setEstimatedFee((oldFee) => {
+                const areFeesEqual = isAsyncTaskDataAvailable(oldFee) && oldFee.data.eq(newFee);
+                if (areFeesEqual) {
+                  return { status: "successful", data: newFee };
+                } else {
+                  const isFirstLoad = oldFee.status === "loading";
+                  if (!isFirstLoad) {
+                    setIsFadeVisible(false);
+                    setIsBridgeButtonDisabled(true);
+                  }
+                  const isTokenEther = token.address === ethersConstants.AddressZero;
+                  const remainder = amount.add(newFee).sub(tokenBalance);
+                  const isRemainderPositive = !remainder.isNegative();
+                  const newMaxPossibleAmountConsideringFee =
+                    isTokenEther && isRemainderPositive ? amount.sub(remainder) : amount;
+                  const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
+
+                  setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
+                    const areAmountsEqual =
+                      oldMaxPossibleAmountConsideringFee !== undefined &&
+                      oldMaxPossibleAmountConsideringFee.eq(newMaxPossibleAmountConsideringFee);
+                    if (areAmountsEqual) {
+                      setShouldUpdateAmount(false);
+                    } else {
+                      setShouldUpdateAmount(true);
+                      setTimeout(() => {
+                        setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
+                      }, msTimeout);
+                    }
+                    return oldMaxPossibleAmountConsideringFee;
+                  });
+
+                  setTimeout(() => {
+                    setEstimatedFee({ status: "successful", data: newFee });
+                    setIsFadeVisible(true);
+                    setTimeout(() => {
+                      setIsBridgeButtonDisabled(false);
+                    }, msTimeout);
+                  }, msTimeout);
+
+                  return oldFee;
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            if (isEthersInsufficientFundsError(error)) {
+              callIfMounted(() => {
+                setEstimatedFee({
+                  status: "failed",
+                  error: "You don't have enough ETH to pay for the fees",
+                });
+              });
+            } else {
+              callIfMounted(() => {
+                notifyError(error);
+              });
+            }
+          });
+      }
+    };
+    estimateFee();
+    const intervalId = setInterval(estimateFee, AUTO_REFRESH_RATE);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [
+    account,
+    formData,
+    tokenBalance,
+    estimateBridgeGasPrice,
+    notifyError,
+    callIfMounted,
+    setIsFadeVisible,
+  ]);
 
   const onApprove = () => {
-    if (connectedProvider && account.status === "successful") {
+    if (connectedProvider && account.status === "successful" && formData) {
       setApprovalTask({ status: "loading" });
+      const { token, amount, from } = formData;
       void approve({
         from,
         token,
@@ -161,35 +312,38 @@ const BridgeConfirmation: FC = () => {
         amount,
       })
         .then(() => {
-          setApprovalTask({ status: "successful", data: null });
-          setHasAllowanceTask({ status: "successful", data: true });
+          callIfMounted(() => {
+            setApprovalTask({ status: "successful", data: null });
+            setHasAllowanceTask({ status: "successful", data: true });
+          });
         })
         .catch((error) => {
-          if (isMetamaskUserRejectedRequestError(error)) {
-            setApprovalTask({ status: "pending" });
-          } else {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                setError(`Switch to ${getChainName(from)} to continue`);
-                setApprovalTask({ status: "pending" });
-              } else {
-                setApprovalTask({ status: "failed", error: parsed });
-                notifyError(parsed);
-              }
-            });
-          }
+          callIfMounted(() => {
+            if (isMetamaskUserRejectedRequestError(error)) {
+              setApprovalTask({ status: "pending" });
+            } else {
+              void parseError(error).then((parsed) => {
+                if (parsed === "wrong-network") {
+                  setError(`Switch to ${getChainName(from)} to continue`);
+                  setApprovalTask({ status: "pending" });
+                } else {
+                  setApprovalTask({ status: "failed", error: parsed });
+                  notifyError(parsed);
+                }
+              });
+            }
+          });
         });
     }
   };
 
   const onBridge = () => {
-    if (formData && account.status === "successful") {
-      const { token, amount, from, to } = formData;
-
+    if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
+      const { token, from, to } = formData;
       bridge({
         from,
         token,
-        amount,
+        amount: maxPossibleAmountConsideringFee,
         to,
         destinationAddress: account.data,
       })
@@ -204,62 +358,108 @@ const BridgeConfirmation: FC = () => {
         .catch((error) => {
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                callIfMounted(() => {
+              callIfMounted(() => {
+                if (parsed === "wrong-network") {
                   setError(`Switch to ${getChainName(from)} to continue`);
-                });
-              } else {
-                callIfMounted(() => {
+                } else {
                   notifyError(error);
-                });
-              }
+                }
+              });
             });
           }
         });
     }
   };
 
-  if (!formData || !env) {
-    return null;
+  if (
+    !env ||
+    !formData ||
+    !tokenBalance ||
+    !isAsyncTaskDataAvailable(estimatedFee) ||
+    !maxPossibleAmountConsideringFee
+  ) {
+    return <PageLoader />;
   }
 
-  const { token, amount, from, to, estimatedFee } = formData;
-  const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
-  const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
-  const feeString = `${formatTokenAmount(estimatedFee, token)} ETH ~ ${currencySymbol}${
-    fiatFee ? formatFiatAmount(fiatFee) : "--"
+  const { token, from, to } = formData;
+  const etherToken = getEtherToken(from);
+
+  const fiatAmount =
+    bridgedTokenFiatPrice &&
+    multiplyAmounts(
+      {
+        value: bridgedTokenFiatPrice,
+        precision: FIAT_DISPLAY_PRECISION,
+      },
+      {
+        value: maxPossibleAmountConsideringFee,
+        precision: token.decimals,
+      },
+      FIAT_DISPLAY_PRECISION
+    );
+
+  const fiatFee =
+    etherTokenFiatPrice &&
+    multiplyAmounts(
+      {
+        value: etherTokenFiatPrice,
+        precision: FIAT_DISPLAY_PRECISION,
+      },
+      {
+        value: estimatedFee.data,
+        precision: etherToken.decimals,
+      },
+      FIAT_DISPLAY_PRECISION
+    );
+
+  const tokenAmountString = `${formatTokenAmount(maxPossibleAmountConsideringFee, token)} ${
+    token.symbol
   }`;
+  const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
+  const feeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${
+    etherToken.symbol
+  } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
+
+  const fadeClass = isFadeVisible ? classes.fadeIn : classes.fadeOut;
 
   return (
     <div className={classes.contentWrapper}>
-      <Header title="Confirm Bridge" backTo="home" />
+      <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography type="h1">{tokenAmountString}</Typography>
-        <Typography type="body2" className={classes.fiat}>
+        <Typography className={shouldUpdateAmount ? fadeClass : ""} type="h1">
+          {tokenAmountString}
+        </Typography>
+        <Typography
+          className={shouldUpdateAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
+          type="body2"
+        >
           {fiatAmountString}
         </Typography>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
-            <formData.from.Icon />
+            <from.Icon />
             <Typography type="body1">{getChainName(from)}</Typography>
           </div>
           <ArrowRightIcon className={classes.arrowIcon} />
           <div className={classes.chainBox}>
-            <formData.to.Icon />
+            <to.Icon />
             <Typography type="body1">{getChainName(to)}</Typography>
           </div>
         </div>
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1">{feeString}</Typography>
+            <Icon className={fadeClass} url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Typography type="body1" className={fadeClass}>
+              {feeString}
+            </Typography>
           </div>
         </div>
       </Card>
       <div className={classes.button}>
         <BridgeButton
+          isDisabled={isBridgeButtonDisabled}
           token={token}
           hasAllowanceTask={hasAllowanceTask}
           approvalTask={approvalTask}

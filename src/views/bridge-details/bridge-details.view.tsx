@@ -26,7 +26,7 @@ import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { Bridge } from "src/domain";
 import routes from "src/routes";
-import { FIAT_DISPLAY_PRECISION } from "src/constants";
+import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useTokensContext } from "src/contexts/tokens.context";
 
@@ -257,7 +257,7 @@ const BridgeDetails: FC = () => {
     case "reloading": {
       return (
         <>
-          <Header title="Bridge Details" backTo="activity" />
+          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
           <PageLoader />
         </>
       );
@@ -277,9 +277,9 @@ const BridgeDetails: FC = () => {
       const { step1: step1EthFee, step2: step2EthFee } = ethFees;
       const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
 
-      const ethToken = tokens?.find((t) => t.symbol === "ETH");
+      const ethToken = getEtherToken(from);
 
-      if (env === undefined || ethToken === undefined) {
+      if (env === undefined) {
         return null;
       }
 
@@ -299,7 +299,7 @@ const BridgeDetails: FC = () => {
 
       return (
         <div className={classes.contentWrapper}>
-          <Header title="Bridge Details" backTo="activity" />
+          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
           <Card className={classes.card}>
             <div className={classes.balance}>
               <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
