@@ -16,6 +16,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
@@ -28,7 +29,6 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
-import { useTokensContext } from "src/contexts/tokens.context";
 
 interface BridgeFormProps {
   account: string;
@@ -220,9 +220,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   );
 
   useEffect(() => {
-    /*
-     *  Load the balances of the tokens
-     */
+    // Load the balances of all the tokens in the primary network (From)
     if (selectedChains) {
       const tokens = getTokens(selectedChains.from);
       void Promise.all(
@@ -241,9 +239,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [selectedChains, callIfMounted, getTokenBalance, getTokens]);
 
   useEffect(() => {
-    /*
-     *  Get the token balance of the secondary network (To)
-     */
+    // Load the balance of the selected token in the secondary network (To)
     if (selectedChains && token) {
       const isTokenEther = token.address === ethersConstants.AddressZero;
       if (isTokenEther) {
@@ -281,9 +277,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [selectedChains, account, token, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    /*
-     * Load the default values after the network is changed
-     */
+    // Load the default values after the network is changed
     if (env && connectedProvider && formData === undefined) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
@@ -297,9 +291,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [connectedProvider, env]);
 
   useEffect(() => {
-    /*
-     *  Restore the previous values of the form after closing the confirmation window
-     */
+    // Load default form values
     if (formData) {
       setSelectedChains({ from: formData.from, to: formData.to });
       setToken(formData.token);
@@ -309,9 +301,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   }, [formData, resetForm]);
 
   useEffect(() => {
-    /*
-     * Get gas price estimates
-     */
+    // Get gas price estimates
     if (selectedChains && token) {
       estimateBridgeGasPrice({
         from: selectedChains.from,
@@ -361,7 +351,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
           <div className={classes.leftBox}>
             <Typography type="body2">From</Typography>
             <button
-              className={classes.chainSelector}
+              className={classes.fromChain}
               onClick={() => setChains(env.chains)}
               type="button"
             >
@@ -399,7 +389,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={classes.row}>
           <div className={classes.leftBox}>
             <Typography type="body2">To</Typography>
-            <div className={classes.chainSelector}>
+            <div className={classes.toChain}>
               <selectedChains.to.Icon />
               <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
             </div>

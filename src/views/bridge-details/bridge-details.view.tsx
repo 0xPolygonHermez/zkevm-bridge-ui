@@ -257,7 +257,7 @@ const BridgeDetails: FC = () => {
     case "reloading": {
       return (
         <>
-          <Header title="Bridge Details" backTo="activity" />
+          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
           <PageLoader />
         </>
       );
@@ -299,7 +299,7 @@ const BridgeDetails: FC = () => {
 
       return (
         <div className={classes.contentWrapper}>
-          <Header title="Bridge Details" backTo="activity" />
+          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
           <Card className={classes.card}>
             <div className={classes.balance}>
               <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />

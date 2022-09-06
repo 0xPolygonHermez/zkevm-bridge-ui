@@ -23,7 +23,7 @@ const Chain: FC<ChainProps> = ({ chain, className }) => {
   } else {
     return (
       <Typography type="body1" className={className}>
-        <PolygonZkEVMChainIcon className={classes.hermezChain} /> Polygon zkEVM
+        <PolygonZkEVMChainIcon className={classes.polygonZkEvmChain} /> Polygon zkEVM
       </Typography>
     );
   }

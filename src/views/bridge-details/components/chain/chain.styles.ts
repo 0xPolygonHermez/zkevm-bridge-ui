@@ -1,7 +1,7 @@
 import { createUseStyles } from "react-jss";
 
 const useChainStyles = createUseStyles({
-  hermezChain: {
+  polygonZkEvmChain: {
     width: 20,
     height: 20,
   },
