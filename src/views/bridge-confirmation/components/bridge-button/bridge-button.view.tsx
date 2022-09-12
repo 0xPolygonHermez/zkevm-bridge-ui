@@ -7,7 +7,7 @@ import { Token } from "src/domain";
 
 interface BridgeButtonProps {
   isDisabled?: boolean;
-  hasAllowanceTask: AsyncTask<boolean, string>;
+  isTxApprovalRequiredTask: AsyncTask<boolean, string>;
   approvalTask: AsyncTask<null, string>;
   token: Token;
   onApprove: () => void;
@@ -17,7 +17,7 @@ interface BridgeButtonProps {
 const BridgeButton: FC<BridgeButtonProps> = ({
   isDisabled = false,
   token,
-  hasAllowanceTask,
+  isTxApprovalRequiredTask,
   approvalTask,
   onApprove,
   onBridge,
@@ -31,7 +31,7 @@ const BridgeButton: FC<BridgeButtonProps> = ({
   if (token.address === ethersConstants.AddressZero) {
     return bridgeButton;
   } else {
-    switch (hasAllowanceTask.status) {
+    switch (isTxApprovalRequiredTask.status) {
       case "pending":
       case "loading":
       case "reloading": {
@@ -41,7 +41,7 @@ const BridgeButton: FC<BridgeButtonProps> = ({
         return <Button disabled={true}>Bridge</Button>;
       }
       case "successful": {
-        if (hasAllowanceTask.data) {
+        if (!isTxApprovalRequiredTask.data) {
           return bridgeButton;
         }
 

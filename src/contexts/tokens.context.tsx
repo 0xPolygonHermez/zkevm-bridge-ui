@@ -17,12 +17,12 @@ import { Erc20__factory } from "src/types/contracts/erc-20";
 import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import { Chain, Env, Token } from "src/domain";
 import { getEthereumErc20Tokens } from "src/adapters/tokens";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { getEtherToken } from "src/constants";
 import * as ethereum from "src/adapters/ethereum";
-import { useProvidersContext } from "src/contexts/providers.context";
 
 interface AddWrappedTokenParams {
   token: Token;
@@ -123,19 +123,17 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
         // first we check if the provided address belongs to a wrapped token
         return getNativeTokenInfo({ token, chain: nativeChain })
-          .then(({ originalNetwork, originalTokenAddress }) => {
-            // if this is the case we use originalTokenAddress as native and token.address as wrapped
+          .then(({ originNetwork, originTokenAddress }) => {
+            // if this is the case we use originTokenAddress as native and token.address as wrapped
             const originalTokenChain = env?.chains.find(
-              (chain) => chain.networkId === originalNetwork
+              (chain) => chain.networkId === originNetwork
             );
             if (originalTokenChain === undefined) {
-              throw Error(
-                `Could not find a chain that matched the originalNetwork ${originalNetwork}`
-              );
+              throw Error(`Could not find a chain that matched the originNetwork ${originNetwork}`);
             } else {
               const newToken: Token = {
                 ...token,
-                address: originalTokenAddress,
+                address: originTokenAddress,
                 chainId: originalTokenChain.chainId,
                 wrappedToken: {
                   address: token.address,
@@ -162,11 +160,14 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
                 };
                 return newToken;
               })
-              .catch(() => Promise.resolve(token));
+              .catch((e) => {
+                notifyError(e);
+                return Promise.resolve(token);
+              });
           });
       }
     },
-    [env, computeWrappedTokenAddress, getNativeTokenInfo]
+    [env, getNativeTokenInfo, computeWrappedTokenAddress, notifyError]
   );
 
   const getTokenFromAddress = useCallback(
