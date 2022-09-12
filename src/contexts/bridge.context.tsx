@@ -4,7 +4,6 @@ import {
   constants as ethersConstants,
   utils as ethersUtils,
   PayableOverrides,
-  ethers,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
@@ -32,17 +31,6 @@ import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api
 import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
-
-interface ComputeWrappedTokenAddressParams {
-  token: Token;
-  nativeChain: Chain;
-  otherChain: Chain;
-}
-
-interface GetNativeTokenInfoParams {
-  token: Token;
-  chain: Chain;
-}
 
 interface EstimateBridgeGasPriceParams {
   from: Chain;
@@ -99,11 +87,6 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
-  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
-    originNetwork: number;
-    originTokenAddress: string;
-  }>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
@@ -117,12 +100,6 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
-  computeWrappedTokenAddress: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  getNativeTokenInfo: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -145,48 +122,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
-
-  /**
-   * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
-   */
-  const computeWrappedTokenAddress = useCallback(
-    async ({
-      token,
-      nativeChain,
-      otherChain,
-    }: ComputeWrappedTokenAddressParams): Promise<string> => {
-      const bridgeContract = Bridge__factory.connect(
-        otherChain.contractAddress,
-        otherChain.provider
-      );
-
-      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
-    },
-    []
-  );
-
-  /**
-   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
-   */
-  const getNativeTokenInfo = useCallback(
-    ({
-      token,
-      chain,
-    }: GetNativeTokenInfoParams): Promise<{
-      originNetwork: number;
-      originTokenAddress: string;
-    }> => {
-      const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
-
-      return bridgeContract.wrappedTokenToTokenInfo(token.address).then((tokenInfo) => {
-        if (tokenInfo.originTokenAddress === ethers.constants.AddressZero) {
-          throw new Error(`Can not find a native token for ${token.name}`);
-        }
-        return tokenInfo;
-      });
-    },
-    []
-  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -742,23 +677,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
       estimateBridgeGasPrice,
       getBridge,
       fetchBridges,
       bridge,
       claim,
     }),
-    [
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
-      estimateBridgeGasPrice,
-      getBridge,
-      fetchBridges,
-      bridge,
-      claim,
-    ]
+    [estimateBridgeGasPrice, getBridge, fetchBridges, bridge, claim]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;
