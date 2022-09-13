@@ -643,7 +643,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const isTokenNativeOfToChain = token.chainId === to.chainId;
       const isMetadataRequired = !isEtherToken && !isTokenNativeOfToChain;
       const metadata = isMetadataRequired
-        ? await getErc20TokenEncodedMetadata({ token, chain: to })
+        ? await getErc20TokenEncodedMetadata({ token, chain: from })
         : "0x";
 
       const executeClaim = () =>
