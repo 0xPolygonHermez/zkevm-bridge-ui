@@ -76,6 +76,7 @@ const BridgeDetails: FC = () => {
   const [ethFees, setEthFees] = useState<Fees>({});
   const [fiatFees, setFiatFees] = useState<Fees>({});
   const [fiatAmount, setFiatAmount] = useState<BigNumber>();
+  const [isFinaliseButtonDisabled, setIsFinaliseButtonDisabled] = useState<boolean>(false);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   const classes = useBridgeDetailsStyles({
@@ -84,26 +85,26 @@ const BridgeDetails: FC = () => {
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
+      setIsFinaliseButtonDisabled(true);
       claim({ bridge: bridge.data })
         .then(() => {
           navigate(routes.activity.path);
         })
         .catch((error) => {
-          if (isMetamaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                callIfMounted(() => {
+          callIfMounted(() => {
+            setIsFinaliseButtonDisabled(false);
+            if (isMetamaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
+                if (parsed === "wrong-network") {
                   setIncorrectNetworkMessage(
                     `Switch to ${getChainName(bridge.data.to)} to continue`
                   );
-                });
-              } else {
-                callIfMounted(() => {
+                } else {
                   notifyError(error);
-                });
-              }
-            });
-          }
+                }
+              });
+            }
+          });
         });
     }
   };
@@ -378,7 +379,10 @@ const BridgeDetails: FC = () => {
           </Card>
           {(status === "initiated" || status === "on-hold") && (
             <div className={classes.finaliseRow}>
-              <Button onClick={onClaim} disabled={status === "initiated"}>
+              <Button
+                onClick={onClaim}
+                disabled={status === "initiated" || isFinaliseButtonDisabled}
+              >
                 Finalise
               </Button>
               {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
