@@ -2,7 +2,6 @@ import {
   BigNumber,
   ContractTransaction,
   constants as ethersConstants,
-  utils as ethersUtils,
   PayableOverrides,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
@@ -645,7 +644,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const isMetadataRequired = !isEtherToken && !isTokenNativeOfToChain;
       const metadata = isMetadataRequired
         ? await getErc20TokenEncodedMetadata({ token, chain: to })
-        : ethersUtils.keccak256("0x");
+        : "0x";
 
       const executeClaim = () =>
         contract.claim(
