@@ -67,9 +67,7 @@ const BridgeConfirmation: FC = () => {
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
-  const [isTxApprovalRequired, setIsTxApprovalRequired] = useState<AsyncTask<boolean, string>>({
-    status: "pending",
-  });
+  const [isTxApprovalRequired, setIsTxApprovalRequired] = useState<boolean>(false);
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
     status: "pending",
   });
@@ -120,48 +118,39 @@ const BridgeConfirmation: FC = () => {
   }, [account, formData, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (
-      connectedProvider &&
-      formData &&
-      account.status === "successful" &&
-      formData.token.address !== ethersConstants.AddressZero
-    ) {
-      setIsTxApprovalRequired({ status: "loading" });
+    if (connectedProvider && formData && account.status === "successful") {
       const { from, token, amount } = formData;
-      isPermitSupported({
-        account: account.data,
-        chain: formData.from,
-        token,
-      })
-        .then((canUsePermit) => {
-          callIfMounted(() => {
-            if (canUsePermit) {
-              setIsTxApprovalRequired({ status: "successful", data: false });
-            } else {
-              void isContractAllowedToSpendToken({
-                provider: from.provider,
-                token: token,
-                amount: amount,
-                owner: account.data,
-                spender: from.contractAddress,
-              })
-                .then((isAllowed) =>
-                  callIfMounted(() => {
-                    setIsTxApprovalRequired({ status: "successful", data: !isAllowed });
-                  })
-                )
-                .catch((error) => {
-                  void parseError(error).then((parsed) => {
-                    callIfMounted(() => {
-                      setIsTxApprovalRequired({ status: "failed", error: parsed });
-                      notifyError(parsed);
-                    });
-                  });
-                });
-            }
-          });
+      if (token.address === ethersConstants.AddressZero) {
+        setIsTxApprovalRequired(false);
+      } else {
+        isPermitSupported({
+          account: account.data,
+          chain: formData.from,
+          token,
         })
-        .catch(notifyError);
+          .then((canUsePermit) => {
+            callIfMounted(() => {
+              if (canUsePermit) {
+                setIsTxApprovalRequired(false);
+              } else {
+                void isContractAllowedToSpendToken({
+                  provider: from.provider,
+                  token: token,
+                  amount: amount,
+                  owner: account.data,
+                  spender: from.contractAddress,
+                })
+                  .then((isAllowed) =>
+                    callIfMounted(() => {
+                      setIsTxApprovalRequired(!isAllowed);
+                    })
+                  )
+                  .catch(notifyError);
+              }
+            });
+          })
+          .catch(notifyError);
+      }
     }
   }, [
     formData,
@@ -336,7 +325,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           callIfMounted(() => {
             setApprovalTask({ status: "successful", data: null });
-            setIsTxApprovalRequired({ status: "successful", data: false });
+            setIsTxApprovalRequired(false);
           });
         })
         .catch((error) => {
@@ -483,14 +472,12 @@ const BridgeConfirmation: FC = () => {
         <BridgeButton
           isDisabled={isBridgeButtonDisabled}
           token={token}
-          isTxApprovalRequiredTask={isTxApprovalRequired}
+          isTxApprovalRequired={isTxApprovalRequired}
           approvalTask={approvalTask}
           onApprove={onApprove}
           onBridge={onBridge}
         />
-        {token.address !== ethersConstants.AddressZero &&
-          isTxApprovalRequired.status === "successful" &&
-          isTxApprovalRequired.data && <ApprovalInfo />}
+        {isTxApprovalRequired && <ApprovalInfo />}
         {error && <Error error={error} />}
       </div>
     </div>
