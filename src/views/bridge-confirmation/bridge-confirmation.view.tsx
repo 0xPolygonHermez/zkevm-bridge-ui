@@ -126,8 +126,8 @@ const BridgeConfirmation: FC = () => {
       account.status === "successful" &&
       formData.token.address !== ethersConstants.AddressZero
     ) {
+      setIsTxApprovalRequired({ status: "loading" });
       const { from, token, amount } = formData;
-
       isPermitSupported({
         account: account.data,
         chain: formData.from,
@@ -138,7 +138,6 @@ const BridgeConfirmation: FC = () => {
             if (canUsePermit) {
               setIsTxApprovalRequired({ status: "successful", data: false });
             } else {
-              setIsTxApprovalRequired({ status: "loading" });
               void isContractAllowedToSpendToken({
                 provider: from.provider,
                 token: token,
