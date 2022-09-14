@@ -166,7 +166,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   /**
-   * Provided a token, if its property wrappedAddresses is missing, adds it and returns the new token
+   * Provided a token, if its property wrappedToken is missing, adds it and returns the new token
    */
   const addWrappedToken = useCallback(
     ({ token }: AddWrappedTokenParams): Promise<Token> => {

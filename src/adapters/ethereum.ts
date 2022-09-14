@@ -174,9 +174,11 @@ const getErc20TokenMetadata = async ({
   decimals: number;
 }> => {
   const erc20Contract = Erc20__factory.connect(selectTokenAddress(token, chain), chain.provider);
-  const name = await erc20Contract.name();
-  const symbol = await erc20Contract.symbol();
-  const decimals = await erc20Contract.decimals();
+  const [name, symbol, decimals] = await Promise.all([
+    erc20Contract.name(),
+    erc20Contract.symbol(),
+    erc20Contract.decimals(),
+  ]);
   return {
     name,
     symbol,
