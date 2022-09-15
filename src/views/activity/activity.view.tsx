@@ -33,7 +33,7 @@ const Activity: FC = () => {
   const [lastLoadedItem, setLastLoadedItem] = useState(0);
   const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
-  const [finaliseDisabledBridges, setFinaliseDisabledBridges] = useState<Bridge["id"][]>([]);
+  const [disabledBridges, setDisabledBridges] = useState<Bridge["id"][]>([]);
   const classes = useActivityStyles({ displayAll });
 
   const headerBorderObserved = useRef<HTMLDivElement>(null);
@@ -48,7 +48,7 @@ const Activity: FC = () => {
   const onDisplayPending = () => setDisplayAll(false);
 
   const onClaim = (bridge: Bridge) => {
-    setFinaliseDisabledBridges((current) => [...current, bridge.id]);
+    setDisabledBridges((current) => [...current, bridge.id]);
     if (bridge.status === "on-hold") {
       claim({
         bridge,
@@ -60,7 +60,7 @@ const Activity: FC = () => {
           });
         })
         .catch((error) => {
-          setFinaliseDisabledBridges((current) => current.filter((id) => id !== bridge.id));
+          setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
@@ -272,7 +272,7 @@ const Activity: FC = () => {
                         bridge={bridge}
                         onClaim={() => onClaim(bridge)}
                         networkError={wrongNetworkBridges.includes(bridge.id)}
-                        isFinaliseDisabled={finaliseDisabledBridges.includes(bridge.id)}
+                        isFinaliseDisabled={disabledBridges.includes(bridge.id)}
                       />
                     </div>
                   ))}
