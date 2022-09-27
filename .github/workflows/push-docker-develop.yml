@@ -28,7 +28,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hermeznetwork/bridge-ui:1.5-integration
+          tags: hermeznetwork/zkevm-bridge-ui:integration
           build-args: |
             ENVIRONMENT=integration
             VITE_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.VITE_FIAT_EXCHANGE_RATES_API_KEY}}
@@ -39,7 +39,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hermeznetwork/bridge-ui:1.5-fetestnet
+          tags: hermeznetwork/zkevm-bridge-ui:fetestnet
           build-args: |
             ENVIRONMENT=fetestnet
             VITE_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.VITE_FIAT_EXCHANGE_RATES_API_KEY}}
