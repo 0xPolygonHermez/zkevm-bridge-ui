@@ -1,15 +1,17 @@
-import { FC } from "react";
+import { FC, PropsWithChildren } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 
-const PrivateRoute: FC = ({ children }) => {
-  const { connectedProvider: provider } = useProvidersContext();
-  const { pathname } = useLocation();
+const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
+  const { connectedProvider } = useProvidersContext();
+  const { pathname, search } = useLocation();
 
-  if (!provider) {
-    return <Navigate to={routes.login.path} state={{ redirectUrl: pathname }} />;
+  if (!connectedProvider) {
+    return (
+      <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
+    );
   }
 
   return <>{children}</>;

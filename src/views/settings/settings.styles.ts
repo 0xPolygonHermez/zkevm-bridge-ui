@@ -3,12 +3,9 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  subtitle: {
-    marginTop: theme.spacing(-2),
-    textAlign: "center",
-  },
   card: {
-    marginTop: theme.spacing(5),
+    maxWidth: theme.maxWidth,
+    margin: [theme.spacing(5), "auto", 0, "auto"],
   },
   currenciesRow: {
     padding: theme.spacing(2),
@@ -73,6 +70,9 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     position: "absolute",
     opacity: 0,
     cursor: "pointer",
+  },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
   },
 }));
 

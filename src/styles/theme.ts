@@ -1,4 +1,5 @@
 const theme = {
+  maxWidth: 644,
   palette: {
     primary: {
       main: "#7b3fe4",
@@ -26,9 +27,9 @@ const theme = {
     disabled: "#78798d",
     transparency: "rgba(8,17,50,0.5)",
   },
-  hoverTransition: "all 100ms",
+  hoverTransition: "all 150ms",
   breakpoints: {
-    upSm: "@media (min-width: 576px)",
+    upSm: "@media (min-width: 480px)",
   },
   spacing: (value: number): number => value * 8,
 };

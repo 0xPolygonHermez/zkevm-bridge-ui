@@ -7,7 +7,8 @@ import Router from "src/views/core/router/router.view";
 import useAppStyles from "src/views/app.styles";
 import { PriceOracleProvider } from "src/contexts/price-oracle.context";
 import { BridgeProvider } from "src/contexts/bridge.context";
-import { TransactionProvider } from "src/contexts/transaction.context";
+import { FormProvider } from "src/contexts/form.context";
+import { TokensProvider } from "src/contexts/tokens.context";
 
 const App = (): JSX.Element => {
   useAppStyles();
@@ -17,15 +18,17 @@ const App = (): JSX.Element => {
       <ErrorProvider>
         <EnvProvider>
           <ProvidersProvider>
-            <BridgeProvider>
+            <TokensProvider>
               <PriceOracleProvider>
-                <TransactionProvider>
-                  <Layout>
-                    <Router />
-                  </Layout>
-                </TransactionProvider>
+                <BridgeProvider>
+                  <FormProvider>
+                    <Layout>
+                      <Router />
+                    </Layout>
+                  </FormProvider>
+                </BridgeProvider>
               </PriceOracleProvider>
-            </BridgeProvider>
+            </TokensProvider>
           </ProvidersProvider>
         </EnvProvider>
       </ErrorProvider>

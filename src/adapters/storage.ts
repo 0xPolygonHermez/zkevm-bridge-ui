@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 import * as constants from "src/constants";
-import { Currency } from "src/domain";
+import { Currency, Token, Chain } from "src/domain";
+import { tokenParser } from "src/adapters/tokens";
+// Currency
 
 export function getCurrency(): Currency {
   return getStorageByKey({
@@ -11,8 +13,65 @@ export function getCurrency(): Currency {
   });
 }
 
-export function setCurrency(currency: Currency): void {
-  setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
+export function setCurrency(currency: Currency): Currency {
+  return setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
+}
+
+// Custom Tokens
+
+const CUSTOM_TOKENS_KEY = "customTokens";
+
+export function cleanupCustomTokens(envTokens: Token[]): Token[] {
+  return setCustomTokens(
+    getCustomTokens().reduce(
+      (acc: Token[], curr: Token) =>
+        envTokens.find((token) => token.address === curr.address) === undefined
+          ? [...acc, curr]
+          : acc,
+      []
+    )
+  );
+}
+
+export function getCustomTokens(): Token[] {
+  return getStorageByKey({
+    key: CUSTOM_TOKENS_KEY,
+    defaultValue: [],
+    parser: z.array(tokenParser),
+  });
+}
+
+export function getChainCustomTokens(chain: Chain): Token[] {
+  return getCustomTokens().filter(
+    (token) =>
+      token.chainId === chain.chainId ||
+      (token.wrappedToken && token.wrappedToken.chainId === chain.chainId)
+  );
+}
+
+export function isChainCustomToken(token: Token, chain: Chain): boolean {
+  return getChainCustomTokens(chain).find((tkn) => tkn.address === token.address) !== undefined;
+}
+
+export function setCustomTokens(tokens: Token[]): Token[] {
+  return setStorageByKey({
+    key: CUSTOM_TOKENS_KEY,
+    value: tokens,
+  });
+}
+
+export function addCustomToken(token: Token): Token[] {
+  const customTokens = getCustomTokens();
+  const isAlreadyAdded = customTokens.find((tkn) => tkn.address === token.address);
+  if (isAlreadyAdded) {
+    return customTokens;
+  } else {
+    return setCustomTokens([token, ...customTokens]);
+  }
+}
+
+export function removeCustomToken(token: Token): Token[] {
+  return setCustomTokens(getCustomTokens().filter((tkn) => tkn.address !== token.address));
 }
 
 // Helpers

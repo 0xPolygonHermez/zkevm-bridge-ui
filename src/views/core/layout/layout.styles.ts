@@ -9,11 +9,10 @@ const useLayoutStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     background: theme.palette.grey.light,
-    padding: [0, theme.spacing(2)],
   },
   container: {
     width: "100%",
-    maxWidth: 644,
+    flex: 1,
     margin: [0, "auto"],
     paddingBottom: theme.spacing(2),
     display: "flex",

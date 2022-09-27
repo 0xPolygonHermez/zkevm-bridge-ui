@@ -1,4 +1,13 @@
-import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +15,7 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
+  isMetamaskRequestAccountsError,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
@@ -37,10 +47,12 @@ const providersContext = createContext<ProvidersContext>({
   },
 });
 
-const ProvidersProvider: FC = (props) => {
+const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const navigate = useNavigate();
-  const [connectedProvider, setConnectedProvider] =
-    useState<{ provider: Web3Provider; chainId: number }>();
+  const [connectedProvider, setConnectedProvider] = useState<{
+    provider: Web3Provider;
+    chainId: number;
+  }>();
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -60,14 +72,22 @@ const ProvidersProvider: FC = (props) => {
           try {
             if (window.ethereum && window.ethereum.isMetaMask) {
               const web3Provider = new Web3Provider(window.ethereum, "any");
+              const checkMetamaskHeartbeat = setTimeout(() => {
+                return setAccount({
+                  status: "failed",
+                  error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
+                });
+              }, 3000);
               const requestedNetwork = await web3Provider.getNetwork();
               const supportedChainIds = env.chains.map((chain) => chain.chainId);
               const requestedChainId = requestedNetwork.chainId;
 
+              clearTimeout(checkMetamaskHeartbeat);
+
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
                   status: "failed",
-                  error: "Switch your network to Ethereum or Polygon Hermez to continue",
+                  error: "Switch your network to Ethereum or Polygon zkEVM to continue",
                 });
               }
 
@@ -78,11 +98,16 @@ const ProvidersProvider: FC = (props) => {
             } else {
               return setAccount({
                 status: "failed",
-                error: `We cannot detect your wallet. Make sure the ${WalletName.METAMASK} extension is installed and active in your browser`,
+                error: `We can't detect your wallet\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
               });
             }
           } catch (error) {
-            if (!isMetamaskUserRejectedRequestError(error)) {
+            if (isMetamaskRequestAccountsError(error)) {
+              return setAccount({
+                status: "failed",
+                error: `Please unlock ${WalletName.METAMASK} to continue`,
+              });
+            } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
 
@@ -177,6 +202,7 @@ const ProvidersProvider: FC = (props) => {
               chainId: hexValue(chain.chainId),
               chainName: getChainName(chain),
               rpcUrls: [chain.provider.connection.url],
+              blockExplorerUrls: [chain.explorerUrl],
             },
           ],
         })
@@ -206,6 +232,12 @@ const ProvidersProvider: FC = (props) => {
     },
     [connectedProvider]
   );
+
+  useEffect(() => {
+    if (account.status === "failed") {
+      navigate(routes.login.path);
+    }
+  }, [account, navigate]);
 
   useEffect(() => {
     const internalConnectedProvider: Record<string, unknown> | undefined =

@@ -15,6 +15,26 @@ const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
   })
 );
 
+export interface JsonRpcError {
+  code: number;
+  message: string;
+  data: {
+    code: number;
+    message: string;
+  };
+}
+
+export const jsonRpcError = StrictSchema<JsonRpcError>()(
+  z.object({
+    code: z.number(),
+    message: z.string(),
+    data: z.object({
+      code: z.number(),
+      message: z.string(),
+    }),
+  })
+);
+
 export interface MetamaskUserRejectedRequestError {
   code: 4001;
   message: string;
@@ -23,6 +43,18 @@ export interface MetamaskUserRejectedRequestError {
 export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejectedRequestError>()(
   z.object({
     code: z.literal(4001),
+    message: z.string(),
+  })
+);
+
+export interface MetamaskRequestAccountsError {
+  code: -32002;
+  message: string;
+}
+
+export const metamaskRequestAccountsError = StrictSchema<MetamaskRequestAccountsError>()(
+  z.object({
+    code: z.literal(-32002),
     message: z.string(),
   })
 );
@@ -61,6 +93,7 @@ function sanitizeErrorMessage(errorMessage: string): string {
 }
 
 export function parseError(error: unknown): Promise<string> {
+  console.error(error);
   const unknownError = Promise.resolve(`An unknown error has occurred: ${JSON.stringify(error)}`);
   if (typeof error === "string") {
     return Promise.resolve(error);
@@ -83,11 +116,15 @@ export function parseError(error: unknown): Promise<string> {
         return unknownError;
       });
   } else {
+    const parsedJsonRpcError = jsonRpcError.safeParse(error);
     const parsedMessageKeyError = messageKeyErrorParser.safeParse(error);
-    if (parsedMessageKeyError.success) {
+    if (parsedJsonRpcError.success) {
+      return Promise.resolve(
+        `${parsedJsonRpcError.data.message} (code ${parsedJsonRpcError.data.code}): ${parsedJsonRpcError.data.data.message} (code ${parsedJsonRpcError.data.data.code})`
+      );
+    } else if (parsedMessageKeyError.success) {
       return Promise.resolve(parsedMessageKeyError.data.message);
     } else {
-      console.error(error);
       return unknownError;
     }
   }

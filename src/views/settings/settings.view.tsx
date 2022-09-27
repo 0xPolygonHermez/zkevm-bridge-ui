@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import useSettingsStyles from "src/views/settings/settings.styles";
 import Typography from "src/views/shared/typography/typography.view";
@@ -14,15 +14,15 @@ import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useEnvContext } from "src/contexts/env.context";
+import { getCurrency, setCurrency } from "src/adapters/storage";
 import { Currency } from "src/domain";
 
 const Settings: FC = () => {
   const classes = useSettingsStyles();
   const env = useEnvContext();
   const { disconnectProvider } = useProvidersContext();
-  const { preferredCurrency, changePreferredCurrency } = usePriceOracleContext();
+  const [preferredCurrency, setPreferredCurrency] = useState<Currency>(getCurrency());
   const currencies = [
     { id: Currency.EUR, icon: <EurIcon /> },
     { id: Currency.USD, icon: <UsdIcon /> },
@@ -35,18 +35,22 @@ const Settings: FC = () => {
     void disconnectProvider();
   };
 
-  const onChangePreferredCurrency = changePreferredCurrency;
+  const onChangePreferredCurrency = (currency: Currency) => {
+    setPreferredCurrency(currency);
+    setCurrency(currency);
+  };
 
   if (!env) {
     return null;
   }
 
   return (
-    <>
-      <Header title="Settings" backTo="home" />
-      <Typography type="body2" className={classes.subtitle}>
-        Polygon Hermez Bridge v{env.version}
-      </Typography>
+    <div className={classes.contentWrapper}>
+      <Header
+        title="Settings"
+        backTo={{ routeKey: "home" }}
+        Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{bridgeVersion}</Typography>}
+      />
       <Card className={classes.card}>
         <div className={classes.currenciesRow}>
           <Typography type="body1" className={classes.row}>
@@ -84,7 +88,7 @@ const Settings: FC = () => {
           <Typography type="body2">Disconnect your wallet</Typography>
         </div>
       </Card>
-    </>
+    </div>
   );
 };
 

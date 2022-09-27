@@ -1,11 +1,11 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { z } from "zod";
-import { BigNumber } from "ethers";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
+import { PAGE_SIZE } from "src/constants";
 
-interface BridgeInput {
+interface DepositInput {
   token_addr: string;
   amount: string;
   network_id: number;
@@ -14,9 +14,11 @@ interface BridgeInput {
   dest_addr: string;
   deposit_cnt: string;
   tx_hash: string;
+  claim_tx_hash: string;
+  ready_for_claim: boolean;
 }
 
-interface BridgeOutput {
+interface DepositOutput {
   token_addr: string;
   amount: string;
   network_id: number;
@@ -25,18 +27,8 @@ interface BridgeOutput {
   dest_addr: string;
   deposit_cnt: number;
   tx_hash: string;
-}
-
-interface ClaimInput {
-  index: string;
-  network_id: number;
-  tx_hash: string;
-}
-
-interface ClaimOutput {
-  index: number;
-  network_id: number;
-  tx_hash: string;
+  claim_tx_hash: string | null;
+  ready_for_claim: boolean;
 }
 
 interface MerkleProof {
@@ -47,7 +39,7 @@ interface MerkleProof {
   rollup_exit_root: string;
 }
 
-const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
+const depositParser = StrictSchema<DepositInput, DepositOutput>()(
   z.object({
     token_addr: z.string(),
     amount: z.string(),
@@ -57,27 +49,42 @@ const bridgeParser = StrictSchema<BridgeInput, BridgeOutput>()(
     dest_addr: z.string(),
     deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
     tx_hash: z.string(),
+    claim_tx_hash: z
+      .string()
+      .transform((v) => (v.length === 0 ? null : v))
+      .refine((val) => val === null || val.length === 66, {
+        message: "The length of claim_tx_hash must be 66 characters",
+      }),
+    ready_for_claim: z.boolean(),
   })
 );
 
-const getBridgesResponseParser = StrictSchema<
+const getDepositResponseParser = StrictSchema<
   {
-    deposits?: BridgeInput[];
+    deposit: DepositInput;
   },
   {
-    deposits?: BridgeOutput[];
+    deposit: DepositOutput;
   }
 >()(
   z.object({
-    deposits: z.optional(z.array(bridgeParser)),
+    deposit: depositParser,
   })
 );
 
-const getClaimStatusResponseParser = StrictSchema<{
-  ready?: boolean;
-}>()(
+const getDepositsResponseParser = StrictSchema<
+  {
+    deposits?: DepositInput[];
+    total_cnt?: string;
+  },
+  {
+    deposits?: DepositOutput[];
+    total_cnt?: number;
+  }
+>()(
   z.object({
-    ready: z.optional(z.boolean()),
+    deposits: z.optional(z.array(depositParser)),
+    total_cnt: z.optional(z.string().transform((v) => z.number().parse(Number(v)))),
   })
 );
 
@@ -120,161 +127,64 @@ const getMerkleProofResponseParser = StrictSchema<
   })
 );
 
-const claimParser = StrictSchema<ClaimInput, ClaimOutput>()(
-  z.object({
-    index: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
-    network_id: z.number(),
-    tx_hash: z.string(),
-  })
-);
-
-const getClaimsResponseParser = StrictSchema<
-  {
-    claims?: ClaimInput[];
-  },
-  {
-    claims?: ClaimOutput[];
-  }
->()(
-  z.object({
-    claims: z.optional(z.array(claimParser)),
-  })
-);
-
-const getTransactions = async ({
-  env,
-  ethereumAddress,
-}: {
-  env: domain.Env;
-  ethereumAddress: string;
-}): Promise<domain.Transaction[]> => {
-  const apiUrl = env.bridgeApiUrl;
-  const [bridges, claims] = await Promise.all([
-    getBridges({ apiUrl, ethereumAddress }),
-    getClaims({ apiUrl, ethereumAddress }),
-  ]);
-
-  return await Promise.all(
-    bridges
-      .filter(
-        (apiBridge) =>
-          apiBridge.token_addr === env.tokens.ETH.address &&
-          apiBridge.orig_net === env.tokens.ETH.network
-      )
-      .map(async (apiBridge): Promise<domain.Transaction> => {
-        const { network_id, dest_net, amount, dest_addr, deposit_cnt, tx_hash } = apiBridge;
-
-        const networkId = env.chains.find((chain) => chain.networkId === network_id);
-        if (networkId === undefined) {
-          throw new Error(
-            `The specified network_id "${network_id}" can not be found in the list of supported Chains`
-          );
-        }
-
-        const destinationNetwork = env.chains.find((chain) => chain.networkId === dest_net);
-        if (destinationNetwork === undefined) {
-          throw new Error(
-            `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
-          );
-        }
-
-        const bridge: domain.Bridge = {
-          token: env.tokens.ETH,
-          amount: BigNumber.from(amount),
-          destinationAddress: dest_addr,
-          depositCount: deposit_cnt,
-          txHash: tx_hash,
-          networkId,
-          destinationNetwork,
-        };
-
-        const claim = claims.find(
-          (claim) =>
-            claim.index === bridge.depositCount &&
-            claim.network_id === bridge.destinationNetwork.networkId
-        );
-
-        const id = `${bridge.depositCount}-${bridge.destinationNetwork.networkId}`;
-
-        if (claim) {
-          return {
-            status: "completed",
-            id,
-            bridge,
-            claim: {
-              txHash: claim.tx_hash,
-            },
-          };
-        }
-
-        const claimStatus = await getClaimStatus({
-          apiUrl,
-          networkId: bridge.networkId.networkId,
-          depositCount: bridge.depositCount,
-        });
-
-        if (claimStatus === false) {
-          return {
-            status: "initiated",
-            id,
-            bridge,
-          };
-        }
-
-        const merkleProof = await getMerkleProof({
-          apiUrl,
-          networkId: bridge.networkId.networkId,
-          depositCount: bridge.depositCount,
-        });
-
-        return {
-          status: "on-hold",
-          id,
-          bridge,
-          merkleProof,
-        };
-      })
-  );
-};
-
-interface GetBridgesParams {
+interface GetDepositsParams {
   apiUrl: string;
   ethereumAddress: string;
+  limit?: number;
+  offset?: number;
+  cancelToken?: AxiosRequestConfig["cancelToken"];
 }
 
-const getBridges = ({ apiUrl, ethereumAddress }: GetBridgesParams): Promise<BridgeOutput[]> => {
+export const getDeposits = ({
+  apiUrl,
+  ethereumAddress,
+  limit = PAGE_SIZE,
+  offset = 0,
+  cancelToken,
+}: GetDepositsParams): Promise<{
+  deposits: DepositOutput[];
+  total: number;
+}> => {
   return axios
     .request({
       baseURL: apiUrl,
       url: `/bridges/${ethereumAddress}`,
       method: "GET",
+      params: {
+        limit,
+        offset,
+      },
+      cancelToken,
     })
     .then((res) => {
-      const parsedData = getBridgesResponseParser.safeParse(res.data);
+      const parsedData = getDepositsResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.deposits !== undefined ? parsedData.data.deposits : [];
+        return {
+          deposits: parsedData.data.deposits !== undefined ? parsedData.data.deposits : [],
+          total: parsedData.data.total_cnt !== undefined ? parsedData.data.total_cnt : 0,
+        };
       } else {
         throw parsedData.error;
       }
     });
 };
 
-interface GetClaimStatusParams {
+interface GetDepositParams {
   apiUrl: string;
   networkId: number;
   depositCount: number;
 }
 
-const getClaimStatus = ({
+export const getDeposit = ({
   apiUrl,
   networkId,
   depositCount,
-}: GetClaimStatusParams): Promise<boolean> => {
+}: GetDepositParams): Promise<DepositOutput> => {
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/claim-status`,
+      url: "/bridge",
       method: "GET",
       params: {
         net_id: networkId,
@@ -282,10 +192,10 @@ const getClaimStatus = ({
       },
     })
     .then((res) => {
-      const parsedData = getClaimStatusResponseParser.safeParse(res.data);
+      const parsedData = getDepositResponseParser.safeParse(res.data);
 
       if (parsedData.success) {
-        return parsedData.data.ready === true;
+        return parsedData.data.deposit;
       } else {
         throw parsedData.error;
       }
@@ -298,7 +208,7 @@ interface GetMerkleProofParams {
   depositCount: number;
 }
 
-const getMerkleProof = ({
+export const getMerkleProof = ({
   apiUrl,
   networkId,
   depositCount,
@@ -306,7 +216,7 @@ const getMerkleProof = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/merkle-proofs`,
+      url: "/merkle-proof",
       method: "GET",
       params: {
         net_id: networkId,
@@ -323,28 +233,3 @@ const getMerkleProof = ({
       }
     });
 };
-
-interface GetClaimsParams {
-  apiUrl: string;
-  ethereumAddress: string;
-}
-
-const getClaims = ({ apiUrl, ethereumAddress }: GetClaimsParams): Promise<ClaimOutput[]> => {
-  return axios
-    .request({
-      baseURL: apiUrl,
-      url: `/claims/${ethereumAddress}`,
-      method: "GET",
-    })
-    .then((res) => {
-      const parsedData = getClaimsResponseParser.safeParse(res.data);
-
-      if (parsedData.success) {
-        return parsedData.data.claims !== undefined ? parsedData.data.claims : [];
-      } else {
-        throw parsedData.error;
-      }
-    });
-};
-
-export { getTransactions };

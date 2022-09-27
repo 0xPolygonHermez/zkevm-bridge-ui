@@ -2,104 +2,89 @@ import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
 import * as domain from "src/domain";
-import { getChains, ETH_TOKEN, getUsdtToken } from "src/constants";
+import { getChains, getUsdcToken } from "src/constants";
 
 interface Env {
-  REACT_APP_ETHEREUM_RPC_URL: string;
-  REACT_APP_ETHEREUM_EXPLORER_URL: string;
-  REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
-  REACT_APP_POLYGON_HERMEZ_RPC_URL: string;
-  REACT_APP_POLYGON_EXPLORER_URL: string;
-  REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS: string;
-  REACT_APP_POLYGON_HERMEZ_NETWORK_ID: string;
-  REACT_APP_BRIDGE_API_URL: string;
-  REACT_APP_FIAT_EXCHANGE_RATES_API_URL: string;
-  REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: string;
-  REACT_APP_USDT_ADDRESS: string;
-  REACT_APP_USDT_NETWORK: string;
-  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: string;
-  REACT_APP_VERSION: string;
+  VITE_ETHEREUM_RPC_URL: string;
+  VITE_ETHEREUM_EXPLORER_URL: string;
+  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
+  VITE_ETHEREUM_USDC_ADDRESS: string;
+  VITE_POLYGON_ZK_EVM_RPC_URL: string;
+  VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
+  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
+  VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
+  VITE_BRIDGE_API_URL: string;
+  VITE_FIAT_EXCHANGE_RATES_API_URL: string;
+  VITE_FIAT_EXCHANGE_RATES_API_KEY: string;
 }
 
 const envToDomain = ({
-  REACT_APP_ETHEREUM_RPC_URL,
-  REACT_APP_ETHEREUM_EXPLORER_URL,
-  REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
-  REACT_APP_POLYGON_HERMEZ_RPC_URL,
-  REACT_APP_POLYGON_EXPLORER_URL,
-  REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
-  REACT_APP_POLYGON_HERMEZ_NETWORK_ID,
-  REACT_APP_BRIDGE_API_URL,
-  REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
-  REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
-  REACT_APP_USDT_ADDRESS,
-  REACT_APP_USDT_NETWORK,
-  REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
-  REACT_APP_VERSION,
+  VITE_ETHEREUM_RPC_URL,
+  VITE_ETHEREUM_EXPLORER_URL,
+  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+  VITE_ETHEREUM_USDC_ADDRESS,
+  VITE_POLYGON_ZK_EVM_RPC_URL,
+  VITE_POLYGON_ZK_EVM_EXPLORER_URL,
+  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
+  VITE_POLYGON_ZK_EVM_NETWORK_ID,
+  VITE_BRIDGE_API_URL,
+  VITE_FIAT_EXCHANGE_RATES_API_URL,
+  VITE_FIAT_EXCHANGE_RATES_API_KEY,
 }: Env): Promise<domain.Env> => {
-  const polygonHermezNetworkId = z
-    .number()
-    .positive()
-    .parse(Number(REACT_APP_POLYGON_HERMEZ_NETWORK_ID));
-
-  const usdtNetwork = z.number().nonnegative().parse(Number(REACT_APP_USDT_NETWORK));
+  const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
 
   return getChains({
     ethereum: {
-      rpcUrl: REACT_APP_ETHEREUM_RPC_URL,
-      explorerUrl: REACT_APP_ETHEREUM_EXPLORER_URL,
-      contractAddress: REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+      rpcUrl: VITE_ETHEREUM_RPC_URL,
+      explorerUrl: VITE_ETHEREUM_EXPLORER_URL,
+      contractAddress: VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
     },
-    polygonHermez: {
-      networkId: polygonHermezNetworkId,
-      rpcUrl: REACT_APP_POLYGON_HERMEZ_RPC_URL,
-      explorerUrl: REACT_APP_POLYGON_EXPLORER_URL,
-      contractAddress: REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS,
+    polygonZkEVM: {
+      networkId: polygonZkEVMNetworkId,
+      rpcUrl: VITE_POLYGON_ZK_EVM_RPC_URL,
+      explorerUrl: VITE_POLYGON_ZK_EVM_EXPLORER_URL,
+      contractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
     },
-  }).then((chains) => ({
-    bridgeApiUrl: REACT_APP_BRIDGE_API_URL,
-    tokenQuotes: {
-      uniswapQuoterContractAddress: REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS,
-    },
-    fiatExchangeRates: {
-      apiUrl: REACT_APP_FIAT_EXCHANGE_RATES_API_URL,
-      apiKey: REACT_APP_FIAT_EXCHANGE_RATES_API_KEY,
-    },
-    chains,
-    tokens: {
-      ETH: ETH_TOKEN,
-      USDT: getUsdtToken({
-        address: REACT_APP_USDT_ADDRESS,
-        network: usdtNetwork,
-      }),
-    },
-    version: REACT_APP_VERSION,
-  }));
+  }).then((chains) => {
+    const ethereumChain = chains.find((chain) => chain.key === "ethereum");
+    if (!ethereumChain) {
+      throw new Error("Ethereum chain not found");
+    }
+    return {
+      bridgeApiUrl: VITE_BRIDGE_API_URL,
+      fiatExchangeRates: {
+        apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
+        apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
+        usdcToken: getUsdcToken({
+          address: VITE_ETHEREUM_USDC_ADDRESS,
+          chainId: ethereumChain.chainId,
+        }),
+      },
+      chains,
+    };
+  });
 };
 
 const envParser = StrictSchema<Env, domain.Env>()(
   z
     .object({
-      REACT_APP_ETHEREUM_RPC_URL: z.string(),
-      REACT_APP_ETHEREUM_EXPLORER_URL: z.string(),
-      REACT_APP_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string(),
-      REACT_APP_POLYGON_HERMEZ_RPC_URL: z.string(),
-      REACT_APP_POLYGON_EXPLORER_URL: z.string(),
-      REACT_APP_POLYGON_HERMEZ_BRIDGE_CONTRACT_ADDRESS: z.string(),
-      REACT_APP_POLYGON_HERMEZ_NETWORK_ID: z.string(),
-      REACT_APP_BRIDGE_API_URL: z.string(),
-      REACT_APP_FIAT_EXCHANGE_RATES_API_URL: z.string(),
-      REACT_APP_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
-      REACT_APP_USDT_ADDRESS: z.string(),
-      REACT_APP_USDT_NETWORK: z.string(),
-      REACT_APP_UNISWAP_QUOTER_CONTRACT_ADDRESS: z.string(),
-      REACT_APP_VERSION: z.string(),
+      VITE_ETHEREUM_RPC_URL: z.string().url(),
+      VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
+      VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_ETHEREUM_USDC_ADDRESS: z.string().length(42),
+      VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
+      VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
+      VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),
+      VITE_BRIDGE_API_URL: z.string().url(),
+      VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url(),
+      VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string(),
     })
     .transform(envToDomain)
 );
 
 const loadEnv = (): Promise<domain.Env> => {
-  const parsedEnv = envParser.parseAsync(process.env);
+  const parsedEnv = envParser.parseAsync(import.meta.env);
 
   return parsedEnv;
 };

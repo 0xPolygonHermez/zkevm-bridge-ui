@@ -1,6 +1,6 @@
-import { Transaction, Chain } from "src/domain";
+import { Bridge, Chain, Currency, EthereumChainId } from "src/domain";
 
-export function getTransactionStatus(status: Transaction["status"]): string {
+export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
     case "initiated":
       return "Initiated";
@@ -15,7 +15,49 @@ export function getChainName(chain: Chain): string {
   switch (chain.key) {
     case "ethereum":
       return "Ethereum";
-    case "polygon-hermez":
-      return "Polygon Hermez";
+    case "polygon-zkevm":
+      return "Polygon zkEVM";
+  }
+}
+
+export function getNetworkName(chain: Chain): string | undefined {
+  switch (chain.chainId) {
+    case EthereumChainId.MAINNET:
+      return "Mainnet";
+    case EthereumChainId.RINKEBY:
+      return "Rinkeby";
+    case EthereumChainId.GOERLI:
+      return "Goerli";
+    default:
+      return undefined;
+  }
+}
+
+export function getDeploymentName(chain: Chain): string | undefined {
+  switch (chain.chainId) {
+    case EthereumChainId.MAINNET:
+      return "Mainnet";
+    case EthereumChainId.RINKEBY:
+      return "Testnet";
+    case EthereumChainId.GOERLI:
+      return "Internal Testnet";
+    default:
+      return undefined;
+  }
+}
+
+type CurrencySymbol = "€" | "$" | "¥" | "£";
+
+export function getCurrencySymbol(currency: Currency): CurrencySymbol {
+  switch (currency) {
+    case Currency.EUR:
+      return "€";
+    case Currency.USD:
+      return "$";
+    case Currency.GBP:
+      return "£";
+    case Currency.JPY:
+    case Currency.CNY:
+      return "¥";
   }
 }
