@@ -32,14 +32,3 @@ jobs:
           build-args: |
             ENVIRONMENT=integration
             VITE_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.VITE_FIAT_EXCHANGE_RATES_API_KEY}}
-
-      - name: Build and push for frontend-testnet
-        id: docker_build_fetestnet
-        uses: docker/build-push-action@v2
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: hermeznetwork/zkevm-bridge-ui:fetestnet
-          build-args: |
-            ENVIRONMENT=fetestnet
-            VITE_FIAT_EXCHANGE_RATES_API_KEY=${{secrets.VITE_FIAT_EXCHANGE_RATES_API_KEY}}
