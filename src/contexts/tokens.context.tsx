@@ -8,21 +8,32 @@ import {
   useMemo,
   useState,
 } from "react";
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import axios from "axios";
 
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
 import { Erc20__factory } from "src/types/contracts/erc-20";
+import { Bridge__factory } from "src/types/contracts/bridge";
 import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import { Chain, Env, Token } from "src/domain";
 import { getEthereumErc20Tokens } from "src/adapters/tokens";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { getEtherToken } from "src/constants";
 import * as ethereum from "src/adapters/ethereum";
-import { useProvidersContext } from "src/contexts/providers.context";
+
+interface ComputeWrappedTokenAddressParams {
+  token: Token;
+  nativeChain: Chain;
+  otherChain: Chain;
+}
+
+interface GetNativeTokenInfoParams {
+  token: Token;
+  chain: Chain;
+}
 
 interface AddWrappedTokenParams {
   token: Token;
@@ -65,6 +76,11 @@ interface ApproveParams {
 
 interface TokensContext {
   tokens?: Token[];
+  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
+  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
+    originNetwork: number;
+    originTokenAddress: string;
+  }>;
   addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getToken: (params: GetTokenParams) => Promise<Token>;
@@ -76,6 +92,12 @@ interface TokensContext {
 const tokensContextNotReadyMsg = "The bridge context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
+  computeWrappedTokenAddress: () => {
+    return Promise.reject(tokensContextNotReadyMsg);
+  },
+  getNativeTokenInfo: () => {
+    return Promise.reject(tokensContextNotReadyMsg);
+  },
   addWrappedToken: () => {
     return Promise.reject(tokensContextNotReadyMsg);
   },
@@ -99,12 +121,63 @@ const tokensContext = createContext<TokensContext>({
 const TokensProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { getNativeTokenInfo, computeWrappedTokenAddress } = useBridgeContext();
   const { connectedProvider, changeNetwork } = useProvidersContext();
   const [tokens, setTokens] = useState<Token[]>();
 
   /**
-   * Provided a token, if its property wrappedAddresses is missing, adds it and returns the new token
+   * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
+   */
+  const computeWrappedTokenAddress = useCallback(
+    async ({
+      token,
+      nativeChain,
+      otherChain,
+    }: ComputeWrappedTokenAddressParams): Promise<string> => {
+      const bridgeContract = Bridge__factory.connect(
+        otherChain.contractAddress,
+        otherChain.provider
+      );
+      const tokenImplementationAddress = await bridgeContract.tokenImplementation();
+      const salt = ethersUtils.solidityKeccak256(
+        ["uint32", "address"],
+        [nativeChain.networkId, token.address]
+      );
+      const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
+        2
+      )}5af43d82803e903d91602b57fd5bf3`;
+      const hashInitCode = ethersUtils.keccak256(minimalBytecodeProxy);
+
+      return ethersUtils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
+      // return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
+    },
+    []
+  );
+
+  /**
+   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
+   */
+  const getNativeTokenInfo = useCallback(
+    ({
+      token,
+      chain,
+    }: GetNativeTokenInfoParams): Promise<{
+      originNetwork: number;
+      originTokenAddress: string;
+    }> => {
+      const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
+
+      return bridgeContract.wrappedTokenToTokenInfo(token.address).then((tokenInfo) => {
+        if (tokenInfo.originTokenAddress === ethersConstants.AddressZero) {
+          throw new Error(`Can not find a native token for ${token.name}`);
+        }
+        return tokenInfo;
+      });
+    },
+    []
+  );
+
+  /**
+   * Provided a token, if its property wrappedToken is missing, adds it and returns the new token
    */
   const addWrappedToken = useCallback(
     ({ token }: AddWrappedTokenParams): Promise<Token> => {
@@ -123,19 +196,17 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
         // first we check if the provided address belongs to a wrapped token
         return getNativeTokenInfo({ token, chain: nativeChain })
-          .then(({ originalNetwork, originalTokenAddress }) => {
-            // if this is the case we use originalTokenAddress as native and token.address as wrapped
+          .then(({ originNetwork, originTokenAddress }) => {
+            // if this is the case we use originTokenAddress as native and token.address as wrapped
             const originalTokenChain = env?.chains.find(
-              (chain) => chain.networkId === originalNetwork
+              (chain) => chain.networkId === originNetwork
             );
             if (originalTokenChain === undefined) {
-              throw Error(
-                `Could not find a chain that matched the originalNetwork ${originalNetwork}`
-              );
+              throw Error(`Could not find a chain that matched the originNetwork ${originNetwork}`);
             } else {
               const newToken: Token = {
                 ...token,
-                address: originalTokenAddress,
+                address: originTokenAddress,
                 chainId: originalTokenChain.chainId,
                 wrappedToken: {
                   address: token.address,
@@ -162,11 +233,14 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
                 };
                 return newToken;
               })
-              .catch(() => Promise.resolve(token));
+              .catch((e) => {
+                notifyError(e);
+                return Promise.resolve(token);
+              });
           });
       }
     },
-    [env, computeWrappedTokenAddress, getNativeTokenInfo]
+    [env, getNativeTokenInfo, computeWrappedTokenAddress, notifyError]
   );
 
   const getTokenFromAddress = useCallback(
@@ -289,6 +363,8 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(() => {
     return {
       tokens,
+      computeWrappedTokenAddress,
+      getNativeTokenInfo,
       getTokenFromAddress,
       getToken,
       getErc20TokenBalance,
@@ -298,6 +374,8 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     };
   }, [
     tokens,
+    computeWrappedTokenAddress,
+    getNativeTokenInfo,
     getTokenFromAddress,
     getToken,
     getErc20TokenBalance,

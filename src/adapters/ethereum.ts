@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber, constants as ethersConstants } from "ethers";
-import { splitSignature } from "ethers/lib/utils";
+import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
 
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
-import { Token } from "src/domain";
+import { selectTokenAddress } from "src/utils/tokens";
+import { Token, Chain } from "src/domain";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
@@ -17,18 +18,22 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
 };
 
 interface IsPermitSupportedParams {
-  provider: Web3Provider;
+  account: string;
+  chain: Chain;
   token: Token;
 }
 
 const isPermitSupported = async ({
-  provider,
+  account,
+  chain,
   token,
 }: IsPermitSupportedParams): Promise<boolean> => {
-  const tokenContractWithPermit = Erc20Permit__factory.connect(token.address, provider.getSigner());
-
+  if (token.address === ethersConstants.AddressZero) {
+    return false;
+  }
+  const tokenContractWithPermit = Erc20Permit__factory.connect(token.address, chain.provider);
   try {
-    return !!(await tokenContractWithPermit.DOMAIN_SEPARATOR());
+    return !!(await tokenContractWithPermit.nonces(account));
   } catch (err) {
     return false;
   }
@@ -115,10 +120,11 @@ const permit = async ({
 
   const erc20PermitContract = Erc20Permit__factory.connect(token.address, provider.getSigner());
   const nonce = await erc20PermitContract.nonces(owner);
+  const name = await erc20PermitContract.name();
   const deadline = ethersConstants.MaxUint256;
   const chainId = (await provider.getNetwork()).chainId;
   const domain = {
-    name: token.name,
+    name,
     version: "1",
     chainId: chainId,
     verifyingContract: token.address,
@@ -154,6 +160,48 @@ const permit = async ({
   ]);
 };
 
+interface GetErc20TokenMetadataParams {
+  token: Token;
+  chain: Chain;
+}
+
+const getErc20TokenMetadata = async ({
+  token,
+  chain,
+}: GetErc20TokenMetadataParams): Promise<{
+  name: string;
+  symbol: string;
+  decimals: number;
+}> => {
+  const erc20Contract = Erc20__factory.connect(selectTokenAddress(token, chain), chain.provider);
+  const [name, symbol, decimals] = await Promise.all([
+    erc20Contract.name(),
+    erc20Contract.symbol(),
+    erc20Contract.decimals(),
+  ]);
+  return {
+    name,
+    symbol,
+    decimals,
+  };
+};
+
+interface GetErc20TokenEncodedMetadataParams {
+  token: Token;
+  chain: Chain;
+}
+
+const getErc20TokenEncodedMetadata = async ({
+  token,
+  chain,
+}: GetErc20TokenEncodedMetadataParams): Promise<string> => {
+  const { name, symbol, decimals } = await getErc20TokenMetadata({
+    token,
+    chain,
+  });
+  return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
+};
+
 export {
   ethereumAccountsParser,
   getConnectedAccounts,
@@ -161,4 +209,6 @@ export {
   approve,
   isContractAllowedToSpendToken,
   permit,
+  getErc20TokenMetadata,
+  getErc20TokenEncodedMetadata,
 };
