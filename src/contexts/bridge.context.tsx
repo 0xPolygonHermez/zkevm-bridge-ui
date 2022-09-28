@@ -3,7 +3,6 @@ import {
   ContractTransaction,
   constants as ethersConstants,
   PayableOverrides,
-  ethers,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
@@ -20,6 +19,7 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, FIAT_DISPLAY_PRECISION } from "src/constants";
 import { calculateFee } from "src/utils/fees";
@@ -27,19 +27,9 @@ import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
+import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
-import { useTokensContext } from "src/contexts/tokens.context";
-
-interface ComputeWrappedTokenAddressParams {
-  token: Token;
-  nativeChain: Chain;
-  otherChain: Chain;
-}
-
-interface GetNativeTokenInfoParams {
-  token: Token;
-  chain: Chain;
-}
+import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface EstimateBridgeGasPriceParams {
   from: Chain;
@@ -96,11 +86,6 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
-  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
-    originalNetwork: number;
-    originalTokenAddress: string;
-  }>;
   estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
@@ -114,12 +99,6 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
-  computeWrappedTokenAddress: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
-  getNativeTokenInfo: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
   estimateBridgeGasPrice: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -139,51 +118,9 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, changeNetwork } = useProvidersContext();
+  const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
-
-  /**
-   * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
-   */
-  const computeWrappedTokenAddress = useCallback(
-    async ({
-      token,
-      nativeChain,
-      otherChain,
-    }: ComputeWrappedTokenAddressParams): Promise<string> => {
-      const bridgeContract = Bridge__factory.connect(
-        otherChain.contractAddress,
-        otherChain.provider
-      );
-
-      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
-    },
-    []
-  );
-
-  /**
-   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
-   */
-  const getNativeTokenInfo = useCallback(
-    ({
-      token,
-      chain,
-    }: GetNativeTokenInfoParams): Promise<{
-      originalNetwork: number;
-      originalTokenAddress: string;
-    }> => {
-      const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
-
-      return bridgeContract.addressToTokenInfo(token.address).then((tokenInfo) => {
-        if (tokenInfo.originalTokenAddress === ethers.constants.AddressZero) {
-          throw new Error(`Can not find a native token for ${token.name}`);
-        }
-        return tokenInfo;
-      });
-    },
-    []
-  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -211,7 +148,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       }
 
       return contract.estimateGas
-        .bridge(selectTokenAddress(token, from), amount, to.networkId, destinationAddress, {
+        .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
           ...overrides,
           from: destinationAddress,
         })
@@ -626,14 +563,41 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Connected provider is not available");
       }
 
+      if (!isAsyncTaskDataAvailable(account)) {
+        throw new Error("User account is not available");
+      }
+
       const contract = Bridge__factory.connect(
         from.contractAddress,
         connectedProvider.provider.getSigner()
       );
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
-      const executeBridge = async () =>
-        contract.bridge(token.address, amount, to.networkId, destinationAddress, overrides);
+      const executeBridge = async () => {
+        const canUsePermit = await isPermitSupported({
+          account: account.data,
+          chain: from,
+          token,
+        });
+        const permitData = canUsePermit
+          ? await permit({
+              token,
+              provider: connectedProvider.provider,
+              owner: account.data,
+              spender: from.contractAddress,
+              value: amount,
+            })
+          : "0x";
+
+        return contract.bridge(
+          token.address,
+          to.networkId,
+          destinationAddress,
+          amount,
+          permitData,
+          overrides
+        );
+      };
 
       if (from.chainId === connectedProvider.chainId) {
         return executeBridge();
@@ -645,11 +609,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeBridge);
       }
     },
-    [connectedProvider, changeNetwork]
+    [connectedProvider, account, changeNetwork]
   );
 
   const claim = useCallback(
-    ({
+    async ({
       bridge: { token, amount, tokenOriginNetwork, from, to, destinationAddress, depositCount },
     }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
@@ -669,25 +633,32 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const apiUrl = env.bridgeApiUrl;
       const networkId = from.networkId;
 
+      const { merkleProof, mainExitRoot, rollupExitRoot } = await getMerkleProof({
+        apiUrl,
+        networkId,
+        depositCount,
+      });
+
+      const isEtherToken = token.address === ethersConstants.AddressZero;
+      const isTokenNativeOfToChain = token.chainId === to.chainId;
+      const isMetadataRequired = !isEtherToken && !isTokenNativeOfToChain;
+      const metadata = isMetadataRequired
+        ? await getErc20TokenEncodedMetadata({ token, chain: from })
+        : "0x";
+
       const executeClaim = () =>
-        getMerkleProof({
-          apiUrl,
-          networkId,
+        contract.claim(
+          merkleProof,
           depositCount,
-        }).then(({ merkleProof, exitRootNumber, l2ExitRootNumber, mainExitRoot, rollupExitRoot }) =>
-          contract.claim(
-            token.address,
-            amount,
-            tokenOriginNetwork,
-            to.networkId,
-            destinationAddress,
-            merkleProof,
-            depositCount,
-            isL2Claim ? l2ExitRootNumber : exitRootNumber,
-            mainExitRoot,
-            rollupExitRoot,
-            isL2Claim ? { gasPrice: 0 } : {}
-          )
+          mainExitRoot,
+          rollupExitRoot,
+          tokenOriginNetwork,
+          token.address,
+          to.networkId,
+          destinationAddress,
+          amount,
+          metadata,
+          isL2Claim ? { gasPrice: 0 } : {}
         );
 
       if (to.chainId === connectedProvider.chainId) {
@@ -705,23 +676,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
       estimateBridgeGasPrice,
       getBridge,
       fetchBridges,
       bridge,
       claim,
     }),
-    [
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
-      estimateBridgeGasPrice,
-      getBridge,
-      fetchBridges,
-      bridge,
-      claim,
-    ]
+    [estimateBridgeGasPrice, getBridge, fetchBridges, bridge, claim]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;
