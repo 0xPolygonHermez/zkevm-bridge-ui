@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import axios from "axios";
 
@@ -137,7 +137,18 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         otherChain.contractAddress,
         otherChain.provider
       );
-      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
+      const tokenImplementationAddress = await bridgeContract.tokenImplementation();
+      const salt = ethersUtils.solidityKeccak256(
+        ["uint32", "address"],
+        [nativeChain.networkId, token.address]
+      );
+      const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
+        2
+      )}5af43d82803e903d91602b57fd5bf3`;
+      const hashInitCode = ethersUtils.keccak256(minimalBytecodeProxy);
+
+      return ethersUtils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
+      // return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
     },
     []
   );
