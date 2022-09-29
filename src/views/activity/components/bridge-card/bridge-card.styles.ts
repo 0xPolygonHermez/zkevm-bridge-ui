@@ -9,37 +9,42 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     margin: "auto",
     cursor: "pointer",
     transition: theme.hoverTransition,
+    display: "flex",
+    alignItems: "center",
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
-  },
-  row: {
-    display: "flex",
   },
   steps: {
     color: theme.palette.grey.dark,
     fontSize: 14,
     marginBottom: theme.spacing(2),
   },
-  actionCircle: {
-    width: theme.spacing(5.75),
-    height: theme.spacing(5.75),
+  circle: {
+    width: theme.spacing(6),
+    height: theme.spacing(6),
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: theme.palette.grey.light,
     borderRadius: "100%",
   },
-  actionColumn: {
+  info: {
     flex: 1,
-    margin: [0, theme.spacing(2)],
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
+    marginLeft: theme.spacing(2),
   },
-  time: {
-    color: theme.palette.grey.dark,
-    fontSize: 14,
+  row: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    "&:first-of-type": {
+      marginBottom: theme.spacing(1),
+    },
+  },
+  label: {
+    marginRight: "auto",
   },
   statusBox: {
     backgroundColor: theme.palette.warning.light,
@@ -47,17 +52,11 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     fontSize: 14,
     padding: [theme.spacing(0.5), theme.spacing(1)],
     borderRadius: 8,
-    alignSelf: "flex-start",
+    marginRight: "auto",
   },
   greenStatus: {
     color: theme.palette.success.main,
     backgroundColor: theme.palette.success.light,
-  },
-  tokenColumn: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
   },
   tokenIcon: {
     marginRight: theme.spacing(1),
@@ -69,6 +68,11 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   fiat: {
     color: theme.palette.grey.dark,
     fontSize: 14,
+  },
+  amount: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   bottom: {
     marginTop: theme.spacing(2),
@@ -91,7 +95,8 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.primary.dark,
     },
     "&:disabled": {
-      backgroundColor: theme.palette.disabled,
+      backgroundColor: theme.palette.grey.dark,
+      opacity: 0.4,
       cursor: "initial",
     },
   },

@@ -18,10 +18,17 @@ export interface BridgeCardProps {
   bridge: Bridge;
   networkError: boolean;
   isFinaliseDisabled: boolean;
+  showFiatAmount: boolean;
   onClaim: () => void;
 }
 
-const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, isFinaliseDisabled, onClaim }) => {
+const BridgeCard: FC<BridgeCardProps> = ({
+  bridge,
+  networkError,
+  showFiatAmount,
+  isFinaliseDisabled,
+  onClaim,
+}) => {
   const { status, id, to, amount, token, fiatAmount } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
@@ -35,9 +42,16 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, isFinaliseDisab
 
   const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
 
-  const fiatAmountString = `${preferredCurrencySymbol}${
-    fiatAmount ? formatFiatAmount(fiatAmount) : "--"
-  }`;
+  const fiatAmountString = showFiatAmount
+    ? `${preferredCurrencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
+    : undefined;
+
+  const bridgeAmount = (
+    <div className={classes.token}>
+      <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
+      <Typography type="body1">{tokenAmountString}</Typography>
+    </div>
+  );
 
   return (
     <Card
@@ -46,30 +60,30 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, isFinaliseDisab
     >
       {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
       {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
-      <div className={classes.row}>
-        <div className={classes.actionCircle}>
-          {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
-        </div>
-        <div className={classes.actionColumn}>
-          <Typography type="body1">
+      <div className={classes.circle}>
+        {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
+      </div>
+      <div className={classes.info}>
+        <div className={classes.row}>
+          <Typography type="body1" className={classes.label}>
             {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
           </Typography>
+          {fiatAmountString && bridgeAmount}
+        </div>
+        <div className={classes.row}>
           <span
             className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
           >
             {getBridgeStatus(status)}
           </span>
-        </div>
-        <div className={classes.tokenColumn}>
-          <div className={classes.token}>
-            <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
-            <Typography type="body1">{tokenAmountString}</Typography>
-          </div>
-          <Typography type="body1" className={classes.fiat}>
-            {fiatAmountString}
-          </Typography>
+          {fiatAmountString && (
+            <Typography type="body1" className={classes.fiat}>
+              {fiatAmountString}
+            </Typography>
+          )}
         </div>
       </div>
+      {!fiatAmountString && <div className={classes.amount}>{bridgeAmount}</div>}
       {status === "initiated" && (
         <div className={classes.bottom}>
           <Typography type="body2">Step 2 will require signature</Typography>
@@ -85,7 +99,11 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, isFinaliseDisab
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}
-          <button disabled={isFinaliseDisabled} onClick={onClick} className={classes.finaliseButton}>
+          <button
+            disabled={isFinaliseDisabled}
+            onClick={onClick}
+            className={classes.finaliseButton}
+          >
             Finalise
           </button>
         </div>

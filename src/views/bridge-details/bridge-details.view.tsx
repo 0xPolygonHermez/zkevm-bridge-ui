@@ -173,7 +173,7 @@ const BridgeDetails: FC = () => {
   }, [bridge, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (env !== undefined && bridge.status === "successful") {
+    if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
       const { amount, from, token } = bridge.data;
 
       // fiat amount
@@ -204,7 +204,7 @@ const BridgeDetails: FC = () => {
   }, [env, bridge, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
-    if (env !== undefined && bridge.status === "successful") {
+    if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
       const { from } = bridge.data;
 
       // fiat fees
@@ -286,17 +286,19 @@ const BridgeDetails: FC = () => {
 
       const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
 
-      const fiatAmountString = `${currencySymbol}${
-        fiatAmount ? formatFiatAmount(fiatAmount) : "--"
-      }`;
+      const fiatAmountString = env.fiatExchangeRates.areEnabled
+        ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
+        : undefined;
 
-      const step1FeeString = `${
-        step1EthFee ? formatTokenAmount(step1EthFee, ethToken) : "--"
-      } ETH ~ ${currencySymbol}${step1FiatFee ? formatFiatAmount(step1FiatFee) : "--"}`;
+      const step1FeeString = `${step1EthFee ? formatTokenAmount(step1EthFee, ethToken) : "--"} ETH`;
+      const step1FiatFeeString = env.fiatExchangeRates.areEnabled
+        ? `${currencySymbol}${step1FiatFee ? formatFiatAmount(step1FiatFee) : "--"}`
+        : undefined;
 
-      const step2FeeString = `${
-        step2EthFee ? formatTokenAmount(step2EthFee, ethToken) : "--"
-      } ETH ~ ${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`;
+      const step2FeeString = `${step2EthFee ? formatTokenAmount(step2EthFee, ethToken) : "--"} ETH`;
+      const step2FiatFeeString = env.fiatExchangeRates.areEnabled
+        ? `${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`
+        : undefined;
 
       return (
         <div className={classes.contentWrapper}>
@@ -336,6 +338,7 @@ const BridgeDetails: FC = () => {
               </Typography>
               <Typography type="body1" className={classes.alignRow}>
                 {step1FeeString}
+                {step1FiatFeeString ? ` ~ ${step1FiatFeeString}` : ""}
               </Typography>
             </div>
             {bridge.data.status === "completed" && (
@@ -345,6 +348,7 @@ const BridgeDetails: FC = () => {
                 </Typography>
                 <Typography type="body1" className={classes.alignRow}>
                   {step2FeeString}
+                  {step2FiatFeeString ? ` ~ ${step2FiatFeeString}` : ""}
                 </Typography>
               </div>
             )}

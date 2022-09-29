@@ -73,6 +73,22 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
 
   const getTokenPrice = useCallback(
     async ({ token, chain }: GetTokenPriceParams): Promise<BigNumber> => {
+      if (env === undefined) {
+        throw new Error("Env is not available");
+      }
+
+      if (!env.fiatExchangeRates.areEnabled) {
+        throw new Error("Fiat Exchange Rates feature is not enabled");
+      }
+
+      if (uniswapV2Router02Contract === undefined) {
+        throw new Error("Uniswap V2 Router02 contract is not available");
+      }
+
+      if (fiatExchangeRates === undefined) {
+        throw new Error("Fiat exchange rates are not available");
+      }
+
       const erc20Token =
         token.address === ethers.constants.AddressZero
           ? tokens?.find((t) => t.symbol === "WETH")
@@ -84,17 +100,6 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
             chain
           )} chain`
         );
-      }
-      if (env === undefined) {
-        throw new Error("Env is not available");
-      }
-
-      if (uniswapV2Router02Contract === undefined) {
-        throw new Error("Uniswap V2 Router02 contract is not available");
-      }
-
-      if (fiatExchangeRates === undefined) {
-        throw new Error("Fiat exchange rates are not available");
       }
 
       const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
@@ -156,7 +161,7 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
   }, [env]);
 
   useEffect(() => {
-    if (env) {
+    if (env && env.fiatExchangeRates.areEnabled) {
       getFiatExchangeRates({
         apiUrl: env.fiatExchangeRates.apiUrl,
         apiKey: env.fiatExchangeRates.apiKey,

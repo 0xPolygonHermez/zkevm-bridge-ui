@@ -24,7 +24,6 @@ const theme = {
       main: "#1ccc8d",
       light: "rgba(0,255,0,0.1)",
     },
-    disabled: "#78798d",
     transparency: "rgba(8,17,50,0.5)",
   },
   hoverTransition: "all 150ms",

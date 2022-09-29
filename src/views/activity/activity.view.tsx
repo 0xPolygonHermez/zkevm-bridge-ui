@@ -108,7 +108,7 @@ const Activity: FC = () => {
       bridgeList.status === "successful" &&
       bridgeList.data.length < total
     ) {
-      setBridgeList({ status: "reloading", data: bridgeList.data });
+      setBridgeList({ status: "loading-more-items", data: bridgeList.data });
       fetchBridges({
         type: "reload",
         env,
@@ -163,7 +163,7 @@ const Activity: FC = () => {
       const refreshBridges = () => {
         setBridgeList(
           bridgeList.status === "successful"
-            ? { status: "loading-more-items", data: bridgeList.data }
+            ? { status: "reloading", data: bridgeList.data }
             : { status: "loading" }
         );
         fetchBridges({
@@ -272,9 +272,10 @@ const Activity: FC = () => {
                     <div className={classes.bridgeCardwrapper} key={bridge.id}>
                       <BridgeCard
                         bridge={bridge}
-                        onClaim={() => onClaim(bridge)}
                         networkError={wrongNetworkBridges.includes(bridge.id)}
                         isFinaliseDisabled={disabledBridges.includes(bridge.id)}
+                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                        onClaim={() => onClaim(bridge)}
                       />
                     </div>
                   ))}
