@@ -17,10 +17,11 @@ import { getCurrency } from "src/adapters/storage";
 export interface BridgeCardProps {
   bridge: Bridge;
   networkError: boolean;
+  isFinaliseDisabled: boolean;
   onClaim: () => void;
 }
 
-const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
+const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, isFinaliseDisabled, onClaim }) => {
   const { status, id, to, amount, token, fiatAmount } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const BridgeCard: FC<BridgeCardProps> = ({ bridge, networkError, onClaim }) => {
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}
-          <button onClick={onClick} className={classes.finaliseButton}>
+          <button disabled={isFinaliseDisabled} onClick={onClick} className={classes.finaliseButton}>
             Finalise
           </button>
         </div>

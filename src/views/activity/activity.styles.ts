@@ -78,6 +78,11 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     padding: 100,
     margin: "auto",
   },
+  bridgeCardwrapper: {
+    "&:not(:last-child)": {
+      marginBottom: theme.spacing(2),
+    },
+  },
 }));
 
 export default useActivityStyles;

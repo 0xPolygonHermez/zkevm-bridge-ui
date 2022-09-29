@@ -350,6 +350,9 @@ const BridgeConfirmation: FC = () => {
   const onBridge = () => {
     if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
       const { token, from, to } = formData;
+
+      setIsBridgeButtonDisabled(true);
+
       bridge({
         from,
         token,
@@ -366,6 +369,7 @@ const BridgeConfirmation: FC = () => {
           setFormData(undefined);
         })
         .catch((error) => {
+          setIsBridgeButtonDisabled(false);
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
