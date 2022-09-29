@@ -28,7 +28,7 @@ import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, EthereumChainId } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface EstimateBridgeGasPriceParams {
@@ -571,8 +571,17 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         from.contractAddress,
         connectedProvider.provider.getSigner()
       );
-      const overrides: PayableOverrides =
-        token.address === ethersConstants.AddressZero ? { value: amount } : {};
+
+      const overrides: PayableOverrides = Object.values(EthereumChainId).includes(from.chainId)
+        ? {
+            value: token.address === ethersConstants.AddressZero ? amount : undefined,
+          }
+        : {
+            gasLimit: 300000,
+            gasPrice: await from.provider.getGasPrice(),
+            value: token.address === ethersConstants.AddressZero ? amount : undefined,
+          };
+
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
           account: account.data,
@@ -658,7 +667,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           destinationAddress,
           amount,
           metadata,
-          isL2Claim ? { gasPrice: 0 } : {}
+          isL2Claim ? { gasLimit: 300000, gasPrice: 0 } : {}
         );
 
       if (to.chainId === connectedProvider.chainId) {
