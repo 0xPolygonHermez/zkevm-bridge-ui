@@ -26,7 +26,7 @@ const Activity: FC = () => {
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
-  const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined>>({
+  const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined, true>>({
     status: "pending",
   });
   const [displayAll, setDisplayAll] = useState(true);
@@ -163,7 +163,7 @@ const Activity: FC = () => {
       const refreshBridges = () => {
         setBridgeList(
           bridgeList.status === "successful"
-            ? { status: "reloading", data: bridgeList.data }
+            ? { status: "loading-more-items", data: bridgeList.data }
             : { status: "loading" }
         );
         fetchBridges({
@@ -248,9 +248,11 @@ const Activity: FC = () => {
         );
       }
       case "successful":
+      case "loading-more-items":
       case "reloading": {
         const pendingBridges = bridgeList.data.filter((bridge) => bridge.status !== "completed");
         const filteredList = displayAll ? bridgeList.data : pendingBridges;
+
         return (
           <>
             <div ref={headerBorderObserved}></div>
@@ -263,7 +265,7 @@ const Activity: FC = () => {
             <div className={classes.contentWrapper}>
               {filteredList.length ? (
                 <InfiniteScroll
-                  isLoading={bridgeList.status === "reloading"}
+                  isLoading={bridgeList.status === "loading-more-items"}
                   onLoadNextPage={onLoadNextPage}
                 >
                   {filteredList.map((bridge) => (
