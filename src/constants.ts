@@ -22,7 +22,7 @@ export const TOKEN_DISPLAY_PRECISION = 6;
 
 export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
 
-export const AUTO_REFRESH_RATE = 15000;
+export const AUTO_REFRESH_RATE = 10000;
 
 export const PAGE_SIZE = 25;
 
