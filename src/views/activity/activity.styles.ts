@@ -36,7 +36,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
   selectorBoxes: {
     maxWidth: theme.maxWidth,
     display: "flex",
-    margin: [theme.spacing(2), "auto"],
+    margin: [theme.spacing(5), "auto", theme.spacing(2)],
   },
   selectorBox: {
     display: "flex",
