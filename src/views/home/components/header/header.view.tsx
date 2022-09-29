@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FC } from "react";
 
-import { ReactComponent as PolygonZkEVMIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
+import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { ReactComponent as SettingIcon } from "src/assets/icons/setting.svg";
 import { ReactComponent as ClockIcon } from "src/assets/icons/clock.svg";
 import useHeaderStyles from "src/views/home/components/header/header.styles";
@@ -19,10 +19,7 @@ const Header: FC = () => {
         </Typography>
       </Link>
       <div className={classes.logoWrapper}>
-        <PolygonZkEVMIcon className={classes.logo} />
-        <Typography type="body2" className={classes.appName}>
-          Bridge
-        </Typography>
+        <PolygonZkEVMLogo />
       </div>
       <Link to={routes.activity.path} className={classes.link}>
         <Typography type="body1" className={classes.activityLabel}>
