@@ -56,7 +56,6 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 12,
     padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
     cursor: "pointer",
-    transition: theme.hoverTransition,
   },
 }));
 
