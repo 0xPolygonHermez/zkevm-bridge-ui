@@ -58,32 +58,40 @@ const BridgeCard: FC<BridgeCardProps> = ({
       className={classes.card}
       onClick={() => navigate(`${routes.bridgeDetails.path.split(":")[0]}${id}`)}
     >
-      {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
-      {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
-      <div className={classes.circle}>
-        {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
-      </div>
-      <div className={classes.info}>
+      <div className={classes.top}>
         <div className={classes.row}>
-          <Typography type="body1" className={classes.label}>
-            {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
-          </Typography>
-          {fiatAmountString && bridgeAmount}
+          {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
+          {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
         </div>
-        <div className={classes.row}>
-          <span
-            className={`${classes.statusBox} ${status === "completed" ? classes.greenStatus : ""}`}
-          >
-            {getBridgeStatus(status)}
-          </span>
-          {fiatAmountString && (
-            <Typography type="body1" className={classes.fiat}>
-              {fiatAmountString}
-            </Typography>
-          )}
+        <div className={classes.infoContainer}>
+          <div className={classes.circle}>
+            {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
+          </div>
+          <div className={classes.info}>
+            <div className={classes.row}>
+              <Typography type="body1" className={classes.label}>
+                {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
+              </Typography>
+              {fiatAmountString && bridgeAmount}
+            </div>
+            <div className={classes.row}>
+              <span
+                className={`${classes.statusBox} ${
+                  status === "completed" ? classes.greenStatus : ""
+                }`}
+              >
+                {getBridgeStatus(status)}
+              </span>
+              {fiatAmountString && (
+                <Typography type="body1" className={classes.fiat}>
+                  {fiatAmountString}
+                </Typography>
+              )}
+            </div>
+          </div>
+          {!fiatAmountString && <div className={classes.amount}>{bridgeAmount}</div>}
         </div>
       </div>
-      {!fiatAmountString && <div className={classes.amount}>{bridgeAmount}</div>}
       {status === "initiated" && (
         <div className={classes.bottom}>
           <Typography type="body2">Step 2 will require signature</Typography>

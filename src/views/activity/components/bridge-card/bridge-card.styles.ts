@@ -9,8 +9,6 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     margin: "auto",
     cursor: "pointer",
     transition: theme.hoverTransition,
-    display: "flex",
-    alignItems: "center",
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
@@ -18,6 +16,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   steps: {
     color: theme.palette.grey.dark,
     fontSize: 14,
+    marginTop: 0,
     marginBottom: theme.spacing(2),
   },
   circle: {
@@ -29,19 +28,27 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     backgroundColor: theme.palette.grey.light,
     borderRadius: "100%",
   },
-  info: {
-    flex: 1,
+  top: {
     display: "flex",
     flexDirection: "column",
-    marginLeft: theme.spacing(2),
   },
   row: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    "&:first-of-type": {
-      marginBottom: theme.spacing(1),
+    "&:not(:first-of-type)": {
+      marginTop: theme.spacing(1),
     },
+  },
+  infoContainer: {
+    display: "flex",
+    flex: 1,
+  },
+  info: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    marginLeft: theme.spacing(2),
   },
   label: {
     marginRight: "auto",
