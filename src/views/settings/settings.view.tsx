@@ -52,34 +52,36 @@ const Settings: FC = () => {
         Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{bridgeVersion}</Typography>}
       />
       <Card className={classes.card}>
-        <div className={classes.currenciesRow}>
-          <Typography type="body1" className={classes.row}>
-            <ConversionIcon className={classes.conversionIcon} />
-            Currency conversion
-          </Typography>
-          <Typography type="body2">Select a currency for conversion display</Typography>
-          <div className={classes.currencies}>
-            {currencies.map((currency) => (
-              <label
-                className={`${classes.currencyBox} ${
-                  currency.id === preferredCurrency ? classes.currencySelected : ""
-                }`}
-                key={currency.id}
-              >
-                {currency.id === preferredCurrency ? <CheckedIcon /> : <UncheckedIcon />}
-                <input
-                  type="radio"
-                  name="currency"
-                  id={currency.id}
-                  className={classes.radioInput}
-                  onChange={() => onChangePreferredCurrency(currency.id)}
-                />
-                <span className={classes.currencyText}>{currency.id}</span>
-                {currency.icon}
-              </label>
-            ))}
+        {env.fiatExchangeRates.areEnabled && (
+          <div className={classes.currenciesRow}>
+            <Typography type="body1" className={classes.row}>
+              <ConversionIcon className={classes.conversionIcon} />
+              Currency conversion
+            </Typography>
+            <Typography type="body2">Select a currency for conversion display</Typography>
+            <div className={classes.currencies}>
+              {currencies.map((currency) => (
+                <label
+                  className={`${classes.currencyBox} ${
+                    currency.id === preferredCurrency ? classes.currencySelected : ""
+                  }`}
+                  key={currency.id}
+                >
+                  {currency.id === preferredCurrency ? <CheckedIcon /> : <UncheckedIcon />}
+                  <input
+                    type="radio"
+                    name="currency"
+                    id={currency.id}
+                    className={classes.radioInput}
+                    onChange={() => onChangePreferredCurrency(currency.id)}
+                  />
+                  <span className={classes.currencyText}>{currency.id}</span>
+                  {currency.icon}
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className={classes.logout} role="button" onClick={onDisconnectProvider}>
           <Typography type="body1" className={classes.logoutText}>
             <LogoutIcon />

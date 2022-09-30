@@ -28,12 +28,17 @@ export interface Token {
 
 export interface Env {
   bridgeApiUrl: string;
-  fiatExchangeRates: {
-    apiUrl: string;
-    apiKey: string;
-    usdcToken: Token;
-  };
   chains: [Chain, Chain];
+  fiatExchangeRates:
+    | {
+        areEnabled: false;
+      }
+    | {
+        areEnabled: true;
+        apiUrl: string;
+        apiKey: string;
+        usdcToken: Token;
+      };
 }
 
 export interface RouterState {

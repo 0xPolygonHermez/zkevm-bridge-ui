@@ -12,13 +12,11 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
   },
   logoWrapper: {
     flex: 1,
+    height: 56,
+    display: "flex",
     alignItems: "center",
     textAlign: "center",
     flexDirection: "column",
-  },
-  logo: {
-    height: 36,
-    width: 36,
   },
   appName: {
     marginTop: theme.spacing(0.5),
