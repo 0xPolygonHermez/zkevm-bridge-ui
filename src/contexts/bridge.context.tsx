@@ -216,10 +216,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           ? { status: "ready" }
           : { status: "pending" };
 
-      const tokenPrice: BigNumber | undefined = await getTokenPrice({
-        token,
-        chain: from,
-      }).catch(() => undefined);
+      const tokenPrice: BigNumber | undefined = env.fiatExchangeRates.areEnabled
+        ? await getTokenPrice({
+            token,
+            chain: from,
+          }).catch(() => undefined)
+        : undefined;
 
       const fiatAmount =
         tokenPrice &&
