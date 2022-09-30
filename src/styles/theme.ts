@@ -6,11 +6,12 @@ const theme = {
       dark: "#5a1cc3",
     },
     white: "#ffffff",
-    black: "#081132",
+    black: "#0a0b0d",
     grey: {
       light: "#f0f1f6",
       main: "#e2e5ee",
       dark: "#7c7e96",
+      veryDark: "#363740",
     },
     warning: {
       main: "#e17e26",
@@ -24,7 +25,6 @@ const theme = {
       main: "#1ccc8d",
       light: "rgba(0,255,0,0.1)",
     },
-    disabled: "#78798d",
     transparency: "rgba(8,17,50,0.5)",
   },
   hoverTransition: "all 150ms",

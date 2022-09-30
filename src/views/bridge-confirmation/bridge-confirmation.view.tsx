@@ -350,6 +350,9 @@ const BridgeConfirmation: FC = () => {
   const onBridge = () => {
     if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
       const { token, from, to } = formData;
+
+      setIsBridgeButtonDisabled(true);
+
       bridge({
         from,
         token,
@@ -366,6 +369,7 @@ const BridgeConfirmation: FC = () => {
           setFormData(undefined);
         })
         .catch((error) => {
+          setIsBridgeButtonDisabled(false);
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
@@ -425,7 +429,10 @@ const BridgeConfirmation: FC = () => {
   const tokenAmountString = `${formatTokenAmount(maxPossibleAmountConsideringFee, token)} ${
     token.symbol
   }`;
-  const fiatAmountString = `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`;
+  const fiatAmountString = env.fiatExchangeRates.areEnabled
+    ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
+    : undefined;
+
   // const feeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${
   //   etherToken.symbol
   // } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
@@ -440,12 +447,14 @@ const BridgeConfirmation: FC = () => {
         <Typography className={shouldUpdateAmount ? fadeClass : ""} type="h1">
           {tokenAmountString}
         </Typography>
-        <Typography
-          className={shouldUpdateAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
-          type="body2"
-        >
-          {fiatAmountString}
-        </Typography>
+        {fiatAmountString && (
+          <Typography
+            className={shouldUpdateAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
+            type="body2"
+          >
+            {fiatAmountString}
+          </Typography>
+        )}
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />

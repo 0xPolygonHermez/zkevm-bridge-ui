@@ -216,10 +216,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           ? { status: "ready" }
           : { status: "pending" };
 
-      const tokenPrice: BigNumber | undefined = await getTokenPrice({
-        token,
-        chain: from,
-      }).catch(() => undefined);
+      const tokenPrice: BigNumber | undefined = env.fiatExchangeRates.areEnabled
+        ? await getTokenPrice({
+            token,
+            chain: from,
+          }).catch(() => undefined)
+        : undefined;
 
       const fiatAmount =
         tokenPrice &&
@@ -368,24 +370,29 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         })
       );
 
-      const tokenPrices: TokenPrices = await deposits.reduce(
-        async (accTokenPrices: Promise<TokenPrices>, deposit: Deposit): Promise<TokenPrices> => {
-          const tokenPrices = await accTokenPrices;
-          const tokenCachedPrice = tokenPrices[deposit.token.address];
-          const tokenPrice =
-            tokenCachedPrice !== undefined
-              ? tokenCachedPrice
-              : await getTokenPrice({ token: deposit.token, chain: deposit.from }).catch(
-                  () => null
-                );
+      const tokenPrices: TokenPrices = env.fiatExchangeRates.areEnabled
+        ? await deposits.reduce(
+            async (
+              accTokenPrices: Promise<TokenPrices>,
+              deposit: Deposit
+            ): Promise<TokenPrices> => {
+              const tokenPrices = await accTokenPrices;
+              const tokenCachedPrice = tokenPrices[deposit.token.address];
+              const tokenPrice =
+                tokenCachedPrice !== undefined
+                  ? tokenCachedPrice
+                  : await getTokenPrice({ token: deposit.token, chain: deposit.from }).catch(
+                      () => null
+                    );
 
-          return {
-            ...tokenPrices,
-            [deposit.token.address]: tokenPrice,
-          };
-        },
-        Promise.resolve({})
-      );
+              return {
+                ...tokenPrices,
+                [deposit.token.address]: tokenPrice,
+              };
+            },
+            Promise.resolve({})
+          )
+        : {};
 
       const bridges = deposits.map((partialDeposit): Bridge => {
         const {
@@ -667,7 +674,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           destinationAddress,
           amount,
           metadata,
-          isL2Claim ? { gasLimit: 300000, gasPrice: 0 } : {}
+          isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
         );
 
       if (to.chainId === connectedProvider.chainId) {

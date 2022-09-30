@@ -26,7 +26,7 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
   sideButton: {
     position: "absolute",
     top: 0,
-    right: 0,
+    left: 0,
     cursor: "pointer ",
     transition: theme.hoverTransition,
     backgroundColor: theme.palette.white,
