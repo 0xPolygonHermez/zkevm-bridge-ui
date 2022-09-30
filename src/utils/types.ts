@@ -23,12 +23,25 @@ interface ReloadingAsyncTask<D> {
   data: D;
 }
 
-export type AsyncTask<D, E> =
-  | PendingAsyncTask
-  | LoadingAsyncTask
-  | SuccessfulAsyncTask<D>
-  | ReloadingAsyncTask<D>
-  | FailedAsyncTask<E>;
+interface LoadingMoreItemsAsyncTask<D> {
+  status: "loading-more-items";
+  data: D;
+}
+
+export type AsyncTask<D, E, P = false> = P extends true
+  ?
+      | PendingAsyncTask
+      | LoadingAsyncTask
+      | SuccessfulAsyncTask<D>
+      | ReloadingAsyncTask<D>
+      | LoadingMoreItemsAsyncTask<D>
+      | FailedAsyncTask<E>
+  :
+      | PendingAsyncTask
+      | LoadingAsyncTask
+      | SuccessfulAsyncTask<D>
+      | ReloadingAsyncTask<D>
+      | FailedAsyncTask<E>;
 
 export function isAsyncTaskDataAvailable<D, E>(
   task: AsyncTask<D, E>

@@ -10,7 +10,7 @@ import Spinner from "src/views/shared/spinner/spinner.view";
 import { isChainCustomToken } from "src/adapters/storage";
 import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
-import { ReactComponent as ArrowLeft } from "src/assets/icons/arrow-left.svg";
+import { ReactComponent as ArrowLeftIcon } from "src/assets/icons/arrow-left.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
@@ -205,7 +205,7 @@ const TokenList: FC<TokenListProps> = ({
                     });
                   }}
                 >
-                  <ArrowLeft className={classes.backButtonIcon} />
+                  <ArrowLeftIcon className={classes.backButtonIcon} />
                 </button>
                 <Icon url={screen.token.logoURI} className={classes.tokenIcon} size={28} />
                 <Typography type="h2">
@@ -253,7 +253,7 @@ const TokenList: FC<TokenListProps> = ({
                     });
                   }}
                 >
-                  <ArrowLeft className={classes.backButtonIcon} />
+                  <ArrowLeftIcon className={classes.backButtonIcon} />
                 </button>
                 <Icon url={screen.token.logoURI} className={classes.tokenIcon} size={28} />
                 <Typography type="h2">{`${screen.token.name} (${screen.token.symbol})`}</Typography>

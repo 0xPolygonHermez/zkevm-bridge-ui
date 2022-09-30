@@ -43,7 +43,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
       </div>
     );
   } else {
-    const { text = "Oops, an error occurred. Would you mind reporting it?", parsed } = message;
+    const { text = "An error occurred. Would you mind reporting it?", parsed } = message;
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>
