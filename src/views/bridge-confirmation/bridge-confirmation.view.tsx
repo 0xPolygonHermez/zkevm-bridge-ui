@@ -363,7 +363,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           openSnackbar({
             type: "success-msg",
-            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
+            text: "Transaction successfully submitted",
           });
           navigate(routes.activity.path);
           setFormData(undefined);

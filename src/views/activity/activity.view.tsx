@@ -22,7 +22,7 @@ import useIntersection from "src/hooks/use-intersection";
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
-  const { fetchBridges, claim } = useBridgeContext();
+  const { fetchBridges, getPendingBridges, claim } = useBridgeContext();
   const { account, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
@@ -32,12 +32,13 @@ const Activity: FC = () => {
   const [displayAll, setDisplayAll] = useState(true);
   const [lastLoadedItem, setLastLoadedItem] = useState(0);
   const [total, setTotal] = useState(0);
-  const [wrongNetworkBridges, setWrongNetworkBridges] = useState<Bridge["id"][]>([]);
-  const [disabledBridges, setDisabledBridges] = useState<Bridge["id"][]>([]);
+  const [wrongNetworkBridges, setWrongNetworkBridges] = useState<string[]>([]);
+  const [disabledBridges, setDisabledBridges] = useState<string[]>([]);
   const classes = useActivityStyles({ displayAll });
 
   const headerBorderObserved = useRef<HTMLDivElement>(null);
   const headerBorderTarget = useRef<HTMLDivElement>(null);
+
   useIntersection({
     observed: headerBorderObserved,
     target: headerBorderTarget,
@@ -48,19 +49,26 @@ const Activity: FC = () => {
   const onDisplayPending = () => setDisplayAll(false);
 
   const onClaim = (bridge: Bridge) => {
-    setDisabledBridges((current) => [...current, bridge.id]);
     if (bridge.status === "on-hold") {
+      setDisabledBridges([...disabledBridges, bridge.id]);
       claim({
         bridge,
       })
         .then(() => {
+          if (
+            bridgeList.status === "successful" ||
+            bridgeList.status === "reloading" ||
+            bridgeList.status === "loading-more-items"
+          ) {
+            processFetchBridgesSuccess(bridgeList.data);
+          }
           openSnackbar({
             type: "success-msg",
-            text: "Transaction successfully submitted.\nThe list will be updated once it is processed.",
+            text: "Transaction successfully submitted.",
           });
         })
         .catch((error) => {
-          setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
+          setDisabledBridges(disabledBridges.filter((id) => id !== bridge.id));
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
@@ -80,12 +88,26 @@ const Activity: FC = () => {
 
   const processFetchBridgesSuccess = useCallback(
     (bridges: Bridge[]) => {
-      callIfMounted(() => {
-        setLastLoadedItem(bridges.length);
-        setBridgeList({ status: "successful", data: bridges });
+      void getPendingBridges(bridges).then((pendingBridges) => {
+        callIfMounted(() => {
+          const filteredApiBridges = bridges.filter((apiBridge) => {
+            if (
+              apiBridge.status === "on-hold" &&
+              pendingBridges.find(
+                (pendingBridge) => pendingBridge.depositTxHash === apiBridge.depositTxHash
+              )
+            ) {
+              return false;
+            } else {
+              return true;
+            }
+          });
+          setLastLoadedItem(bridges.length);
+          setBridgeList({ status: "successful", data: [...pendingBridges, ...filteredApiBridges] });
+        });
       });
     },
-    [callIfMounted]
+    [getPendingBridges, callIfMounted]
   );
 
   const processFetchBridgesError = useCallback(
@@ -268,17 +290,31 @@ const Activity: FC = () => {
                   isLoading={bridgeList.status === "loading-more-items"}
                   onLoadNextPage={onLoadNextPage}
                 >
-                  {filteredList.map((bridge) => (
-                    <div className={classes.bridgeCardwrapper} key={bridge.id}>
-                      <BridgeCard
-                        bridge={bridge}
-                        networkError={wrongNetworkBridges.includes(bridge.id)}
-                        isFinaliseDisabled={disabledBridges.includes(bridge.id)}
-                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
-                        onClaim={() => onClaim(bridge)}
-                      />
-                    </div>
-                  ))}
+                  {filteredList.map((bridge) =>
+                    bridge.status === "pending" ? (
+                      <div
+                        className={classes.bridgeCardwrapper}
+                        key={bridge.depositTxHash || bridge.claimTxHash}
+                      >
+                        <BridgeCard
+                          bridge={bridge}
+                          networkError={false}
+                          isFinaliseDisabled={true}
+                          showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                        />
+                      </div>
+                    ) : (
+                      <div className={classes.bridgeCardwrapper} key={bridge.id}>
+                        <BridgeCard
+                          bridge={bridge}
+                          networkError={wrongNetworkBridges.includes(bridge.id)}
+                          isFinaliseDisabled={disabledBridges.includes(bridge.id)}
+                          showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                          onClaim={() => onClaim(bridge)}
+                        />
+                      </div>
+                    )
+                  )}
                 </InfiniteScroll>
               ) : (
                 <EmptyMessage />

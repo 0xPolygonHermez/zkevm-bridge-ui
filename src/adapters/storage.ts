@@ -1,10 +1,17 @@
 import { z } from "zod";
 
 import * as constants from "src/constants";
-import { Currency, Token, Chain } from "src/domain";
+import { Currency, Token, Chain, Env } from "src/domain";
 import { tokenParser } from "src/adapters/tokens";
-// Currency
+import {
+  PendingTx,
+  SerializedPendingTx,
+  serializedPendingTxParser,
+  serializePendingTx,
+  deserializePendingTx,
+} from "src/utils/serializers";
 
+// Currency
 export function getCurrency(): Currency {
   return getStorageByKey({
     key: constants.PREFERRED_CURRENCY_KEY,
@@ -18,9 +25,6 @@ export function setCurrency(currency: Currency): Currency {
 }
 
 // Custom Tokens
-
-const CUSTOM_TOKENS_KEY = "customTokens";
-
 export function cleanupCustomTokens(envTokens: Token[]): Token[] {
   return setCustomTokens(
     getCustomTokens().reduce(
@@ -35,7 +39,7 @@ export function cleanupCustomTokens(envTokens: Token[]): Token[] {
 
 export function getCustomTokens(): Token[] {
   return getStorageByKey({
-    key: CUSTOM_TOKENS_KEY,
+    key: constants.CUSTOM_TOKENS_KEY,
     defaultValue: [],
     parser: z.array(tokenParser),
   });
@@ -55,7 +59,7 @@ export function isChainCustomToken(token: Token, chain: Chain): boolean {
 
 export function setCustomTokens(tokens: Token[]): Token[] {
   return setStorageByKey({
-    key: CUSTOM_TOKENS_KEY,
+    key: constants.CUSTOM_TOKENS_KEY,
     value: tokens,
   });
 }
@@ -63,6 +67,7 @@ export function setCustomTokens(tokens: Token[]): Token[] {
 export function addCustomToken(token: Token): Token[] {
   const customTokens = getCustomTokens();
   const isAlreadyAdded = customTokens.find((tkn) => tkn.address === token.address);
+
   if (isAlreadyAdded) {
     return customTokens;
   } else {
@@ -72,6 +77,59 @@ export function addCustomToken(token: Token): Token[] {
 
 export function removeCustomToken(token: Token): Token[] {
   return setCustomTokens(getCustomTokens().filter((tkn) => tkn.address !== token.address));
+}
+
+// Pending txs
+function getSerializedPendingTxs(): SerializedPendingTx[] {
+  return getStorageByKey({
+    key: constants.PENDING_TXS_KEY,
+    defaultValue: [],
+    parser: z.array(serializedPendingTxParser),
+  });
+}
+
+function setSerializedPendingTxs(
+  serializedPendingTxs: SerializedPendingTx[]
+): SerializedPendingTx[] {
+  return setStorageByKey({
+    key: constants.PENDING_TXS_KEY,
+    value: serializedPendingTxs,
+  });
+}
+
+export function getPendingTxs(env: Env): PendingTx[] {
+  const serializedPendingTxs = getStorageByKey({
+    key: constants.PENDING_TXS_KEY,
+    defaultValue: [],
+    parser: z.array(serializedPendingTxParser),
+  });
+
+  return serializedPendingTxs.map((tx) => deserializePendingTx(tx, env));
+}
+
+export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
+  setStorageByKey({
+    key: constants.PENDING_TXS_KEY,
+    value: pendingTxs.map(serializePendingTx),
+  });
+
+  return pendingTxs;
+}
+
+export function addPendingTx(pendingTx: PendingTx): void {
+  const serializedPendingTxs = getSerializedPendingTxs();
+  const serializedPendingTx = serializePendingTx(pendingTx);
+
+  setSerializedPendingTxs([...serializedPendingTxs, serializedPendingTx]);
+}
+
+export function removePendingTx(depositTxHash: string): void {
+  const serializedPendingTxs = getSerializedPendingTxs();
+  const updatedSerializedPendingTxs = serializedPendingTxs.filter(
+    (tx) => tx.depositTxHash !== depositTxHash
+  );
+
+  setSerializedPendingTxs(updatedSerializedPendingTxs);
 }
 
 // Helpers

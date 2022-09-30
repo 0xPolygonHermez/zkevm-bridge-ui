@@ -19,7 +19,7 @@ export interface BridgeCardProps {
   networkError: boolean;
   isFinaliseDisabled: boolean;
   showFiatAmount: boolean;
-  onClaim: () => void;
+  onClaim?: () => void;
 }
 
 const BridgeCard: FC<BridgeCardProps> = ({
@@ -29,13 +29,15 @@ const BridgeCard: FC<BridgeCardProps> = ({
   isFinaliseDisabled,
   onClaim,
 }) => {
-  const { status, id, to, amount, token, fiatAmount } = bridge;
+  const { status, to, amount, token, fiatAmount } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    onClaim();
+    if (onClaim) {
+      onClaim();
+    }
   };
 
   const preferredCurrencySymbol = getCurrencySymbol(getCurrency());
@@ -56,7 +58,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
   return (
     <Card
       className={classes.card}
-      onClick={() => navigate(`${routes.bridgeDetails.path.split(":")[0]}${id}`)}
+      onClick={() => {
+        if (bridge.status !== "pending") {
+          navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
+        }
+      }}
     >
       <div className={classes.top}>
         <div className={classes.row}>
@@ -77,7 +83,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.row}>
               <span
                 className={`${classes.statusBox} ${
-                  status === "completed" ? classes.greenStatus : ""
+                  bridge.status === "pending"
+                    ? classes.pendingStatus
+                    : bridge.status === "completed"
+                    ? classes.greenStatus
+                    : ""
                 }`}
               >
                 {getBridgeStatus(status)}

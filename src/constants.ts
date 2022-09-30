@@ -14,6 +14,10 @@ export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
+export const CUSTOM_TOKENS_KEY = "customTokens";
+
+export const PENDING_TXS_KEY = "pendingTxs";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;
