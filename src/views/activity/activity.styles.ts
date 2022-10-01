@@ -8,6 +8,7 @@ interface StylesProps {
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
   stickyContent: {
+    zIndex: 1,
     top: 0,
     position: "sticky",
     background: theme.palette.grey.light,
