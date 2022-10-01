@@ -24,11 +24,13 @@ export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
-export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
+export const SNACKBAR_AUTO_HIDE_DURATION = 5 * 1000; //5s in ms
 
-export const AUTO_REFRESH_RATE = 10000;
+export const AUTO_REFRESH_RATE = 10 * 1000; //10s in ms
 
 export const PAGE_SIZE = 25;
+
+export const PENDING_TX_TIMEOUT = 30 * 60 * 1000; // 30min in ms
 
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",

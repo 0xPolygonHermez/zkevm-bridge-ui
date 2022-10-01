@@ -62,6 +62,11 @@ export enum EthereumEvent {
   DISCONNECT = "disconnect",
 }
 
+export enum TxStatus {
+  REVERTED = 0,
+  SUCCESSFUL = 1,
+}
+
 export enum Currency {
   EUR = "EUR",
   USD = "USD",

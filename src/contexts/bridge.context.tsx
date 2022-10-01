@@ -16,13 +16,24 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
-import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, FIAT_DISPLAY_PRECISION } from "src/constants";
+import {
+  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
+  FIAT_DISPLAY_PRECISION,
+  PENDING_TX_TIMEOUT,
+} from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
-import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
+import {
+  permit,
+  isPermitSupported,
+  getErc20TokenEncodedMetadata,
+  hasTxBeenReverted,
+  isTxCanceled,
+  isTxMined,
+} from "src/adapters/ethereum";
 import {
   Env,
   Chain,
@@ -568,30 +579,68 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const cleanPendingTxs = useCallback(
-    (bridges: Bridge[]): void => {
-      if (env) {
-        const pendingTxs = storage.getPendingTxs(env);
-
-        bridges.forEach((bridge) => {
-          if (
-            (bridge.status === "initiated" || bridge.status === "on-hold") &&
-            pendingTxs.find(
-              (val) =>
-                val.status === "pending-deposit" && val.depositTxHash === bridge.depositTxHash
-            )
-          ) {
-            return storage.removePendingTx(bridge.depositTxHash);
-          }
-          if (
-            bridge.status === "completed" &&
-            pendingTxs.find(
-              (val) => val.status === "pending-claim" && val.claimTxHash === bridge.claimTxHash
-            )
-          ) {
-            return storage.removePendingTx(bridge.depositTxHash);
-          }
-        });
+    (bridges: Bridge[]): Promise<void> => {
+      if (!env) {
+        return Promise.resolve();
       }
+
+      const pendingTxs = storage.getPendingTxs(env);
+      const isPendingDepositInApiBridges = (depositTxHash: string) => {
+        return bridges.find((bridge) => {
+          return (
+            (bridge.status === "initiated" || bridge.status === "on-hold") &&
+            bridge.depositTxHash === depositTxHash
+          );
+        });
+      };
+      const isPendingClaimInApiBridges = (claimTxHash: string) => {
+        return bridges.find((bridge) => {
+          return bridge.status === "completed" && bridge.claimTxHash === claimTxHash;
+        });
+      };
+
+      return Promise.all(
+        pendingTxs.map(async (pendingTx) => {
+          if (
+            pendingTx.status === "pending-deposit" &&
+            isPendingDepositInApiBridges(pendingTx.depositTxHash)
+          ) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+          if (
+            pendingTx.status === "pending-claim" &&
+            isPendingClaimInApiBridges(pendingTx.claimTxHash)
+          ) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+
+          const txHash =
+            pendingTx.status === "pending-deposit"
+              ? pendingTx.depositTxHash
+              : pendingTx.claimTxHash;
+          const provider =
+            pendingTx.status === "pending-deposit"
+              ? pendingTx.from.provider
+              : pendingTx.to.provider;
+          const tx = await provider.getTransaction(txHash);
+
+          if (isTxCanceled(tx)) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+
+          if (isTxMined(tx)) {
+            const txReceipt = await provider.getTransactionReceipt(txHash);
+
+            if (hasTxBeenReverted(txReceipt)) {
+              return storage.removePendingTx(pendingTx.depositTxHash);
+            }
+          }
+
+          if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+        })
+      ).then();
     },
     [env]
   );
@@ -599,7 +648,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const getPendingBridges = useCallback(
     async (bridges?: Bridge[]): Promise<PendingBridge[]> => {
       if (bridges) {
-        cleanPendingTxs(bridges);
+        await cleanPendingTxs(bridges);
       }
 
       if (!env) {
