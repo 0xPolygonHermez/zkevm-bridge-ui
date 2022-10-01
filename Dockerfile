@@ -2,9 +2,9 @@ FROM nginx:alpine
 
 RUN apk add --update nodejs npm
 
-ADD . /app
-
 WORKDIR /app
+
+COPY . .
 
 RUN npm install
 
