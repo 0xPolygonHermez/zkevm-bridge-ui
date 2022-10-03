@@ -26,6 +26,8 @@ export const AUTO_REFRESH_RATE = 10000;
 
 export const PAGE_SIZE = 25;
 
+export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 20;
+
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",
   network: "entry.1632331664",
@@ -35,8 +37,6 @@ export const REPORT_ERROR_FORM_ENTRIES = {
 
 export const REPORT_ERROR_FORM_URL =
   "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
-
-export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
