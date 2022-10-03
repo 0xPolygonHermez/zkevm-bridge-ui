@@ -47,7 +47,7 @@ const BridgeConfirmation: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { bridge, estimateBridgeGasPrice } = useBridgeContext();
+  const { bridge, estimateBridgeFee } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
   const { account, connectedProvider } = useProvidersContext();
@@ -224,7 +224,7 @@ const BridgeConfirmation: FC = () => {
       );
       if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
         const { token, amount, from, to } = formData;
-        estimateBridgeGasPrice({
+        estimateBridgeFee({
           from: from,
           to: to,
           token: token,
@@ -303,7 +303,7 @@ const BridgeConfirmation: FC = () => {
     account,
     formData,
     tokenBalance,
-    estimateBridgeGasPrice,
+    estimateBridgeFee,
     notifyError,
     callIfMounted,
     setIsFadeVisible,
