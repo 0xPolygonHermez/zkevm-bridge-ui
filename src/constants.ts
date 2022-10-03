@@ -59,6 +59,7 @@ export const getChains = ({
 }): Promise<[Chain, Chain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
   const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
+
   return Promise.all([ethereumProvider.getNetwork(), polygonZkEVMProvider.getNetwork()]).then(
     ([ethereumNetwork, polygonZkEVMNetwork]) => [
       {
@@ -69,6 +70,11 @@ export const getChains = ({
         chainId: ethereumNetwork.chainId,
         contractAddress: ethereum.contractAddress,
         explorerUrl: ethereum.explorerUrl,
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
       },
       {
         key: "polygon-zkevm",
@@ -78,6 +84,11 @@ export const getChains = ({
         chainId: polygonZkEVMNetwork.chainId,
         contractAddress: polygonZkEVM.contractAddress,
         explorerUrl: polygonZkEVM.explorerUrl,
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
       },
     ]
   );

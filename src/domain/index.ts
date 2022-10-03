@@ -10,6 +10,11 @@ export interface Chain {
   chainId: number;
   contractAddress: string;
   explorerUrl: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: 18;
+  };
 }
 
 export interface Token {

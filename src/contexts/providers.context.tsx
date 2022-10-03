@@ -203,6 +203,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               chainName: getChainName(chain),
               rpcUrls: [chain.provider.connection.url],
               blockExplorerUrls: [chain.explorerUrl],
+              nativeCurrency: chain.nativeCurrency,
             },
           ],
         })
