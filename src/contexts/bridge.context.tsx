@@ -47,7 +47,7 @@ import {
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
-interface EstimateBridgeGasPriceParams {
+interface EstimateBridgeFee {
   from: Chain;
   token: Token;
   to: Chain;
@@ -102,7 +102,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  estimateBridgeGasPrice: (params: EstimateBridgeGasPriceParams) => Promise<BigNumber>;
+  estimateBridgeFee: (params: EstimateBridgeFee) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
@@ -116,7 +116,7 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
-  estimateBridgeGasPrice: () => {
+  estimateBridgeFee: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getBridge: () => {
@@ -146,6 +146,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
       return chain.provider.getFeeData().then((feeData) => {
         const fee = calculateFee(gasLimit, feeData);
+
         if (fee === undefined) {
           return Promise.reject(new Error("Fee data is not available"));
         } else {
@@ -156,8 +157,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     []
   );
 
-  const estimateBridgeGasPrice = useCallback(
-    ({ from, to, token, destinationAddress }: EstimateBridgeGasPriceParams) => {
+  const estimateBridgeGasLimit = useCallback(
+    ({ from, to, token, destinationAddress }: EstimateBridgeFee) => {
       const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -174,11 +175,20 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         })
         .then((gasLimit) => {
           const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
-          const safeGasLimit = gasLimit.add(gasIncrease);
-          return estimateGasPrice({ chain: from, gasLimit: safeGasLimit });
+
+          return gasLimit.add(gasIncrease);
         });
     },
-    [estimateGasPrice]
+    []
+  );
+
+  const estimateBridgeFee = useCallback(
+    ({ from, ...rest }: EstimateBridgeFee) => {
+      return estimateBridgeGasLimit({ from, ...rest }).then((safeGasLimit) =>
+        estimateGasPrice({ chain: from, gasLimit: safeGasLimit })
+      );
+    },
+    [estimateBridgeGasLimit, estimateGasPrice]
   );
 
   type Price = BigNumber | null;
@@ -694,17 +704,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         from.contractAddress,
         connectedProvider.provider.getSigner()
       );
-
-      const overrides: PayableOverrides = Object.values(EthereumChainId).includes(from.chainId)
-        ? {
-            value: token.address === ethersConstants.AddressZero ? amount : undefined,
-          }
-        : {
-            gasLimit: 300000,
-            gasPrice: await from.provider.getGasPrice(),
-            value: token.address === ethersConstants.AddressZero ? amount : undefined,
-          };
-
+      const gasPrice = await from.provider.getGasPrice();
+      const gasLimit = Object.values(EthereumChainId).includes(from.chainId)
+        ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
+        : 300000;
+      const overrides: PayableOverrides = {
+        value: token.address === ethersConstants.AddressZero ? amount : undefined,
+        gasPrice,
+        gasLimit,
+      };
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
           account: account.data,
@@ -747,7 +755,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeBridge);
       }
     },
-    [connectedProvider, account, changeNetwork]
+    [connectedProvider, account, estimateBridgeGasLimit, changeNetwork]
   );
 
   const claim = useCallback(
@@ -837,14 +845,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
-      estimateBridgeGasPrice,
+      estimateBridgeFee,
       getBridge,
       fetchBridges,
       getPendingBridges,
       bridge,
       claim,
     }),
-    [estimateBridgeGasPrice, getBridge, fetchBridges, getPendingBridges, bridge, claim]
+    [estimateBridgeFee, getBridge, fetchBridges, getPendingBridges, bridge, claim]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;
