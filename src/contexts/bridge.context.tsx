@@ -612,26 +612,19 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       return Promise.all(
         pendingTxs.map(async (pendingTx) => {
           if (
-            pendingTx.status === "pending-deposit" &&
+            pendingTx.type === "deposit" &&
             isPendingDepositInApiBridges(pendingTx.depositTxHash)
           ) {
             return storage.removePendingTx(pendingTx.depositTxHash);
           }
-          if (
-            pendingTx.status === "pending-claim" &&
-            isPendingClaimInApiBridges(pendingTx.claimTxHash)
-          ) {
+          if (pendingTx.type === "claim" && isPendingClaimInApiBridges(pendingTx.claimTxHash)) {
             return storage.removePendingTx(pendingTx.depositTxHash);
           }
 
           const txHash =
-            pendingTx.status === "pending-deposit"
-              ? pendingTx.depositTxHash
-              : pendingTx.claimTxHash;
+            pendingTx.type === "deposit" ? pendingTx.depositTxHash : pendingTx.claimTxHash;
           const provider =
-            pendingTx.status === "pending-deposit"
-              ? pendingTx.from.provider
-              : pendingTx.to.provider;
+            pendingTx.type === "deposit" ? pendingTx.from.provider : pendingTx.to.provider;
           const tx = await provider.getTransaction(txHash);
 
           if (isTxCanceled(tx)) {
@@ -679,7 +672,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             from: tx.from,
             to: tx.to,
             depositTxHash: tx.depositTxHash,
-            claimTxHash: tx.status === "pending-claim" ? tx.claimTxHash : undefined,
+            claimTxHash: tx.type === "claim" ? tx.claimTxHash : undefined,
             token: tx.token,
             amount: tx.amount,
             fiatAmount,
@@ -733,7 +726,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
           .then((txData) => {
             storage.addPendingTx({
-              status: "pending-deposit",
+              type: "deposit",
               depositTxHash: txData.hash,
               networkId: from.networkId,
               from,
@@ -818,7 +811,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           )
           .then((txData) => {
             storage.addPendingTx({
-              status: "pending-claim",
+              type: "claim",
               depositTxHash,
               claimTxHash: txData.hash,
               networkId,

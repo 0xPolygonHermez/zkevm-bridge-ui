@@ -22,12 +22,12 @@ interface CommonPendingTx {
 }
 
 type PendingDepositTxData = {
-  status: "pending-deposit";
+  type: "deposit";
   depositTxHash: string;
 };
 
 type PendingClaimTxData = {
-  status: "pending-claim";
+  type: "claim";
   depositTxHash: string;
   claimTxHash: string;
 };
@@ -68,7 +68,7 @@ const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
 
 const serializedPendingTxDepositParser = StrictSchema<SerializedPendingDepositTx>()(
   z.object({
-    status: z.literal("pending-deposit"),
+    type: z.literal("deposit"),
     depositTxHash: z.string(),
     networkId: z.number(),
     from: z.number(),
@@ -81,7 +81,7 @@ const serializedPendingTxDepositParser = StrictSchema<SerializedPendingDepositTx
 
 const serializedPendingTxClaimParser = StrictSchema<SerializedPendingClaimTx>()(
   z.object({
-    status: z.literal("pending-claim"),
+    type: z.literal("claim"),
     depositTxHash: z.string(),
     claimTxHash: z.string(),
     networkId: z.number(),
@@ -118,16 +118,16 @@ const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
     amount: ethersUtils.formatUnits(pendingTx.amount, pendingTx.token.decimals),
   };
 
-  if (pendingTx.status === "pending-deposit") {
+  if (pendingTx.type === "deposit") {
     return {
       ...commonSerializedPendingTx,
-      status: pendingTx.status,
+      type: pendingTx.type,
       depositTxHash: pendingTx.depositTxHash,
     };
   } else {
     return {
       ...commonSerializedPendingTx,
-      status: pendingTx.status,
+      type: pendingTx.type,
       depositTxHash: pendingTx.depositTxHash,
       claimTxHash: pendingTx.claimTxHash,
     };
@@ -151,16 +151,16 @@ const deserializePendingTx = (serializedPendingTx: SerializedPendingTx, env: Env
     amount: ethersUtils.parseUnits(serializedPendingTx.amount, serializedPendingTx.token.decimals),
   };
 
-  if (serializedPendingTx.status === "pending-deposit") {
+  if (serializedPendingTx.type === "deposit") {
     return {
       ...commonPendingTx,
-      status: serializedPendingTx.status,
+      type: serializedPendingTx.type,
       depositTxHash: serializedPendingTx.depositTxHash,
     };
   } else {
     return {
       ...commonPendingTx,
-      status: serializedPendingTx.status,
+      type: serializedPendingTx.type,
       depositTxHash: serializedPendingTx.depositTxHash,
       claimTxHash: serializedPendingTx.claimTxHash,
     };
