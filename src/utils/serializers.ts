@@ -134,12 +134,37 @@ const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   }
 };
 
-const deserializePendingTx = (serializedPendingTx: SerializedPendingTx, env: Env): PendingTx => {
+const deserializePendingTx = (
+  serializedPendingTx: SerializedPendingTx,
+  env: Env
+): z.SafeParseReturnType<SerializedPendingTx, PendingTx> => {
   const from = env.chains.find((chain) => chain.networkId === serializedPendingTx.from);
   const to = env.chains.find((chain) => chain.networkId === serializedPendingTx.to);
 
-  if (!from || !to) {
-    throw new Error("An error occurred trying to deserialize a pending tx");
+  if (!from) {
+    return {
+      success: false,
+      error: new z.ZodError([
+        {
+          code: z.ZodIssueCode.custom,
+          path: ["from"],
+          message: "We couldn't find to chain when deserialized the pending tx",
+        },
+      ]),
+    };
+  }
+
+  if (!to) {
+    return {
+      success: false,
+      error: new z.ZodError([
+        {
+          code: z.ZodIssueCode.custom,
+          path: ["to"],
+          message: "We couldn't find to chain when deserialized the pending tx",
+        },
+      ]),
+    };
   }
 
   const commonPendingTx: CommonPendingTx = {
@@ -153,16 +178,22 @@ const deserializePendingTx = (serializedPendingTx: SerializedPendingTx, env: Env
 
   if (serializedPendingTx.type === "deposit") {
     return {
-      ...commonPendingTx,
-      type: serializedPendingTx.type,
-      depositTxHash: serializedPendingTx.depositTxHash,
+      success: true,
+      data: {
+        ...commonPendingTx,
+        type: serializedPendingTx.type,
+        depositTxHash: serializedPendingTx.depositTxHash,
+      },
     };
   } else {
     return {
-      ...commonPendingTx,
-      type: serializedPendingTx.type,
-      depositTxHash: serializedPendingTx.depositTxHash,
-      claimTxHash: serializedPendingTx.claimTxHash,
+      success: true,
+      data: {
+        ...commonPendingTx,
+        type: serializedPendingTx.type,
+        depositTxHash: serializedPendingTx.depositTxHash,
+        claimTxHash: serializedPendingTx.claimTxHash,
+      },
     };
   }
 };

@@ -100,7 +100,16 @@ function setSerializedPendingTxs(
 export function getPendingTxs(env: Env): PendingTx[] {
   const serializedPendingTxs = getSerializedPendingTxs();
 
-  return serializedPendingTxs.map((tx) => deserializePendingTx(tx, env));
+  return serializedPendingTxs.reduce((acc: PendingTx[], tx: SerializedPendingTx) => {
+    const deserializedPendingTx = deserializePendingTx(tx, env);
+
+    if (deserializedPendingTx.success) {
+      return [...acc, deserializedPendingTx.data];
+    } else {
+      removePendingTx(tx.depositTxHash);
+      return acc;
+    }
+  }, []);
 }
 
 export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
