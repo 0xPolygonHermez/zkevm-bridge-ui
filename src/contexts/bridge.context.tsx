@@ -591,7 +591,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const cleanPendingTxs = useCallback(
     (bridges: Bridge[]): Promise<void> => {
       if (!env) {
-        return Promise.resolve();
+        return Promise.reject("Env is not defined");
       }
 
       const pendingTxs = storage.getPendingTxs(env);
