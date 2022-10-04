@@ -98,11 +98,7 @@ function setSerializedPendingTxs(
 }
 
 export function getPendingTxs(env: Env): PendingTx[] {
-  const serializedPendingTxs = getStorageByKey({
-    key: constants.PENDING_TXS_KEY,
-    defaultValue: [],
-    parser: z.array(serializedPendingTxParser),
-  });
+  const serializedPendingTxs = getSerializedPendingTxs();
 
   return serializedPendingTxs.map((tx) => deserializePendingTx(tx, env));
 }
