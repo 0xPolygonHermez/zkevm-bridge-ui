@@ -1,4 +1,9 @@
-import { BigNumber, constants as ethersConstants, PayableOverrides } from "ethers";
+import {
+  BigNumber,
+  constants as ethersConstants,
+  ContractTransaction,
+  PayableOverrides,
+} from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
 import {
@@ -109,8 +114,8 @@ interface BridgeContext {
     total: number;
   }>;
   getPendingBridges: (bridges?: Bridge[]) => Promise<PendingBridge[]>;
-  bridge: (params: BridgeParams) => Promise<void>;
-  claim: (params: ClaimParams) => Promise<void>;
+  bridge: (params: BridgeParams) => Promise<ContractTransaction>;
+  claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
 
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
@@ -684,7 +689,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const bridge = useCallback(
-    async ({ from, token, amount, to, destinationAddress }: BridgeParams): Promise<void> => {
+    async ({
+      from,
+      token,
+      amount,
+      to,
+      destinationAddress,
+    }: BridgeParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
@@ -735,6 +746,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               token,
               amount,
             });
+
+            return txData;
           });
       };
 
@@ -763,7 +776,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         depositCount,
         depositTxHash,
       },
-    }: ClaimParams): Promise<void> => {
+    }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
       }
@@ -821,6 +834,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               token,
               amount,
             });
+
+            return txData;
           });
 
       if (to.chainId === connectedProvider.chainId) {
