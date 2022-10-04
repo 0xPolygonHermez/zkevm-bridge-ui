@@ -589,7 +589,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const cleanPendingTxs = useCallback(
-    (bridges: Bridge[]): Promise<void> => {
+    async (bridges: Bridge[]): Promise<void> => {
       if (!env) {
         return Promise.reject("Env is not defined");
       }
@@ -609,7 +609,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         });
       };
 
-      return Promise.all(
+      await Promise.all(
         pendingTxs.map(async (pendingTx) => {
           if (
             pendingTx.type === "deposit" &&
@@ -643,7 +643,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             return storage.removePendingTx(pendingTx.depositTxHash);
           }
         })
-      ).then();
+      );
     },
     [env]
   );
