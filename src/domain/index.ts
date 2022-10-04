@@ -107,18 +107,6 @@ interface BridgeCommonFields {
   depositTxHash: string;
 }
 
-export type PendingBridge = {
-  status: "pending";
-  depositTxHash: string;
-  claimTxHash?: string;
-  networkId: number;
-  from: BridgeCommonFields["from"];
-  to: BridgeCommonFields["to"];
-  token: BridgeCommonFields["token"];
-  amount: BridgeCommonFields["amount"];
-  fiatAmount: BridgeCommonFields["fiatAmount"];
-};
-
 export type InitiatedBridge = BridgeCommonFields & {
   status: "initiated";
 };
@@ -133,6 +121,18 @@ export type CompletedBridge = BridgeCommonFields & {
 };
 
 export type Bridge = PendingBridge | InitiatedBridge | OnHoldBridge | CompletedBridge;
+
+export type PendingBridge = {
+  status: "pending";
+  depositTxHash: BridgeCommonFields["depositTxHash"];
+  claimTxHash?: CompletedBridge["claimTxHash"];
+  networkId: number;
+  from: BridgeCommonFields["from"];
+  to: BridgeCommonFields["to"];
+  token: BridgeCommonFields["token"];
+  amount: BridgeCommonFields["amount"];
+  fiatAmount: BridgeCommonFields["fiatAmount"];
+};
 
 export interface Deposit {
   token: Token;
