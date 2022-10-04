@@ -144,7 +144,7 @@ const bridgeContext = createContext<BridgeContext>({
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
-  const { getToken } = useTokensContext();
+  const { getToken, addWrappedToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
 
   const estimateGasPrice = useCallback(
@@ -666,10 +666,24 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       return Promise.all(
         storage.getPendingTxs(env).map(async (tx) => {
           const chain = env.chains.find((chain) => chain.key === tx.key);
-          const fiatAmount =
+          const token = await addWrappedToken({ token: tx.token });
+          const tokenPrice =
             chain && env.fiatExchangeRates.areEnabled
               ? await getTokenPrice({ token: tx.token, chain })
               : undefined;
+          const fiatAmount =
+            tokenPrice &&
+            multiplyAmounts(
+              {
+                value: tokenPrice,
+                precision: FIAT_DISPLAY_PRECISION,
+              },
+              {
+                value: BigNumber.from(tx.amount),
+                precision: token.decimals,
+              },
+              FIAT_DISPLAY_PRECISION
+            );
 
           return {
             status: "pending",
@@ -678,14 +692,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             to: tx.to,
             depositTxHash: tx.depositTxHash,
             claimTxHash: tx.type === "claim" ? tx.claimTxHash : undefined,
-            token: tx.token,
+            token,
             amount: tx.amount,
             fiatAmount,
           };
         })
       );
     },
-    [env, cleanPendingTxs, getTokenPrice]
+    [env, cleanPendingTxs, getTokenPrice, addWrappedToken]
   );
 
   const bridge = useCallback(
