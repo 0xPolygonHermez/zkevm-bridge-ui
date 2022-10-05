@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
-import { Chain, ChainKey, Env, Token } from "src/domain";
+import { Chain, Env, Token } from "src/domain";
 import { BigNumber, utils as ethersUtils } from "ethers";
 import { tokenParser } from "src/adapters/tokens";
 
@@ -13,7 +13,7 @@ interface BridgeId {
 }
 
 interface CommonPendingTx {
-  key: ChainKey;
+  networkId: number;
   from: Chain;
   to: Chain;
   timestamp: number;
@@ -39,7 +39,7 @@ type PendingClaimTx = CommonPendingTx & PendingClaimTxData;
 export type PendingTx = PendingDepositTx | PendingClaimTx;
 
 interface CommonSerializedPendingTx {
-  key: ChainKey;
+  networkId: number;
   from: number;
   to: number;
   timestamp: number;
@@ -70,7 +70,7 @@ const serializedPendingTxDepositParser = StrictSchema<SerializedPendingDepositTx
   z.object({
     type: z.literal("deposit"),
     depositTxHash: z.string(),
-    key: z.union([z.literal("ethereum"), z.literal("polygon-zkevm")]),
+    networkId: z.number(),
     from: z.number(),
     to: z.number(),
     timestamp: z.number(),
@@ -84,7 +84,7 @@ const serializedPendingTxClaimParser = StrictSchema<SerializedPendingClaimTx>()(
     type: z.literal("claim"),
     depositTxHash: z.string(),
     claimTxHash: z.string(),
-    key: z.union([z.literal("ethereum"), z.literal("polygon-zkevm")]),
+    networkId: z.number(),
     from: z.number(),
     to: z.number(),
     timestamp: z.number(),
@@ -110,7 +110,7 @@ const serializeBridgeId = (parsedBridgeId: BridgeId): SerializedBridgeId => {
 
 const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   const commonSerializedPendingTx: CommonSerializedPendingTx = {
-    key: pendingTx.key,
+    networkId: pendingTx.networkId,
     from: pendingTx.from.networkId,
     to: pendingTx.to.networkId,
     timestamp: pendingTx.timestamp,
@@ -168,7 +168,7 @@ const deserializePendingTx = (
   }
 
   const commonPendingTx: CommonPendingTx = {
-    key: serializedPendingTx.key,
+    networkId: serializedPendingTx.networkId,
     from,
     to,
     timestamp: serializedPendingTx.timestamp,

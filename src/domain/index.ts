@@ -2,10 +2,8 @@ import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
-export type ChainKey = "ethereum" | "polygon-zkevm";
-
 export interface Chain {
-  key: ChainKey;
+  key: "ethereum" | "polygon-zkevm";
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
@@ -128,7 +126,7 @@ export type PendingBridge = {
   status: "pending";
   depositTxHash: BridgeCommonFields["depositTxHash"];
   claimTxHash?: CompletedBridge["claimTxHash"];
-  key: ChainKey;
+  networkId: number;
   from: BridgeCommonFields["from"];
   to: BridgeCommonFields["to"];
   token: BridgeCommonFields["token"];
