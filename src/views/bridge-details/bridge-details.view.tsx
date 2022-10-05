@@ -273,9 +273,7 @@ const BridgeDetails: FC = () => {
     case "successful": {
       const { status, amount, from, to, token } = bridge.data;
 
-      const bridgeTxUrl = `${from.explorerUrl}/tx/${
-        bridge.data.status === "pending" ? bridge.data.depositTxHash : bridge.data.depositTxHash
-      }`;
+      const bridgeTxUrl = `${from.explorerUrl}/tx/${bridge.data.depositTxHash}`;
       const claimTxUrl =
         bridge.data.status === "completed"
           ? `${to.explorerUrl}/tx/${bridge.data.claimTxHash}`
