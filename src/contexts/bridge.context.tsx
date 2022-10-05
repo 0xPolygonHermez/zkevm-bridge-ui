@@ -156,7 +156,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const estimateBridgeGasLimit = useCallback(
     ({ from, to, token, destinationAddress }: EstimateBridgeFeeParams) => {
       const amount = parseUnits("0", token.decimals);
-      const contract = Bridge__factory.connect(from.contractAddress, from.provider);
+      const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
       const overrides: PayableOverrides =
         token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
@@ -709,7 +709,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       }
 
       const contract = Bridge__factory.connect(
-        from.contractAddress,
+        from.bridgeContractAddress,
         connectedProvider.provider.getSigner()
       );
       const gasPrice = await from.provider.getGasPrice();
@@ -733,7 +733,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               token,
               provider: connectedProvider.provider,
               owner: account.data,
-              spender: from.contractAddress,
+              spender: from.bridgeContractAddress,
               value: amount,
             })
           : "0x";
@@ -789,7 +789,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       }
 
       const contract = Bridge__factory.connect(
-        to.contractAddress,
+        to.bridgeContractAddress,
         connectedProvider.provider.getSigner()
       );
 
