@@ -679,7 +679,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 precision: FIAT_DISPLAY_PRECISION,
               },
               {
-                value: BigNumber.from(tx.amount),
+                value: tx.amount,
                 precision: token.decimals,
               },
               FIAT_DISPLAY_PRECISION
