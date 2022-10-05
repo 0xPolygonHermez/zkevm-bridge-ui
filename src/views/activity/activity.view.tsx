@@ -68,7 +68,7 @@ const Activity: FC = () => {
           });
         })
         .catch((error) => {
-          setDisabledBridges((current) => [...current, bridge.id]);
+          setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
