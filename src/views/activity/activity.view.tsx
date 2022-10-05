@@ -50,7 +50,7 @@ const Activity: FC = () => {
 
   const onClaim = (bridge: Bridge) => {
     if (bridge.status === "on-hold") {
-      setDisabledBridges([...disabledBridges, bridge.id]);
+      setDisabledBridges((current) => [...current, bridge.id]);
       claim({
         bridge,
       })
@@ -68,7 +68,7 @@ const Activity: FC = () => {
           });
         })
         .catch((error) => {
-          setDisabledBridges(disabledBridges.filter((id) => id !== bridge.id));
+          setDisabledBridges((current) => [...current, bridge.id]);
           if (isMetamaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
