@@ -665,7 +665,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       return Promise.all(
         storage.getPendingTxs(env).map(async (tx) => {
-          const chain = env.chains.find((chain) => chain.networkId === tx.networkId);
+          const chain = env.chains.find((chain) => chain.key === tx.from.key);
           const token = await addWrappedToken({ token: tx.token });
           const tokenPrice =
             chain && env.fiatExchangeRates.areEnabled
@@ -687,7 +687,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
           return {
             status: "pending",
-            networkId: tx.networkId,
             from: tx.from,
             to: tx.to,
             depositTxHash: tx.depositTxHash,
@@ -753,7 +752,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             storage.addPendingTx({
               type: "deposit",
               depositTxHash: txData.hash,
-              networkId: from.networkId,
               from,
               to,
               timestamp: Date.now(),
@@ -841,7 +839,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               type: "claim",
               depositTxHash,
               claimTxHash: txData.hash,
-              networkId,
               from,
               to,
               timestamp: Date.now(),

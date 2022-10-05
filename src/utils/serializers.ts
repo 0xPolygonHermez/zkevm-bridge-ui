@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
-import { Chain, Env, Token } from "src/domain";
+import { Chain, ChainKey, Env, Token } from "src/domain";
 import { BigNumber, utils as ethersUtils } from "ethers";
 import { tokenParser } from "src/adapters/tokens";
 
@@ -13,7 +13,6 @@ interface BridgeId {
 }
 
 interface CommonPendingTx {
-  networkId: number;
   from: Chain;
   to: Chain;
   timestamp: number;
@@ -39,9 +38,8 @@ type PendingClaimTx = CommonPendingTx & PendingClaimTxData;
 export type PendingTx = PendingDepositTx | PendingClaimTx;
 
 interface CommonSerializedPendingTx {
-  networkId: number;
-  from: number;
-  to: number;
+  from: ChainKey;
+  to: ChainKey;
   timestamp: number;
   token: Token;
   amount: string;
@@ -66,13 +64,14 @@ const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
   })
 );
 
+const chainKeyParser = z.union([z.literal("ethereum"), z.literal("polygon-zkevm")]);
+
 const serializedPendingTxDepositParser = StrictSchema<SerializedPendingDepositTx>()(
   z.object({
     type: z.literal("deposit"),
     depositTxHash: z.string(),
-    networkId: z.number(),
-    from: z.number(),
-    to: z.number(),
+    from: chainKeyParser,
+    to: chainKeyParser,
     timestamp: z.number(),
     token: tokenParser,
     amount: z.string(),
@@ -84,9 +83,8 @@ const serializedPendingTxClaimParser = StrictSchema<SerializedPendingClaimTx>()(
     type: z.literal("claim"),
     depositTxHash: z.string(),
     claimTxHash: z.string(),
-    networkId: z.number(),
-    from: z.number(),
-    to: z.number(),
+    from: chainKeyParser,
+    to: chainKeyParser,
     timestamp: z.number(),
     token: tokenParser,
     amount: z.string(),
@@ -110,9 +108,8 @@ const serializeBridgeId = (parsedBridgeId: BridgeId): SerializedBridgeId => {
 
 const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   const commonSerializedPendingTx: CommonSerializedPendingTx = {
-    networkId: pendingTx.networkId,
-    from: pendingTx.from.networkId,
-    to: pendingTx.to.networkId,
+    from: pendingTx.from.key,
+    to: pendingTx.to.key,
     timestamp: pendingTx.timestamp,
     token: pendingTx.token,
     amount: ethersUtils.formatUnits(pendingTx.amount, pendingTx.token.decimals),
@@ -138,8 +135,8 @@ const deserializePendingTx = (
   serializedPendingTx: SerializedPendingTx,
   env: Env
 ): z.SafeParseReturnType<SerializedPendingTx, PendingTx> => {
-  const from = env.chains.find((chain) => chain.networkId === serializedPendingTx.from);
-  const to = env.chains.find((chain) => chain.networkId === serializedPendingTx.to);
+  const from = env.chains.find((chain) => chain.key === serializedPendingTx.from);
+  const to = env.chains.find((chain) => chain.key === serializedPendingTx.to);
 
   if (!from) {
     return {
@@ -168,7 +165,6 @@ const deserializePendingTx = (
   }
 
   const commonPendingTx: CommonPendingTx = {
-    networkId: serializedPendingTx.networkId,
     from,
     to,
     timestamp: serializedPendingTx.timestamp,

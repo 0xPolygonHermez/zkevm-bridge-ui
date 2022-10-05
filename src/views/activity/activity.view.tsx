@@ -224,7 +224,11 @@ const Activity: FC = () => {
   }, [connectedProvider?.chainId]);
 
   const EmptyMessage = () => (
-    <Card className={classes.emptyMessage}>Bridge activity will be shown here</Card>
+    <Card className={classes.emptyMessage}>
+      {displayAll
+        ? "Bridge activity will be shown here"
+        : "There are no pending bridges at the moment"}
+    </Card>
   );
 
   const Tabs = ({ all, pending }: { all: number; pending: number }) => (
@@ -272,7 +276,7 @@ const Activity: FC = () => {
       case "successful":
       case "loading-more-items":
       case "reloading": {
-        const pendingBridges = bridgeList.data.filter((bridge) => bridge.status !== "completed");
+        const pendingBridges = bridgeList.data.filter((bridge) => bridge.status === "pending");
         const filteredList = displayAll ? bridgeList.data : pendingBridges;
 
         return (
