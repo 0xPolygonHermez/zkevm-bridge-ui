@@ -28,10 +28,10 @@ import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, EthereumChainId } from "src/domain";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 
-interface EstimateBridgeFee {
+interface EstimateBridgeFeeParams {
   from: Chain;
   token: Token;
   to: Chain;
@@ -86,7 +86,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  estimateBridgeFee: (params: EstimateBridgeFee) => Promise<BigNumber>;
+  estimateBridgeFee: (params: EstimateBridgeFeeParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
@@ -138,7 +138,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeGasLimit = useCallback(
-    ({ from, to, token, destinationAddress }: EstimateBridgeFee) => {
+    ({ from, to, token, destinationAddress }: EstimateBridgeFeeParams) => {
       const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -163,7 +163,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeFee = useCallback(
-    ({ from, ...rest }: EstimateBridgeFee) => {
+    ({ from, ...rest }: EstimateBridgeFeeParams) => {
       return estimateBridgeGasLimit({ from, ...rest }).then((safeGasLimit) =>
         estimateGasPrice({ chain: from, gasLimit: safeGasLimit })
       );
