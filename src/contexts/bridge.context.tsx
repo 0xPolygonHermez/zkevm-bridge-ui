@@ -1,7 +1,7 @@
 import {
   BigNumber,
-  ContractTransaction,
   constants as ethersConstants,
+  ContractTransaction,
   PayableOverrides,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
@@ -21,15 +21,27 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
-import { BRIDGE_CALL_GAS_INCREASE_PERCENTAGE, FIAT_DISPLAY_PRECISION } from "src/constants";
+import {
+  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
+  FIAT_DISPLAY_PRECISION,
+  PENDING_TX_TIMEOUT,
+} from "src/constants";
 import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
-import { permit, isPermitSupported, getErc20TokenEncodedMetadata } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit } from "src/domain";
+import {
+  permit,
+  isPermitSupported,
+  getErc20TokenEncodedMetadata,
+  isTxCanceled,
+  isTxMined,
+  hasTxBeenReverted,
+} from "src/adapters/ethereum";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
+import * as storage from "src/adapters/storage";
 
 interface EstimateBridgeFeeParams {
   from: Chain;
@@ -92,6 +104,7 @@ interface BridgeContext {
     bridges: Bridge[];
     total: number;
   }>;
+  getPendingBridges: (bridges?: Bridge[]) => Promise<PendingBridge[]>;
   bridge: (params: BridgeParams) => Promise<ContractTransaction>;
   claim: (params: ClaimParams) => Promise<ContractTransaction>;
 }
@@ -108,6 +121,9 @@ const bridgeContext = createContext<BridgeContext>({
   fetchBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
+  getPendingBridges: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   bridge: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -119,7 +135,7 @@ const bridgeContext = createContext<BridgeContext>({
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
-  const { getToken } = useTokensContext();
+  const { getToken, addWrappedToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
 
   const estimateGasPrice = useCallback(
@@ -568,6 +584,114 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     [getBridges, refreshBridges]
   );
 
+  const cleanPendingTxs = useCallback(
+    async (bridges: Bridge[]): Promise<void> => {
+      if (!env) {
+        return Promise.reject("Env is not defined");
+      }
+
+      const pendingTxs = storage.getPendingTxs(env);
+      const isPendingDepositInApiBridges = (depositTxHash: string) => {
+        return bridges.find((bridge) => {
+          return (
+            (bridge.status === "initiated" || bridge.status === "on-hold") &&
+            bridge.depositTxHash === depositTxHash
+          );
+        });
+      };
+      const isPendingClaimInApiBridges = (claimTxHash: string) => {
+        return bridges.find((bridge) => {
+          return bridge.status === "completed" && bridge.claimTxHash === claimTxHash;
+        });
+      };
+
+      await Promise.all(
+        pendingTxs.map(async (pendingTx) => {
+          if (
+            pendingTx.type === "deposit" &&
+            isPendingDepositInApiBridges(pendingTx.depositTxHash)
+          ) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+          if (pendingTx.type === "claim" && isPendingClaimInApiBridges(pendingTx.claimTxHash)) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+
+          const txHash =
+            pendingTx.type === "deposit" ? pendingTx.depositTxHash : pendingTx.claimTxHash;
+          const provider =
+            pendingTx.type === "deposit" ? pendingTx.from.provider : pendingTx.to.provider;
+          const tx = await provider.getTransaction(txHash);
+
+          if (isTxCanceled(tx)) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+
+          if (isTxMined(tx)) {
+            const txReceipt = await provider.getTransactionReceipt(txHash);
+
+            if (hasTxBeenReverted(txReceipt)) {
+              return storage.removePendingTx(pendingTx.depositTxHash);
+            }
+          }
+
+          if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
+            return storage.removePendingTx(pendingTx.depositTxHash);
+          }
+        })
+      );
+    },
+    [env]
+  );
+
+  const getPendingBridges = useCallback(
+    async (bridges?: Bridge[]): Promise<PendingBridge[]> => {
+      if (bridges) {
+        await cleanPendingTxs(bridges);
+      }
+
+      if (!env) {
+        throw new Error("Env is not available");
+      }
+
+      return Promise.all(
+        storage.getPendingTxs(env).map(async (tx) => {
+          const chain = env.chains.find((chain) => chain.key === tx.from.key);
+          const token = await addWrappedToken({ token: tx.token });
+          const tokenPrice =
+            chain && env.fiatExchangeRates.areEnabled
+              ? await getTokenPrice({ token: tx.token, chain })
+              : undefined;
+          const fiatAmount =
+            tokenPrice &&
+            multiplyAmounts(
+              {
+                value: tokenPrice,
+                precision: FIAT_DISPLAY_PRECISION,
+              },
+              {
+                value: tx.amount,
+                precision: token.decimals,
+              },
+              FIAT_DISPLAY_PRECISION
+            );
+
+          return {
+            status: "pending",
+            from: tx.from,
+            to: tx.to,
+            depositTxHash: tx.depositTxHash,
+            claimTxHash: tx.type === "claim" ? tx.claimTxHash : undefined,
+            token,
+            amount: tx.amount,
+            fiatAmount,
+          };
+        })
+      );
+    },
+    [env, cleanPendingTxs, getTokenPrice, addWrappedToken]
+  );
+
   const bridge = useCallback(
     async ({
       from,
@@ -614,14 +738,21 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             })
           : "0x";
 
-        return contract.bridge(
-          token.address,
-          to.networkId,
-          destinationAddress,
-          amount,
-          permitData,
-          overrides
-        );
+        return contract
+          .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
+          .then((txData) => {
+            storage.addPendingTx({
+              type: "deposit",
+              depositTxHash: txData.hash,
+              from,
+              to,
+              timestamp: Date.now(),
+              token,
+              amount,
+            });
+
+            return txData;
+          });
       };
 
       if (from.chainId === connectedProvider.chainId) {
@@ -639,7 +770,16 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const claim = useCallback(
     async ({
-      bridge: { token, amount, tokenOriginNetwork, from, to, destinationAddress, depositCount },
+      bridge: {
+        token,
+        amount,
+        tokenOriginNetwork,
+        from,
+        to,
+        destinationAddress,
+        depositCount,
+        depositTxHash,
+      },
     }: ClaimParams): Promise<ContractTransaction> => {
       if (connectedProvider === undefined) {
         throw new Error("Connected provider is not available");
@@ -672,19 +812,34 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         : "0x";
 
       const executeClaim = () =>
-        contract.claim(
-          merkleProof,
-          depositCount,
-          mainExitRoot,
-          rollupExitRoot,
-          tokenOriginNetwork,
-          token.address,
-          to.networkId,
-          destinationAddress,
-          amount,
-          metadata,
-          isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
-        );
+        contract
+          .claim(
+            merkleProof,
+            depositCount,
+            mainExitRoot,
+            rollupExitRoot,
+            tokenOriginNetwork,
+            token.address,
+            to.networkId,
+            destinationAddress,
+            amount,
+            metadata,
+            isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
+          )
+          .then((txData) => {
+            storage.addPendingTx({
+              type: "claim",
+              depositTxHash,
+              claimTxHash: txData.hash,
+              from,
+              to,
+              timestamp: Date.now(),
+              token,
+              amount,
+            });
+
+            return txData;
+          });
 
       if (to.chainId === connectedProvider.chainId) {
         return executeClaim();
@@ -704,10 +859,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       estimateBridgeFee,
       getBridge,
       fetchBridges,
+      getPendingBridges,
       bridge,
       claim,
     }),
-    [estimateBridgeFee, getBridge, fetchBridges, bridge, claim]
+    [estimateBridgeFee, getBridge, fetchBridges, getPendingBridges, bridge, claim]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;

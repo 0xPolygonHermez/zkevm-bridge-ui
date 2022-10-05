@@ -2,8 +2,10 @@ import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
+export type ChainKey = "ethereum" | "polygon-zkevm";
+
 export interface Chain {
-  key: "ethereum" | "polygon-zkevm";
+  key: ChainKey;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
@@ -67,6 +69,11 @@ export enum EthereumEvent {
   DISCONNECT = "disconnect",
 }
 
+export enum TxStatus {
+  REVERTED = 0,
+  SUCCESSFUL = 1,
+}
+
 export enum Currency {
   EUR = "EUR",
   USD = "USD",
@@ -115,7 +122,18 @@ export type CompletedBridge = BridgeCommonFields & {
   claimTxHash: string;
 };
 
-export type Bridge = InitiatedBridge | OnHoldBridge | CompletedBridge;
+export type Bridge = PendingBridge | InitiatedBridge | OnHoldBridge | CompletedBridge;
+
+export type PendingBridge = {
+  status: "pending";
+  depositTxHash: BridgeCommonFields["depositTxHash"];
+  claimTxHash?: CompletedBridge["claimTxHash"];
+  from: BridgeCommonFields["from"];
+  to: BridgeCommonFields["to"];
+  token: BridgeCommonFields["token"];
+  amount: BridgeCommonFields["amount"];
+  fiatAmount: BridgeCommonFields["fiatAmount"];
+};
 
 export interface Deposit {
   token: Token;

@@ -37,7 +37,11 @@ interface Fees {
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
   const step1Promise = bridge.from.provider
-    .getTransaction(bridge.depositTxHash)
+    .getTransaction(
+      bridge.status === "pending"
+        ? bridge.claimTxHash || bridge.depositTxHash
+        : bridge.depositTxHash
+    )
     .then((txResponse) => {
       return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
     })
@@ -267,9 +271,9 @@ const BridgeDetails: FC = () => {
       return <Navigate to={routes.activity.path} replace />;
     }
     case "successful": {
-      const { status, amount, from, to, token, depositTxHash } = bridge.data;
+      const { status, amount, from, to, token } = bridge.data;
 
-      const bridgeTxUrl = `${from.explorerUrl}/tx/${depositTxHash}`;
+      const bridgeTxUrl = `${from.explorerUrl}/tx/${bridge.data.depositTxHash}`;
       const claimTxUrl =
         bridge.data.status === "completed"
           ? `${to.explorerUrl}/tx/${bridge.data.claimTxHash}`
