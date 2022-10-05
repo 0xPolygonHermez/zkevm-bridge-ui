@@ -19,7 +19,6 @@ import {
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
-import { getChainName } from "src/utils/labels";
 import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -200,7 +199,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           params: [
             {
               chainId: hexValue(chain.chainId),
-              chainName: getChainName(chain),
+              chainName: chain.name,
               rpcUrls: [chain.provider.connection.url],
               blockExplorerUrls: [chain.explorerUrl],
               nativeCurrency: chain.nativeCurrency,
