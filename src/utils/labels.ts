@@ -2,6 +2,8 @@ import { Bridge, Chain, Currency, EthereumChainId } from "src/domain";
 
 export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
+    case "pending":
+      return "Processing";
     case "initiated":
       return "Initiated";
     case "on-hold":
