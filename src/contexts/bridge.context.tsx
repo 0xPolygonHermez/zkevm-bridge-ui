@@ -35,24 +35,15 @@ import {
   permit,
   isPermitSupported,
   getErc20TokenEncodedMetadata,
-  hasTxBeenReverted,
   isTxCanceled,
   isTxMined,
+  hasTxBeenReverted,
 } from "src/adapters/ethereum";
-import {
-  Env,
-  Chain,
-  Token,
-  Bridge,
-  OnHoldBridge,
-  Deposit,
-  EthereumChainId,
-  PendingBridge,
-} from "src/domain";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
-interface EstimateBridgeFee {
+interface EstimateBridgeFeeParams {
   from: Chain;
   token: Token;
   to: Chain;
@@ -107,7 +98,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
-  estimateBridgeFee: (params: EstimateBridgeFee) => Promise<BigNumber>;
+  estimateBridgeFee: (params: EstimateBridgeFeeParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
@@ -163,7 +154,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeGasLimit = useCallback(
-    ({ from, to, token, destinationAddress }: EstimateBridgeFee) => {
+    ({ from, to, token, destinationAddress }: EstimateBridgeFeeParams) => {
       const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.contractAddress, from.provider);
       const overrides: PayableOverrides =
@@ -188,7 +179,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeFee = useCallback(
-    ({ from, ...rest }: EstimateBridgeFee) => {
+    ({ from, ...rest }: EstimateBridgeFeeParams) => {
       return estimateBridgeGasLimit({ from, ...rest }).then((safeGasLimit) =>
         estimateGasPrice({ chain: from, gasLimit: safeGasLimit })
       );
@@ -722,9 +713,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         connectedProvider.provider.getSigner()
       );
       const gasPrice = await from.provider.getGasPrice();
-      const gasLimit = Object.values(EthereumChainId).includes(from.chainId)
-        ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
-        : 300000;
+      const gasLimit =
+        from.key === "ethereum"
+          ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
+          : 300000;
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         gasPrice,
