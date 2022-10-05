@@ -43,6 +43,10 @@ import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from 
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
+interface GetMaxEtherBridgeParams {
+  chain: Chain;
+}
+
 interface EstimateBridgeFeeParams {
   from: Chain;
   token: Token;
@@ -98,6 +102,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
+  getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
   estimateBridgeFee: (params: EstimateBridgeFeeParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
@@ -112,6 +117,9 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
+  getMaxEtherBridge: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   estimateBridgeFee: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -137,6 +145,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getToken, addWrappedToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
+
+  const getMaxEtherBridge = useCallback(
+    ({ chain }: GetMaxEtherBridgeParams): Promise<BigNumber> => {
+      return Bridge__factory.connect(chain.contractAddress, chain.provider).maxEtherBridge();
+    },
+    []
+  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -856,6 +871,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
+      getMaxEtherBridge,
       estimateBridgeFee,
       getBridge,
       fetchBridges,
@@ -863,7 +879,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       bridge,
       claim,
     }),
-    [estimateBridgeFee, getBridge, fetchBridges, getPendingBridges, bridge, claim]
+    [
+      getMaxEtherBridge,
+      estimateBridgeFee,
+      getBridge,
+      fetchBridges,
+      getPendingBridges,
+      bridge,
+      claim,
+    ]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;
