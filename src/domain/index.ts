@@ -13,7 +13,7 @@ export interface Chain {
   nativeCurrency: {
     name: string;
     symbol: string;
-    decimals: 18;
+    decimals: number;
   };
 }
 
