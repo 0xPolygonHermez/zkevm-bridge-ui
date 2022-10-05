@@ -589,9 +589,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         connectedProvider.provider.getSigner()
       );
       const gasPrice = await from.provider.getGasPrice();
-      const gasLimit = Object.values(EthereumChainId).includes(from.chainId)
-        ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
-        : 300000;
+      const gasLimit =
+        from.key === "ethereum"
+          ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
+          : 300000;
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         gasPrice,
