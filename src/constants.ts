@@ -14,17 +14,25 @@ export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
+export const CUSTOM_TOKENS_KEY = "customTokens";
+
+export const PENDING_TXS_KEY = "pendingTxs";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
-export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
+export const SNACKBAR_AUTO_HIDE_DURATION = 5 * 1000; //5s in ms
 
-export const AUTO_REFRESH_RATE = 10000;
+export const AUTO_REFRESH_RATE = 10 * 1000; //10s in ms
 
 export const PAGE_SIZE = 25;
+
+export const PENDING_TX_TIMEOUT = 30 * 60 * 1000; // 30min in ms
+
+export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 20; // 20%
 
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",
@@ -35,8 +43,6 @@ export const REPORT_ERROR_FORM_ENTRIES = {
 
 export const REPORT_ERROR_FORM_URL =
   "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
-
-export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
 
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
@@ -59,6 +65,7 @@ export const getChains = ({
 }): Promise<[Chain, Chain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
   const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
+
   return Promise.all([ethereumProvider.getNetwork(), polygonZkEVMProvider.getNetwork()]).then(
     ([ethereumNetwork, polygonZkEVMNetwork]) => [
       {
@@ -69,6 +76,11 @@ export const getChains = ({
         chainId: ethereumNetwork.chainId,
         contractAddress: ethereum.contractAddress,
         explorerUrl: ethereum.explorerUrl,
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
       },
       {
         key: "polygon-zkevm",
@@ -78,6 +90,11 @@ export const getChains = ({
         chainId: polygonZkEVMNetwork.chainId,
         contractAddress: polygonZkEVM.contractAddress,
         explorerUrl: polygonZkEVM.explorerUrl,
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
       },
     ]
   );
