@@ -15,7 +15,6 @@ import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
-import NetworkBox from "src/views/shared/network-box/network-box.view";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
@@ -24,7 +23,7 @@ const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
-  const { account, changeNetwork } = useProvidersContext();
+  const { account } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -68,7 +67,6 @@ const Home = (): JSX.Element => {
           />
         </>
       )}
-      {env && <NetworkBox changeNetwork={changeNetwork} env={env} />}
     </div>
   );
 };
