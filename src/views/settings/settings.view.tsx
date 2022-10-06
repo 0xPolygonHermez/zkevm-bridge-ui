@@ -17,12 +17,11 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { getCurrency, setCurrency } from "src/adapters/storage";
 import { Currency } from "src/domain";
-import NetworkBox from "src/views/shared/network-box/network-box.view";
 
 const Settings: FC = () => {
   const classes = useSettingsStyles();
   const env = useEnvContext();
-  const { disconnectProvider, changeNetwork } = useProvidersContext();
+  const { disconnectProvider } = useProvidersContext();
   const [preferredCurrency, setPreferredCurrency] = useState<Currency>(getCurrency());
   const currencies = [
     { id: Currency.EUR, icon: <EurIcon /> },
@@ -53,7 +52,6 @@ const Settings: FC = () => {
         Subtitle={<Typography type="body2">Polygon zkEVM Bridge v{bridgeVersion}</Typography>}
       />
       <Card className={classes.card}>
-        <NetworkBox changeNetwork={changeNetwork} env={env} />
         {env.fiatExchangeRates.areEnabled && (
           <div className={classes.currenciesRow}>
             <Typography type="body1" className={classes.row}>

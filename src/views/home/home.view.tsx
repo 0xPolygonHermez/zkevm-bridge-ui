@@ -10,11 +10,12 @@ import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useFormContext } from "src/contexts/form.context";
-import { FormData } from "src/domain";
+import { Chain, FormData } from "src/domain";
 import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
+import NetworkBox from "src/views/shared/network-box/network-box.view";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
@@ -23,7 +24,7 @@ const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
-  const { account } = useProvidersContext();
+  const { account, changeNetwork } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -32,6 +33,10 @@ const Home = (): JSX.Element => {
 
   const onResetForm = () => {
     setFormData(undefined);
+  };
+
+  const onChangeNetwork = (chain: Chain) => {
+    void changeNetwork(chain);
   };
 
   useEffect(() => {
@@ -59,6 +64,9 @@ const Home = (): JSX.Element => {
               maxEtherBridge ? ethersUtils.formatEther(maxEtherBridge) : "--"
             } ETH in early testnet versions`}
           />
+          <div className={classes.networkBoxWrapper}>
+            <NetworkBox onChangeNetwork={onChangeNetwork} />
+          </div>
           <BridgeForm
             formData={formData}
             account={account.data}
