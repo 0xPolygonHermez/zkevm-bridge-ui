@@ -33,14 +33,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
   },
   networkInfo: {
-    color: theme.palette.black,
-    background: theme.palette.grey.main,
-    borderRadius: "8px",
-    display: "flex",
-    padding: theme.spacing(2),
-    gap: theme.spacing(1),
     margin: [0, "auto", theme.spacing(2)],
-    maxWidth: theme.maxWidth,
   },
 }));
 

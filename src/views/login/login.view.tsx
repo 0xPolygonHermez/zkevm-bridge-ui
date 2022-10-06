@@ -8,13 +8,13 @@ import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
-import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
 import { WalletName, EthereumChainId } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
+import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
@@ -84,12 +84,7 @@ const Login: FC = () => {
             </>
           )}
         </Card>
-        {networkInfo && (
-          <div className={classes.networkInfo}>
-            <InfoIcon />
-            <Typography type="body2">{networkInfo}</Typography>
-          </div>
-        )}
+        {networkInfo && <InfoBanner className={classes.networkInfo} message={networkInfo} />}
         {account.status === "failed" && <Error error={account.error} />}
       </div>
     </div>

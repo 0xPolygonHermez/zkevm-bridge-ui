@@ -15,7 +15,6 @@ import Button from "src/views/shared/button/button.view";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { useBridgeContext } from "src/contexts/bridge.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask } from "src/utils/types";
 import { getChainName } from "src/utils/labels";
@@ -43,7 +42,6 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { getMaxEtherBridge } = useBridgeContext();
   const { getErc20TokenBalance, tokens: defaultTokens, getTokenFromAddress } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const [balanceTo, setBalanceTo] = useState<BigNumber>();
@@ -187,49 +185,12 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedChains && token && amount) {
-      const shouldCheckAmountLimit =
-        selectedChains.from.key === "ethereum" && token.address === ethersConstants.AddressZero;
-      if (shouldCheckAmountLimit) {
-        getMaxEtherBridge({ chain: selectedChains.from })
-          .then((maxEtherBridge) => {
-            callIfMounted(() => {
-              console.log(formatTokenAmount(maxEtherBridge, token));
-            });
-          })
-          .catch((error) => {
-            callIfMounted(() => {
-              console.error(error);
-              // notifyError(error);
-              const maxEtherBridge = ethersUtils.parseEther(Math.random().toString());
-              const isTxAllowed = amount.lte(maxEtherBridge);
-              if (isTxAllowed) {
-                onSubmit({
-                  token: token,
-                  from: selectedChains.from,
-                  to: selectedChains.to,
-                  amount: amount,
-                });
-              } else {
-                setInputError(
-                  `${ethersUtils.formatEther(
-                    amount
-                  )} exceeds the maximum amount supported by the smart contract ${formatTokenAmount(
-                    maxEtherBridge,
-                    getEtherToken(selectedChains.from)
-                  )}`
-                );
-              }
-              console.log(ethersUtils.formatEther(maxEtherBridge), "isTxAllowed:", isTxAllowed);
-            });
-          });
-      } else {
-        onSubmit({
-          token: token,
-          from: selectedChains.from,
-          to: selectedChains.to,
-          amount: amount,
-        });
-      }
+      onSubmit({
+        token: token,
+        from: selectedChains.from,
+        to: selectedChains.to,
+        amount: amount,
+      });
     }
   };
 

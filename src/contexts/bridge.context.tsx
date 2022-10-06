@@ -148,7 +148,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const getMaxEtherBridge = useCallback(
     ({ chain }: GetMaxEtherBridgeParams): Promise<BigNumber> => {
-      return Bridge__factory.connect(chain.contractAddress, chain.provider).maxEtherBridge();
+      return Bridge__factory.connect(chain.bridgeContractAddress, chain.provider).maxEtherBridge();
     },
     []
   );
