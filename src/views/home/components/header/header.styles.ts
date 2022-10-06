@@ -32,13 +32,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.grey.main,
     },
   },
-  settingsLabel: {
-    display: "none",
-    [theme.breakpoints.upSm]: {
-      display: "block",
-      marginLeft: theme.spacing(1),
-    },
-  },
   activityLabel: {
     display: "none",
     [theme.breakpoints.upSm]: {

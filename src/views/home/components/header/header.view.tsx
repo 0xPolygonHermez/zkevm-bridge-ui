@@ -12,20 +12,17 @@ const Header: FC = () => {
   const classes = useHeaderStyles();
   return (
     <header className={classes.header}>
-      <Link to={routes.settings.path} className={classes.link}>
-        <SettingIcon />
-        <Typography type="body1" className={classes.settingsLabel}>
-          Settings
-        </Typography>
-      </Link>
-      <div className={classes.logoWrapper}>
-        <PolygonZkEVMLogo />
-      </div>
       <Link to={routes.activity.path} className={classes.link}>
         <Typography type="body1" className={classes.activityLabel}>
           Activity
         </Typography>
         <ClockIcon />
+      </Link>
+      <div className={classes.logoWrapper}>
+        <PolygonZkEVMLogo />
+      </div>
+      <Link to={routes.settings.path} className={classes.link}>
+        <SettingIcon />
       </Link>
     </header>
   );
