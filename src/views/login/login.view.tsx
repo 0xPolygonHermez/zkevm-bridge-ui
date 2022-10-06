@@ -58,34 +58,36 @@ const Login: FC = () => {
     `Connect with ${networkName} testnet environment`;
 
   return (
-    <div className={classes.contentWrapper}>
-      <PolygonZkEVMLogo className={classes.logo} />
-      <Typography type="body1" className={classes.appName}>
-        {appName}
-      </Typography>
-      <div className={classes.cardWrap}>
-        <Card className={classes.card}>
-          {selectedWallet === undefined ? (
-            <>
-              <Typography type="h1" className={classes.cardHeader}>
-                Connect a wallet
-              </Typography>
-              <WalletList onSelectWallet={onConnectProvider} />
-            </>
-          ) : (
-            <>
-              <Typography
-                type="h1"
-                className={`${classes.cardHeader} ${classes.cardHeaderCentered}`}
-              >
-                Connecting to
-              </Typography>
-              <AccountLoader selectedWallet={selectedWallet} />
-            </>
-          )}
-        </Card>
-        {networkInfo && <InfoBanner className={classes.networkInfo} message={networkInfo} />}
-        {account.status === "failed" && <Error error={account.error} />}
+    <div className={classes.login}>
+      <div className={classes.contentWrapper}>
+        <PolygonZkEVMLogo className={classes.logo} />
+        <Typography type="body1" className={classes.appName}>
+          {appName}
+        </Typography>
+        {networkInfo && <InfoBanner message={networkInfo} />}
+        <div className={classes.cardWrap}>
+          <Card className={classes.card}>
+            {selectedWallet === undefined ? (
+              <>
+                <Typography type="h1" className={classes.cardHeader}>
+                  Connect a wallet
+                </Typography>
+                <WalletList onSelectWallet={onConnectProvider} />
+              </>
+            ) : (
+              <>
+                <Typography
+                  type="h1"
+                  className={`${classes.cardHeader} ${classes.cardHeaderCentered}`}
+                >
+                  Connecting to
+                </Typography>
+                <AccountLoader selectedWallet={selectedWallet} />
+              </>
+            )}
+          </Card>
+          {account.status === "failed" && <Error error={account.error} />}
+        </div>
       </div>
     </div>
   );
