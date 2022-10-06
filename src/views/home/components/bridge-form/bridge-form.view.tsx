@@ -309,15 +309,10 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={classes.row}>
           <div className={classes.leftBox}>
             <Typography type="body2">From</Typography>
-            <button
-              className={classes.fromChain}
-              onClick={() => setChains(env.chains)}
-              type="button"
-            >
+            <div className={classes.chain}>
               <selectedChains.from.Icon />
               <Typography type="body1">{getChainName(selectedChains.from)}</Typography>
-              <CaretDown />
-            </button>
+            </div>
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
@@ -347,7 +342,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <div className={classes.row}>
           <div className={classes.leftBox}>
             <Typography type="body2">To</Typography>
-            <div className={classes.toChain}>
+            <div className={classes.chain}>
               <selectedChains.to.Icon />
               <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
             </div>
