@@ -6,11 +6,12 @@ export type ChainKey = "ethereum" | "polygon-zkevm";
 
 export interface Chain {
   key: ChainKey;
+  name: string;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
   chainId: number;
-  contractAddress: string;
+  bridgeContractAddress: string;
   explorerUrl: string;
   nativeCurrency: {
     name: string;
