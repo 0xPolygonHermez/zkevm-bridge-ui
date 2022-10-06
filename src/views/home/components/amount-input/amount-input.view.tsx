@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
@@ -11,17 +11,24 @@ interface AmountInputProps {
   value?: BigNumber;
   token: Token;
   balance: BigNumber;
+  maxEtherBridge: BigNumber;
   onChange: (params: { amount?: BigNumber; error?: string }) => void;
 }
 
-const AmountInput: FC<AmountInputProps> = ({ value, token, balance, onChange }) => {
+const AmountInput: FC<AmountInputProps> = ({ value, token, balance, maxEtherBridge, onChange }) => {
   const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
 
   const processOnChangeCallback = (amount?: BigNumber) => {
     if (amount) {
-      const error = amount.gt(balance) ? "Insufficient balance" : undefined;
+      const balanceError = amount.gt(balance) ? "Insufficient balance" : undefined;
+      const maxEtherBridgeError =
+        token.address === ethers.constants.AddressZero && amount.gt(maxEtherBridge)
+          ? "Amount exceeds the max allowed to bridge"
+          : undefined;
+      const error = balanceError || maxEtherBridgeError;
+
       return onChange({ amount, error });
     } else {
       return onChange({});

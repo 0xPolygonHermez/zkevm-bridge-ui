@@ -30,7 +30,7 @@ const Home = (): JSX.Element => {
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const resetForm = () => {
+  const onResetForm = () => {
     setFormData(undefined);
   };
 
@@ -60,10 +60,11 @@ const Home = (): JSX.Element => {
             } ETH in early testnet versions.`}
           />
           <BridgeForm
-            onSubmit={onFormSubmit}
             formData={formData}
-            resetForm={resetForm}
             account={account.data}
+            maxEtherBridge={maxEtherBridge}
+            onResetForm={onResetForm}
+            onSubmit={onFormSubmit}
           />
         </>
       )}
