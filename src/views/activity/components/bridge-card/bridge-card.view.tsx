@@ -104,7 +104,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Step 2 will require signature</Typography>
+          {bridge.from.key === "ethereum" ? (
+            <Typography type="body2">Step 2 will require signature</Typography>
+          ) : (
+            <Typography type="body2">Waiting for validity proof</Typography>
+          )}
           <button disabled className={classes.finaliseButton}>
             Finalise
           </button>
