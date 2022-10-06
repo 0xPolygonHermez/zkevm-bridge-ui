@@ -348,6 +348,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
             value={amount}
             token={token}
             balance={fromBalance || BigNumber.from(0)}
+            from={selectedChains.from}
             maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
           />
