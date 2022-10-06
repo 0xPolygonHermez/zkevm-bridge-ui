@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Card from "src/views/shared/card/card.view";
@@ -6,7 +6,6 @@ import useLoginStyles from "src/views/login/login.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import Error from "src/views/shared/error/error.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
-import AccountLoader from "src/views/login/components/account-loader/account-loader.view";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
@@ -22,17 +21,12 @@ const Login: FC = () => {
   const { state } = useLocation();
   const { connectProvider, account } = useProvidersContext();
   const env = useEnvContext();
-  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
 
   const onConnectProvider = (walletName: WalletName) => {
-    setSelectedWallet(walletName);
     void connectProvider(walletName);
   };
 
   useEffect(() => {
-    if (account.status === "failed" || account.status === "pending") {
-      setSelectedWallet(undefined);
-    }
     if (account.status === "successful") {
       const routerState = routerStateParser.safeParse(state);
 
@@ -67,24 +61,12 @@ const Login: FC = () => {
         {networkInfo && <InfoBanner message={networkInfo} />}
         <div className={classes.cardWrap}>
           <Card className={classes.card}>
-            {selectedWallet === undefined ? (
-              <>
-                <Typography type="h1" className={classes.cardHeader}>
-                  Connect a wallet
-                </Typography>
-                <WalletList onSelectWallet={onConnectProvider} />
-              </>
-            ) : (
-              <>
-                <Typography
-                  type="h1"
-                  className={`${classes.cardHeader} ${classes.cardHeaderCentered}`}
-                >
-                  Connecting to
-                </Typography>
-                <AccountLoader selectedWallet={selectedWallet} />
-              </>
-            )}
+            <>
+              <Typography type="h1" className={classes.cardHeader}>
+                Connect a wallet
+              </Typography>
+              <WalletList onSelectWallet={onConnectProvider} />
+            </>
           </Card>
           {account.status === "failed" && <Error error={account.error} />}
         </div>
