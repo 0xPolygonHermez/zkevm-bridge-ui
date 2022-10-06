@@ -179,24 +179,28 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      return contract.estimateGas
-        .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
-          ...overrides,
-          from: destinationAddress,
-        })
-        .then((gasLimit) => {
-          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
+      if (from.key === "ethereum") {
+        return contract.estimateGas
+          .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
+            ...overrides,
+            from: destinationAddress,
+          })
+          .then((gasLimit) => {
+            const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
 
-          return gasLimit.add(gasIncrease);
-        });
+            return gasLimit.add(gasIncrease);
+          });
+      }
+
+      return Promise.resolve(BigNumber.from(300000));
     },
     []
   );
 
   const estimateBridgeFee = useCallback(
     ({ from, ...rest }: EstimateBridgeFeeParams) => {
-      return estimateBridgeGasLimit({ from, ...rest }).then((safeGasLimit) =>
-        estimateGasPrice({ chain: from, gasLimit: safeGasLimit })
+      return estimateBridgeGasLimit({ from, ...rest }).then((gasLimit) =>
+        estimateGasPrice({ chain: from, gasLimit })
       );
     },
     [estimateBridgeGasLimit, estimateGasPrice]
@@ -727,15 +731,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         from.bridgeContractAddress,
         connectedProvider.provider.getSigner()
       );
-      const gasPrice = await from.provider.getGasPrice();
-      const gasLimit =
-        from.key === "ethereum"
-          ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
-          : 300000;
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
-        gasPrice,
-        gasLimit,
+        gasPrice: await from.provider.getGasPrice(),
+        gasLimit: await estimateBridgeGasLimit({ from, to, token, destinationAddress }),
       };
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
