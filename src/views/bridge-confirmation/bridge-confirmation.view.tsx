@@ -134,7 +134,7 @@ const BridgeConfirmation: FC = () => {
                   token: token,
                   amount: amount,
                   owner: account.data,
-                  spender: from.contractAddress,
+                  spender: from.bridgeContractAddress,
                 })
                   .then((isAllowed) =>
                     callIfMounted(() => {
@@ -317,7 +317,7 @@ const BridgeConfirmation: FC = () => {
         from,
         token,
         owner: account.data,
-        spender: from.contractAddress,
+        spender: from.bridgeContractAddress,
         provider: connectedProvider.provider,
         amount,
       })

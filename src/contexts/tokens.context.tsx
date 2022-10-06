@@ -134,7 +134,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       otherChain,
     }: ComputeWrappedTokenAddressParams): Promise<string> => {
       const bridgeContract = Bridge__factory.connect(
-        otherChain.contractAddress,
+        otherChain.bridgeContractAddress,
         otherChain.provider
       );
       const tokenImplementationAddress = await bridgeContract.tokenImplementation();
@@ -164,7 +164,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       originNetwork: number;
       originTokenAddress: string;
     }> => {
-      const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
+      const bridgeContract = Bridge__factory.connect(chain.bridgeContractAddress, chain.provider);
 
       return bridgeContract.wrappedTokenToTokenInfo(token.address).then((tokenInfo) => {
         if (tokenInfo.originTokenAddress === ethersConstants.AddressZero) {

@@ -4,6 +4,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { Chain, Currency, Token } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
+import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
@@ -54,50 +55,59 @@ export const getChains = ({
   ethereum: {
     rpcUrl: string;
     explorerUrl: string;
-    contractAddress: string;
+    bridgeContractAddress: string;
+    poeContractAddress: string;
   };
   polygonZkEVM: {
     rpcUrl: string;
     explorerUrl: string;
-    contractAddress: string;
+    bridgeContractAddress: string;
     networkId: number;
   };
 }): Promise<[Chain, Chain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
   const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
-
-  return Promise.all([ethereumProvider.getNetwork(), polygonZkEVMProvider.getNetwork()]).then(
-    ([ethereumNetwork, polygonZkEVMNetwork]) => [
-      {
-        key: "ethereum",
-        networkId: 0,
-        Icon: EthChainIcon,
-        provider: ethereumProvider,
-        chainId: ethereumNetwork.chainId,
-        contractAddress: ethereum.contractAddress,
-        explorerUrl: ethereum.explorerUrl,
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH",
-          decimals: 18,
-        },
-      },
-      {
-        key: "polygon-zkevm",
-        networkId: polygonZkEVM.networkId,
-        Icon: PolygonZkEVMChainIcon,
-        provider: polygonZkEVMProvider,
-        chainId: polygonZkEVMNetwork.chainId,
-        contractAddress: polygonZkEVM.contractAddress,
-        explorerUrl: polygonZkEVM.explorerUrl,
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH",
-          decimals: 18,
-        },
-      },
-    ]
+  const poeContract = ProofOfEfficiency__factory.connect(
+    ethereum.poeContractAddress,
+    ethereumProvider
   );
+
+  return Promise.all([
+    ethereumProvider.getNetwork(),
+    polygonZkEVMProvider.getNetwork(),
+    poeContract.networkName(),
+  ]).then(([ethereumNetwork, polygonZkEVMNetwork, polygonZkEVMNetworkName]) => [
+    {
+      key: "ethereum",
+      name: "Ethereum",
+      networkId: 0,
+      Icon: EthChainIcon,
+      provider: ethereumProvider,
+      chainId: ethereumNetwork.chainId,
+      bridgeContractAddress: ethereum.bridgeContractAddress,
+      explorerUrl: ethereum.explorerUrl,
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+    },
+    {
+      key: "polygon-zkevm",
+      name: polygonZkEVMNetworkName,
+      networkId: polygonZkEVM.networkId,
+      Icon: PolygonZkEVMChainIcon,
+      provider: polygonZkEVMProvider,
+      chainId: polygonZkEVMNetwork.chainId,
+      bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
+      explorerUrl: polygonZkEVM.explorerUrl,
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+    },
+  ]);
 };
 
 export const getEtherToken = (chain: Chain): Token => {
