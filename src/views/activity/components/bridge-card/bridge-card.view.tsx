@@ -10,7 +10,7 @@ import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
 import Error from "src/views/shared/error/error.view";
 import { Bridge } from "src/domain";
-import { getChainName, getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
 import { getCurrency } from "src/adapters/storage";
 
@@ -104,7 +104,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Step 2 will require signature</Typography>
+          {bridge.from.key === "ethereum" ? (
+            <Typography type="body2">Step 2 will require signature</Typography>
+          ) : (
+            <Typography type="body2">Waiting for validity proof</Typography>
+          )}
           <button disabled className={classes.finaliseButton}>
             Finalise
           </button>
@@ -113,7 +117,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
       {status === "on-hold" && (
         <div className={classes.bottom}>
           {networkError ? (
-            <Error error={`Switch to ${getChainName(to)} to continue`} type="body2" />
+            <Error error={`Switch to ${to.name} to continue`} type="body2" />
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}

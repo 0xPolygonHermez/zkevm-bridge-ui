@@ -47,13 +47,13 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "space-between",
     flexDirection: "column",
     paddingTop: theme.spacing(2),
-    // paddingBottom: theme.spacing(2),
-    // borderBottom: `1px solid ${theme.palette.grey.light}`,
-    // marginBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    borderBottom: `1px solid ${theme.palette.grey.light}`,
+    marginBottom: theme.spacing(2),
     [theme.breakpoints.upSm]: {
       flexDirection: "row",
       paddingTop: theme.spacing(3),
-      // paddingBottom: theme.spacing(4),
+      paddingBottom: theme.spacing(4),
     },
   },
   chainBox: {
