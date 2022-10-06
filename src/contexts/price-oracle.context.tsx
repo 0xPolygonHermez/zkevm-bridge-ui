@@ -16,7 +16,6 @@ import { getCreate2Address } from "@ethersproject/address";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { multiplyAmounts } from "src/utils/amounts";
-import { getChainName } from "src/utils/labels";
 import {
   UniswapV2Router02,
   UniswapV2Router02__factory,
@@ -96,9 +95,7 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
 
       if (!erc20Token) {
         throw new Error(
-          `ETH is not a valid ERC-20 token and its wrapped version "WETH" could not be found on the ${getChainName(
-            chain
-          )} chain`
+          `ETH is not a valid ERC-20 token and its wrapped version "WETH" could not be found on the ${chain.name} chain`
         );
       }
 

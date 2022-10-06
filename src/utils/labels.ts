@@ -13,15 +13,6 @@ export function getBridgeStatus(status: Bridge["status"]): string {
   }
 }
 
-export function getChainName(chain: Chain): string {
-  switch (chain.key) {
-    case "ethereum":
-      return "Ethereum";
-    case "polygon-zkevm":
-      return "Polygon zkEVM";
-  }
-}
-
 export function getNetworkName(chain: Chain): string | undefined {
   switch (chain.chainId) {
     case EthereumChainId.MAINNET:

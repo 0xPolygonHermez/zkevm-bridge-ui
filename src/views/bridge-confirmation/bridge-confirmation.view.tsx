@@ -11,7 +11,7 @@ import routes from "src/routes";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { getChainName, getCurrencySymbol } from "src/utils/labels";
+import { getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import {
@@ -334,7 +334,7 @@ const BridgeConfirmation: FC = () => {
             } else {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  setError(`Switch to ${getChainName(from)} to continue`);
+                  setError(`Switch to ${from.name} to continue`);
                   setApprovalTask({ status: "pending" });
                 } else {
                   setApprovalTask({ status: "failed", error: parsed });
@@ -374,7 +374,7 @@ const BridgeConfirmation: FC = () => {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
                 if (parsed === "wrong-network") {
-                  setError(`Switch to ${getChainName(from)} to continue`);
+                  setError(`Switch to ${from.name} to continue`);
                 } else {
                   notifyError(error);
                 }
@@ -458,12 +458,12 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />
-            <Typography type="body1">{getChainName(from)}</Typography>
+            <Typography type="body1">{from.name}</Typography>
           </div>
           <ArrowRightIcon className={classes.arrowIcon} />
           <div className={classes.chainBox}>
             <to.Icon />
-            <Typography type="body1">{getChainName(to)}</Typography>
+            <Typography type="body1">{to.name}</Typography>
           </div>
         </div>
         {/* <div className={classes.feeBlock}>

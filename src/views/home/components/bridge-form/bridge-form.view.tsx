@@ -17,7 +17,6 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask } from "src/utils/types";
-import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -327,7 +326,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
               type="button"
             >
               <selectedChains.from.Icon />
-              <Typography type="body1">{getChainName(selectedChains.from)}</Typography>
+              <Typography type="body1">{selectedChains.from.name}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -363,7 +362,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
             <Typography type="body2">To</Typography>
             <div className={classes.toChain}>
               <selectedChains.to.Icon />
-              <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
+              <Typography type="body1">{selectedChains.to.name}</Typography>
             </div>
           </div>
           <div className={classes.rightBox}>
