@@ -57,7 +57,7 @@ const Home = (): JSX.Element => {
             className={classes.maxEtherBridgeInfo}
             message={`ETH bridges in the Ethereum network are limited to ${
               maxEtherBridge ? ethersUtils.formatEther(maxEtherBridge) : "--"
-            } ETH in early testnet versions.`}
+            } ETH in early testnet versions`}
           />
           <BridgeForm
             formData={formData}
