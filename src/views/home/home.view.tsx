@@ -30,7 +30,7 @@ const Home = (): JSX.Element => {
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const resetForm = () => {
+  const onResetForm = () => {
     setFormData(undefined);
   };
 
@@ -57,13 +57,14 @@ const Home = (): JSX.Element => {
             className={classes.maxEtherBridgeInfo}
             message={`ETH bridges in the Ethereum network are limited to ${
               maxEtherBridge ? ethersUtils.formatEther(maxEtherBridge) : "--"
-            } ETH in early testnet versions.`}
+            } ETH in early testnet versions`}
           />
           <BridgeForm
-            onSubmit={onFormSubmit}
             formData={formData}
-            resetForm={resetForm}
             account={account.data}
+            maxEtherBridge={maxEtherBridge}
+            onResetForm={onResetForm}
+            onSubmit={onFormSubmit}
           />
         </>
       )}

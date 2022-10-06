@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BigNumber, constants as ethersConstants } from "ethers";
@@ -11,7 +10,7 @@ import routes from "src/routes";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import Error from "src/views/shared/error/error.view";
 import Icon from "src/views/shared/icon/icon.view";
-import { getChainName, getCurrencySymbol } from "src/utils/labels";
+import { getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import {
@@ -31,7 +30,12 @@ import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
+import {
+  AUTO_REFRESH_RATE,
+  ETH_TOKEN_LOGO_URI,
+  FIAT_DISPLAY_PRECISION,
+  getEtherToken,
+} from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
@@ -171,12 +175,9 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (formData) {
-      const { token, from, amount } = formData;
+      const { token, from } = formData;
       const etherToken = getEtherToken(from);
       const isTokenEther = token.address === ethersConstants.AddressZero;
-
-      // TODO: Remove
-      setMaxPossibleAmountConsideringFee(amount);
 
       // Get the fiat price of Ether
       getTokenPrice({ token: etherToken, chain: from })
@@ -293,12 +294,12 @@ const BridgeConfirmation: FC = () => {
           });
       }
     };
-    // estimateFee();
-    // const intervalId = setInterval(estimateFee, AUTO_REFRESH_RATE);
+    estimateFee();
+    const intervalId = setInterval(estimateFee, AUTO_REFRESH_RATE);
 
-    // return () => {
-    //   clearInterval(intervalId);
-    // };
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [
     account,
     formData,
@@ -334,7 +335,7 @@ const BridgeConfirmation: FC = () => {
             } else {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  setError(`Switch to ${getChainName(from)} to continue`);
+                  setError(`Switch to ${from.name} to continue`);
                   setApprovalTask({ status: "pending" });
                 } else {
                   setApprovalTask({ status: "failed", error: parsed });
@@ -374,7 +375,7 @@ const BridgeConfirmation: FC = () => {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
                 if (parsed === "wrong-network") {
-                  setError(`Switch to ${getChainName(from)} to continue`);
+                  setError(`Switch to ${from.name} to continue`);
                 } else {
                   notifyError(error);
                 }
@@ -389,7 +390,7 @@ const BridgeConfirmation: FC = () => {
     !env ||
     !formData ||
     !tokenBalance ||
-    // !isAsyncTaskDataAvailable(estimatedFee) ||
+    !isAsyncTaskDataAvailable(estimatedFee) ||
     !maxPossibleAmountConsideringFee
   ) {
     return <PageLoader />;
@@ -412,19 +413,20 @@ const BridgeConfirmation: FC = () => {
       FIAT_DISPLAY_PRECISION
     );
 
-  // const fiatFee =
-  //   etherTokenFiatPrice &&
-  //   multiplyAmounts(
-  //     {
-  //       value: etherTokenFiatPrice,
-  //       precision: FIAT_DISPLAY_PRECISION,
-  //     },
-  //     {
-  //       value: estimatedFee.data,
-  //       precision: etherToken.decimals,
-  //     },
-  //     FIAT_DISPLAY_PRECISION
-  //   );
+  const fiatFee =
+    env.fiatExchangeRates.areEnabled &&
+    etherTokenFiatPrice &&
+    multiplyAmounts(
+      {
+        value: etherTokenFiatPrice,
+        precision: FIAT_DISPLAY_PRECISION,
+      },
+      {
+        value: estimatedFee.data,
+        precision: etherToken.decimals,
+      },
+      FIAT_DISPLAY_PRECISION
+    );
 
   const tokenAmountString = `${formatTokenAmount(maxPossibleAmountConsideringFee, token)} ${
     token.symbol
@@ -433,9 +435,9 @@ const BridgeConfirmation: FC = () => {
     ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
     : undefined;
 
-  // const feeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${
-  //   etherToken.symbol
-  // } ~ ${currencySymbol}${fiatFee ? formatFiatAmount(fiatFee) : "--"}`;
+  const etherFeeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${etherToken.symbol}`;
+  const fiatFeeString = fiatFee ? `${currencySymbol}${formatFiatAmount(fiatFee)}` : undefined;
+  const feeString = fiatFeeString ? `${etherFeeString} ~ ${fiatFeeString}` : etherFeeString;
 
   const fadeClass = isFadeVisible ? classes.fadeIn : classes.fadeOut;
 
@@ -458,15 +460,15 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />
-            <Typography type="body1">{getChainName(from)}</Typography>
+            <Typography type="body1">{from.name}</Typography>
           </div>
           <ArrowRightIcon className={classes.arrowIcon} />
           <div className={classes.chainBox}>
             <to.Icon />
-            <Typography type="body1">{getChainName(to)}</Typography>
+            <Typography type="body1">{to.name}</Typography>
           </div>
         </div>
-        {/* <div className={classes.feeBlock}>
+        <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
             <Icon className={fadeClass} url={ETH_TOKEN_LOGO_URI} size={20} />
@@ -474,7 +476,7 @@ const BridgeConfirmation: FC = () => {
               {feeString}
             </Typography>
           </div>
-        </div> */}
+        </div>
       </Card>
       <div className={classes.button}>
         <BridgeButton
