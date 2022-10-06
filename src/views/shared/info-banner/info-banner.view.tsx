@@ -15,7 +15,9 @@ const InfoBanner: FC<InfoBannerProps> = ({ message, className }) => {
   return (
     <div className={`${classes.infoBanner} ${className ?? ""}`}>
       <InfoIcon />
-      <Typography type="body2">{message}</Typography>
+      <Typography type="body2" className={classes.message}>
+        {message}
+      </Typography>
     </div>
   );
 };
