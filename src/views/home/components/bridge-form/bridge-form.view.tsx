@@ -4,7 +4,6 @@ import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "e
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
 import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
-import ChainList from "src/views/home/components/chain-list/chain-list.view";
 import TokenList from "src/views/home/components/token-list/token-list.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import Typography from "src/views/shared/typography/typography.view";
@@ -56,7 +55,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const [selectedChains, setSelectedChains] = useState<SelectedChains>();
   const [token, setToken] = useState<Token>();
   const [amount, setAmount] = useState<BigNumber>();
-  const [chains, setChains] = useState<Chain[]>();
   const [tokens, setTokens] = useState<Token[]>();
   const [filteredTokens, setFilteredTokens] = useState<Token[]>();
   const [tokenListSearchInputValue, setTokenListSearchInputValue] = useState<string>("");
@@ -81,18 +79,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const onAmountInputChange = ({ amount, error }: { amount?: BigNumber; error?: string }) => {
     setAmount(amount);
     setInputError(error);
-  };
-
-  const onChainButtonClick = (from: Chain) => {
-    if (env) {
-      const to = env.chains.find((chain) => chain.key !== from.key);
-
-      if (to) {
-        setSelectedChains({ from, to });
-        setChains(undefined);
-        setAmount(undefined);
-      }
-    }
   };
 
   const onTokenDropdownClick = () => {
@@ -374,13 +360,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
         </Button>
         {amount && inputError && <Error error={inputError} />}
       </div>
-      {chains && (
-        <ChainList
-          chains={chains}
-          onClick={onChainButtonClick}
-          onClose={() => setChains(undefined)}
-        />
-      )}
       {filteredTokens && (
         <TokenList
           chain={selectedChains.from}
