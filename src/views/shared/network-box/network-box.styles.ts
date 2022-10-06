@@ -9,12 +9,6 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     flexDirection: "column",
     alignItems: "center",
   },
-  header: {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   actionButton: {
     borderRadius: 48,
     display: "flex",
@@ -28,9 +22,6 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       background: theme.palette.grey.light,
     },
-  },
-  caretUp: {
-    transform: "rotate(180deg)",
   },
   listItem: {
     padding: [theme.spacing(0.25), 0],

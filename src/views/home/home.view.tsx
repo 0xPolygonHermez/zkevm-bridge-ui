@@ -58,15 +58,15 @@ const Home = (): JSX.Element => {
             <MetaMaskIcon className={classes.metaMaskIcon} />
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
+          <div className={classes.networkBoxWrapper}>
+            <NetworkBox onChangeNetwork={onChangeNetwork} />
+          </div>
           <InfoBanner
             className={classes.maxEtherBridgeInfo}
             message={`ETH bridges in the Ethereum network are limited to ${
               maxEtherBridge ? ethersUtils.formatEther(maxEtherBridge) : "--"
             } ETH in early testnet versions`}
           />
-          <div className={classes.networkBoxWrapper}>
-            <NetworkBox onChangeNetwork={onChangeNetwork} />
-          </div>
           <BridgeForm
             formData={formData}
             account={account.data}
