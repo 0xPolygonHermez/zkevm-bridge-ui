@@ -10,7 +10,7 @@ interface NetworkBoxProps {
   env: Env;
 }
 
-const InfoBanner: FC<NetworkBoxProps> = ({ env, changeNetwork }) => {
+const NetworkBox: FC<NetworkBoxProps> = ({ env, changeNetwork }) => {
   const classes = useNetworkBoxStyles();
 
   return (
@@ -63,4 +63,4 @@ const InfoBanner: FC<NetworkBoxProps> = ({ env, changeNetwork }) => {
   );
 };
 
-export default InfoBanner;
+export default NetworkBox;
