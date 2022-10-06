@@ -199,7 +199,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const estimateBridgeFee = useCallback(
     (params: EstimateBridgeFeeParams) => {
-      return estimateBridgeGasLimit({ ...params }).then((gasLimit) =>
+      return estimateBridgeGasLimit(params).then((gasLimit) =>
         estimateGasPrice({ chain: params.from, gasLimit })
       );
     },
