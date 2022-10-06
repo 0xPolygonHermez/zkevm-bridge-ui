@@ -23,6 +23,9 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
   },
+  maxEtherBridgeInfo: {
+    margin: [0, "auto", theme.spacing(3)],
+  },
 }));
 
 export default useHomeStyles;

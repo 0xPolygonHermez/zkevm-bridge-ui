@@ -43,6 +43,10 @@ import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from 
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
+interface GetMaxEtherBridgeParams {
+  chain: Chain;
+}
+
 interface EstimateBridgeFeeParams {
   from: Chain;
   token: Token;
@@ -98,6 +102,7 @@ interface ClaimParams {
 }
 
 interface BridgeContext {
+  getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
   estimateBridgeFee: (params: EstimateBridgeFeeParams) => Promise<BigNumber>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
@@ -112,6 +117,9 @@ interface BridgeContext {
 const bridgeContextNotReadyErrorMsg = "The bridge context is not yet ready";
 
 const bridgeContext = createContext<BridgeContext>({
+  getMaxEtherBridge: () => {
+    return Promise.reject(bridgeContextNotReadyErrorMsg);
+  },
   estimateBridgeFee: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -137,6 +145,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const { connectedProvider, account, changeNetwork } = useProvidersContext();
   const { getToken, addWrappedToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
+
+  const getMaxEtherBridge = useCallback(
+    ({ chain }: GetMaxEtherBridgeParams): Promise<BigNumber> => {
+      return Bridge__factory.connect(chain.bridgeContractAddress, chain.provider).maxEtherBridge();
+    },
+    []
+  );
 
   const estimateGasPrice = useCallback(
     ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
@@ -164,24 +179,28 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Bridge contract is not available");
       }
 
-      return contract.estimateGas
-        .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
-          ...overrides,
-          from: destinationAddress,
-        })
-        .then((gasLimit) => {
-          const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
+      if (from.key === "ethereum") {
+        return contract.estimateGas
+          .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
+            ...overrides,
+            from: destinationAddress,
+          })
+          .then((gasLimit) => {
+            const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
 
-          return gasLimit.add(gasIncrease);
-        });
+            return gasLimit.add(gasIncrease);
+          });
+      }
+
+      return Promise.resolve(BigNumber.from(300000));
     },
     []
   );
 
   const estimateBridgeFee = useCallback(
-    ({ from, ...rest }: EstimateBridgeFeeParams) => {
-      return estimateBridgeGasLimit({ from, ...rest }).then((safeGasLimit) =>
-        estimateGasPrice({ chain: from, gasLimit: safeGasLimit })
+    (params: EstimateBridgeFeeParams) => {
+      return estimateBridgeGasLimit({ ...params }).then((gasLimit) =>
+        estimateGasPrice({ chain: params.from, gasLimit })
       );
     },
     [estimateBridgeGasLimit, estimateGasPrice]
@@ -712,15 +731,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         from.bridgeContractAddress,
         connectedProvider.provider.getSigner()
       );
-      const gasPrice = await from.provider.getGasPrice();
-      const gasLimit =
-        from.key === "ethereum"
-          ? await estimateBridgeGasLimit({ from, to, token, destinationAddress })
-          : 300000;
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
-        gasPrice,
-        gasLimit,
+        gasPrice: await from.provider.getGasPrice(),
+        gasLimit: await estimateBridgeGasLimit({ from, to, token, destinationAddress }),
       };
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
@@ -856,6 +870,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
+      getMaxEtherBridge,
       estimateBridgeFee,
       getBridge,
       fetchBridges,
@@ -863,7 +878,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       bridge,
       claim,
     }),
-    [estimateBridgeFee, getBridge, fetchBridges, getPendingBridges, bridge, claim]
+    [
+      getMaxEtherBridge,
+      estimateBridgeFee,
+      getBridge,
+      fetchBridges,
+      getPendingBridges,
+      bridge,
+      claim,
+    ]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;

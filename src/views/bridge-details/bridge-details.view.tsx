@@ -20,7 +20,7 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
 import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
+import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
@@ -100,9 +100,7 @@ const BridgeDetails: FC = () => {
             if (isMetamaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  setIncorrectNetworkMessage(
-                    `Switch to ${getChainName(bridge.data.to)} to continue`
-                  );
+                  setIncorrectNetworkMessage(`Switch to ${bridge.data.to.name} to continue`);
                 } else {
                   notifyError(error);
                 }
@@ -338,7 +336,7 @@ const BridgeDetails: FC = () => {
             </div>
             <div className={classes.row}>
               <Typography type="body2" className={classes.alignRow}>
-                Step 1 Fee ({getChainName(bridge.data.from)})
+                Step 1 Fee ({bridge.data.from.name})
               </Typography>
               <Typography type="body1" className={classes.alignRow}>
                 {step1FeeString}
@@ -348,7 +346,7 @@ const BridgeDetails: FC = () => {
             {bridge.data.status === "completed" && (
               <div className={classes.row}>
                 <Typography type="body2" className={classes.alignRow}>
-                  Step 2 Fee ({getChainName(bridge.data.to)})
+                  Step 2 Fee ({bridge.data.to.name})
                 </Typography>
                 <Typography type="body1" className={classes.alignRow}>
                   {step2FeeString}

@@ -3,6 +3,10 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
+  spinner: {
+    margin: "auto",
+    marginTop: theme.spacing(7),
+  },
   form: {
     maxWidth: theme.maxWidth,
     margin: "auto",
