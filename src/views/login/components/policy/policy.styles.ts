@@ -19,12 +19,6 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     gap: theme.spacing(3),
   },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
   buttonsBox: {
     display: "flex",
     justifyContent: "space-around",

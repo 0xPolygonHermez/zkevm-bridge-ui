@@ -23,7 +23,7 @@ const Policy: FC<PolicyProps> = ({ onClose, onConnect }) => {
     <Portal>
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.header}>
+          <div>
             <Typography type="body2">
               By connecting a wallet, you agree to Polygon zkEVM Terms of Service and acknowledge
               that you have read and understand the Polygon zkEVM Protocol Disclaimer.
