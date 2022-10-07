@@ -26,6 +26,11 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
   maxEtherBridgeInfo: {
     margin: [0, "auto", theme.spacing(3)],
   },
+  networkBoxWrapper: {
+    maxWidth: theme.maxWidth,
+    width: "100%",
+    margin: [0, "auto", theme.spacing(3)],
+  },
 }));
 
 export default useHomeStyles;

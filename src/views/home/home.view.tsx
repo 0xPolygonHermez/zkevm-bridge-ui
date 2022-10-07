@@ -10,20 +10,26 @@ import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useFormContext } from "src/contexts/form.context";
-import { FormData } from "src/domain";
+import { Chain, FormData } from "src/domain";
 import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
+import NetworkBox from "src/views/shared/network-box/network-box.view";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useErrorContext } from "src/contexts/error.context";
 
 const Home = (): JSX.Element => {
+  const callIfMounted = useCallIfMounted();
   const classes = useHomeStyles();
   const navigate = useNavigate();
+  const { notifyError } = useErrorContext();
   const { formData, setFormData } = useFormContext();
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
-  const { account } = useProvidersContext();
+  const { account, changeNetwork } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -32,6 +38,16 @@ const Home = (): JSX.Element => {
 
   const onResetForm = () => {
     setFormData(undefined);
+  };
+
+  const onChangeNetwork = (chain: Chain) => {
+    changeNetwork(chain).catch((error) => {
+      callIfMounted(() => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          notifyError(error);
+        }
+      });
+    });
   };
 
   useEffect(() => {
@@ -52,6 +68,9 @@ const Home = (): JSX.Element => {
           <div className={classes.ethereumAddress}>
             <MetaMaskIcon className={classes.metaMaskIcon} />
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
+          </div>
+          <div className={classes.networkBoxWrapper}>
+            <NetworkBox onChangeNetwork={onChangeNetwork} />
           </div>
           <InfoBanner
             className={classes.maxEtherBridgeInfo}

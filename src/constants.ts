@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
-import { Chain, Currency, Token } from "src/domain";
+import { Chain, Currency, EthereumChain, Token, ZkEVMChain } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
@@ -64,7 +64,7 @@ export const getChains = ({
     bridgeContractAddress: string;
     networkId: number;
   };
-}): Promise<[Chain, Chain]> => {
+}): Promise<[EthereumChain, ZkEVMChain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
   const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
   const poeContract = ProofOfEfficiency__factory.connect(
@@ -91,6 +91,7 @@ export const getChains = ({
         symbol: "ETH",
         decimals: 18,
       },
+      poeContractAddress: ethereum.poeContractAddress,
     },
     {
       key: "polygon-zkevm",

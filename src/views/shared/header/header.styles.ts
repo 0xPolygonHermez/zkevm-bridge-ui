@@ -51,7 +51,7 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     },
   },
   subtitleWrapper: {
-    marginTop: theme.spacing(1.25),
+    marginTop: theme.spacing(1),
   },
 }));
 
