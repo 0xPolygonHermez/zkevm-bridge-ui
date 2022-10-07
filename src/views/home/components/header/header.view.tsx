@@ -13,7 +13,7 @@ const Header: FC = () => {
 
   return (
     <header className={classes.header}>
-      <div className={classes.leftBlock}>
+      <div className={`${classes.block} ${classes.leftBlock}`}>
         <Link title="Activity" to={routes.activity.path} className={classes.link}>
           <ClockIcon />
         </Link>
@@ -21,10 +21,10 @@ const Header: FC = () => {
           <SettingIcon />
         </Link>
       </div>
-      <div className={classes.centerBlock}>
+      <div className={`${classes.block} ${classes.centerBlock}`}>
         <PolygonZkEVMLogo className={classes.logo} />
       </div>
-      <div className={classes.rightBlock}>
+      <div className={`${classes.block} ${classes.rightBlock}`}>
         <NetworkSelector />
       </div>
     </header>

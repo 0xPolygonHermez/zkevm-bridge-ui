@@ -25,23 +25,19 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
   bottomRow: {
     marginTop: theme.spacing(1.25),
   },
-  leftBlock: {
+  block: {
     flex: 1,
     display: "flex",
-    justifyContent: "left",
     gap: theme.spacing(0.75),
+  },
+  leftBlock: {
+    justifyContent: "left",
   },
   centerBlock: {
-    flex: 1,
-    display: "flex",
     justifyContent: "center",
-    gap: theme.spacing(0.75),
   },
   rightBlock: {
-    flex: 1,
-    display: "flex",
     justifyContent: "end",
-    gap: theme.spacing(0.75),
   },
   sideButton: {
     cursor: "pointer ",

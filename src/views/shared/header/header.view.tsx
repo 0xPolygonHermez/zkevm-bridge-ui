@@ -21,15 +21,15 @@ const Header: FC<HeaderProps> = ({ title, backTo, Subtitle }) => {
   return (
     <header className={classes.header}>
       <div className={classes.topRow}>
-        <div className={classes.leftBlock}>
+        <div className={`${classes.block} ${classes.leftBlock}`}>
           <Link to={route} state={backTo.state} className={classes.sideButton}>
             <ArrowLeftIcon className={classes.icon} />
           </Link>
         </div>
-        <div className={classes.centerBlock}>
+        <div className={`${classes.block} ${classes.centerBlock}`}>
           <Typography type="h1">{title}</Typography>
         </div>
-        <div className={classes.rightBlock}>
+        <div className={`${classes.block} ${classes.rightBlock}`}>
           <NetworkSelector />
         </div>
       </div>
