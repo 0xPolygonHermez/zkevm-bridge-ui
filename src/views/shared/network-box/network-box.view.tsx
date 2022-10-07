@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import { Chain } from "src/domain";
 import Card from "src/views/shared/card/card.view";
 import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
@@ -14,6 +15,7 @@ interface NetworkBoxProps {
 const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
+  const { connectedProvider } = useProvidersContext();
 
   if (!env) {
     return null;
@@ -64,6 +66,7 @@ const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
         </ul>
         <button
           className={classes.metaMaskButton}
+          disabled={connectedProvider?.chainId === env.chains[1].chainId}
           onClick={() => void onChangeNetwork(env.chains[1])}
         >
           <MetaMaskIcon className={classes.metaMaskIcon} />

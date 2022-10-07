@@ -39,6 +39,11 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     "&:hover": {
       background: theme.palette.grey.main,
     },
+    "&:disabled": {
+      cursor: "inherit",
+      background: theme.palette.white,
+      border: `1px solid ${theme.palette.grey.light}`,
+    },
   },
   metaMaskIcon: {
     width: 20,
