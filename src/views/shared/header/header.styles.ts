@@ -6,7 +6,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
   header: {
     position: "relative",
     width: "100%",
-    maxWidth: theme.maxWidth,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
