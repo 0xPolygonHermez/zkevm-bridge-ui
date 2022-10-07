@@ -17,8 +17,13 @@ const NetworkSelector: FC<NetworkSelectorProps> = ({ chains, selectedChain, onSe
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
-    <div>
-      <button className={classes.networkButton} onClick={() => setIsOpen(true)} type="button">
+    <>
+      <button
+        title={selectedChain.name}
+        className={classes.networkButton}
+        onClick={() => setIsOpen(true)}
+        type="button"
+      >
         <selectedChain.Icon />
         <Typography type="body1" className={classes.networkButtonText}>
           {selectedChain.name}
@@ -37,7 +42,7 @@ const NetworkSelector: FC<NetworkSelectorProps> = ({ chains, selectedChain, onSe
           }}
         />
       )}
-    </div>
+    </>
   );
 };
 

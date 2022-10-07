@@ -4,6 +4,7 @@ import { Theme } from "src/styles/theme";
 
 const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
   networkButton: {
+    maxWidth: 200,
     padding: [theme.spacing(1), theme.spacing(1.25)],
     borderRadius: 8,
     display: "flex",
@@ -21,6 +22,8 @@ const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
     fontSize: "14px !important",
     display: "none",
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     [theme.breakpoints.upSm]: {
       display: "block",
     },
