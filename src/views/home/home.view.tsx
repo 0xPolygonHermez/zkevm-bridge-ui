@@ -10,7 +10,6 @@ import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useFormContext } from "src/contexts/form.context";
-import { Chain, FormData } from "src/domain";
 import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
@@ -19,6 +18,7 @@ import NetworkBox from "src/views/shared/network-box/network-box.view";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useErrorContext } from "src/contexts/error.context";
+import { Chain, FormData } from "src/domain";
 
 const Home = (): JSX.Element => {
   const callIfMounted = useCallIfMounted();
@@ -51,7 +51,7 @@ const Home = (): JSX.Element => {
   };
 
   useEffect(() => {
-    if (env?.chains) {
+    if (env) {
       void getMaxEtherBridge({ chain: env.chains[0] })
         .then(setMaxEtherBridge)
         .catch(() => {

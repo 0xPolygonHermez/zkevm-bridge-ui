@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 
-import useListStyles from "src/views/home/components/chain-list/chain-list.styles";
+import useListStyles from "src/views/shared/chain-list/chain-list.styles";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Portal from "src/views/shared/portal/portal.view";
