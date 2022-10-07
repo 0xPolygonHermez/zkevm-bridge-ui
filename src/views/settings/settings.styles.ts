@@ -54,6 +54,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
   logout: {
     padding: [0, theme.spacing(3), theme.spacing(3)],
     cursor: "pointer",
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },

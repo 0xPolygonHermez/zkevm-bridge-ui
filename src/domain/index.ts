@@ -4,7 +4,7 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 
 export type ChainKey = "ethereum" | "polygon-zkevm";
 
-export interface Chain {
+export interface CommonChain {
   key: ChainKey;
   name: string;
   Icon: ComponentType<{ className?: string }>;
@@ -20,6 +20,16 @@ export interface Chain {
   };
 }
 
+export type EthereumChain = CommonChain & {
+  key: "ethereum";
+  poeContractAddress: string;
+};
+
+export type ZkEVMChain = CommonChain & {
+  key: "polygon-zkevm";
+};
+
+export type Chain = EthereumChain | ZkEVMChain;
 export interface Token {
   name: string;
   symbol: string;
@@ -36,7 +46,7 @@ export interface Token {
 
 export interface Env {
   bridgeApiUrl: string;
-  chains: [Chain, Chain];
+  chains: [EthereumChain, ZkEVMChain];
   fiatExchangeRates:
     | {
         areEnabled: false;

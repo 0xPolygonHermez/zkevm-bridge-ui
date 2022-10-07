@@ -17,6 +17,7 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
   },
   logo: {
+    height: 120,
     marginTop: theme.spacing(8),
     marginBottom: theme.spacing(3),
   },
