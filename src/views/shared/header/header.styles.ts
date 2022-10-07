@@ -44,9 +44,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(0.75),
   },
   sideButton: {
-    position: "absolute",
-    top: 0,
-    left: 0,
     cursor: "pointer ",
     transition: theme.hoverTransition,
     backgroundColor: theme.palette.white,
