@@ -1,0 +1,30 @@
+import { createUseStyles } from "react-jss";
+
+import { Theme } from "src/styles/theme";
+
+const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
+  networkButton: {
+    padding: [theme.spacing(1), theme.spacing(1.25)],
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    border: "none",
+    background: theme.palette.white,
+    cursor: "pointer",
+    gap: theme.spacing(1),
+    "&:hover": {
+      backgroundColor: theme.palette.grey.main,
+    },
+  },
+  networkButtonText: {
+    fontSize: "14px !important",
+    display: "none",
+    whiteSpace: "nowrap",
+    [theme.breakpoints.upSm]: {
+      display: "block",
+    },
+  },
+}));
+
+export default useNetworkSelectorStyles;
