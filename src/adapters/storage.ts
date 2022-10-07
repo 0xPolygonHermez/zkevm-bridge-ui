@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import * as constants from "src/constants";
-import { Currency, Token, Chain, Env } from "src/domain";
+import { Currency, Token, Chain, Env, PolicyCheck } from "src/domain";
 import { tokenParser } from "src/adapters/tokens";
 import {
   PendingTx,
@@ -135,6 +135,19 @@ export function removePendingTx(depositTxHash: string): void {
   );
 
   setSerializedPendingTxs(updatedSerializedPendingTxs);
+}
+
+// PolicyCheck
+export function getPolicyCheck(): PolicyCheck {
+  return getStorageByKey({
+    key: constants.POLICY_CHECK_KEY,
+    defaultValue: PolicyCheck.Unchecked,
+    parser: z.nativeEnum(PolicyCheck),
+  });
+}
+
+export function setPolicyCheck(): PolicyCheck {
+  return setStorageByKey({ key: constants.POLICY_CHECK_KEY, value: PolicyCheck.Checked });
 }
 
 // Helpers

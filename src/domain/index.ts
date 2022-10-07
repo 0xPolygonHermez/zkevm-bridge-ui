@@ -173,3 +173,8 @@ export interface FormData {
   token: Token;
   amount: BigNumber;
 }
+
+export enum PolicyCheck {
+  Checked = "checked",
+  Unchecked = "unchecked",
+}
