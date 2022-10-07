@@ -5,7 +5,7 @@ import { Theme } from "src/styles/theme";
 const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
   networkButton: {
     maxWidth: 200,
-    padding: [theme.spacing(1), theme.spacing(1.25)],
+    padding: theme.spacing(1.25),
     borderRadius: 8,
     display: "flex",
     alignItems: "center",

@@ -16,12 +16,32 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
       margin: [theme.spacing(3), "auto", 0],
     },
   },
-  titleWrapper: {
+  topRow: {
     width: "100%",
-    padding: [theme.spacing(0.75), 0],
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+  },
+  bottomRow: {
+    marginTop: theme.spacing(1.25),
+  },
+  leftBlock: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "left",
+    gap: theme.spacing(0.75),
+  },
+  centerBlock: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    gap: theme.spacing(0.75),
+  },
+  rightBlock: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "end",
+    gap: theme.spacing(0.75),
   },
   sideButton: {
     position: "absolute",
@@ -49,9 +69,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
       width: theme.spacing(2.5),
       height: theme.spacing(2.5),
     },
-  },
-  subtitleWrapper: {
-    marginTop: theme.spacing(1.25),
   },
 }));
 
