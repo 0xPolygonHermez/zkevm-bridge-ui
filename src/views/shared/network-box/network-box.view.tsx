@@ -24,7 +24,7 @@ const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
   return (
     <Card>
       <div className={classes.networkBox}>
-        <Typography type="body1">Polygon zkEVM network</Typography>
+        <Typography type="body1">Polygon zkEVM testnet</Typography>
         <ul>
           <li className={classes.listItem}>
             <Typography type="body2">RPC URL: {env.chains[1].provider.connection.url}</Typography>
