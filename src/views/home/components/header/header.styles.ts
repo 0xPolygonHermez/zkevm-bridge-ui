@@ -41,13 +41,6 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
       backgroundColor: theme.palette.grey.main,
     },
   },
-  activityLabel: {
-    display: "none",
-    [theme.breakpoints.upSm]: {
-      display: "block",
-      marginRight: theme.spacing(1),
-    },
-  },
 }));
 
 export default useHeaderStyles;
