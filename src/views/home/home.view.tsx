@@ -14,8 +14,7 @@ import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import { FormData, Chain } from "src/domain";
+import { FormData } from "src/domain";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
@@ -24,7 +23,6 @@ const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
-  const [selectedChain, setSelectedChain] = useState<Chain>();
   const { account } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
@@ -45,16 +43,6 @@ const Home = (): JSX.Element => {
         });
     }
   }, [env, getMaxEtherBridge]);
-
-  useEffect(() => {
-    if (env) {
-      setSelectedChain(env.chains[0]);
-    }
-  }, [env]);
-
-  if (!env || !selectedChain) {
-    return <PageLoader />;
-  }
 
   return (
     <div className={classes.contentWrapper}>
