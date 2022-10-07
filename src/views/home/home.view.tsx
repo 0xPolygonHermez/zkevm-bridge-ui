@@ -10,11 +10,12 @@ import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useFormContext } from "src/contexts/form.context";
-import { FormData } from "src/domain";
 import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import { FormData, Chain } from "src/domain";
 
 const Home = (): JSX.Element => {
   const classes = useHomeStyles();
@@ -23,6 +24,7 @@ const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
+  const [selectedChain, setSelectedChain] = useState<Chain>();
   const { account } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
@@ -35,7 +37,7 @@ const Home = (): JSX.Element => {
   };
 
   useEffect(() => {
-    if (env?.chains) {
+    if (env) {
       void getMaxEtherBridge({ chain: env.chains[0] })
         .then(setMaxEtherBridge)
         .catch(() => {
@@ -44,9 +46,19 @@ const Home = (): JSX.Element => {
     }
   }, [env, getMaxEtherBridge]);
 
+  useEffect(() => {
+    if (env) {
+      setSelectedChain(env.chains[0]);
+    }
+  }, [env]);
+
+  if (!env || !selectedChain) {
+    return <PageLoader />;
+  }
+
   return (
     <div className={classes.contentWrapper}>
-      <Header />
+      <Header chains={env.chains} selectedChain={selectedChain} onSelect={setSelectedChain} />
       {account.status === "successful" && (
         <>
           <div className={classes.ethereumAddress}>

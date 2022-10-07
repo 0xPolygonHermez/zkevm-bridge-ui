@@ -10,17 +10,26 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     margin: [theme.spacing(2), "auto", 0],
   },
-  logoWrapper: {
+  leftBlock: {
     flex: 1,
-    height: 56,
     display: "flex",
-    alignItems: "center",
-    textAlign: "center",
-    flexDirection: "column",
+    justifyContent: "left",
+    gap: theme.spacing(0.75),
   },
-  appName: {
-    marginTop: theme.spacing(0.5),
-    color: theme.palette.black,
+  centerBlock: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    gap: theme.spacing(0.75),
+  },
+  rightBlock: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "end",
+    gap: theme.spacing(0.75),
+  },
+  logo: {
+    height: 56,
   },
   link: {
     display: "flex",
