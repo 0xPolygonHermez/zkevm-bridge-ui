@@ -16,10 +16,15 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 import NetworkBox from "src/views/shared/network-box/network-box.view";
+import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useErrorContext } from "src/contexts/error.context";
 
 const Home = (): JSX.Element => {
+  const callIfMounted = useCallIfMounted();
   const classes = useHomeStyles();
   const navigate = useNavigate();
+  const { notifyError } = useErrorContext();
   const { formData, setFormData } = useFormContext();
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
@@ -36,7 +41,13 @@ const Home = (): JSX.Element => {
   };
 
   const onChangeNetwork = (chain: Chain) => {
-    void changeNetwork(chain);
+    changeNetwork(chain).catch((error) => {
+      callIfMounted(() => {
+        if (isMetamaskUserRejectedRequestError(error) === false) {
+          notifyError(error);
+        }
+      });
+    });
   };
 
   useEffect(() => {
