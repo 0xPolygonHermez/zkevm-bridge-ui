@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
 import { FC } from "react";
+import { Link } from "react-router-dom";
 
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { ReactComponent as SettingIcon } from "src/assets/icons/setting.svg";
@@ -7,16 +7,10 @@ import { ReactComponent as ClockIcon } from "src/assets/icons/clock.svg";
 import useHeaderStyles from "src/views/home/components/header/header.styles";
 import NetworkSelector from "src/views/shared/network-selector/network-selector.view";
 import routes from "src/routes";
-import { Chain } from "src/domain";
 
-interface HeaderProps {
-  chains: Chain[];
-  selectedChain: Chain;
-  onSelect: (chain: Chain) => void;
-}
-
-const Header: FC<HeaderProps> = ({ chains, selectedChain, onSelect }: HeaderProps) => {
+const Header: FC = () => {
   const classes = useHeaderStyles();
+
   return (
     <header className={classes.header}>
       <div className={classes.leftBlock}>
@@ -31,7 +25,7 @@ const Header: FC<HeaderProps> = ({ chains, selectedChain, onSelect }: HeaderProp
         <PolygonZkEVMLogo className={classes.logo} />
       </div>
       <div className={classes.rightBlock}>
-        <NetworkSelector chains={chains} selectedChain={selectedChain} onSelect={onSelect} />
+        <NetworkSelector />
       </div>
     </header>
   );

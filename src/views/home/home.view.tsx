@@ -58,7 +58,7 @@ const Home = (): JSX.Element => {
 
   return (
     <div className={classes.contentWrapper}>
-      <Header chains={env.chains} selectedChain={selectedChain} onSelect={setSelectedChain} />
+      <Header />
       {account.status === "successful" && (
         <>
           <div className={classes.ethereumAddress}>
