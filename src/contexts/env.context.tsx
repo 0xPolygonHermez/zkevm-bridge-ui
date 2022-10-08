@@ -13,6 +13,7 @@ import { Env } from "src/domain";
 import { useErrorContext } from "src/contexts/error.context";
 import { useLocation, useNavigate } from "react-router-dom";
 import routes from "src/routes";
+import { providerError } from "src/adapters/error";
 
 const envContext = createContext<Env | undefined>(undefined);
 
@@ -26,8 +27,10 @@ const EnvProvider: FC<PropsWithChildren> = (props) => {
     loadEnv()
       .then(setEnv)
       .catch((e) => {
-        if (location.pathname !== routes.underMaintenance.path && e === "noNetwork") {
-          navigate(routes.underMaintenance.path);
+        const error = providerError.safeParse(e);
+
+        if (location.pathname !== routes.underMaintenance.path && error.success) {
+          navigate(routes.underMaintenance.path, { state: error.data });
         } else if (location.pathname !== routes.underMaintenance.path) {
           notifyError(e);
         }

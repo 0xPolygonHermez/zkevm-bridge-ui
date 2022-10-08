@@ -83,6 +83,13 @@ export const metamaskUnknownChainError = StrictSchema<MetamaskUnknownChainError>
   })
 );
 
+export enum ProviderError {
+  Ethereum = "Ethereum",
+  PolygonZkEVM = "PolygonZkEVM",
+}
+
+export const providerError = StrictSchema<ProviderError>()(z.nativeEnum(ProviderError));
+
 function sanitizeErrorMessage(errorMessage: string): string {
   try {
     return JSON.stringify(JSON.parse(errorMessage));
