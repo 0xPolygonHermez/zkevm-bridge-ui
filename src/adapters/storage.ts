@@ -75,7 +75,7 @@ export function removeCustomToken(token: Token): Token[] {
 
 // Pending txs
 export function getPendingTxs(env: Env): PendingTx[] {
-  const pendingTxs = getStorageByKey({
+  return getStorageByKey({
     key: constants.PENDING_TXS_KEY,
     defaultValue: [],
     parser: z.array(z.unknown()).transform((unknownList) =>
@@ -85,7 +85,6 @@ export function getPendingTxs(env: Env): PendingTx[] {
       }, [])
     ),
   });
-  return setPendingTxs(pendingTxs);
 }
 
 export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
