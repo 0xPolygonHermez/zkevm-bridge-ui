@@ -4,6 +4,7 @@ import Settings from "src/views/settings/settings.view";
 import Activity from "src/views/activity/activity.view";
 import BridgeDetails from "src/views/bridge-details/bridge-details.view";
 import BridgeConfirmation from "src/views/bridge-confirmation/bridge-confirmation.view";
+import UnderMaintenance from "src/views/under-maintenance/under-maintenance.view";
 
 const routes = {
   home: {
@@ -35,6 +36,11 @@ const routes = {
     path: "/bridge-confirmation",
     Component: BridgeConfirmation,
     isPrivate: true,
+  },
+  underMaintenance: {
+    path: "/under-maintenance",
+    Component: UnderMaintenance,
+    isPrivate: false,
   },
 };
 

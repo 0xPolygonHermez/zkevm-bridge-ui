@@ -73,8 +73,8 @@ export const getChains = ({
   );
 
   return Promise.all([
-    ethereumProvider.getNetwork(),
-    polygonZkEVMProvider.getNetwork(),
+    ethereumProvider.getNetwork().catch(() => Promise.reject("noNetwork")),
+    polygonZkEVMProvider.getNetwork().catch(() => Promise.reject("noNetwork")),
     poeContract.networkName(),
   ]).then(([ethereumNetwork, polygonZkEVMNetwork, polygonZkEVMNetworkName]) => [
     {
