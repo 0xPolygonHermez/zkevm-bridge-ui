@@ -52,7 +52,7 @@ const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
-              PoE Smart Contract:{" "}
+              L1 Goerli Smart Contract:{" "}
               <a
                 href={`${env.chains[0].explorerUrl}/address/${env.chains[0].poeContractAddress}`}
                 rel="noreferrer"

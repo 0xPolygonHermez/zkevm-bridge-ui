@@ -86,7 +86,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               if (!supportedChainIds.includes(requestedChainId)) {
                 return setAccount({
                   status: "failed",
-                  error: "Switch your network to Ethereum or Polygon zkEVM to continue",
+                  error:
+                    "Switch your network to Goerli Ethereum testnet or Polygon zkEVM to continue",
                 });
               }
 
