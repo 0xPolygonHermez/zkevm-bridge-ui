@@ -90,17 +90,13 @@ const Activity: FC = () => {
     (bridges: Bridge[]) => {
       void getPendingBridges(bridges).then((pendingBridges) => {
         callIfMounted(() => {
-          const filteredApiBridges = bridges.filter((apiBridge) => {
-            if (
-              apiBridge.status === "on-hold" &&
+          const filteredApiBridges = bridges.filter((bridge) => {
+            const isBridgePresentInPendingBridges =
+              (bridge.status === "pending" || bridge.status === "on-hold") &&
               pendingBridges.find(
-                (pendingBridge) => pendingBridge.depositTxHash === apiBridge.depositTxHash
-              )
-            ) {
-              return false;
-            } else {
-              return true;
-            }
+                (pendingBridge) => pendingBridge.depositTxHash === bridge.depositTxHash
+              ) !== undefined;
+            return isBridgePresentInPendingBridges ? false : true;
           });
           setLastLoadedItem(bridges.length);
           setBridgeList({ status: "successful", data: [...pendingBridges, ...filteredApiBridges] });
