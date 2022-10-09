@@ -65,7 +65,6 @@ export interface RouterState {
 
 export enum EthereumChainId {
   MAINNET = 1,
-  RINKEBY = 4,
   GOERLI = 5,
 }
 
