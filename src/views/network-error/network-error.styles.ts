@@ -22,14 +22,14 @@ const useUnderMaintenanceStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
     backgroundColor: theme.palette.white,
     padding: theme.spacing(3),
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
   },
   button: {
     border: "none",
     backgroundColor: theme.palette.primary.main,
     padding: [theme.spacing(1), theme.spacing(5)],
     color: theme.palette.white,
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     marginTop: theme.spacing(4),
     cursor: "pointer",
     "&:hover": {

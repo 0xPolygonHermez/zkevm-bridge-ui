@@ -1,24 +1,26 @@
 import { FC } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import useUnderMaintenanceStyles from "src/views/under-maintenance/under-maintenance.styles";
+import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
+import { ProviderError, providerError } from "src/adapters/error";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
-import { providerError } from "src/adapters/error";
 
-const UnderMaintenance: FC = () => {
-  const classes = useUnderMaintenanceStyles();
+const NetworkError: FC = () => {
+  const classes = useNetworkErrorStyles();
   const navigate = useNavigate();
   const { state } = useLocation();
 
   const parsedProviderError = providerError.nullable().safeParse(state);
 
-  const renderProviderError = () => {
-    if (parsedProviderError.success && parsedProviderError.data) {
-      return `${parsedProviderError.data} testnet node`;
+  const getProviderError = () => {
+    if (parsedProviderError.success && parsedProviderError.data !== null) {
+      return parsedProviderError.data === ProviderError.Ethereum
+        ? "We cannot connect to the Ethereum node."
+        : "We cannot connect to the Polygon zkEVM node.";
     }
-    return "L1 or L2 testnet nodes";
+    return "We cannot connect to the node on L1 or L2.";
   };
 
   return (
@@ -26,7 +28,7 @@ const UnderMaintenance: FC = () => {
       <PolygonZkEVMLogo className={classes.logo} />
       <div className={classes.textBox}>
         <Typography type="h1">Network Error</Typography>
-        <Typography type="body1">We can not connect with the {renderProviderError()}.</Typography>
+        <Typography type="body1">{getProviderError()}</Typography>
         <Typography type="body2">It will be operative again soon</Typography>
       </div>
       <button type="button" onClick={() => navigate(routes.login.path)} className={classes.button}>
@@ -36,4 +38,4 @@ const UnderMaintenance: FC = () => {
   );
 };
 
-export default UnderMaintenance;
+export default NetworkError;

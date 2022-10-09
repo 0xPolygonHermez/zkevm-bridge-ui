@@ -4,7 +4,7 @@ import Settings from "src/views/settings/settings.view";
 import Activity from "src/views/activity/activity.view";
 import BridgeDetails from "src/views/bridge-details/bridge-details.view";
 import BridgeConfirmation from "src/views/bridge-confirmation/bridge-confirmation.view";
-import UnderMaintenance from "src/views/under-maintenance/under-maintenance.view";
+import NetworkError from "src/views/network-error/network-error.view";
 
 const routes = {
   home: {
@@ -37,9 +37,9 @@ const routes = {
     Component: BridgeConfirmation,
     isPrivate: true,
   },
-  underMaintenance: {
-    path: "/under-maintenance",
-    Component: UnderMaintenance,
+  networkError: {
+    path: "/network-error",
+    Component: NetworkError,
     isPrivate: false,
   },
 };
