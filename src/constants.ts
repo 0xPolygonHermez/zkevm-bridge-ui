@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
-import { Chain, Currency, EthereumChain, Token, ZkEVMChain } from "src/domain";
+import { Env, Chain, Currency, EthereumChain, Token, ZkEVMChain } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
@@ -137,3 +137,7 @@ export const getUsdcToken = ({
   logoURI:
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
 });
+
+export const areSettingsVisible = (env: Env): boolean => {
+  return env.fiatExchangeRates.areEnabled;
+};
