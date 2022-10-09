@@ -19,7 +19,11 @@ import {
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
-import { ethereumAccountsParser, getConnectedAccounts } from "src/adapters/ethereum";
+import {
+  ethereumAccountsParser,
+  getConnectedAccounts,
+  silentlyGetConnectedAccounts,
+} from "src/adapters/ethereum";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import routes from "src/routes";
@@ -30,7 +34,6 @@ interface ProvidersContext {
   account: AsyncTask<string, string>;
   changeNetwork: (chain: Chain) => Promise<number>;
   connectProvider: (walletName: WalletName) => Promise<void>;
-  disconnectProvider: () => Promise<void>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
@@ -39,9 +42,6 @@ const providersContext = createContext<ProvidersContext>({
   account: { status: "pending" },
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
-    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
-  },
-  disconnectProvider: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
 });
@@ -56,44 +56,77 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
 
+  const getMetamaskProvider = () => {
+    if (window.ethereum && window.ethereum.isMetaMask) {
+      return new Web3Provider(window.ethereum, "any");
+    }
+  };
+
+  interface ConnectMetamaskProviderParams {
+    web3Provider: Web3Provider;
+    account: string;
+  }
+
+  const connectMetamaskProvider = useCallback(
+    async ({ web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
+      if (!env) {
+        return;
+      }
+      try {
+        const checkMetamaskHeartbeat = setTimeout(() => {
+          setAccount({
+            status: "failed",
+            error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
+          });
+        }, 3000);
+
+        const currentNetwork = await web3Provider.getNetwork();
+        clearTimeout(checkMetamaskHeartbeat);
+
+        const currentNetworkChainId = currentNetwork.chainId;
+        const supportedChainIds = env.chains.map((chain) => chain.chainId);
+        if (!supportedChainIds.includes(currentNetworkChainId)) {
+          return setAccount({
+            status: "failed",
+            error: "Switch your network to Ethereum or Polygon zkEVM to continue",
+          });
+        } else {
+          setConnectedProvider({ provider: web3Provider, chainId: currentNetworkChainId });
+          return setAccount({ status: "successful", data: account });
+        }
+      } catch (error) {
+        if (!isMetamaskUserRejectedRequestError(error)) {
+          notifyError(error);
+        }
+        return setAccount({ status: "pending" });
+      }
+    },
+    [env, notifyError]
+  );
+
   const connectProvider = useCallback(
     async (walletName: WalletName): Promise<void> => {
-      setAccount({ status: "loading" });
+      if (env === undefined) {
+        return setAccount({
+          status: "failed",
+          error: "The env has not been initialized correctly",
+        });
+      }
       switch (walletName) {
         case WalletName.METAMASK: {
-          if (env === undefined) {
-            return setAccount({
-              status: "failed",
-              error: "The env has not been initialized correctly",
-            });
-          }
-
           try {
-            if (window.ethereum && window.ethereum.isMetaMask) {
-              const web3Provider = new Web3Provider(window.ethereum, "any");
-              const checkMetamaskHeartbeat = setTimeout(() => {
+            const web3Provider = getMetamaskProvider();
+            if (web3Provider) {
+              const accounts = await getConnectedAccounts(web3Provider);
+              const account: string | undefined = accounts[0];
+              if (account) {
+                return connectMetamaskProvider({ web3Provider, account });
+              } else {
                 return setAccount({
                   status: "failed",
-                  error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
-                });
-              }, 3000);
-              const requestedNetwork = await web3Provider.getNetwork();
-              const supportedChainIds = env.chains.map((chain) => chain.chainId);
-              const requestedChainId = requestedNetwork.chainId;
-
-              clearTimeout(checkMetamaskHeartbeat);
-
-              if (!supportedChainIds.includes(requestedChainId)) {
-                return setAccount({
-                  status: "failed",
-                  error: "Switch your network to Ethereum or Polygon zkEVM to continue",
+                  error: `We can't obtain any valid Ethereum account`,
                 });
               }
-
-              const accounts = await getConnectedAccounts(web3Provider);
-
-              setConnectedProvider({ provider: web3Provider, chainId: requestedChainId });
-              return setAccount({ status: "successful", data: accounts[0] });
             } else {
               return setAccount({
                 status: "failed",
@@ -104,75 +137,42 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             if (isMetamaskRequestAccountsError(error)) {
               return setAccount({
                 status: "failed",
-                error: `Please unlock ${WalletName.METAMASK} to continue`,
+                error: `Please connect to or unlock ${WalletName.METAMASK} to continue`,
               });
             } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
-
             return setAccount({ status: "pending" });
           }
         }
         case WalletName.WALLET_CONNECT: {
-          if (env) {
-            const ethereumChain = env.chains.find((chain) => chain.key === "ethereum");
+          const ethereumChain = env.chains[0];
+          const { chainId } = await ethereumChain.provider.getNetwork();
+          const walletConnectProvider = new WalletConnectProvider({
+            rpc: {
+              [chainId]: ethereumChain.provider.connection.url,
+            },
+          });
+          const web3Provider = new Web3Provider(walletConnectProvider);
 
-            if (ethereumChain) {
-              const { chainId } = await ethereumChain.provider.getNetwork();
-              const walletConnectProvider = new WalletConnectProvider({
-                rpc: {
-                  [chainId]: ethereumChain.provider.connection.url,
-                },
-              });
-              const web3Provider = new Web3Provider(walletConnectProvider);
-
-              return walletConnectProvider
-                .enable()
-                .then((accounts) => {
-                  setConnectedProvider({ provider: web3Provider, chainId });
-                  setAccount({ status: "successful", data: accounts[0] });
-                })
-                .catch((error) => {
-                  if (error instanceof Error && error.message === "User closed modal") {
-                    setAccount({ status: "pending" });
-                  } else {
-                    notifyError(error);
-                  }
-                });
-            } else {
-              return setAccount({
-                status: "failed",
-                error: "The provider has not been found",
-              });
-            }
-          } else
-            return setAccount({
-              status: "failed",
-              error: "The env has not been initialized correctly",
+          return walletConnectProvider
+            .enable()
+            .then((accounts) => {
+              setConnectedProvider({ provider: web3Provider, chainId });
+              setAccount({ status: "successful", data: accounts[0] });
+            })
+            .catch((error) => {
+              if (error instanceof Error && error.message === "User closed modal") {
+                setAccount({ status: "pending" });
+              } else {
+                notifyError(error);
+              }
             });
         }
       }
     },
-    [env, notifyError]
+    [env, connectMetamaskProvider, notifyError]
   );
-
-  const disconnectProvider = useCallback((): Promise<void> => {
-    if (
-      connectedProvider?.provider &&
-      connectedProvider.provider instanceof WalletConnectProvider
-    ) {
-      return connectedProvider.provider.disconnect().then(() => {
-        setConnectedProvider(undefined);
-        setAccount({ status: "pending" });
-      });
-    } else {
-      return new Promise((resolve) => {
-        setConnectedProvider(undefined);
-        setAccount({ status: "pending" });
-        resolve();
-      });
-    }
-  }, [connectedProvider]);
 
   const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
     if (connectedProvider.provider.request) {
@@ -232,6 +232,20 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     },
     [connectedProvider]
   );
+
+  useEffect(() => {
+    if (!connectedProvider) {
+      const web3Provider = getMetamaskProvider();
+      if (web3Provider) {
+        void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
+          const account: string | undefined = accounts[0];
+          if (account) {
+            return connectMetamaskProvider({ web3Provider, account });
+          }
+        });
+      }
+    }
+  }, [connectedProvider, connectMetamaskProvider]);
 
   useEffect(() => {
     if (account.status === "failed") {
@@ -297,9 +311,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
       account,
       changeNetwork,
       connectProvider,
-      disconnectProvider,
     }),
-    [account, connectedProvider, connectProvider, disconnectProvider, changeNetwork]
+    [account, connectedProvider, connectProvider, changeNetwork]
   );
 
   return <providersContext.Provider value={value} {...props} />;
