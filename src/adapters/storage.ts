@@ -146,7 +146,13 @@ export function removePendingTx(account: string, env: Env, depositTxHash: string
       [account]: newPendings,
     });
   } else {
-    setPendingTxs(pendingTxs);
+    setPendingTxs(
+      Object.entries(pendingTxs).reduce(
+        (acc: Record<string, PendingTx[]>, [key, value]: [string, PendingTx[]]) =>
+          key === account ? acc : { ...acc, [key]: value },
+        {}
+      )
+    );
   }
 
   return getAccountPendingTxs(account, env);
