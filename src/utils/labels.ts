@@ -20,7 +20,7 @@ export function getNetworkName(chain: Chain): string | undefined {
     case EthereumChainId.RINKEBY:
       return "Rinkeby";
     case EthereumChainId.GOERLI:
-      return "Goerli";
+      return "Ethereum Goerli";
     default:
       return undefined;
   }
