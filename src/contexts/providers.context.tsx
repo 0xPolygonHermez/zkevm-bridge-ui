@@ -27,9 +27,10 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import routes from "src/routes";
-import { Chain, EthereumEvent, WalletName } from "src/domain";
+import { Env, Chain, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
+  isProviderConnecting: boolean;
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
   changeNetwork: (chain: Chain) => Promise<number>;
@@ -39,6 +40,7 @@ interface ProvidersContext {
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
 
 const providersContext = createContext<ProvidersContext>({
+  isProviderConnecting: false,
   account: { status: "pending" },
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
@@ -52,6 +54,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     provider: Web3Provider;
     chainId: number;
   }>();
+  const [isProviderConnecting, setIsProviderConnecting] = useState<boolean>(true);
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -63,15 +66,13 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   };
 
   interface ConnectMetamaskProviderParams {
+    env: Env;
     web3Provider: Web3Provider;
     account: string;
   }
 
   const connectMetamaskProvider = useCallback(
-    async ({ web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
-      if (!env) {
-        return;
-      }
+    async ({ env, web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
       try {
         const checkMetamaskHeartbeat = setTimeout(() => {
           setAccount({
@@ -86,22 +87,23 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         const currentNetworkChainId = currentNetwork.chainId;
         const supportedChainIds = env.chains.map((chain) => chain.chainId);
         if (!supportedChainIds.includes(currentNetworkChainId)) {
-          return setAccount({
+          setAccount({
             status: "failed",
             error: "Switch your network to Ethereum or Polygon zkEVM to continue",
           });
         } else {
           setConnectedProvider({ provider: web3Provider, chainId: currentNetworkChainId });
-          return setAccount({ status: "successful", data: account });
+          setAccount({ status: "successful", data: account });
         }
+        setIsProviderConnecting(false);
       } catch (error) {
         if (!isMetamaskUserRejectedRequestError(error)) {
           notifyError(error);
         }
-        return setAccount({ status: "pending" });
+        setIsProviderConnecting(false);
       }
     },
-    [env, notifyError]
+    [notifyError]
   );
 
   const connectProvider = useCallback(
@@ -112,6 +114,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           error: "The env has not been initialized correctly",
         });
       }
+      setIsProviderConnecting(true);
       switch (walletName) {
         case WalletName.METAMASK: {
           try {
@@ -120,7 +123,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               const accounts = await getConnectedAccounts(web3Provider);
               const account: string | undefined = accounts[0];
               if (account) {
-                return connectMetamaskProvider({ web3Provider, account });
+                return connectMetamaskProvider({ env, web3Provider, account });
               } else {
                 return setAccount({
                   status: "failed",
@@ -142,6 +145,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
+            setIsProviderConnecting(false);
             return setAccount({ status: "pending" });
           }
         }
@@ -235,17 +239,20 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   useEffect(() => {
     if (!connectedProvider) {
+      setIsProviderConnecting(true);
       const web3Provider = getMetamaskProvider();
-      if (web3Provider) {
+      if (web3Provider && env) {
         void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
           const account: string | undefined = accounts[0];
           if (account) {
-            return connectMetamaskProvider({ web3Provider, account });
+            return connectMetamaskProvider({ env, web3Provider, account });
+          } else {
+            setIsProviderConnecting(false);
           }
         });
       }
     }
-  }, [connectedProvider, connectMetamaskProvider]);
+  }, [connectMetamaskProvider, connectedProvider, env]);
 
   useEffect(() => {
     if (account.status === "failed") {
@@ -309,10 +316,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     () => ({
       connectedProvider,
       account,
+      isProviderConnecting,
       changeNetwork,
       connectProvider,
     }),
-    [account, connectedProvider, connectProvider, changeNetwork]
+    [account, connectedProvider, isProviderConnecting, connectProvider, changeNetwork]
   );
 
   return <providersContext.Provider value={value} {...props} />;
