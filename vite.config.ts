@@ -5,6 +5,9 @@ import checker from "vite-plugin-checker";
 import path from "path";
 
 export default defineConfig({
+  build: {
+    sourcemap: true,
+  },
   plugins: [
     react({
       fastRefresh: false,

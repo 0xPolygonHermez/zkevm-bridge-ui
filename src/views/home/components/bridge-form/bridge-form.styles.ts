@@ -31,7 +31,27 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     flexDirection: "column",
     alignItems: "flex-end",
   },
-  chain: {
+  fromChain: {
+    padding: [theme.spacing(0.75), theme.spacing(1.25)],
+    marginLeft: -theme.spacing(1.25),
+    marginTop: theme.spacing(0.5),
+    marginBottom: -theme.spacing(0.75),
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(0.75),
+    border: "none",
+    background: "none",
+    cursor: "pointer",
+    transition: theme.hoverTransition,
+    "&:hover": {
+      backgroundColor: theme.palette.grey.light,
+    },
+    [theme.breakpoints.upSm]: {
+      gap: theme.spacing(1.25),
+    },
+  },
+  toChain: {
     padding: [theme.spacing(0.75), theme.spacing(1.25)],
     marginLeft: -theme.spacing(1.25),
     marginTop: theme.spacing(0.5),

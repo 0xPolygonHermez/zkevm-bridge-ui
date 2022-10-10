@@ -3,7 +3,7 @@ import { z } from "zod";
 import * as constants from "src/constants";
 import { tokenParser } from "src/adapters/tokens";
 import { PendingTx, pendingTxParser, serializePendingTx } from "src/utils/serializers";
-import { Currency, Token, Chain, Env } from "src/domain";
+import { Currency, Token, Chain, Env, PolicyCheck } from "src/domain";
 
 // Currency
 export function getCurrency(): Currency {
@@ -101,6 +101,19 @@ export function addPendingTx(env: Env, pendingTx: PendingTx): PendingTx[] {
 
 export function removePendingTx(env: Env, depositTxHash: string): PendingTx[] {
   return setPendingTxs(getPendingTxs(env).filter((tx) => tx.depositTxHash !== depositTxHash));
+}
+
+// PolicyCheck
+export function getPolicyCheck(): PolicyCheck {
+  return getStorageByKey({
+    key: constants.POLICY_CHECK_KEY,
+    defaultValue: PolicyCheck.Unchecked,
+    parser: z.nativeEnum(PolicyCheck),
+  });
+}
+
+export function setPolicyCheck(): PolicyCheck {
+  return setStorageByKey({ key: constants.POLICY_CHECK_KEY, value: PolicyCheck.Checked });
 }
 
 // Helpers

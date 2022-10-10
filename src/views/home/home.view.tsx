@@ -18,7 +18,7 @@ import NetworkBox from "src/views/shared/network-box/network-box.view";
 import { isMetamaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useErrorContext } from "src/contexts/error.context";
-import { Chain, FormData } from "src/domain";
+import { Chain, EthereumChainId, FormData } from "src/domain";
 
 const Home = (): JSX.Element => {
   const callIfMounted = useCallIfMounted();
@@ -74,7 +74,9 @@ const Home = (): JSX.Element => {
           </div>
           <InfoBanner
             className={classes.maxEtherBridgeInfo}
-            message={`ETH bridges in the Ethereum network are limited to ${
+            message={`ETH bridges in the ${
+              EthereumChainId.GOERLI === env?.chains[0].chainId ? "Ethereum Goerli" : "Ethereum"
+            } network are limited to ${
               maxEtherBridge ? ethersUtils.formatEther(maxEtherBridge) : "--"
             } ETH in early testnet versions`}
           />

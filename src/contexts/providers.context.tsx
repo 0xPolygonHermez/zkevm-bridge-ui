@@ -27,7 +27,7 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import routes from "src/routes";
-import { Env, Chain, EthereumEvent, WalletName } from "src/domain";
+import { Env, Chain, EthereumChainId, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
   isProviderConnecting: boolean;
@@ -89,7 +89,9 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         if (!supportedChainIds.includes(currentNetworkChainId)) {
           setAccount({
             status: "failed",
-            error: "Switch your network to Ethereum or Polygon zkEVM to continue",
+            error: supportedChainIds.includes(EthereumChainId.GOERLI)
+              ? `Switch your network to Goerli Ethereum testnet or ${env.chains[1].name} to continue`
+              : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
           });
         } else {
           setConnectedProvider({ provider: web3Provider, chainId: currentNetworkChainId });
