@@ -241,7 +241,6 @@ const BridgeConfirmation: FC = () => {
                   const isFirstLoad = oldFee.status === "loading";
                   if (!isFirstLoad) {
                     setIsFadeVisible(false);
-                    setIsBridgeButtonDisabled(true);
                   }
                   const isTokenEther = token.address === ethersConstants.AddressZero;
                   const remainder = amount.add(newFee).sub(tokenBalance);
@@ -268,9 +267,6 @@ const BridgeConfirmation: FC = () => {
                   setTimeout(() => {
                     setEstimatedFee({ status: "successful", data: newFee });
                     setIsFadeVisible(true);
-                    setTimeout(() => {
-                      setIsBridgeButtonDisabled(false);
-                    }, msTimeout);
                   }, msTimeout);
 
                   return oldFee;

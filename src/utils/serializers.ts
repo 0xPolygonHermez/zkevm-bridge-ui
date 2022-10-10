@@ -66,34 +66,100 @@ const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
 
 const chainKeyParser = z.union([z.literal("ethereum"), z.literal("polygon-zkevm")]);
 
-const serializedPendingTxDepositParser = StrictSchema<SerializedPendingDepositTx>()(
-  z.object({
-    type: z.literal("deposit"),
-    depositTxHash: z.string(),
-    from: chainKeyParser,
-    to: chainKeyParser,
-    timestamp: z.number(),
-    token: tokenParser,
-    amount: z.string(),
-  })
-);
+const pendingTxDepositParser = (env: Env) =>
+  StrictSchema<SerializedPendingDepositTx, PendingDepositTx>()(
+    z
+      .object({
+        type: z.literal("deposit"),
+        depositTxHash: z.string(),
+        from: chainKeyParser,
+        to: chainKeyParser,
+        timestamp: z.number(),
+        token: tokenParser,
+        amount: z.string(),
+      })
+      .transform(({ amount, depositTxHash, from, timestamp, to, token, type }, ctx) => {
+        const fromChain = env.chains.find((chain) => chain.key === from);
+        const toChain = env.chains.find((chain) => chain.key === to);
+        if (!fromChain) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["from"],
+            message: "We couldn't find the 'from' chain when parsing the PendingDepositTx",
+          });
+          return z.NEVER;
+        }
+        if (!toChain) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["to"],
+            message: "We couldn't find the 'to' chain when parsing the PendingDepositTx",
+          });
+          return z.NEVER;
+        }
+        return {
+          from: fromChain,
+          to: toChain,
+          timestamp,
+          token,
+          amount: ethersUtils.parseUnits(amount, token.decimals),
+          type,
+          depositTxHash,
+        };
+      })
+  );
 
-const serializedPendingTxClaimParser = StrictSchema<SerializedPendingClaimTx>()(
-  z.object({
-    type: z.literal("claim"),
-    depositTxHash: z.string(),
-    claimTxHash: z.string(),
-    from: chainKeyParser,
-    to: chainKeyParser,
-    timestamp: z.number(),
-    token: tokenParser,
-    amount: z.string(),
-  })
-);
+const pendingTxClaimParser = (env: Env) =>
+  StrictSchema<SerializedPendingClaimTx, PendingClaimTx>()(
+    z
+      .object({
+        type: z.literal("claim"),
+        depositTxHash: z.string(),
+        claimTxHash: z.string(),
+        from: chainKeyParser,
+        to: chainKeyParser,
+        timestamp: z.number(),
+        token: tokenParser,
+        amount: z.string(),
+      })
+      .transform(
+        ({ amount, claimTxHash, depositTxHash, from, timestamp, to, token, type }, ctx) => {
+          const fromChain = env.chains.find((chain) => chain.key === from);
+          const toChain = env.chains.find((chain) => chain.key === to);
+          if (!fromChain) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["from"],
+              message: "We couldn't find the 'from' chain when parsing the PendingClaimTx",
+            });
+            return z.NEVER;
+          }
+          if (!toChain) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["to"],
+              message: "We couldn't find the 'to' chain when parsing the PendingClaimTx",
+            });
+            return z.NEVER;
+          }
+          return {
+            from: fromChain,
+            to: toChain,
+            timestamp: timestamp,
+            token: token,
+            amount: ethersUtils.parseUnits(amount, token.decimals),
+            type: type,
+            depositTxHash: depositTxHash,
+            claimTxHash: claimTxHash,
+          };
+        }
+      )
+  );
 
-const serializedPendingTxParser = StrictSchema<SerializedPendingTx>()(
-  z.union([serializedPendingTxDepositParser, serializedPendingTxClaimParser])
-);
+const pendingTxParser = (env: Env) =>
+  StrictSchema<SerializedPendingTx, PendingTx>()(
+    z.union([pendingTxDepositParser(env), pendingTxClaimParser(env)])
+  );
 
 const deserializeBridgeId = (
   value: unknown
@@ -131,73 +197,9 @@ const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   }
 };
 
-const deserializePendingTx = (
-  serializedPendingTx: SerializedPendingTx,
-  env: Env
-): z.SafeParseReturnType<SerializedPendingTx, PendingTx> => {
-  const from = env.chains.find((chain) => chain.key === serializedPendingTx.from);
-  const to = env.chains.find((chain) => chain.key === serializedPendingTx.to);
-
-  if (!from) {
-    return {
-      success: false,
-      error: new z.ZodError([
-        {
-          code: z.ZodIssueCode.custom,
-          path: ["from"],
-          message: "We couldn't find to chain when deserialized the pending tx",
-        },
-      ]),
-    };
-  }
-
-  if (!to) {
-    return {
-      success: false,
-      error: new z.ZodError([
-        {
-          code: z.ZodIssueCode.custom,
-          path: ["to"],
-          message: "We couldn't find to chain when deserialized the pending tx",
-        },
-      ]),
-    };
-  }
-
-  const commonPendingTx: CommonPendingTx = {
-    from,
-    to,
-    timestamp: serializedPendingTx.timestamp,
-    token: serializedPendingTx.token,
-    amount: ethersUtils.parseUnits(serializedPendingTx.amount, serializedPendingTx.token.decimals),
-  };
-
-  if (serializedPendingTx.type === "deposit") {
-    return {
-      success: true,
-      data: {
-        ...commonPendingTx,
-        type: serializedPendingTx.type,
-        depositTxHash: serializedPendingTx.depositTxHash,
-      },
-    };
-  } else {
-    return {
-      success: true,
-      data: {
-        ...commonPendingTx,
-        type: serializedPendingTx.type,
-        depositTxHash: serializedPendingTx.depositTxHash,
-        claimTxHash: serializedPendingTx.claimTxHash,
-      },
-    };
-  }
-};
-
 export {
-  serializedPendingTxParser,
+  pendingTxParser,
   deserializeBridgeId,
   serializeBridgeId,
   serializePendingTx,
-  deserializePendingTx,
 };

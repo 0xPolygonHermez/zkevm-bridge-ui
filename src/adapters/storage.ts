@@ -1,15 +1,9 @@
 import { z } from "zod";
 
 import * as constants from "src/constants";
-import { Currency, Token, Chain, Env, PolicyCheck } from "src/domain";
 import { tokenParser } from "src/adapters/tokens";
-import {
-  PendingTx,
-  SerializedPendingTx,
-  serializedPendingTxParser,
-  serializePendingTx,
-  deserializePendingTx,
-} from "src/utils/serializers";
+import { PendingTx, pendingTxParser, serializePendingTx } from "src/utils/serializers";
+import { Currency, Token, Chain, Env, PolicyCheck } from "src/domain";
 
 // Currency
 export function getCurrency(): Currency {
@@ -80,36 +74,17 @@ export function removeCustomToken(token: Token): Token[] {
 }
 
 // Pending txs
-function getSerializedPendingTxs(): SerializedPendingTx[] {
+export function getPendingTxs(env: Env): PendingTx[] {
   return getStorageByKey({
     key: constants.PENDING_TXS_KEY,
     defaultValue: [],
-    parser: z.array(serializedPendingTxParser),
+    parser: z.array(z.unknown()).transform((unknownList) =>
+      unknownList.reduce((acc: PendingTx[], unknown: unknown) => {
+        const pendingTx = pendingTxParser(env).safeParse(unknown);
+        return pendingTx.success ? [...acc, pendingTx.data] : acc;
+      }, [])
+    ),
   });
-}
-
-function setSerializedPendingTxs(
-  serializedPendingTxs: SerializedPendingTx[]
-): SerializedPendingTx[] {
-  return setStorageByKey({
-    key: constants.PENDING_TXS_KEY,
-    value: serializedPendingTxs,
-  });
-}
-
-export function getPendingTxs(env: Env): PendingTx[] {
-  const serializedPendingTxs = getSerializedPendingTxs();
-
-  return serializedPendingTxs.reduce((acc: PendingTx[], tx: SerializedPendingTx) => {
-    const deserializedPendingTx = deserializePendingTx(tx, env);
-
-    if (deserializedPendingTx.success) {
-      return [...acc, deserializedPendingTx.data];
-    } else {
-      removePendingTx(tx.depositTxHash);
-      return acc;
-    }
-  }, []);
 }
 
 export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
@@ -117,24 +92,15 @@ export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
     key: constants.PENDING_TXS_KEY,
     value: pendingTxs.map(serializePendingTx),
   });
-
   return pendingTxs;
 }
 
-export function addPendingTx(pendingTx: PendingTx): void {
-  const serializedPendingTxs = getSerializedPendingTxs();
-  const serializedPendingTx = serializePendingTx(pendingTx);
-
-  setSerializedPendingTxs([...serializedPendingTxs, serializedPendingTx]);
+export function addPendingTx(env: Env, pendingTx: PendingTx): PendingTx[] {
+  return setPendingTxs([...getPendingTxs(env), pendingTx]);
 }
 
-export function removePendingTx(depositTxHash: string): void {
-  const serializedPendingTxs = getSerializedPendingTxs();
-  const updatedSerializedPendingTxs = serializedPendingTxs.filter(
-    (tx) => tx.depositTxHash !== depositTxHash
-  );
-
-  setSerializedPendingTxs(updatedSerializedPendingTxs);
+export function removePendingTx(env: Env, depositTxHash: string): PendingTx[] {
+  return setPendingTxs(getPendingTxs(env).filter((tx) => tx.depositTxHash !== depositTxHash));
 }
 
 // PolicyCheck
@@ -151,15 +117,15 @@ export function setPolicyCheck(): PolicyCheck {
 }
 
 // Helpers
-export function getStorageByKey<T>({
+export function getStorageByKey<I, O>({
   key,
   defaultValue,
   parser,
 }: {
   key: string;
-  defaultValue: T;
-  parser: z.ZodSchema<T>;
-}): T {
+  defaultValue: O;
+  parser: z.ZodSchema<O, z.ZodTypeDef, I>;
+}): O {
   const value = localStorage.getItem(key);
   if (value === null) {
     return setStorageByKey({ key, value: defaultValue });
