@@ -20,6 +20,8 @@ export const CUSTOM_TOKENS_KEY = "customTokens";
 
 export const PENDING_TXS_KEY = "pendingTxs";
 
+export const POLICY_CHECK_KEY = "policyCheck";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;

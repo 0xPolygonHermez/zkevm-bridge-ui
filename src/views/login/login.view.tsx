@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Card from "src/views/shared/card/card.view";
@@ -11,19 +11,35 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import routes from "src/routes";
-import { WalletName, EthereumChainId } from "src/domain";
+import { WalletName, EthereumChainId, PolicyCheck } from "src/domain";
 import { routerStateParser } from "src/adapters/browser";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
+import Policy from "src/views/login/components/policy/policy.view";
+import { getPolicyCheck, setPolicyCheck } from "src/adapters/storage";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
+  const [selectedWallet, setSelectedWallet] = useState<WalletName>();
+  const [showPolicy, setShowPolicy] = useState<boolean>(false);
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectProvider, account } = useProvidersContext();
   const env = useEnvContext();
 
-  const onConnectProvider = (walletName: WalletName) => {
-    void connectProvider(walletName);
+  const onConnectProvider = () => {
+    setPolicyCheck();
+    selectedWallet && connectProvider(selectedWallet);
+    setShowPolicy(false);
+  };
+
+  const onCheckAndConnectProvider = (walletName: WalletName) => {
+    setSelectedWallet(walletName);
+    const checked = getPolicyCheck();
+    if (checked === PolicyCheck.Checked) {
+      void connectProvider(walletName);
+    } else {
+      setShowPolicy(true);
+    }
   };
 
   useEffect(() => {
@@ -65,12 +81,13 @@ const Login: FC = () => {
               <Typography type="h1" className={classes.cardHeader}>
                 Connect a wallet
               </Typography>
-              <WalletList onSelectWallet={onConnectProvider} />
+              <WalletList onSelectWallet={onCheckAndConnectProvider} />
             </>
           </Card>
           {account.status === "failed" && <Error error={account.error} />}
         </div>
       </div>
+      {showPolicy && <Policy onClose={() => setShowPolicy(false)} onConnect={onConnectProvider} />}
     </div>
   );
 };
