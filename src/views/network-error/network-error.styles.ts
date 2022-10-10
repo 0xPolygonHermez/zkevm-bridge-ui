@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useUnderMaintenanceStyles = createUseStyles((theme: Theme) => ({
+const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
   wrapper: {
     display: "flex",
     alignItems: "center",
@@ -38,4 +38,4 @@ const useUnderMaintenanceStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useUnderMaintenanceStyles;
+export default useNetworkErrorStyles;
