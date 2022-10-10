@@ -23,10 +23,11 @@ const Policy: FC<PolicyProps> = ({ onClose, onConnect }) => {
     <Portal>
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
-          <div>
+          <div className={classes.text}>
+            <Typography type="body1">Welcome to the Polygon zkEVM testnet</Typography>
             <Typography type="body2">
-              By connecting a wallet, you agree to Polygon zkEVM Terms of Service and acknowledge
-              that you have read and understand the Polygon zkEVM Protocol Disclaimer.
+              DISCLAIMER: This early version of the public testnet will require frequent maintenance
+              and may be restarted if upgrades are needed.
             </Typography>
           </div>
           <div className={classes.buttonsBox}>

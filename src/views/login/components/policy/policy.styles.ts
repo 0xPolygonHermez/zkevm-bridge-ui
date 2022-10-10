@@ -19,6 +19,12 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     gap: theme.spacing(3),
   },
+  text: {
+    display: "flex",
+    gap: theme.spacing(2),
+    flexDirection: "column",
+    alignItems: "center",
+  },
   buttonsBox: {
     display: "flex",
     justifyContent: "space-around",
