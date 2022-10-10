@@ -36,7 +36,7 @@ export const PAGE_SIZE = 25;
 
 export const PENDING_TX_TIMEOUT = 30 * 60 * 1000; // 30min in ms
 
-export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 20; // 20%
+export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 40; // 40%
 
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",
