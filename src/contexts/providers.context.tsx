@@ -240,7 +240,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   );
 
   useEffect(() => {
-    if (!connectedProvider) {
+    if (!connectedProvider && account.status !== "failed") {
       setIsProviderConnecting(true);
       const web3Provider = getMetamaskProvider();
       if (web3Provider && env) {
@@ -254,7 +254,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         });
       }
     }
-  }, [connectMetamaskProvider, connectedProvider, env]);
+  }, [account, connectedProvider, env, connectMetamaskProvider]);
 
   useEffect(() => {
     if (account.status === "failed") {
