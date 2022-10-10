@@ -90,7 +90,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           setAccount({
             status: "failed",
             error: supportedChainIds.includes(EthereumChainId.GOERLI)
-              ? `Switch your network to Goerli Ethereum testnet or ${env.chains[1].name} to continue`
+              ? `Switch your network to Ethereum Goerli testnet or ${env.chains[1].name} to continue`
               : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
           });
         } else {
