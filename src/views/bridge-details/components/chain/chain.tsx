@@ -17,7 +17,8 @@ const Chain: FC<ChainProps> = ({ chain, className }) => {
   if (chain.key === "ethereum") {
     return (
       <Typography type="body1" className={className}>
-        <EthChainIcon /> Ethereum
+        <EthChainIcon />{" "}
+        {domain.EthereumChainId.GOERLI === chain.chainId ? "Ethereum Goerli" : "Ethereum"}
       </Typography>
     );
   } else {

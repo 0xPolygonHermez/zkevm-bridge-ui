@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
-import { Chain, Currency, EthereumChain, Token, ZkEVMChain } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
+import { ProviderError } from "src/adapters/error";
+import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
@@ -75,13 +76,13 @@ export const getChains = ({
   );
 
   return Promise.all([
-    ethereumProvider.getNetwork(),
-    polygonZkEVMProvider.getNetwork(),
-    poeContract.networkName(),
+    ethereumProvider.getNetwork().catch(() => Promise.reject(ProviderError.Ethereum)),
+    polygonZkEVMProvider.getNetwork().catch(() => Promise.reject(ProviderError.PolygonZkEVM)),
+    poeContract.networkName().catch(() => Promise.reject(ProviderError.Ethereum)),
   ]).then(([ethereumNetwork, polygonZkEVMNetwork, polygonZkEVMNetworkName]) => [
     {
       key: "ethereum",
-      name: "Ethereum",
+      name: EthereumChainId.GOERLI === ethereumNetwork.chainId ? "Ethereum Goerli" : "Ethereum",
       networkId: 0,
       Icon: EthChainIcon,
       provider: ethereumProvider,
