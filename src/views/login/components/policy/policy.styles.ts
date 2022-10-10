@@ -25,7 +25,7 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
   },
   button: {
     border: "none",
-    borderRadius: theme.spacing(1),
+    borderRadius: 8,
     cursor: "pointer",
     padding: [theme.spacing(1), theme.spacing(5)],
   },
