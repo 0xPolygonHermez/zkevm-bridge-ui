@@ -221,7 +221,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           }
         })
         .catch((error) => {
-          if (!isMetamaskResourceUnavailableError(error)) {
+          if (!isMetaMaskResourceUnavailableError(error)) {
             throw error;
           }
         });
