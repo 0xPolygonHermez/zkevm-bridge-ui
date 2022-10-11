@@ -61,7 +61,7 @@ const Login: FC = () => {
   const ethereumChain = env.chains[0];
   const deploymentName = getDeploymentName(ethereumChain);
   const networkName = getNetworkName(ethereumChain);
-  const appName = deploymentName !== undefined ? `Bridge ${deploymentName}` : "Bridge";
+  const appName = deploymentName !== undefined ? `${deploymentName} Bridge` : "Bridge";
   const networkInfo =
     networkName !== undefined &&
     ethereumChain.chainId !== EthereumChainId.MAINNET &&

@@ -74,33 +74,86 @@ export function removeCustomToken(token: Token): Token[] {
 }
 
 // Pending txs
-export function getPendingTxs(env: Env): PendingTx[] {
+export function getAccountPendingTxs(account: string, env: Env): PendingTx[] {
+  const pendingTxs = getPendingTxs(env);
+  return pendingTxs[account] || [];
+}
+
+function getPendingTxs(env: Env): Record<string, PendingTx[]> {
   return getStorageByKey({
     key: constants.PENDING_TXS_KEY,
-    defaultValue: [],
-    parser: z.array(z.unknown()).transform((unknownList) =>
-      unknownList.reduce((acc: PendingTx[], unknown: unknown) => {
-        const pendingTx = pendingTxParser(env).safeParse(unknown);
-        return pendingTx.success ? [...acc, pendingTx.data] : acc;
-      }, [])
+    defaultValue: {},
+    parser: z.record(z.array(z.unknown())).transform((unknownRecord) =>
+      Object.entries(unknownRecord).reduce(
+        (
+          acc: Record<string, PendingTx[]>,
+          [account, unknownList]: [string, unknown[]]
+        ): Record<string, PendingTx[]> => ({
+          ...acc,
+          [account]: unknownList.reduce((accArray: PendingTx[], unknown: unknown): PendingTx[] => {
+            const pendingTx = pendingTxParser(env).safeParse(unknown);
+            return pendingTx.success ? [...accArray, pendingTx.data] : accArray;
+          }, []),
+        }),
+        {}
+      )
     ),
   });
 }
 
-export function setPendingTxs(pendingTxs: PendingTx[]): PendingTx[] {
+function setPendingTxs(pendingTxs: Record<string, PendingTx[]>): Record<string, PendingTx[]> {
   setStorageByKey({
     key: constants.PENDING_TXS_KEY,
-    value: pendingTxs.map(serializePendingTx),
+    value: Object.entries(pendingTxs).reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]: value.map(serializePendingTx),
+      }),
+      {}
+    ),
   });
+
   return pendingTxs;
 }
 
-export function addPendingTx(env: Env, pendingTx: PendingTx): PendingTx[] {
-  return setPendingTxs([...getPendingTxs(env), pendingTx]);
+export function addAccountPendingTx(account: string, env: Env, pendingTx: PendingTx): PendingTx[] {
+  const pendingTxs = getPendingTxs(env);
+  const accountPendingTxs = getAccountPendingTxs(account, env);
+  const newAccountPendingTxs = [...accountPendingTxs, pendingTx];
+
+  setPendingTxs({
+    ...pendingTxs,
+    [account]: newAccountPendingTxs,
+  });
+
+  return newAccountPendingTxs;
 }
 
-export function removePendingTx(env: Env, depositTxHash: string): PendingTx[] {
-  return setPendingTxs(getPendingTxs(env).filter((tx) => tx.depositTxHash !== depositTxHash));
+export function removeAccountPendingTx(
+  account: string,
+  env: Env,
+  depositTxHash: string
+): PendingTx[] {
+  const pendingTxs = getPendingTxs(env);
+  const accountPendingTxs = getAccountPendingTxs(account, env);
+  const newAccountPendingTxs = accountPendingTxs.filter((tx) => tx.depositTxHash !== depositTxHash);
+
+  if (newAccountPendingTxs.length > 0) {
+    setPendingTxs({
+      ...pendingTxs,
+      [account]: newAccountPendingTxs,
+    });
+  } else {
+    setPendingTxs(
+      Object.entries(pendingTxs).reduce(
+        (acc: Record<string, PendingTx[]>, [key, value]: [string, PendingTx[]]) =>
+          key === account ? acc : { ...acc, [key]: value },
+        {}
+      )
+    );
+  }
+
+  return getAccountPendingTxs(account, env);
 }
 
 // PolicyCheck
