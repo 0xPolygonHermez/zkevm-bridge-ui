@@ -219,6 +219,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           if (chainId !== chain.chainId) {
             return Promise.reject(new Error("Could not switch the network"));
           }
+        })
+        .catch((error) => {
+          if (!isMetamaskResourceUnavailableError(error)) {
+            throw error;
+          }
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
