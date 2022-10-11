@@ -633,12 +633,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             pendingTx.type === "deposit" &&
             isPendingDepositInApiBridges(pendingTx.depositTxHash)
           ) {
-            storage.removePendingTx(account.data, env, pendingTx.depositTxHash);
-          } else if (
-            pendingTx.type === "claim" &&
-            isPendingClaimInApiBridges(pendingTx.claimTxHash)
-          ) {
-            storage.removePendingTx(account.data, env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+          }
+
+          if (pendingTx.type === "claim" && isPendingClaimInApiBridges(pendingTx.claimTxHash)) {
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
 
           const txHash =
@@ -648,15 +647,19 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           const tx = await provider.getTransaction(txHash);
 
           if (isTxCanceled(tx)) {
-            storage.removePendingTx(account.data, env, pendingTx.depositTxHash);
-          } else if (isTxMined(tx)) {
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+          }
+
+          if (isTxMined(tx)) {
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
             if (hasTxBeenReverted(txReceipt)) {
-              storage.removePendingTx(account.data, env, pendingTx.depositTxHash);
+              return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
             }
-          } else if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
-            storage.removePendingTx(account.data, env, pendingTx.depositTxHash);
+          }
+
+          if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
         })
       );
@@ -764,7 +767,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         return contract
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
           .then((txData) => {
-            storage.addPendingTx(account.data, env, {
+            storage.addAccountPendingTx(account.data, env, {
               type: "deposit",
               depositTxHash: txData.hash,
               from,
@@ -853,7 +856,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
           )
           .then((txData) => {
-            storage.addPendingTx(account.data, env, {
+            storage.addAccountPendingTx(account.data, env, {
               type: "claim",
               depositTxHash,
               claimTxHash: txData.hash,
