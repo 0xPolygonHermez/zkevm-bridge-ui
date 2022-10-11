@@ -30,6 +30,7 @@ const Home = (): JSX.Element => {
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
   const { account, changeNetwork } = useProvidersContext();
+  const [isNetworkBeingAdded, setIsNetworkBeingAdded] = useState(false);
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -41,13 +42,18 @@ const Home = (): JSX.Element => {
   };
 
   const onChangeNetwork = (chain: Chain) => {
-    changeNetwork(chain).catch((error) => {
-      callIfMounted(() => {
-        if (isMetamaskUserRejectedRequestError(error) === false) {
-          notifyError(error);
-        }
+    setIsNetworkBeingAdded(true);
+    changeNetwork(chain)
+      .catch((error) => {
+        callIfMounted(() => {
+          if (isMetamaskUserRejectedRequestError(error) === false) {
+            notifyError(error);
+          }
+        });
+      })
+      .finally(() => {
+        setIsNetworkBeingAdded(false);
       });
-    });
   };
 
   useEffect(() => {
@@ -70,7 +76,10 @@ const Home = (): JSX.Element => {
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
           <div className={classes.networkBoxWrapper}>
-            <NetworkBox onChangeNetwork={onChangeNetwork} />
+            <NetworkBox
+              isAddNetworkButtonDisabled={isNetworkBeingAdded}
+              onChangeNetwork={onChangeNetwork}
+            />
           </div>
           <InfoBanner
             className={classes.maxEtherBridgeInfo}

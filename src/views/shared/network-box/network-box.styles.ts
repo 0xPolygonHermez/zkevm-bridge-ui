@@ -9,20 +9,6 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     flexDirection: "column",
     alignItems: "center",
   },
-  actionButton: {
-    borderRadius: 48,
-    display: "flex",
-    alignItems: "center",
-    appearance: "none",
-    padding: theme.spacing(0.5),
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    transition: theme.hoverTransition,
-    "&:hover": {
-      background: theme.palette.grey.light,
-    },
-  },
   listItem: {
     padding: [theme.spacing(0.25), 0],
   },
@@ -36,13 +22,12 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.grey.light,
     cursor: "pointer",
     transition: theme.hoverTransition,
-    "&:hover": {
+    "&:hover:not(:disabled)": {
       background: theme.palette.grey.main,
     },
     "&:disabled": {
       cursor: "inherit",
-      background: theme.palette.white,
-      border: `1px solid ${theme.palette.grey.light}`,
+      opacity: 0.75,
     },
   },
   metaMaskIcon: {
