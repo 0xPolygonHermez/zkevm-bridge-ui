@@ -13,7 +13,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { AsyncTask, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -69,7 +69,7 @@ const Activity: FC = () => {
         })
         .catch((error) => {
           setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
-          if (isMetamaskUserRejectedRequestError(error) === false) {
+          if (isMetaMaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               if (parsed === "wrong-network") {
                 callIfMounted(() => {
