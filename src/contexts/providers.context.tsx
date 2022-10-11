@@ -15,7 +15,7 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
-  isMetamaskRequestAccountsError,
+  isMetamaskPendingRequestError,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
@@ -28,7 +28,7 @@ import { Chain, EthereumChainId, EthereumEvent, WalletName } from "src/domain";
 interface ProvidersContext {
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
-  changeNetwork: (chain: Chain) => Promise<number>;
+  changeNetwork: (chain: Chain) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
   disconnectProvider: () => Promise<void>;
 }
@@ -102,7 +102,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               });
             }
           } catch (error) {
-            if (isMetamaskRequestAccountsError(error)) {
+            if (isMetamaskPendingRequestError(error)) {
               return setAccount({
                 status: "failed",
                 error: `Please unlock ${WalletName.METAMASK} to continue`,
@@ -175,7 +175,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     }
   }, [connectedProvider]);
 
-  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
     if (connectedProvider.provider.request) {
       return connectedProvider.provider
         .request({
@@ -184,15 +184,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         })
         .then(async () => {
           const { chainId } = await connectedProvider.getNetwork();
-          return chainId === chain.chainId
-            ? chainId
-            : Promise.reject(new Error("Could not switch the network"));
+
+          if (chainId !== chain.chainId) {
+            return Promise.reject(new Error("Could not switch the network"));
+          }
+        })
+        .catch((error) => {
+          if (!isMetamaskPendingRequestError(error)) {
+            throw error;
+          }
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
   };
 
-  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
     if (connectedProvider.provider.request) {
       return connectedProvider.provider
         .request({
@@ -209,9 +215,10 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         })
         .then(async () => {
           const { chainId } = await connectedProvider.getNetwork();
-          return chainId === chain.chainId
-            ? chainId
-            : Promise.reject(new Error("Could not switch the network"));
+
+          if (chainId !== chain.chainId) {
+            return Promise.reject(new Error("Could not switch the network"));
+          }
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
