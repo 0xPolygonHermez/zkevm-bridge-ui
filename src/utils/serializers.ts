@@ -197,9 +197,4 @@ const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   }
 };
 
-export {
-  pendingTxParser,
-  deserializeBridgeId,
-  serializeBridgeId,
-  serializePendingTx,
-};
+export { pendingTxParser, deserializeBridgeId, serializeBridgeId, serializePendingTx };

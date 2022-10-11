@@ -608,8 +608,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       if (!env) {
         return Promise.reject("Env is not defined");
       }
+      if (!isAsyncTaskDataAvailable(account)) {
+        return Promise.reject("Account is not defined");
+      }
 
-      const pendingTxs = storage.getPendingTxs(env);
+      const pendingTxs = storage.getAccountPendingTxs(account.data, env);
       const isPendingDepositInApiBridges = (depositTxHash: string) => {
         return bridges.find((bridge) => {
           return (
@@ -630,10 +633,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             pendingTx.type === "deposit" &&
             isPendingDepositInApiBridges(pendingTx.depositTxHash)
           ) {
-            return storage.removePendingTx(env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
+
           if (pendingTx.type === "claim" && isPendingClaimInApiBridges(pendingTx.claimTxHash)) {
-            return storage.removePendingTx(env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
 
           const txHash =
@@ -643,24 +647,24 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           const tx = await provider.getTransaction(txHash);
 
           if (isTxCanceled(tx)) {
-            return storage.removePendingTx(env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
 
           if (isTxMined(tx)) {
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
             if (hasTxBeenReverted(txReceipt)) {
-              return storage.removePendingTx(env, pendingTx.depositTxHash);
+              return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
             }
           }
 
           if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
-            return storage.removePendingTx(env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
           }
         })
       );
     },
-    [env]
+    [account, env]
   );
 
   const getPendingBridges = useCallback(
@@ -673,8 +677,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Env is not available");
       }
 
+      if (!isAsyncTaskDataAvailable(account)) {
+        return Promise.reject("Account is not defined");
+      }
+
       return Promise.all(
-        storage.getPendingTxs(env).map(async (tx) => {
+        storage.getAccountPendingTxs(account.data, env).map(async (tx) => {
           const chain = env.chains.find((chain) => chain.key === tx.from.key);
           const token = await addWrappedToken({ token: tx.token });
           const tokenPrice =
@@ -708,7 +716,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         })
       );
     },
-    [env, cleanPendingTxs, getTokenPrice, addWrappedToken]
+    [env, account, cleanPendingTxs, addWrappedToken, getTokenPrice]
   );
 
   const bridge = useCallback(
@@ -759,7 +767,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         return contract
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
           .then((txData) => {
-            storage.addPendingTx(env, {
+            storage.addAccountPendingTx(account.data, env, {
               type: "deposit",
               depositTxHash: txData.hash,
               from,
@@ -805,6 +813,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       if (env === undefined) {
         throw new Error("Env is not available");
       }
+      if (!isAsyncTaskDataAvailable(account)) {
+        throw new Error("Account is not available");
+      }
 
       const contract = Bridge__factory.connect(
         to.bridgeContractAddress,
@@ -845,7 +856,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
           )
           .then((txData) => {
-            storage.addPendingTx(env, {
+            storage.addAccountPendingTx(account.data, env, {
               type: "claim",
               depositTxHash,
               claimTxHash: txData.hash,
@@ -869,7 +880,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeClaim);
       }
     },
-    [changeNetwork, connectedProvider, env]
+    [account, changeNetwork, connectedProvider, env]
   );
 
   const value = useMemo(
