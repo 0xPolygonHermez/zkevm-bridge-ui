@@ -15,7 +15,7 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
-  isMetamaskPendingRequestError,
+  isMetamaskResourceUnavailableError,
   isMetamaskUnknownChainError,
   isMetamaskUserRejectedRequestError,
 } from "src/utils/types";
@@ -102,7 +102,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               });
             }
           } catch (error) {
-            if (isMetamaskPendingRequestError(error)) {
+            if (isMetamaskResourceUnavailableError(error)) {
               return setAccount({
                 status: "failed",
                 error: `Please unlock ${WalletName.METAMASK} to continue`,
@@ -190,7 +190,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           }
         })
         .catch((error) => {
-          if (!isMetamaskPendingRequestError(error)) {
+          if (!isMetamaskResourceUnavailableError(error)) {
             throw error;
           }
         });

@@ -47,12 +47,12 @@ export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejecte
   })
 );
 
-export interface MetamaskPendingRequestError {
+export interface MetamaskResourceUnavailableError {
   code: -32002;
   message: string;
 }
 
-export const metamaskPendingRequestError = StrictSchema<MetamaskPendingRequestError>()(
+export const metamaskResourceUnavailableError = StrictSchema<MetamaskResourceUnavailableError>()(
   z.object({
     code: z.literal(-32002),
     message: z.string(),

@@ -57,10 +57,10 @@ export function isMetamaskUserRejectedRequestError(
   return errorAdapter.metamaskUserRejectedRequestError.safeParse(error).success;
 }
 
-export function isMetamaskPendingRequestError(
+export function isMetamaskResourceUnavailableError(
   error: unknown
-): error is errorAdapter.MetamaskPendingRequestError {
-  return errorAdapter.metamaskPendingRequestError.safeParse(error).success;
+): error is errorAdapter.MetamaskResourceUnavailableError {
+  return errorAdapter.metamaskResourceUnavailableError.safeParse(error).success;
 }
 
 export function isEthersInsufficientFundsError(
