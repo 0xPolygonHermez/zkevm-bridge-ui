@@ -15,7 +15,7 @@ import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 import NetworkBox from "src/views/shared/network-box/network-box.view";
-import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useErrorContext } from "src/contexts/error.context";
 import { Chain, EthereumChainId, FormData } from "src/domain";
@@ -46,7 +46,7 @@ const Home = (): JSX.Element => {
     changeNetwork(chain)
       .catch((error) => {
         callIfMounted(() => {
-          if (isMetamaskUserRejectedRequestError(error) === false) {
+          if (isMetaMaskUserRejectedRequestError(error) === false) {
             notifyError(error);
           }
         });

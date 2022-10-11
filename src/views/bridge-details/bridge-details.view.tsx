@@ -19,7 +19,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { AsyncTask, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
@@ -97,7 +97,7 @@ const BridgeDetails: FC = () => {
         .catch((error) => {
           callIfMounted(() => {
             setIsFinaliseButtonDisabled(false);
-            if (isMetamaskUserRejectedRequestError(error) === false) {
+            if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
                   setIncorrectNetworkMessage(`Switch to ${bridge.data.to.name} to continue`);

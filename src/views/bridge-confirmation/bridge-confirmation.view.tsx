@@ -15,7 +15,7 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { selectTokenAddress } from "src/utils/tokens";
 import {
   AsyncTask,
-  isMetamaskUserRejectedRequestError,
+  isMetaMaskUserRejectedRequestError,
   isAsyncTaskDataAvailable,
   isEthersInsufficientFundsError,
 } from "src/utils/types";
@@ -326,7 +326,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           callIfMounted(() => {
-            if (isMetamaskUserRejectedRequestError(error)) {
+            if (isMetaMaskUserRejectedRequestError(error)) {
               setApprovalTask({ status: "pending" });
             } else {
               void parseError(error).then((parsed) => {
@@ -367,7 +367,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           setIsBridgeButtonDisabled(false);
-          if (isMetamaskUserRejectedRequestError(error) === false) {
+          if (isMetaMaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
                 if (parsed === "wrong-network") {
