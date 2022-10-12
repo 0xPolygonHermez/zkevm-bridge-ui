@@ -60,7 +60,10 @@ const AmountInput: FC<AmountInputProps> = ({
   };
 
   const handleMax = () => {
-    const maxPossibleAmount = balance.gt(maxEtherBridge) ? maxEtherBridge : balance;
+    const shouldApplyMaxEtherBridgeLimit =
+      token.address === ethers.constants.AddressZero && from.key === "ethereum";
+    const maxPossibleAmount =
+      shouldApplyMaxEtherBridgeLimit && balance.gt(maxEtherBridge) ? maxEtherBridge : balance;
     if (maxPossibleAmount.gt(0)) {
       setInputValue(formatTokenAmount(maxPossibleAmount, token));
       processOnChangeCallback(maxPossibleAmount);
