@@ -244,13 +244,16 @@ const BridgeConfirmation: FC = () => {
                     setIsFadeVisible(false);
                   }
                   const isTokenEther = token.address === ethersConstants.AddressZero;
-                  const remainder = amount.add(newFee).sub(tokenBalance);
-                  const isRemainderPositive = !remainder.isNegative();
+                  const remainder = isTokenEther ? amount.add(newFee).sub(tokenBalance) : undefined;
+                  const isRemainderPositive = remainder ? !remainder.isNegative() : undefined;
                   const newMaxPossibleAmountConsideringFee =
-                    isTokenEther && isRemainderPositive ? amount.sub(remainder) : amount;
-                  const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
+                    isTokenEther && remainder && isRemainderPositive
+                      ? amount.sub(remainder)
+                      : amount;
 
-                  const etherToken = getEtherToken(from);
+                  const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
+                  const etherToken = isTokenEther ? token : getEtherToken(from);
+
                   const hasOnScreenFeeChanged =
                     isAsyncTaskDataAvailable(oldFee) &&
                     formatTokenAmount(oldFee.data, etherToken) !==
