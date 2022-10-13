@@ -8,16 +8,17 @@ import Header from "src/views/home/components/header/header.view";
 import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Typography from "src/views/shared/typography/typography.view";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
+import routes from "src/routes";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useFormContext } from "src/contexts/form.context";
-import routes from "src/routes";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
+import { useErrorContext } from "src/contexts/error.context";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 import NetworkBox from "src/views/shared/network-box/network-box.view";
 import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { useErrorContext } from "src/contexts/error.context";
+import { parseError } from "src/adapters/error";
 import { Chain, EthereumChainId, FormData } from "src/domain";
 
 const Home = (): JSX.Element => {
@@ -30,7 +31,6 @@ const Home = (): JSX.Element => {
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
   const { account, changeNetwork } = useProvidersContext();
-  const [isNetworkBeingAdded, setIsNetworkBeingAdded] = useState(false);
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -41,19 +41,18 @@ const Home = (): JSX.Element => {
     setFormData(undefined);
   };
 
-  const onChangeNetwork = (chain: Chain) => {
-    setIsNetworkBeingAdded(true);
-    changeNetwork(chain)
-      .catch((error) => {
-        callIfMounted(() => {
-          if (isMetaMaskUserRejectedRequestError(error) === false) {
-            notifyError(error);
-          }
-        });
-      })
-      .finally(() => {
-        setIsNetworkBeingAdded(false);
+  const onChangeNetwork = (chain: Chain): Promise<void> => {
+    return changeNetwork(chain).catch((error) => {
+      callIfMounted(() => {
+        if (isMetaMaskUserRejectedRequestError(error) === false) {
+          void parseError(error).then((parsed) => {
+            if (parsed !== "wrong-network") {
+              notifyError(error);
+            }
+          });
+        }
       });
+    });
   };
 
   useEffect(() => {
@@ -76,10 +75,7 @@ const Home = (): JSX.Element => {
             <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
           </div>
           <div className={classes.networkBoxWrapper}>
-            <NetworkBox
-              isAddNetworkButtonDisabled={isNetworkBeingAdded}
-              onChangeNetwork={onChangeNetwork}
-            />
+            <NetworkBox onChangeNetwork={onChangeNetwork} />
           </div>
           <InfoBanner
             className={classes.maxEtherBridgeInfo}

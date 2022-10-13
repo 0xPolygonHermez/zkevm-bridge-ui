@@ -186,7 +186,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           const { chainId } = await connectedProvider.getNetwork();
 
           if (chainId !== chain.chainId) {
-            return Promise.reject(new Error("Could not switch the network"));
+            throw "wrong-network";
           }
         })
         .catch((error) => {
@@ -217,7 +217,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           const { chainId } = await connectedProvider.getNetwork();
 
           if (chainId !== chain.chainId) {
-            return Promise.reject(new Error("Could not switch the network"));
+            throw "wrong-network";
           }
         })
         .catch((error) => {

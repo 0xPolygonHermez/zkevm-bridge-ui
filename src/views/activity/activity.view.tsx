@@ -68,20 +68,18 @@ const Activity: FC = () => {
           });
         })
         .catch((error) => {
-          setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
-          if (isMetaMaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                callIfMounted(() => {
+          callIfMounted(() => {
+            setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
+            if (isMetaMaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
+                if (parsed === "wrong-network") {
                   setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
-                });
-              } else {
-                callIfMounted(() => {
+                } else {
                   notifyError(error);
-                });
-              }
-            });
-          }
+                }
+              });
+            }
+          });
         });
     }
   };

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
@@ -9,14 +9,14 @@ import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles
 import Typography from "src/views/shared/typography/typography.view";
 
 interface NetworkBoxProps {
-  isAddNetworkButtonDisabled: boolean;
-  onChangeNetwork: (chain: Chain) => void;
+  onChangeNetwork: (chain: Chain) => Promise<void>;
 }
 
-const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeNetwork }) => {
+const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
   const { connectedProvider } = useProvidersContext();
+  const [isAddNetworkButtonDisabled, setIsAddNetworkButtonDisabled] = useState(false);
 
   if (!env) {
     return null;
@@ -70,7 +70,12 @@ const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeN
           disabled={
             isAddNetworkButtonDisabled || connectedProvider?.chainId === env.chains[1].chainId
           }
-          onClick={() => void onChangeNetwork(env.chains[1])}
+          onClick={() => {
+            setIsAddNetworkButtonDisabled(true);
+            onChangeNetwork(env.chains[1]).finally(() => {
+              setIsAddNetworkButtonDisabled(false);
+            });
+          }}
         >
           <MetaMaskIcon className={classes.metaMaskIcon} />
           Add to MetaMask

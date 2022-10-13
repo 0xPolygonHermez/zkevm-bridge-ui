@@ -366,18 +366,18 @@ const BridgeConfirmation: FC = () => {
           setFormData(undefined);
         })
         .catch((error) => {
-          setIsBridgeButtonDisabled(false);
-          if (isMetaMaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              callIfMounted(() => {
+          callIfMounted(() => {
+            setIsBridgeButtonDisabled(false);
+            if (isMetaMaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
                   setError(`Switch to ${from.name} to continue`);
                 } else {
                   notifyError(error);
                 }
               });
-            });
-          }
+            }
+          });
         });
     }
   };
