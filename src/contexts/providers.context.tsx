@@ -29,21 +29,43 @@ import { useErrorContext } from "src/contexts/error.context";
 import routes from "src/routes";
 import { Env, Chain, EthereumChainId, EthereumEvent, WalletName } from "src/domain";
 
+interface ConnectMetamaskProviderParams {
+  web3Provider: Web3Provider;
+  env: Env;
+  account: string;
+}
+
+interface SilentlyGetMetaMaskConnectedAccountsParams {
+  web3Provider: Web3Provider;
+}
+
 interface ProvidersContext {
-  isProviderConnecting: boolean;
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
   changeNetwork: (chain: Chain) => Promise<number>;
   connectProvider: (walletName: WalletName) => Promise<void>;
+  connectMetaMaskProvider: (params: ConnectMetamaskProviderParams) => Promise<void>;
+  getMetaMaskProvider: () => Web3Provider | undefined;
+  silentlyGetMetaMaskConnectedAccounts: (
+    params: SilentlyGetMetaMaskConnectedAccountsParams
+  ) => Promise<string[] | undefined>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
 
 const providersContext = createContext<ProvidersContext>({
-  isProviderConnecting: false,
   account: { status: "pending" },
-  changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   connectProvider: () => {
+    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
+  },
+  connectMetaMaskProvider: () => {
+    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
+  },
+  changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
+  getMetaMaskProvider: () => {
+    throw new Error(providersContextNotReadyErrorMsg);
+  },
+  silentlyGetMetaMaskConnectedAccounts: () => {
     return Promise.reject(new Error(providersContextNotReadyErrorMsg));
   },
 });
@@ -54,24 +76,24 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     provider: Web3Provider;
     chainId: number;
   }>();
-  const [isProviderConnecting, setIsProviderConnecting] = useState<boolean>(true);
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
 
-  const getMetamaskProvider = () => {
+  const getMetaMaskProvider = useCallback(() => {
     if (window.ethereum && window.ethereum.isMetaMask) {
       return new Web3Provider(window.ethereum, "any");
     }
-  };
+  }, []);
 
-  interface ConnectMetamaskProviderParams {
-    env: Env;
-    web3Provider: Web3Provider;
-    account: string;
-  }
+  const silentlyGetMetaMaskConnectedAccounts = useCallback(
+    ({ web3Provider }: SilentlyGetMetaMaskConnectedAccountsParams) => {
+      return silentlyGetConnectedAccounts(web3Provider);
+    },
+    []
+  );
 
-  const connectMetamaskProvider = useCallback(
+  const connectMetaMaskProvider = useCallback(
     async ({ env, web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
       try {
         const checkMetamaskHeartbeat = setTimeout(() => {
@@ -97,12 +119,10 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           setConnectedProvider({ provider: web3Provider, chainId: currentNetworkChainId });
           setAccount({ status: "successful", data: account });
         }
-        setIsProviderConnecting(false);
       } catch (error) {
         if (!isMetamaskUserRejectedRequestError(error)) {
           notifyError(error);
         }
-        setIsProviderConnecting(false);
       }
     },
     [notifyError]
@@ -116,16 +136,16 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           error: "The env has not been initialized correctly",
         });
       }
-      setIsProviderConnecting(true);
       switch (walletName) {
         case WalletName.METAMASK: {
           try {
-            const web3Provider = getMetamaskProvider();
+            const web3Provider = getMetaMaskProvider();
+
             if (web3Provider) {
               const accounts = await getConnectedAccounts(web3Provider);
               const account: string | undefined = accounts[0];
               if (account) {
-                return connectMetamaskProvider({ env, web3Provider, account });
+                return connectMetaMaskProvider({ env, web3Provider, account });
               } else {
                 return setAccount({
                   status: "failed",
@@ -147,7 +167,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             } else if (!isMetamaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
-            setIsProviderConnecting(false);
             return setAccount({ status: "pending" });
           }
         }
@@ -177,7 +196,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         }
       }
     },
-    [env, connectMetamaskProvider, notifyError]
+    [env, getMetaMaskProvider, connectMetaMaskProvider, notifyError]
   );
 
   const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
@@ -238,23 +257,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     },
     [connectedProvider]
   );
-
-  useEffect(() => {
-    if (!connectedProvider && account.status !== "failed") {
-      setIsProviderConnecting(true);
-      const web3Provider = getMetamaskProvider();
-      if (web3Provider && env) {
-        void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
-          const account: string | undefined = accounts[0];
-          if (account) {
-            return connectMetamaskProvider({ env, web3Provider, account });
-          } else {
-            setIsProviderConnecting(false);
-          }
-        });
-      }
-    }
-  }, [account, connectedProvider, env, connectMetamaskProvider]);
 
   useEffect(() => {
     if (account.status === "failed") {
@@ -318,11 +320,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     () => ({
       connectedProvider,
       account,
-      isProviderConnecting,
-      changeNetwork,
       connectProvider,
+      connectMetaMaskProvider,
+      changeNetwork,
+      getMetaMaskProvider,
+      silentlyGetMetaMaskConnectedAccounts,
     }),
-    [account, connectedProvider, isProviderConnecting, connectProvider, changeNetwork]
+    [
+      account,
+      connectedProvider,
+      connectProvider,
+      connectMetaMaskProvider,
+      changeNetwork,
+      getMetaMaskProvider,
+      silentlyGetMetaMaskConnectedAccounts,
+    ]
   );
 
   return <providersContext.Provider value={value} {...props} />;

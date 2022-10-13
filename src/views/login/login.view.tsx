@@ -23,8 +23,15 @@ const Login: FC = () => {
   const [showPolicy, setShowPolicy] = useState<boolean>(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { connectProvider, account } = useProvidersContext();
+  const {
+    account,
+    connectProvider,
+    getMetaMaskProvider,
+    silentlyGetMetaMaskConnectedAccounts,
+    connectMetaMaskProvider,
+  } = useProvidersContext();
   const env = useEnvContext();
+  const [isAccountAlreadyConnected, setIsAccountAlreadyConnected] = useState<boolean>();
 
   const onConnectProvider = () => {
     setPolicyCheck();
@@ -43,6 +50,24 @@ const Login: FC = () => {
   };
 
   useEffect(() => {
+    const web3Provider = getMetaMaskProvider();
+
+    if (env && web3Provider) {
+      void silentlyGetMetaMaskConnectedAccounts({ web3Provider }).then((accounts) => {
+        const account = accounts ? accounts[0] : undefined;
+
+        if (!account) {
+          setIsAccountAlreadyConnected(false);
+        } else {
+          return connectMetaMaskProvider({ env, web3Provider, account }).then(() =>
+            setIsAccountAlreadyConnected(true)
+          );
+        }
+      });
+    }
+  }, [connectMetaMaskProvider, env, getMetaMaskProvider, silentlyGetMetaMaskConnectedAccounts]);
+
+  useEffect(() => {
     if (account.status === "successful") {
       const routerState = routerStateParser.safeParse(state);
 
@@ -54,7 +79,7 @@ const Login: FC = () => {
     }
   }, [account, state, navigate]);
 
-  if (!env) {
+  if (!env || isAccountAlreadyConnected !== false) {
     return null;
   }
 
