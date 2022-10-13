@@ -8,7 +8,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { Chain } from "src/domain";
-import { isMetamaskUserRejectedRequestError } from "src/utils/types";
+import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const NetworkSelector: FC = () => {
@@ -54,7 +54,7 @@ const NetworkSelector: FC = () => {
           onClick={(chain) => {
             changeNetwork(chain).catch((error) => {
               callIfMounted(() => {
-                if (isMetamaskUserRejectedRequestError(error) === false) {
+                if (isMetaMaskUserRejectedRequestError(error) === false) {
                   notifyError(error);
                 }
               });

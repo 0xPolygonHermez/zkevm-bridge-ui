@@ -9,10 +9,11 @@ import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles
 import Typography from "src/views/shared/typography/typography.view";
 
 interface NetworkBoxProps {
+  isAddNetworkButtonDisabled: boolean;
   onChangeNetwork: (chain: Chain) => void;
 }
 
-const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
+const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeNetwork }) => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
   const { connectedProvider } = useProvidersContext();
@@ -66,7 +67,9 @@ const NetworkBox: FC<NetworkBoxProps> = ({ onChangeNetwork }) => {
         </ul>
         <button
           className={classes.metaMaskButton}
-          disabled={connectedProvider?.chainId === env.chains[1].chainId}
+          disabled={
+            isAddNetworkButtonDisabled || connectedProvider?.chainId === env.chains[1].chainId
+          }
           onClick={() => void onChangeNetwork(env.chains[1])}
         >
           <MetaMaskIcon className={classes.metaMaskIcon} />

@@ -15,7 +15,7 @@ import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/
 import { selectTokenAddress } from "src/utils/tokens";
 import {
   AsyncTask,
-  isMetamaskUserRejectedRequestError,
+  isMetaMaskUserRejectedRequestError,
   isAsyncTaskDataAvailable,
   isEthersInsufficientFundsError,
 } from "src/utils/types";
@@ -63,7 +63,8 @@ const BridgeConfirmation: FC = () => {
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxPossibleAmountConsideringFee, setMaxPossibleAmountConsideringFee] =
     useState<BigNumber>();
-  const [shouldUpdateAmount, setShouldUpdateAmount] = useState(false);
+  const [shouldUpdateOnScreenAmount, setShouldUpdateOnScreenAmount] = useState(false);
+  const [shouldUpdateOnScreenFee, setShouldUpdateOnScreenFee] = useState(false);
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
@@ -243,20 +244,36 @@ const BridgeConfirmation: FC = () => {
                     setIsFadeVisible(false);
                   }
                   const isTokenEther = token.address === ethersConstants.AddressZero;
-                  const remainder = amount.add(newFee).sub(tokenBalance);
-                  const isRemainderPositive = !remainder.isNegative();
+                  const remainder = isTokenEther ? amount.add(newFee).sub(tokenBalance) : undefined;
+                  const isRemainderPositive = remainder ? !remainder.isNegative() : undefined;
                   const newMaxPossibleAmountConsideringFee =
-                    isTokenEther && isRemainderPositive ? amount.sub(remainder) : amount;
+                    isTokenEther && remainder && isRemainderPositive
+                      ? amount.sub(remainder)
+                      : amount;
+
                   const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
+                  const etherToken = isTokenEther ? token : getEtherToken(from);
+
+                  const hasOnScreenFeeChanged =
+                    isAsyncTaskDataAvailable(oldFee) &&
+                    formatTokenAmount(oldFee.data, etherToken) !==
+                      formatTokenAmount(newFee, etherToken);
+
+                  setShouldUpdateOnScreenFee(hasOnScreenFeeChanged);
 
                   setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
+                    const hasOnScreenAmountChanged =
+                      oldMaxPossibleAmountConsideringFee !== undefined &&
+                      formatTokenAmount(oldMaxPossibleAmountConsideringFee, token) !==
+                        formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+
+                    setShouldUpdateOnScreenAmount(hasOnScreenAmountChanged);
+
                     const areAmountsEqual =
                       oldMaxPossibleAmountConsideringFee !== undefined &&
                       oldMaxPossibleAmountConsideringFee.eq(newMaxPossibleAmountConsideringFee);
-                    if (areAmountsEqual) {
-                      setShouldUpdateAmount(false);
-                    } else {
-                      setShouldUpdateAmount(true);
+
+                    if (!areAmountsEqual) {
                       setTimeout(() => {
                         setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
                       }, msTimeout);
@@ -326,7 +343,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           callIfMounted(() => {
-            if (isMetamaskUserRejectedRequestError(error)) {
+            if (isMetaMaskUserRejectedRequestError(error)) {
               setApprovalTask({ status: "pending" });
             } else {
               void parseError(error).then((parsed) => {
@@ -367,7 +384,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           setIsBridgeButtonDisabled(false);
-          if (isMetamaskUserRejectedRequestError(error) === false) {
+          if (isMetaMaskUserRejectedRequestError(error) === false) {
             void parseError(error).then((parsed) => {
               callIfMounted(() => {
                 if (parsed === "wrong-network") {
@@ -442,12 +459,12 @@ const BridgeConfirmation: FC = () => {
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography className={shouldUpdateAmount ? fadeClass : ""} type="h1">
+        <Typography className={shouldUpdateOnScreenAmount ? fadeClass : ""} type="h1">
           {tokenAmountString}
         </Typography>
         {fiatAmountString && (
           <Typography
-            className={shouldUpdateAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
+            className={shouldUpdateOnScreenAmount ? `${classes.fiat} ${fadeClass}` : classes.fiat}
             type="body2"
           >
             {fiatAmountString}
@@ -467,8 +484,12 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon className={fadeClass} url={ETH_TOKEN_LOGO_URI} size={20} />
-            <Typography type="body1" className={fadeClass}>
+            <Icon
+              className={shouldUpdateOnScreenFee ? fadeClass : ""}
+              url={ETH_TOKEN_LOGO_URI}
+              size={20}
+            />
+            <Typography type="body1" className={shouldUpdateOnScreenFee ? fadeClass : ""}>
               {feeString}
             </Typography>
           </div>

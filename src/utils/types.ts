@@ -51,26 +51,26 @@ export function isAsyncTaskDataAvailable<D, E>(
 
 export type Exact<T, U> = [T, U] extends [U, T] ? true : false;
 
-export function isMetamaskUserRejectedRequestError(
+export function isMetaMaskUserRejectedRequestError(
   error: unknown
-): error is errorAdapter.MetamaskUserRejectedRequestError {
-  return errorAdapter.metamaskUserRejectedRequestError.safeParse(error).success;
+): error is errorAdapter.MetaMaskUserRejectedRequestError {
+  return errorAdapter.metaMaskUserRejectedRequestError.safeParse(error).success;
 }
 
-export function isMetamaskRequestAccountsError(
+export function isMetaMaskResourceUnavailableError(
   error: unknown
-): error is errorAdapter.MetamaskRequestAccountsError {
-  return errorAdapter.metamaskRequestAccountsError.safeParse(error).success;
+): error is errorAdapter.MetaMaskResourceUnavailableError {
+  return errorAdapter.metaMaskResourceUnavailableError.safeParse(error).success;
+}
+
+export function isMetaMaskUnknownChainError(
+  error: unknown
+): error is errorAdapter.MetaMaskUnknownChainError {
+  return errorAdapter.metaMaskUnknownChainError.safeParse(error).success;
 }
 
 export function isEthersInsufficientFundsError(
   error: unknown
 ): error is errorAdapter.EthersInsufficientFundsError {
   return errorAdapter.ethersInsufficientFundsError.safeParse(error).success;
-}
-
-export function isMetamaskUnknownChainError(
-  error: unknown
-): error is errorAdapter.MetamaskUnknownChainError {
-  return errorAdapter.metamaskUnknownChainError.safeParse(error).success;
 }
