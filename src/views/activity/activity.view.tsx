@@ -33,7 +33,7 @@ const Activity: FC = () => {
   const [lastLoadedItem, setLastLoadedItem] = useState(0);
   const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<string[]>([]);
-  const [disabledBridges, setDisabledBridges] = useState<string[]>([]);
+  const [areBridgesDisabled, setAreBridgesDisabled] = useState<boolean>(false);
   const classes = useActivityStyles({ displayAll });
 
   const headerBorderObserved = useRef<HTMLDivElement>(null);
@@ -50,7 +50,7 @@ const Activity: FC = () => {
 
   const onClaim = (bridge: Bridge) => {
     if (bridge.status === "on-hold") {
-      setDisabledBridges((current) => [...current, bridge.id]);
+      setAreBridgesDisabled(true);
       claim({
         bridge,
       })
@@ -69,7 +69,6 @@ const Activity: FC = () => {
         })
         .catch((error) => {
           callIfMounted(() => {
-            setDisabledBridges((current) => current.filter((id) => id !== bridge.id));
             if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
@@ -80,6 +79,9 @@ const Activity: FC = () => {
               });
             }
           });
+        })
+        .finally(() => {
+          setAreBridgesDisabled(false);
         });
     }
   };
@@ -306,7 +308,7 @@ const Activity: FC = () => {
                         <BridgeCard
                           bridge={bridge}
                           networkError={wrongNetworkBridges.includes(bridge.id)}
-                          isFinaliseDisabled={disabledBridges.includes(bridge.id)}
+                          isFinaliseDisabled={areBridgesDisabled}
                           showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                           onClaim={() => onClaim(bridge)}
                         />
