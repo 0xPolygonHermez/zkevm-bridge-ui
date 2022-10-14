@@ -38,14 +38,12 @@ const NetworkBox: FC = () => {
     setIsAddNetworkButtonDisabled(true);
     addNetwork(polygonZkEVMChain)
       .then(() => {
-        setIsAddNetworkButtonDisabled(false);
         callIfMounted(() => {
           openSnackbar(successMsg);
         });
       })
       .catch((error) => {
         callIfMounted(() => {
-          setIsAddNetworkButtonDisabled(false);
           void parseError(error).then((parsed) => {
             if (parsed === "wrong-network") {
               openSnackbar(successMsg);
@@ -53,6 +51,11 @@ const NetworkBox: FC = () => {
               notifyError(error);
             }
           });
+        });
+      })
+      .finally(() => {
+        callIfMounted(() => {
+          setIsAddNetworkButtonDisabled(false);
         });
       });
   };
