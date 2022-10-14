@@ -33,6 +33,7 @@ interface ProvidersContext {
   isProviderConnecting: boolean;
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
+  addNetwork: (chain: Chain) => Promise<void>;
   changeNetwork: (chain: Chain) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
 }
@@ -42,10 +43,9 @@ const providersContextNotReadyErrorMsg = "The providers context is not yet ready
 const providersContext = createContext<ProvidersContext>({
   isProviderConnecting: false,
   account: { status: "pending" },
+  addNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
-  connectProvider: () => {
-    return Promise.reject(new Error(providersContextNotReadyErrorMsg));
-  },
+  connectProvider: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
 });
 
 const ProvidersProvider: FC<PropsWithChildren> = (props) => {
@@ -191,7 +191,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           const { chainId } = await connectedProvider.getNetwork();
 
           if (chainId !== chain.chainId) {
-            return Promise.reject(new Error("Could not switch the network"));
+            throw "wrong-network";
           }
         })
         .catch((error) => {
@@ -203,9 +203,16 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     return Promise.reject(new Error("The provider does not have a request method"));
   };
 
-  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
-    if (connectedProvider.provider.request) {
-      return connectedProvider.provider
+  const addNetwork = useCallback(
+    (chain: Chain): Promise<void> => {
+      const provider = getMetamaskProvider();
+      if (!provider) {
+        return Promise.reject(new Error("No provider available"));
+      }
+      if (!provider.provider.request) {
+        return Promise.reject(new Error("The provider does not have a request method"));
+      }
+      return provider.provider
         .request({
           method: "wallet_addEthereumChain",
           params: [
@@ -219,10 +226,12 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           ],
         })
         .then(async () => {
-          const { chainId } = await connectedProvider.getNetwork();
+          if (connectedProvider) {
+            const { chainId } = await connectedProvider.provider.getNetwork();
 
-          if (chainId !== chain.chainId) {
-            return Promise.reject(new Error("Could not switch the network"));
+            if (chainId !== chain.chainId) {
+              throw "wrong-network";
+            }
           }
         })
         .catch((error) => {
@@ -230,16 +239,16 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             throw error;
           }
         });
-    }
-    return Promise.reject(new Error("The provider does not have a request method"));
-  };
+    },
+    [connectedProvider]
+  );
 
   const changeNetwork = useCallback(
     (chain: Chain) => {
       if (connectedProvider && connectedProvider.provider.provider.isMetaMask) {
         return switchNetwork(chain, connectedProvider.provider).catch((error) => {
           if (isMetaMaskUnknownChainError(error)) {
-            return addAndSwitchNetwork(chain, connectedProvider.provider);
+            return addNetwork(chain);
           } else {
             throw error;
           }
@@ -248,7 +257,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         return Promise.reject(new Error(providersContextNotReadyErrorMsg));
       }
     },
-    [connectedProvider]
+    [addNetwork, connectedProvider]
   );
 
   useEffect(() => {
@@ -328,13 +337,14 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
-      connectedProvider,
       account,
       isProviderConnecting,
+      connectedProvider,
+      addNetwork,
       changeNetwork,
       connectProvider,
     }),
-    [account, connectedProvider, isProviderConnecting, connectProvider, changeNetwork]
+    [account, isProviderConnecting, connectedProvider, addNetwork, changeNetwork, connectProvider]
   );
 
   return <providersContext.Provider value={value} {...props} />;

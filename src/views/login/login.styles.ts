@@ -28,6 +28,11 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 56,
     marginBottom: theme.spacing(5),
   },
+  networkBoxWrapper: {
+    maxWidth: theme.maxWidth,
+    width: "100%",
+    margin: [0, "auto", theme.spacing(3)],
+  },
   cardWrap: {
     margin: [theme.spacing(3), 0],
     width: "100%",

@@ -68,19 +68,17 @@ const Activity: FC = () => {
           });
         })
         .catch((error) => {
-          if (isMetaMaskUserRejectedRequestError(error) === false) {
-            void parseError(error).then((parsed) => {
-              if (parsed === "wrong-network") {
-                callIfMounted(() => {
+          callIfMounted(() => {
+            if (isMetaMaskUserRejectedRequestError(error) === false) {
+              void parseError(error).then((parsed) => {
+                if (parsed === "wrong-network") {
                   setWrongNetworkBridges([...wrongNetworkBridges, bridge.id]);
-                });
-              } else {
-                callIfMounted(() => {
+                } else {
                   notifyError(error);
-                });
-              }
-            });
-          }
+                }
+              });
+            }
+          });
         })
         .finally(() => {
           setAreBridgesDisabled(false);
