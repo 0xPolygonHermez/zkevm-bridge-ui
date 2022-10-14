@@ -186,7 +186,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             from: destinationAddress,
           })
           .then((gasLimit) => {
-            const gasIncrease = gasLimit.div(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
+            const gasIncrease = gasLimit
+              .div(BigNumber.from(100))
+              .mul(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
 
             return gasLimit.add(gasIncrease);
           });

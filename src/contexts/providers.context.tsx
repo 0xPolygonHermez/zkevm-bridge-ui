@@ -15,9 +15,9 @@ import { hexValue } from "ethers/lib/utils";
 
 import {
   AsyncTask,
-  isMetamaskRequestAccountsError,
-  isMetamaskUnknownChainError,
-  isMetamaskUserRejectedRequestError,
+  isMetaMaskResourceUnavailableError,
+  isMetaMaskUnknownChainError,
+  isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
 import {
   ethereumAccountsParser,
@@ -33,7 +33,7 @@ interface ProvidersContext {
   isProviderConnecting: boolean;
   connectedProvider?: { provider: Web3Provider; chainId: number };
   account: AsyncTask<string, string>;
-  changeNetwork: (chain: Chain) => Promise<number>;
+  changeNetwork: (chain: Chain) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
 }
 
@@ -99,7 +99,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         }
         setIsProviderConnecting(false);
       } catch (error) {
-        if (!isMetamaskUserRejectedRequestError(error)) {
+        if (!isMetaMaskUserRejectedRequestError(error)) {
           notifyError(error);
         }
         setIsProviderConnecting(false);
@@ -139,12 +139,12 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               });
             }
           } catch (error) {
-            if (isMetamaskRequestAccountsError(error)) {
+            if (isMetaMaskResourceUnavailableError(error)) {
               return setAccount({
                 status: "failed",
                 error: `Please connect to or unlock ${WalletName.METAMASK} to continue`,
               });
-            } else if (!isMetamaskUserRejectedRequestError(error)) {
+            } else if (!isMetaMaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
             setIsProviderConnecting(false);
@@ -180,7 +180,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     [env, connectMetamaskProvider, notifyError]
   );
 
-  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+  const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
     if (connectedProvider.provider.request) {
       return connectedProvider.provider
         .request({
@@ -189,15 +189,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         })
         .then(async () => {
           const { chainId } = await connectedProvider.getNetwork();
-          return chainId === chain.chainId
-            ? chainId
-            : Promise.reject(new Error("Could not switch the network"));
+
+          if (chainId !== chain.chainId) {
+            return Promise.reject(new Error("Could not switch the network"));
+          }
+        })
+        .catch((error) => {
+          if (!isMetaMaskResourceUnavailableError(error)) {
+            throw error;
+          }
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
   };
 
-  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<number> => {
+  const addAndSwitchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
     if (connectedProvider.provider.request) {
       return connectedProvider.provider
         .request({
@@ -214,9 +220,15 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         })
         .then(async () => {
           const { chainId } = await connectedProvider.getNetwork();
-          return chainId === chain.chainId
-            ? chainId
-            : Promise.reject(new Error("Could not switch the network"));
+
+          if (chainId !== chain.chainId) {
+            return Promise.reject(new Error("Could not switch the network"));
+          }
+        })
+        .catch((error) => {
+          if (!isMetaMaskResourceUnavailableError(error)) {
+            throw error;
+          }
         });
     }
     return Promise.reject(new Error("The provider does not have a request method"));
@@ -226,7 +238,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     (chain: Chain) => {
       if (connectedProvider && connectedProvider.provider.provider.isMetaMask) {
         return switchNetwork(chain, connectedProvider.provider).catch((error) => {
-          if (isMetamaskUnknownChainError(error)) {
+          if (isMetaMaskUnknownChainError(error)) {
             return addAndSwitchNetwork(chain, connectedProvider.provider);
           } else {
             throw error;
