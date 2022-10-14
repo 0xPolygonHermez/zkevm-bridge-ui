@@ -1,26 +1,64 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Chain } from "src/domain";
+import { useUIContext } from "src/contexts/ui.context";
+import { useErrorContext } from "src/contexts/error.context";
 import Card from "src/views/shared/card/card.view";
 import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
 import Typography from "src/views/shared/typography/typography.view";
+import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { parseError } from "src/adapters/error";
+import { Message } from "src/domain";
 
-interface NetworkBoxProps {
-  isAddNetworkButtonDisabled: boolean;
-  onChangeNetwork: (chain: Chain) => void;
-}
-
-const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeNetwork }) => {
+const NetworkBox: FC = () => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
-  const { connectedProvider } = useProvidersContext();
+  const { connectedProvider, addNetwork } = useProvidersContext();
+  const [isAddNetworkButtonDisabled, setIsAddNetworkButtonDisabled] = useState(false);
+  const { openSnackbar } = useUIContext();
+  const callIfMounted = useCallIfMounted();
+  const { notifyError } = useErrorContext();
 
   if (!env) {
     return null;
   }
+
+  const ethereumChain = env.chains[0];
+  const polygonZkEVMChain = env.chains[1];
+
+  const successMsg: Message = {
+    type: "success-msg",
+    text: `${polygonZkEVMChain.name} network successfully added`,
+  };
+
+  const onAddNetwork = (): void => {
+    setIsAddNetworkButtonDisabled(true);
+    addNetwork(polygonZkEVMChain)
+      .then(() => {
+        callIfMounted(() => {
+          openSnackbar(successMsg);
+        });
+      })
+      .catch((error) => {
+        callIfMounted(() => {
+          void parseError(error).then((parsed) => {
+            if (parsed === "wrong-network") {
+              openSnackbar(successMsg);
+            } else if (isMetaMaskUserRejectedRequestError(error) === false) {
+              notifyError(error);
+            }
+          });
+        });
+      })
+      .finally(() => {
+        callIfMounted(() => {
+          setIsAddNetworkButtonDisabled(false);
+        });
+      });
+  };
 
   return (
     <Card>
@@ -28,26 +66,28 @@ const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeN
         <Typography type="body1">Polygon zkEVM testnet</Typography>
         <ul>
           <li className={classes.listItem}>
-            <Typography type="body2">RPC URL: {env.chains[1].provider.connection.url}</Typography>
+            <Typography type="body2">
+              RPC URL: {polygonZkEVMChain.provider.connection.url}
+            </Typography>
           </li>
           <li className={classes.listItem}>
-            <Typography type="body2">Chain ID: {env.chains[1].chainId}</Typography>
+            <Typography type="body2">Chain ID: {polygonZkEVMChain.chainId}</Typography>
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
-              Currency symbol: {env.chains[1].nativeCurrency.symbol}
+              Currency symbol: {polygonZkEVMChain.nativeCurrency.symbol}
             </Typography>
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
               Block explorer URL:{" "}
               <a
-                href={env.chains[1].explorerUrl}
+                href={polygonZkEVMChain.explorerUrl}
                 target="_blank"
                 rel="noreferrer"
                 className={classes.link}
               >
-                {env.chains[1].explorerUrl}
+                {polygonZkEVMChain.explorerUrl}
               </a>
             </Typography>
           </li>
@@ -55,12 +95,12 @@ const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeN
             <Typography type="body2">
               L1 Goerli Smart Contract:{" "}
               <a
-                href={`${env.chains[0].explorerUrl}/address/${env.chains[0].poeContractAddress}`}
+                href={`${ethereumChain.explorerUrl}/address/${ethereumChain.poeContractAddress}`}
                 rel="noreferrer"
                 target="_blank"
                 className={classes.link}
               >
-                {env.chains[0].poeContractAddress}
+                {ethereumChain.poeContractAddress}
               </a>
             </Typography>
           </li>
@@ -68,9 +108,9 @@ const NetworkBox: FC<NetworkBoxProps> = ({ isAddNetworkButtonDisabled, onChangeN
         <button
           className={classes.metaMaskButton}
           disabled={
-            isAddNetworkButtonDisabled || connectedProvider?.chainId === env.chains[1].chainId
+            isAddNetworkButtonDisabled || connectedProvider?.chainId === polygonZkEVMChain.chainId
           }
-          onClick={() => void onChangeNetwork(env.chains[1])}
+          onClick={onAddNetwork}
         >
           <MetaMaskIcon className={classes.metaMaskIcon} />
           Add to MetaMask
