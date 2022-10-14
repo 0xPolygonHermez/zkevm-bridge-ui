@@ -18,6 +18,7 @@ import {
   isMetaMaskResourceUnavailableError,
   isMetaMaskUnknownChainError,
   isMetaMaskUserRejectedRequestError,
+  isAsyncTaskDataAvailable,
 } from "src/utils/types";
 import {
   ethereumAccountsParser,
@@ -30,8 +31,13 @@ import routes from "src/routes";
 import { Env, Chain, EthereumChainId, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
-  isProviderConnecting: boolean;
-  connectedProvider?: { provider: Web3Provider; chainId: number };
+  connectedProvider: AsyncTask<
+    {
+      provider: Web3Provider;
+      chainId: number;
+    },
+    string
+  >;
   account: AsyncTask<string, string>;
   addNetwork: (chain: Chain) => Promise<void>;
   changeNetwork: (chain: Chain) => Promise<void>;
@@ -41,7 +47,7 @@ interface ProvidersContext {
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
 
 const providersContext = createContext<ProvidersContext>({
-  isProviderConnecting: false,
+  connectedProvider: { status: "pending" },
   account: { status: "pending" },
   addNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
@@ -50,11 +56,17 @@ const providersContext = createContext<ProvidersContext>({
 
 const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const navigate = useNavigate();
-  const [connectedProvider, setConnectedProvider] = useState<{
-    provider: Web3Provider;
-    chainId: number;
-  }>();
-  const [isProviderConnecting, setIsProviderConnecting] = useState<boolean>(true);
+  const [connectedProvider, setConnectedProvider] = useState<
+    AsyncTask<
+      {
+        provider: Web3Provider;
+        chainId: number;
+      },
+      string
+    >
+  >({
+    status: "pending",
+  });
   const [account, setAccount] = useState<AsyncTask<string, string>>({ status: "pending" });
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -73,6 +85,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   const connectMetamaskProvider = useCallback(
     async ({ env, web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
+      // ToDo: Why is this try/catch required in a promise?
       try {
         const checkMetamaskHeartbeat = setTimeout(() => {
           setAccount({
@@ -94,15 +107,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
           });
         } else {
-          setConnectedProvider({ provider: web3Provider, chainId: currentNetworkChainId });
           setAccount({ status: "successful", data: account });
+          setConnectedProvider({
+            status: "successful",
+            data: { provider: web3Provider, chainId: currentNetworkChainId },
+          });
+          return setAccount({ status: "successful", data: account });
         }
-        setIsProviderConnecting(false);
       } catch (error) {
         if (!isMetaMaskUserRejectedRequestError(error)) {
           notifyError(error);
         }
-        setIsProviderConnecting(false);
+        setConnectedProvider({
+          status: "failed",
+          error: "An error occurred connecting the provider",
+        });
       }
     },
     [notifyError]
@@ -116,7 +135,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           error: "The env has not been initialized correctly",
         });
       }
-      setIsProviderConnecting(true);
       switch (walletName) {
         case WalletName.METAMASK: {
           try {
@@ -147,7 +165,10 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             } else if (!isMetaMaskUserRejectedRequestError(error)) {
               notifyError(error);
             }
-            setIsProviderConnecting(false);
+            setConnectedProvider({
+              status: "failed",
+              error: "An error occurred connecting the provider",
+            });
             return setAccount({ status: "pending" });
           }
         }
@@ -164,7 +185,10 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           return walletConnectProvider
             .enable()
             .then((accounts) => {
-              setConnectedProvider({ provider: web3Provider, chainId });
+              setConnectedProvider({
+                status: "successful",
+                data: { provider: web3Provider, chainId },
+              });
               setAccount({ status: "successful", data: accounts[0] });
             })
             .catch((error) => {
@@ -226,8 +250,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           ],
         })
         .then(async () => {
-          if (connectedProvider) {
-            const { chainId } = await connectedProvider.provider.getNetwork();
+          if (isAsyncTaskDataAvailable(connectedProvider)) {
+            const { chainId } = await connectedProvider.data.provider.getNetwork();
 
             if (chainId !== chain.chainId) {
               throw "wrong-network";
@@ -245,8 +269,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   const changeNetwork = useCallback(
     (chain: Chain) => {
-      if (connectedProvider && connectedProvider.provider.provider.isMetaMask) {
-        return switchNetwork(chain, connectedProvider.provider).catch((error) => {
+      if (
+        isAsyncTaskDataAvailable(connectedProvider) &&
+        connectedProvider.data.provider.provider.isMetaMask
+      ) {
+        return switchNetwork(chain, connectedProvider.data.provider).catch((error) => {
           if (isMetaMaskUnknownChainError(error)) {
             return addNetwork(chain);
           } else {
@@ -261,21 +288,20 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   );
 
   useEffect(() => {
-    if (!connectedProvider && account.status !== "failed") {
-      setIsProviderConnecting(true);
+    if (connectedProvider.status === "pending") {
       const web3Provider = getMetamaskProvider();
       if (web3Provider && env) {
         void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
           const account: string | undefined = accounts[0];
           if (account) {
-            return connectMetamaskProvider({ env, web3Provider, account });
+            void connectMetamaskProvider({ env, web3Provider, account });
           } else {
-            setIsProviderConnecting(false);
+            setConnectedProvider({ status: "failed", error: "No connected accounts found" });
           }
         });
       }
     }
-  }, [account, connectedProvider, env, connectMetamaskProvider]);
+  }, [connectMetamaskProvider, connectedProvider.status, env]);
 
   useEffect(() => {
     if (account.status === "failed") {
@@ -284,8 +310,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   }, [account, navigate]);
 
   useEffect(() => {
-    const internalConnectedProvider: Record<string, unknown> | undefined =
-      connectedProvider?.provider.provider;
+    const externalConnectedProvider: Record<string, unknown> | undefined = isAsyncTaskDataAvailable(
+      connectedProvider
+    )
+      ? connectedProvider.data.provider.provider
+      : undefined;
     const onAccountsChanged = (accounts: unknown): void => {
       const parsedAccounts = ethereumAccountsParser.safeParse(accounts);
 
@@ -299,8 +328,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
       }
     };
     const onChainChanged = () => {
-      if (connectedProvider) {
-        if (connectedProvider.provider.provider.isMetaMask) {
+      if (isAsyncTaskDataAvailable(connectedProvider)) {
+        if (connectedProvider.data.provider.provider.isMetaMask) {
           void connectProvider(WalletName.METAMASK);
         } else {
           void connectProvider(WalletName.WALLET_CONNECT);
@@ -313,24 +342,24 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     };
 
     if (
-      internalConnectedProvider &&
-      "on" in internalConnectedProvider &&
-      typeof internalConnectedProvider.on === "function"
+      externalConnectedProvider &&
+      "on" in externalConnectedProvider &&
+      typeof externalConnectedProvider.on === "function"
     ) {
-      internalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      internalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
-      internalConnectedProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
+      externalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+      externalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+      externalConnectedProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
     }
 
     return () => {
       if (
-        internalConnectedProvider &&
-        "removeListener" in internalConnectedProvider &&
-        typeof internalConnectedProvider.removeListener === "function"
+        externalConnectedProvider &&
+        "removeListener" in externalConnectedProvider &&
+        typeof externalConnectedProvider.removeListener === "function"
       ) {
-        internalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        internalConnectedProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
-        internalConnectedProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
+        externalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+        externalConnectedProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+        externalConnectedProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
   }, [connectProvider, connectedProvider, navigate]);
@@ -338,13 +367,12 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(
     () => ({
       account,
-      isProviderConnecting,
       connectedProvider,
       addNetwork,
       changeNetwork,
       connectProvider,
     }),
-    [account, isProviderConnecting, connectedProvider, addNetwork, changeNetwork, connectProvider]
+    [account, connectedProvider, addNetwork, changeNetwork, connectProvider]
   );
 
   return <providersContext.Provider value={value} {...props} />;

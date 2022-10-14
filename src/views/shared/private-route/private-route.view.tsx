@@ -5,17 +5,23 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import routes from "src/routes";
 
 const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
-  const { connectedProvider, isProviderConnecting } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { pathname, search } = useLocation();
 
-  if (isProviderConnecting) {
-    return null;
-  } else if (!connectedProvider) {
-    return (
-      <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
-    );
-  } else {
-    return <>{children}</>;
+  switch (connectedProvider.status) {
+    case "pending":
+    case "loading":
+    case "reloading": {
+      return null;
+    }
+    case "failed": {
+      return (
+        <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
+      );
+    }
+    case "successful": {
+      return <>{children}</>;
+    }
   }
 };
 

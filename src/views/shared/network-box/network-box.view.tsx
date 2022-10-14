@@ -8,7 +8,7 @@ import { useErrorContext } from "src/contexts/error.context";
 import Card from "src/views/shared/card/card.view";
 import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
 import Typography from "src/views/shared/typography/typography.view";
-import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { parseError } from "src/adapters/error";
 import { Message } from "src/domain";
@@ -108,7 +108,9 @@ const NetworkBox: FC = () => {
         <button
           className={classes.metaMaskButton}
           disabled={
-            isAddNetworkButtonDisabled || connectedProvider?.chainId === polygonZkEVMChain.chainId
+            isAddNetworkButtonDisabled ||
+            (isAsyncTaskDataAvailable(connectedProvider) &&
+              connectedProvider.data.chainId === polygonZkEVMChain.chainId)
           }
           onClick={onAddNetwork}
         >

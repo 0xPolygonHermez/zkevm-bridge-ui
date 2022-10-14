@@ -8,7 +8,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { Chain } from "src/domain";
-import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const NetworkSelector: FC = () => {
@@ -22,8 +22,10 @@ const NetworkSelector: FC = () => {
   const [selectedChain, setSelectedChain] = useState<Chain>();
 
   useEffect(() => {
-    if (env && connectedProvider) {
-      const selectedChain = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
+    if (env && isAsyncTaskDataAvailable(connectedProvider)) {
+      const selectedChain = env.chains.find(
+        (chain) => chain.chainId === connectedProvider.data.chainId
+      );
       if (selectedChain) {
         setSelectedChain(selectedChain);
       }

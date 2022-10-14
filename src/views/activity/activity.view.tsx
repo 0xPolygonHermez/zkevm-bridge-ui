@@ -217,7 +217,7 @@ const Activity: FC = () => {
 
   useEffect(() => {
     setWrongNetworkBridges([]);
-  }, [connectedProvider?.chainId]);
+  }, [connectedProvider.status]);
 
   const EmptyMessage = () => (
     <Card className={classes.emptyMessage}>
