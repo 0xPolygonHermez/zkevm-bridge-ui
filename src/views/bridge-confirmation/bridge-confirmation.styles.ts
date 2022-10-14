@@ -104,6 +104,9 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     gap: theme.spacing(1),
   },
+  error: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 export default useBridgeConfirmationStyles;

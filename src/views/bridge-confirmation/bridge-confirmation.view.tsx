@@ -59,7 +59,7 @@ const BridgeConfirmation: FC = () => {
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
   const [isFadeVisible, setIsFadeVisible] = useState(true);
-  const [isBridgeButtonDisabled, setIsBridgeButtonDisabled] = useState(false);
+  const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxPossibleAmountConsideringFee, setMaxPossibleAmountConsideringFee] =
     useState<BigNumber>();
@@ -365,7 +365,7 @@ const BridgeConfirmation: FC = () => {
     if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
       const { token, from, to } = formData;
 
-      setIsBridgeButtonDisabled(true);
+      setIsBridgeInProgress(true);
 
       bridge({
         from,
@@ -384,7 +384,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           callIfMounted(() => {
-            setIsBridgeButtonDisabled(false);
+            setIsBridgeInProgress(false);
             if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
@@ -454,6 +454,8 @@ const BridgeConfirmation: FC = () => {
 
   const fadeClass = isFadeVisible ? classes.fadeIn : classes.fadeOut;
 
+  const isAmountNegative = maxPossibleAmountConsideringFee.isNegative();
+
   return (
     <div className={classes.contentWrapper}>
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
@@ -497,7 +499,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <BridgeButton
-          isDisabled={isBridgeButtonDisabled}
+          isDisabled={isAmountNegative || isBridgeInProgress}
           token={token}
           isTxApprovalRequired={isTxApprovalRequired}
           approvalTask={approvalTask}
@@ -507,6 +509,12 @@ const BridgeConfirmation: FC = () => {
         {isTxApprovalRequired && <ApprovalInfo />}
         {error && <Error error={error} />}
       </div>
+      {isAmountNegative && (
+        <Error
+          className={classes.error}
+          error="The account does not have enough balance to pay the fee"
+        />
+      )}
     </div>
   );
 };
