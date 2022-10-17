@@ -262,10 +262,20 @@ const BridgeConfirmation: FC = () => {
                   setShouldUpdateOnScreenFee(hasOnScreenFeeChanged);
 
                   setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
+                    const formattedOldMaxPossibleAmountConsideringFee =
+                      oldMaxPossibleAmountConsideringFee &&
+                      (oldMaxPossibleAmountConsideringFee.isNegative()
+                        ? "0"
+                        : formatTokenAmount(oldMaxPossibleAmountConsideringFee, token));
+
+                    const formattedNewMaxPossibleAmountConsideringFee =
+                      newMaxPossibleAmountConsideringFee.isNegative()
+                        ? "0"
+                        : formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+
                     const hasOnScreenAmountChanged =
-                      oldMaxPossibleAmountConsideringFee !== undefined &&
-                      formatTokenAmount(oldMaxPossibleAmountConsideringFee, token) !==
-                        formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+                      formattedOldMaxPossibleAmountConsideringFee !==
+                      formattedNewMaxPossibleAmountConsideringFee;
 
                     setShouldUpdateOnScreenAmount(hasOnScreenAmountChanged);
 
@@ -441,11 +451,26 @@ const BridgeConfirmation: FC = () => {
       FIAT_DISPLAY_PRECISION
     );
 
-  const tokenAmountString = `${formatTokenAmount(maxPossibleAmountConsideringFee, token)} ${
-    token.symbol
-  }`;
+  const tokenAmountString = `${
+    maxPossibleAmountConsideringFee.gt(0)
+      ? formatTokenAmount(maxPossibleAmountConsideringFee, token)
+      : "0"
+  } ${token.symbol}`;
+
   const fiatAmountString = env.fiatExchangeRates.areEnabled
     ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
+    : undefined;
+
+  const absMaxPossibleAmountConsideringFee = formatTokenAmount(
+    maxPossibleAmountConsideringFee.abs(),
+    etherToken
+  );
+
+  const feeBaseErrorString = "You don't have enough ETH to cover the transaction fee";
+  const feeErrorString = maxPossibleAmountConsideringFee.isNegative()
+    ? `${feeBaseErrorString}\nYou need at least ${absMaxPossibleAmountConsideringFee} extra ETH`
+    : maxPossibleAmountConsideringFee.eq(0)
+    ? `${feeBaseErrorString}\nThe maximum transferable amount is 0 after considering the fee`
     : undefined;
 
   const etherFeeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${etherToken.symbol}`;
@@ -453,8 +478,6 @@ const BridgeConfirmation: FC = () => {
   const feeString = fiatFeeString ? `${etherFeeString} ~ ${fiatFeeString}` : etherFeeString;
 
   const fadeClass = isFadeVisible ? classes.fadeIn : classes.fadeOut;
-
-  const isAmountNegative = maxPossibleAmountConsideringFee.isNegative();
 
   return (
     <div className={classes.contentWrapper}>
@@ -499,7 +522,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <BridgeButton
-          isDisabled={isAmountNegative || isBridgeInProgress}
+          isDisabled={maxPossibleAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
           isTxApprovalRequired={isTxApprovalRequired}
           approvalTask={approvalTask}
@@ -509,12 +532,7 @@ const BridgeConfirmation: FC = () => {
         {isTxApprovalRequired && <ApprovalInfo />}
         {error && <Error error={error} />}
       </div>
-      {isAmountNegative && (
-        <Error
-          className={classes.error}
-          error="The account does not have enough balance to pay the fee"
-        />
-      )}
+      {feeErrorString && <Error className={classes.error} error={feeErrorString} />}
     </div>
   );
 };
