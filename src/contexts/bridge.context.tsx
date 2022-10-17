@@ -26,7 +26,6 @@ import {
   FIAT_DISPLAY_PRECISION,
   PENDING_TX_TIMEOUT,
 } from "src/constants";
-import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
@@ -39,7 +38,7 @@ import {
   isTxMined,
   hasTxBeenReverted,
 } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from "src/domain";
+import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge, Gas } from "src/domain";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
@@ -47,7 +46,7 @@ interface GetMaxEtherBridgeParams {
   chain: Chain;
 }
 
-interface EstimateBridgeFeeParams {
+interface EstimateBridgeGasParams {
   from: Chain;
   token: Token;
   to: Chain;
@@ -95,6 +94,7 @@ interface BridgeParams {
   amount: BigNumber;
   to: Chain;
   destinationAddress: string;
+  gas?: Gas;
 }
 
 interface ClaimParams {
@@ -103,7 +103,7 @@ interface ClaimParams {
 
 interface BridgeContext {
   getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
-  estimateBridgeFee: (params: EstimateBridgeFeeParams) => Promise<BigNumber>;
+  estimateBridgeGas: (params: EstimateBridgeGasParams) => Promise<Gas>;
   getBridge: (params: GetBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
@@ -120,7 +120,7 @@ const bridgeContext = createContext<BridgeContext>({
   getMaxEtherBridge: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  estimateBridgeFee: () => {
+  estimateBridgeGas: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   getBridge: () => {
@@ -151,61 +151,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       return Bridge__factory.connect(chain.bridgeContractAddress, chain.provider).maxEtherBridge();
     },
     []
-  );
-
-  const estimateGasPrice = useCallback(
-    ({ chain, gasLimit }: { chain: Chain; gasLimit: BigNumber }): Promise<BigNumber> => {
-      return chain.provider.getFeeData().then((feeData) => {
-        const fee = calculateFee(gasLimit, feeData);
-
-        if (fee === undefined) {
-          return Promise.reject(new Error("Fee data is not available"));
-        } else {
-          return Promise.resolve(fee);
-        }
-      });
-    },
-    []
-  );
-
-  const estimateBridgeGasLimit = useCallback(
-    ({ from, to, token, destinationAddress }: EstimateBridgeFeeParams) => {
-      const amount = parseUnits("0", token.decimals);
-      const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
-      const overrides: PayableOverrides =
-        token.address === ethersConstants.AddressZero ? { value: amount } : {};
-
-      if (contract === undefined) {
-        throw new Error("Bridge contract is not available");
-      }
-
-      if (from.key === "ethereum") {
-        return contract.estimateGas
-          .bridge(selectTokenAddress(token, from), to.networkId, destinationAddress, amount, "0x", {
-            ...overrides,
-            from: destinationAddress,
-          })
-          .then((gasLimit) => {
-            const gasIncrease = gasLimit
-              .div(BigNumber.from(100))
-              .mul(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
-
-            return gasLimit.add(gasIncrease);
-          });
-      }
-
-      return Promise.resolve(BigNumber.from(300000));
-    },
-    []
-  );
-
-  const estimateBridgeFee = useCallback(
-    (params: EstimateBridgeFeeParams) => {
-      return estimateBridgeGasLimit(params).then((safeGasLimit) =>
-        estimateGasPrice({ chain: params.from, gasLimit: safeGasLimit })
-      );
-    },
-    [estimateBridgeGasLimit, estimateGasPrice]
   );
 
   type Price = BigNumber | null;
@@ -721,6 +666,52 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     [env, account, cleanPendingTxs, addWrappedToken, getTokenPrice]
   );
 
+  const estimateBridgeGas = useCallback(
+    async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
+      const amount = parseUnits("0", token.decimals);
+      const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
+      const overrides: PayableOverrides =
+        token.address === ethersConstants.AddressZero ? { value: amount } : {};
+
+      if (contract === undefined) {
+        throw new Error("Bridge contract is not available");
+      }
+
+      const [fallbackGasPrice, feeData] = await Promise.all([
+        from.provider.getGasPrice(),
+        from.provider.getFeeData(),
+      ]);
+
+      const gasLimit =
+        from.key === "ethereum"
+          ? await contract.estimateGas
+              .bridge(
+                selectTokenAddress(token, from),
+                to.networkId,
+                destinationAddress,
+                amount,
+                "0x",
+                {
+                  ...overrides,
+                  from: destinationAddress,
+                }
+              )
+              .then((gasLimit) => {
+                const gasIncrease = gasLimit
+                  .div(BigNumber.from(100))
+                  .mul(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
+
+                return gasLimit.add(gasIncrease);
+              })
+          : BigNumber.from(300000);
+
+      return feeData.maxFeePerGas
+        ? { type: "eip-1559", data: { gasLimit, maxFeePerGas: feeData.maxFeePerGas } }
+        : { type: "legacy", data: { gasLimit, gasPrice: feeData.gasPrice || fallbackGasPrice } };
+    },
+    []
+  );
+
   const bridge = useCallback(
     async ({
       from,
@@ -728,6 +719,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       amount,
       to,
       destinationAddress,
+      gas,
     }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
         throw new Error("Env is not available");
@@ -745,11 +737,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         from.bridgeContractAddress,
         connectedProvider.provider.getSigner()
       );
+
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
-        gasPrice: await from.provider.getGasPrice(),
-        gasLimit: await estimateBridgeGasLimit({ from, to, token, destinationAddress }),
+        ...(gas
+          ? gas.data
+          : (await estimateBridgeGas({ from, to, token, destinationAddress })).data),
       };
+
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
           account: account.data,
@@ -793,7 +788,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeBridge);
       }
     },
-    [env, connectedProvider, account, estimateBridgeGasLimit, changeNetwork]
+    [env, connectedProvider, account, estimateBridgeGas, changeNetwork]
   );
 
   const claim = useCallback(
@@ -888,7 +883,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(
     () => ({
       getMaxEtherBridge,
-      estimateBridgeFee,
+      estimateBridgeGas,
       getBridge,
       fetchBridges,
       getPendingBridges,
@@ -897,7 +892,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     }),
     [
       getMaxEtherBridge,
-      estimateBridgeFee,
+      estimateBridgeGas,
       getBridge,
       fetchBridges,
       getPendingBridges,
