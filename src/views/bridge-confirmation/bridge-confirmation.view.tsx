@@ -121,8 +121,8 @@ const BridgeConfirmation: FC = () => {
   useEffect(() => {
     if (
       isAsyncTaskDataAvailable(connectedProvider) &&
-      formData &&
-      account.status === "successful"
+      isAsyncTaskDataAvailable(account) &&
+      formData
     ) {
       const { from, token, amount } = formData;
       if (token.address === ethersConstants.AddressZero) {
@@ -334,7 +334,7 @@ const BridgeConfirmation: FC = () => {
   const onApprove = () => {
     if (
       isAsyncTaskDataAvailable(connectedProvider) &&
-      account.status === "successful" &&
+      isAsyncTaskDataAvailable(account) &&
       formData
     ) {
       setApprovalTask({ status: "loading" });
