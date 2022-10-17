@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { BigNumber, constants as ethersConstants } from "ethers";
 
@@ -75,6 +75,7 @@ const BridgeConfirmation: FC = () => {
   const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
     status: "pending",
   });
+  const feePollingInterval = useRef<NodeJS.Timer>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -318,10 +319,10 @@ const BridgeConfirmation: FC = () => {
       }
     };
     estimateFee();
-    const intervalId = setInterval(estimateFee, AUTO_REFRESH_RATE);
+    feePollingInterval.current = setInterval(estimateFee, AUTO_REFRESH_RATE);
 
     return () => {
-      clearInterval(intervalId);
+      clearInterval(feePollingInterval.current);
     };
   }, [
     account,
@@ -373,6 +374,7 @@ const BridgeConfirmation: FC = () => {
 
   const onBridge = () => {
     if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
+      clearInterval(feePollingInterval.current);
       const { token, from, to } = formData;
 
       setIsBridgeInProgress(true);
