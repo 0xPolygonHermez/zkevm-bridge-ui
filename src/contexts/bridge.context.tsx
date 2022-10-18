@@ -695,8 +695,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               })
           : BigNumber.from(300000);
 
-      const feeData = await from.provider.getFeeData();
-      const { maxFeePerGas, gasPrice } = feeData;
+      const { maxFeePerGas, gasPrice } = await from.provider.getFeeData();
 
       return maxFeePerGas
         ? { type: "eip-1559", data: { gasLimit, maxFeePerGas } }
