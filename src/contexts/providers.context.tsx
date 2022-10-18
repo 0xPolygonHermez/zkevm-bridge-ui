@@ -107,7 +107,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
           });
         } else {
-          setAccount({ status: "successful", data: account });
           setConnectedProvider({
             status: "successful",
             data: { provider: web3Provider, chainId: currentNetworkChainId },
