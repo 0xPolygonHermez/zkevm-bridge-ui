@@ -116,7 +116,7 @@ const BridgeDetails: FC = () => {
   };
 
   useEffect(() => {
-    if (isAsyncTaskDataAvailable(bridge) && isAsyncTaskDataAvailable(connectedProvider)) {
+    if (isAsyncTaskDataAvailable(bridge) && connectedProvider.status === "successful") {
       if (bridge.data.to.chainId === connectedProvider.data.chainId) {
         setIncorrectNetworkMessage(undefined);
       }

@@ -120,7 +120,7 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (
-      isAsyncTaskDataAvailable(connectedProvider) &&
+      connectedProvider.status === "successful" &&
       isAsyncTaskDataAvailable(account) &&
       formData
     ) {
@@ -168,7 +168,7 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (
-      isAsyncTaskDataAvailable(connectedProvider) &&
+      connectedProvider.status === "successful" &&
       formData &&
       formData.from.chainId === connectedProvider.data.chainId
     ) {

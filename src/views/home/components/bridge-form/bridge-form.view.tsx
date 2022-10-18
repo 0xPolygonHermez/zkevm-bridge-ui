@@ -16,7 +16,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
+import { AsyncTask } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -275,7 +275,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
 
   useEffect(() => {
     // Load the default values after the network is changed
-    if (env && isAsyncTaskDataAvailable(connectedProvider) && formData === undefined) {
+    if (env && connectedProvider.status === "successful" && formData === undefined) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.data.chainId);
       if (from && to) {
