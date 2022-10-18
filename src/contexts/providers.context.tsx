@@ -85,7 +85,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   const connectMetamaskProvider = useCallback(
     async ({ env, web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
-      // ToDo: Why is this try/catch required in a promise?
       try {
         const checkMetamaskHeartbeat = setTimeout(() => {
           setAccount({
