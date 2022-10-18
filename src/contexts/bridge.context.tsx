@@ -2,7 +2,7 @@ import {
   BigNumber,
   constants as ethersConstants,
   ContractTransaction,
-  PayableOverrides,
+  CallOverrides,
 } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
@@ -668,19 +668,17 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
   const estimateBridgeGas = useCallback(
     async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
-      const amount = parseUnits("0", token.decimals);
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
-      const overrides: PayableOverrides =
-        token.address === ethersConstants.AddressZero ? { value: amount } : {};
 
       if (contract === undefined) {
         throw new Error("Bridge contract is not available");
       }
 
-      const [fallbackGasPrice, feeData] = await Promise.all([
-        from.provider.getGasPrice(),
-        from.provider.getFeeData(),
-      ]);
+      const amount = parseUnits("0", token.decimals);
+      const overrides: CallOverrides =
+        token.address === ethersConstants.AddressZero
+          ? { value: amount, from: destinationAddress }
+          : { from: destinationAddress };
 
       const gasLimit =
         from.key === "ethereum"
@@ -691,10 +689,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 destinationAddress,
                 amount,
                 "0x",
-                {
-                  ...overrides,
-                  from: destinationAddress,
-                }
+                overrides
               )
               .then((gasLimit) => {
                 const gasIncrease = gasLimit
@@ -705,9 +700,18 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               })
           : BigNumber.from(300000);
 
-      return feeData.maxFeePerGas
-        ? { type: "eip-1559", data: { gasLimit, maxFeePerGas: feeData.maxFeePerGas } }
-        : { type: "legacy", data: { gasLimit, gasPrice: feeData.gasPrice || fallbackGasPrice } };
+      const feeData = await from.provider.getFeeData();
+      const { maxFeePerGas, gasPrice } = feeData;
+
+      return maxFeePerGas
+        ? { type: "eip-1559", data: { gasLimit, maxFeePerGas } }
+        : {
+            type: "legacy",
+            data: {
+              gasLimit,
+              gasPrice: gasPrice ? gasPrice : await from.provider.getGasPrice(),
+            },
+          };
     },
     []
   );
@@ -738,7 +742,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         connectedProvider.provider.getSigner()
       );
 
-      const overrides: PayableOverrides = {
+      const overrides: CallOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         ...(gas
           ? gas.data
