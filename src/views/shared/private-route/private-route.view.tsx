@@ -10,8 +10,7 @@ const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
 
   switch (connectedProvider.status) {
     case "pending":
-    case "loading":
-    case "reloading": {
+    case "loading": {
       return null;
     }
     case "failed": {
@@ -19,6 +18,7 @@ const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
         <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
       );
     }
+    case "reloading":
     case "successful": {
       return <>{children}</>;
     }
