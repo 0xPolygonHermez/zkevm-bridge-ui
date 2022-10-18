@@ -158,7 +158,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             if (isMetaMaskResourceUnavailableError(error)) {
               return setAccount({
                 status: "failed",
-                error: `Please connect to or unlock ${WalletName.METAMASK} to continue`,
+                error: `Please unlock or connect to ${WalletName.METAMASK} to continue`,
               });
             } else if (!isMetaMaskUserRejectedRequestError(error)) {
               notifyError(error);
