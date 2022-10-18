@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { areSettingsVisible } from "src/constants";
+import { areSettingsVisible } from "src/utils/feature-toggles";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { ReactComponent as SettingIcon } from "src/assets/icons/setting.svg";
 import { ReactComponent as ClockIcon } from "src/assets/icons/clock.svg";

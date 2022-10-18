@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import routes from "src/routes";
-import { areSettingsVisible } from "src/constants";
+import { areSettingsVisible } from "src/utils/feature-toggles";
 import PrivateRoute from "src/views/shared/private-route/private-route.view";
 import { useEnvContext } from "src/contexts/env.context";
 

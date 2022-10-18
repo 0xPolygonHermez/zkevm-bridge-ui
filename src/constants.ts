@@ -5,15 +5,7 @@ import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { ProviderError } from "src/adapters/error";
-import {
-  Env,
-  Chain,
-  Currency,
-  EthereumChain,
-  EthereumChainId,
-  Token,
-  ZkEVMChain,
-} from "src/domain";
+import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
@@ -148,7 +140,3 @@ export const getUsdcToken = ({
   logoURI:
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
 });
-
-export const areSettingsVisible = (env: Env): boolean => {
-  return env.fiatExchangeRates.areEnabled;
-};
