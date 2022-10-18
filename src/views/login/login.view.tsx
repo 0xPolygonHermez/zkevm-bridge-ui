@@ -24,7 +24,7 @@ const Login: FC = () => {
   const [showPolicy, setShowPolicy] = useState<boolean>(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { connectProvider, account } = useProvidersContext();
+  const { connectProvider, connectedProvider } = useProvidersContext();
   const env = useEnvContext();
 
   const onConnectProvider = () => {
@@ -44,7 +44,7 @@ const Login: FC = () => {
   };
 
   useEffect(() => {
-    if (account.status === "successful") {
+    if (connectedProvider.status === "successful") {
       const routerState = routerStateParser.safeParse(state);
 
       if (routerState.success) {
@@ -53,7 +53,7 @@ const Login: FC = () => {
         navigate(routes.home.path, { replace: true });
       }
     }
-  }, [account, state, navigate]);
+  }, [connectedProvider, state, navigate]);
 
   if (!env) {
     return null;
@@ -88,7 +88,7 @@ const Login: FC = () => {
               <WalletList onSelectWallet={onCheckAndConnectProvider} />
             </>
           </Card>
-          {account.status === "failed" && <Error error={account.error} />}
+          {connectedProvider.status === "failed" && <Error error={connectedProvider.error} />}
         </div>
       </div>
       {showPolicy && <Policy onClose={() => setShowPolicy(false)} onConnect={onConnectProvider} />}

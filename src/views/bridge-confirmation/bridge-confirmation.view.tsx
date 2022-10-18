@@ -54,7 +54,7 @@ const BridgeConfirmation: FC = () => {
   const { bridge, estimateBridgeFee } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
@@ -81,12 +81,12 @@ const BridgeConfirmation: FC = () => {
     // Load the balance of the token when it's not available
     if (formData?.token.balance) {
       setTokenBalance(formData.token.balance);
-    } else if (formData && isAsyncTaskDataAvailable(account)) {
+    } else if (formData && connectedProvider.status === "successful") {
       const { from, token } = formData;
       const isTokenEther = token.address === ethersConstants.AddressZero;
       if (isTokenEther) {
         void from.provider
-          .getBalance(account.data)
+          .getBalance(connectedProvider.data.account)
           .then((balance) =>
             callIfMounted(() => {
               setTokenBalance(balance);
@@ -102,7 +102,7 @@ const BridgeConfirmation: FC = () => {
         getErc20TokenBalance({
           chain: from,
           tokenAddress: selectTokenAddress(token, from),
-          accountAddress: account.data,
+          accountAddress: connectedProvider.data.account,
         })
           .then((balance) =>
             callIfMounted(() => {
@@ -116,20 +116,16 @@ const BridgeConfirmation: FC = () => {
           );
       }
     }
-  }, [account, formData, getErc20TokenBalance, notifyError, callIfMounted]);
+  }, [connectedProvider, formData, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (
-      connectedProvider.status === "successful" &&
-      isAsyncTaskDataAvailable(account) &&
-      formData
-    ) {
+    if (connectedProvider.status === "successful" && formData) {
       const { from, token, amount } = formData;
       if (token.address === ethersConstants.AddressZero) {
         setIsTxApprovalRequired(false);
       } else {
         isPermitSupported({
-          account: account.data,
+          account: connectedProvider.data.account,
           chain: formData.from,
           token,
         })
@@ -142,7 +138,7 @@ const BridgeConfirmation: FC = () => {
                   provider: from.provider,
                   token: token,
                   amount: amount,
-                  owner: account.data,
+                  owner: connectedProvider.data.account,
                   spender: from.bridgeContractAddress,
                 })
                   .then((isAllowed) =>
@@ -157,14 +153,7 @@ const BridgeConfirmation: FC = () => {
           .catch(notifyError);
       }
     }
-  }, [
-    formData,
-    account,
-    connectedProvider,
-    isContractAllowedToSpendToken,
-    notifyError,
-    callIfMounted,
-  ]);
+  }, [formData, connectedProvider, isContractAllowedToSpendToken, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (
@@ -232,13 +221,13 @@ const BridgeConfirmation: FC = () => {
           ? { status: "reloading", data: currentEstimatedFee.data }
           : { status: "loading" }
       );
-      if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
+      if (formData && connectedProvider.status === "successful" && tokenBalance) {
         const { token, amount, from, to } = formData;
         estimateBridgeFee({
           from: from,
           to: to,
           token: token,
-          destinationAddress: account.data,
+          destinationAddress: connectedProvider.data.account,
         })
           .then((newFee) => {
             callIfMounted(() => {
@@ -322,7 +311,7 @@ const BridgeConfirmation: FC = () => {
       clearInterval(intervalId);
     };
   }, [
-    account,
+    connectedProvider,
     formData,
     tokenBalance,
     estimateBridgeFee,
@@ -332,17 +321,13 @@ const BridgeConfirmation: FC = () => {
   ]);
 
   const onApprove = () => {
-    if (
-      isAsyncTaskDataAvailable(connectedProvider) &&
-      isAsyncTaskDataAvailable(account) &&
-      formData
-    ) {
+    if (isAsyncTaskDataAvailable(connectedProvider) && formData) {
       setApprovalTask({ status: "loading" });
       const { token, amount, from } = formData;
       void approve({
         from,
         token,
-        owner: account.data,
+        owner: connectedProvider.data.account,
         spender: from.bridgeContractAddress,
         provider: connectedProvider.data.provider,
         amount,
@@ -374,7 +359,11 @@ const BridgeConfirmation: FC = () => {
   };
 
   const onBridge = () => {
-    if (formData && isAsyncTaskDataAvailable(account) && maxPossibleAmountConsideringFee) {
+    if (
+      formData &&
+      isAsyncTaskDataAvailable(connectedProvider) &&
+      maxPossibleAmountConsideringFee
+    ) {
       const { token, from, to } = formData;
 
       setIsBridgeButtonDisabled(true);
@@ -384,7 +373,7 @@ const BridgeConfirmation: FC = () => {
         token,
         amount: maxPossibleAmountConsideringFee,
         to,
-        destinationAddress: account.data,
+        destinationAddress: connectedProvider.data.account,
       })
         .then(() => {
           openSnackbar({

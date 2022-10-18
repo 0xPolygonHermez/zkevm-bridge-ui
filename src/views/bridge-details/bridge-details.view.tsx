@@ -75,7 +75,7 @@ const BridgeDetails: FC = () => {
   const { notifyError } = useErrorContext();
   const { claim, getBridge } = useBridgeContext();
   const { tokens } = useTokensContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const [bridge, setBridge] = useState<AsyncTask<Bridge, string>>({
@@ -124,7 +124,7 @@ const BridgeDetails: FC = () => {
   }, [connectedProvider, bridge]);
 
   useEffect(() => {
-    if (env && account.status === "successful") {
+    if (env) {
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -160,7 +160,7 @@ const BridgeDetails: FC = () => {
         });
       }
     }
-  }, [account, env, bridgeId, notifyError, getBridge, callIfMounted]);
+  }, [env, bridgeId, notifyError, getBridge, callIfMounted]);
 
   useEffect(() => {
     if (bridge.status === "successful") {

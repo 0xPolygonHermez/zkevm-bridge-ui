@@ -13,7 +13,11 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
-import { AsyncTask, isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isMetaMaskUserRejectedRequestError,
+} from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -23,7 +27,7 @@ const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
   const { fetchBridges, getPendingBridges, claim } = useBridgeContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined, true>>({
@@ -122,7 +126,7 @@ const Activity: FC = () => {
   const onLoadNextPage = () => {
     if (
       env &&
-      account.status === "successful" &&
+      isAsyncTaskDataAvailable(connectedProvider) &&
       bridgeList.status === "successful" &&
       bridgeList.data.length < total
     ) {
@@ -130,7 +134,7 @@ const Activity: FC = () => {
       fetchBridges({
         type: "reload",
         env,
-        ethereumAddress: account.data,
+        ethereumAddress: connectedProvider.data.account,
         quantity: lastLoadedItem + PAGE_SIZE,
       })
         .then(({ bridges, total }) => {
@@ -144,12 +148,12 @@ const Activity: FC = () => {
   };
 
   useEffect(() => {
-    if (env && account.status === "successful") {
+    if (env && connectedProvider.status === "successful") {
       const loadBridges = () => {
         fetchBridges({
           type: "load",
           env,
-          ethereumAddress: account.data,
+          ethereumAddress: connectedProvider.data.account,
           limit: PAGE_SIZE,
           offset: 0,
         })
@@ -164,7 +168,7 @@ const Activity: FC = () => {
       loadBridges();
     }
   }, [
-    account,
+    connectedProvider,
     env,
     callIfMounted,
     fetchBridges,
@@ -175,7 +179,7 @@ const Activity: FC = () => {
   useEffect(() => {
     if (
       env &&
-      account.status === "successful" &&
+      connectedProvider.status === "successful" &&
       (bridgeList.status === "successful" || bridgeList.status === "failed")
     ) {
       const refreshBridges = () => {
@@ -187,7 +191,7 @@ const Activity: FC = () => {
         fetchBridges({
           type: "reload",
           env,
-          ethereumAddress: account.data,
+          ethereumAddress: connectedProvider.data.account,
           quantity: lastLoadedItem,
         })
           .then(({ bridges, total }) => {
@@ -205,7 +209,7 @@ const Activity: FC = () => {
       };
     }
   }, [
-    account,
+    connectedProvider,
     bridgeList,
     env,
     lastLoadedItem,
