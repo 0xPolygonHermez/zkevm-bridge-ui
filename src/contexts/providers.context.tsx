@@ -308,7 +308,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   }, [account, navigate]);
 
   useEffect(() => {
-    const externalConnectedProvider: Record<string, unknown> | undefined = isAsyncTaskDataAvailable(
+    const externalProvider: Record<string, unknown> | undefined = isAsyncTaskDataAvailable(
       connectedProvider
     )
       ? connectedProvider.data.provider.provider
@@ -339,25 +339,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
       window.location.reload();
     };
 
-    if (
-      externalConnectedProvider &&
-      "on" in externalConnectedProvider &&
-      typeof externalConnectedProvider.on === "function"
-    ) {
-      externalConnectedProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-      externalConnectedProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
-      externalConnectedProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
+    if (externalProvider && "on" in externalProvider && typeof externalProvider.on === "function") {
+      externalProvider.on(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+      externalProvider.on(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+      externalProvider.on(EthereumEvent.DISCONNECT, onDisconnect);
     }
 
     return () => {
       if (
-        externalConnectedProvider &&
-        "removeListener" in externalConnectedProvider &&
-        typeof externalConnectedProvider.removeListener === "function"
+        externalProvider &&
+        "removeListener" in externalProvider &&
+        typeof externalProvider.removeListener === "function"
       ) {
-        externalConnectedProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
-        externalConnectedProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
-        externalConnectedProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
+        externalProvider.removeListener(EthereumEvent.ACCOUNTS_CHANGED, onAccountsChanged);
+        externalProvider.removeListener(EthereumEvent.CHAIN_CHANGED, onChainChanged);
+        externalProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
   }, [connectProvider, connectedProvider, navigate]);
