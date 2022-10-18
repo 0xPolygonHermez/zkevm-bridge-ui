@@ -27,7 +27,6 @@ import {
 } from "src/adapters/ethereum";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import routes from "src/routes";
 import { Env, Chain, EthereumChainId, EthereumEvent, WalletName } from "src/domain";
 
 interface ProvidersContext {
@@ -302,12 +301,6 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   }, [connectMetamaskProvider, connectedProvider.status, env]);
 
   useEffect(() => {
-    if (account.status === "failed") {
-      navigate(routes.login.path);
-    }
-  }, [account, navigate]);
-
-  useEffect(() => {
     const externalProvider: Record<string, unknown> | undefined = isAsyncTaskDataAvailable(
       connectedProvider
     )
@@ -321,7 +314,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           setAccount({ status: "successful", data: parsedAccounts.data[0] });
         } else {
           setAccount({ status: "pending" });
-          navigate(routes.login.path);
+          setConnectedProvider({ status: "pending" });
         }
       }
     };
@@ -336,7 +329,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     };
 
     const onDisconnect = () => {
-      window.location.reload();
+      setConnectedProvider({ status: "pending" });
+      setAccount({ status: "pending" });
     };
 
     if (externalProvider && "on" in externalProvider && typeof externalProvider.on === "function") {
