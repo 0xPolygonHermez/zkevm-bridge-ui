@@ -669,11 +669,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const estimateBridgeGas = useCallback(
     async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
-
-      if (contract === undefined) {
-        throw new Error("Bridge contract is not available");
-      }
-
       const amount = parseUnits("0", token.decimals);
       const overrides: CallOverrides =
         token.address === ethersConstants.AddressZero
