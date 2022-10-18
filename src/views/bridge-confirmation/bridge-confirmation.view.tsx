@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useRef } from "react";
+import { FC, useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { BigNumber, constants as ethersConstants } from "ethers";
 
@@ -77,8 +77,131 @@ const BridgeConfirmation: FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<AsyncTask<Gas, string>>({
     status: "pending",
   });
-  const feePollingInterval = useRef<NodeJS.Timer>();
+  const estimateGasPollInterval = useRef<NodeJS.Timer>();
   const currencySymbol = getCurrencySymbol(getCurrency());
+
+  const startGasPolling = useCallback(() => {
+    const estimateGas = () => {
+      setEstimatedGas((currentEstimatedGas) =>
+        isAsyncTaskDataAvailable(currentEstimatedGas)
+          ? { status: "reloading", data: currentEstimatedGas.data }
+          : { status: "loading" }
+      );
+      if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
+        const { token, amount, from, to } = formData;
+
+        estimateBridgeGas({
+          from: from,
+          to: to,
+          token: token,
+          destinationAddress: account.data,
+        })
+          .then((newGas) => {
+            setEstimatedGas((oldGas) => {
+              const newFee = calculateFee(newGas);
+
+              if (!newFee) {
+                return { status: "failed", error: "Fee data is not available" };
+              }
+
+              const oldFee = isAsyncTaskDataAvailable(oldGas)
+                ? calculateFee(oldGas.data)
+                : undefined;
+
+              const areFeesEqual = oldFee && oldFee.eq(newFee);
+              if (areFeesEqual) {
+                return oldGas;
+              } else {
+                const isFirstLoad = oldGas.status === "loading";
+                if (!isFirstLoad) {
+                  setIsFadeVisible(false);
+                }
+                const isTokenEther = token.address === ethersConstants.AddressZero;
+                const remainder = isTokenEther ? amount.add(newFee).sub(tokenBalance) : undefined;
+                const isRemainderPositive = remainder ? !remainder.isNegative() : undefined;
+                const newMaxPossibleAmountConsideringFee =
+                  isTokenEther && remainder && isRemainderPositive ? amount.sub(remainder) : amount;
+
+                const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
+                const etherToken = isTokenEther ? token : getEtherToken(from);
+
+                const hasOnScreenFeeChanged =
+                  oldFee !== undefined &&
+                  formatTokenAmount(oldFee, etherToken) !== formatTokenAmount(newFee, etherToken);
+
+                setShouldUpdateOnScreenFee(hasOnScreenFeeChanged);
+
+                setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
+                  const formattedOldMaxPossibleAmountConsideringFee =
+                    oldMaxPossibleAmountConsideringFee &&
+                    (oldMaxPossibleAmountConsideringFee.isNegative()
+                      ? "0"
+                      : formatTokenAmount(oldMaxPossibleAmountConsideringFee, token));
+
+                  const formattedNewMaxPossibleAmountConsideringFee =
+                    newMaxPossibleAmountConsideringFee.isNegative()
+                      ? "0"
+                      : formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+
+                  const hasOnScreenAmountChanged =
+                    formattedOldMaxPossibleAmountConsideringFee !==
+                    formattedNewMaxPossibleAmountConsideringFee;
+
+                  setShouldUpdateOnScreenAmount(hasOnScreenAmountChanged);
+
+                  const areAmountsEqual =
+                    oldMaxPossibleAmountConsideringFee !== undefined &&
+                    oldMaxPossibleAmountConsideringFee.eq(newMaxPossibleAmountConsideringFee);
+
+                  if (!areAmountsEqual) {
+                    setTimeout(() => {
+                      setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
+                    }, msTimeout);
+                  }
+                  return oldMaxPossibleAmountConsideringFee;
+                });
+
+                setTimeout(() => {
+                  setEstimatedGas({
+                    status: "successful",
+                    data: newGas,
+                  });
+                  setIsFadeVisible(true);
+                }, msTimeout);
+
+                return oldGas;
+              }
+            });
+          })
+          .catch((error) => {
+            if (isEthersInsufficientFundsError(error)) {
+              callIfMounted(() => {
+                setEstimatedGas({
+                  status: "failed",
+                  error: "You don't have enough ETH to pay for the fees",
+                });
+              });
+            } else {
+              callIfMounted(() => {
+                notifyError(error);
+              });
+            }
+          });
+      }
+    };
+    void estimateGas();
+    estimateGasPollInterval.current = setInterval(estimateGas, AUTO_REFRESH_RATE);
+  }, [account, callIfMounted, estimateBridgeGas, formData, notifyError, tokenBalance]);
+
+  const stopGasPolling = useCallback(() => {
+    clearInterval(estimateGasPollInterval.current);
+  }, []);
+
+  useEffect(() => {
+    // Start estimating gas
+    startGasPolling();
+    return stopGasPolling;
+  }, [startGasPolling, stopGasPolling]);
 
   useEffect(() => {
     // Load the balance of the token when it's not available
@@ -219,132 +342,6 @@ const BridgeConfirmation: FC = () => {
     }
   }, [formData, tokens, estimatedGas, getTokenPrice, callIfMounted]);
 
-  useEffect(() => {
-    // Get estimated fee
-    const estimateGas = () => {
-      setEstimatedGas((currentEstimatedGas) =>
-        isAsyncTaskDataAvailable(currentEstimatedGas)
-          ? { status: "reloading", data: currentEstimatedGas.data }
-          : { status: "loading" }
-      );
-      if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
-        const { token, amount, from, to } = formData;
-
-        estimateBridgeGas({
-          from: from,
-          to: to,
-          token: token,
-          destinationAddress: account.data,
-        })
-          .then((newGas) => {
-            setEstimatedGas((oldGas) => {
-              const newFee = calculateFee(newGas);
-
-              if (!newFee) {
-                return { status: "failed", error: "Fee data is not available" };
-              }
-
-              const oldFee = isAsyncTaskDataAvailable(oldGas)
-                ? calculateFee(oldGas.data)
-                : undefined;
-
-              const areFeesEqual = oldFee && oldFee.eq(newFee);
-              if (areFeesEqual) {
-                return oldGas;
-              } else {
-                const isFirstLoad = oldGas.status === "loading";
-                if (!isFirstLoad) {
-                  setIsFadeVisible(false);
-                }
-                const isTokenEther = token.address === ethersConstants.AddressZero;
-                const remainder = isTokenEther ? amount.add(newFee).sub(tokenBalance) : undefined;
-                const isRemainderPositive = remainder ? !remainder.isNegative() : undefined;
-                const newMaxPossibleAmountConsideringFee =
-                  isTokenEther && remainder && isRemainderPositive ? amount.sub(remainder) : amount;
-
-                const msTimeout = FADE_DURATION_IN_SECONDS * 1000;
-                const etherToken = isTokenEther ? token : getEtherToken(from);
-
-                const hasOnScreenFeeChanged =
-                  oldFee !== undefined &&
-                  formatTokenAmount(oldFee, etherToken) !== formatTokenAmount(newFee, etherToken);
-
-                setShouldUpdateOnScreenFee(hasOnScreenFeeChanged);
-
-                setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
-                  const formattedOldMaxPossibleAmountConsideringFee =
-                    oldMaxPossibleAmountConsideringFee &&
-                    (oldMaxPossibleAmountConsideringFee.isNegative()
-                      ? "0"
-                      : formatTokenAmount(oldMaxPossibleAmountConsideringFee, token));
-
-                  const formattedNewMaxPossibleAmountConsideringFee =
-                    newMaxPossibleAmountConsideringFee.isNegative()
-                      ? "0"
-                      : formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
-
-                  const hasOnScreenAmountChanged =
-                    formattedOldMaxPossibleAmountConsideringFee !==
-                    formattedNewMaxPossibleAmountConsideringFee;
-
-                  setShouldUpdateOnScreenAmount(hasOnScreenAmountChanged);
-
-                  const areAmountsEqual =
-                    oldMaxPossibleAmountConsideringFee !== undefined &&
-                    oldMaxPossibleAmountConsideringFee.eq(newMaxPossibleAmountConsideringFee);
-
-                  if (!areAmountsEqual) {
-                    setTimeout(() => {
-                      setMaxPossibleAmountConsideringFee(newMaxPossibleAmountConsideringFee);
-                    }, msTimeout);
-                  }
-                  return oldMaxPossibleAmountConsideringFee;
-                });
-
-                setTimeout(() => {
-                  setEstimatedGas({
-                    status: "successful",
-                    data: newGas,
-                  });
-                  setIsFadeVisible(true);
-                }, msTimeout);
-
-                return oldGas;
-              }
-            });
-          })
-          .catch((error) => {
-            if (isEthersInsufficientFundsError(error)) {
-              callIfMounted(() => {
-                setEstimatedGas({
-                  status: "failed",
-                  error: "You don't have enough ETH to pay for the fees",
-                });
-              });
-            } else {
-              callIfMounted(() => {
-                notifyError(error);
-              });
-            }
-          });
-      }
-    };
-    void estimateGas();
-    feePollingInterval.current = setInterval(estimateGas, AUTO_REFRESH_RATE);
-
-    return () => {
-      clearInterval(feePollingInterval.current);
-    };
-  }, [
-    account,
-    formData,
-    tokenBalance,
-    notifyError,
-    callIfMounted,
-    setIsFadeVisible,
-    estimateBridgeGas,
-  ]);
-
   const onApprove = () => {
     if (connectedProvider && account.status === "successful" && formData) {
       setApprovalTask({ status: "loading" });
@@ -390,7 +387,7 @@ const BridgeConfirmation: FC = () => {
       isAsyncTaskDataAvailable(estimatedGas) &&
       maxPossibleAmountConsideringFee
     ) {
-      clearInterval(feePollingInterval.current);
+      stopGasPolling();
       const { token, from, to } = formData;
 
       setIsBridgeInProgress(true);
@@ -414,7 +411,7 @@ const BridgeConfirmation: FC = () => {
         .catch((error) => {
           callIfMounted(() => {
             setIsBridgeInProgress(false);
-            // setEstimatedGas({ status: "pending" });
+            startGasPolling();
             if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
