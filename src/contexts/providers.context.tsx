@@ -202,36 +202,40 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
-    if (connectedProvider.provider.request) {
-      return connectedProvider.provider
-        .request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: hexValue(chain.chainId) }],
-        })
-        .then(async () => {
-          const { chainId } = await connectedProvider.getNetwork();
-
-          if (chainId !== chain.chainId) {
-            throw "wrong-network";
-          }
-        })
-        .catch((error) => {
-          if (!isMetaMaskResourceUnavailableError(error)) {
-            throw error;
-          }
-        });
+    if (!connectedProvider.provider.request) {
+      return Promise.reject(
+        new Error("No request method is available from the provider to switch the Ethereum chain")
+      );
     }
-    return Promise.reject(new Error("The provider does not have a request method"));
+    return connectedProvider.provider
+      .request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: hexValue(chain.chainId) }],
+      })
+      .then(async () => {
+        const { chainId } = await connectedProvider.getNetwork();
+
+        if (chainId !== chain.chainId) {
+          throw "wrong-network";
+        }
+      })
+      .catch((error) => {
+        if (!isMetaMaskResourceUnavailableError(error)) {
+          throw error;
+        }
+      });
   };
 
   const addNetwork = useCallback(
     (chain: Chain): Promise<void> => {
       const provider = getMetamaskProvider();
       if (!provider) {
-        return Promise.reject(new Error("No provider available"));
+        return Promise.reject(new Error("No provider is available"));
       }
       if (!provider.provider.request) {
-        return Promise.reject(new Error("The provider does not have a request method"));
+        return Promise.reject(
+          new Error("No request method is available from the provider to add an Ethereum chain")
+        );
       }
       return provider.provider
         .request({

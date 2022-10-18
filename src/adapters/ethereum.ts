@@ -13,12 +13,12 @@ import { Token, Chain, TxStatus } from "src/domain";
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
 const silentlyGetConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
-  if (provider.provider.request) {
-    return provider.provider
-      .request({ method: "eth_accounts" })
-      .then((accounts) => ethereumAccountsParser.parse(accounts));
+  if (!provider.provider.request) {
+    throw Error("No request method is available from the provider to get the Ethereum accounts");
   }
-  throw Error("No request method is available from the provider to get the Ethereum accounts");
+  return provider.provider
+    .request({ method: "eth_accounts" })
+    .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
