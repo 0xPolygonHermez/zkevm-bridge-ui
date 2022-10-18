@@ -223,7 +223,7 @@ const BridgeConfirmation: FC = () => {
     // Get estimated fee
     const estimateGas = () => {
       setEstimatedGas((currentEstimatedGas) =>
-        currentEstimatedGas.status === "successful"
+        isAsyncTaskDataAvailable(currentEstimatedGas)
           ? { status: "reloading", data: currentEstimatedGas.data }
           : { status: "loading" }
       );
