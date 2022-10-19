@@ -51,6 +51,8 @@ export const REPORT_ERROR_FORM_URL =
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
+export const POLYGON_SUPPORT_URL = "https://support.polygon.technology/support/tickets/new";
+
 export const getChains = ({
   ethereum,
   polygonZkEVM,
