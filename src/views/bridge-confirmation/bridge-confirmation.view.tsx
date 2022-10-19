@@ -75,7 +75,7 @@ const BridgeConfirmation: FC = () => {
   const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
     status: "pending",
   });
-  const feePollingInterval = useRef<NodeJS.Timer>();
+  const feePollingInterval = useRef<number>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -319,7 +319,7 @@ const BridgeConfirmation: FC = () => {
       }
     };
     estimateFee();
-    feePollingInterval.current = setInterval(estimateFee, AUTO_REFRESH_RATE);
+    feePollingInterval.current = window.setInterval(estimateFee, AUTO_REFRESH_RATE);
 
     return () => {
       clearInterval(feePollingInterval.current);
