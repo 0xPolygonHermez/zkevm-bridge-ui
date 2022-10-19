@@ -77,11 +77,6 @@ interface ApproveParams {
 
 interface TokensContext {
   tokens?: Token[];
-  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
-  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
-    originNetwork: number;
-    originTokenAddress: string;
-  }>;
   addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getToken: (params: GetTokenParams) => Promise<Token>;
@@ -93,12 +88,6 @@ interface TokensContext {
 const tokensContextNotReadyMsg = "The bridge context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
-  computeWrappedTokenAddress: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getNativeTokenInfo: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
   addWrappedToken: () => {
     return Promise.reject(tokensContextNotReadyMsg);
   },
@@ -354,8 +343,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(() => {
     return {
       tokens,
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
       getTokenFromAddress,
       getToken,
       getErc20TokenBalance,
@@ -365,8 +352,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     };
   }, [
     tokens,
-    computeWrappedTokenAddress,
-    getNativeTokenInfo,
     getTokenFromAddress,
     getToken,
     getErc20TokenBalance,
