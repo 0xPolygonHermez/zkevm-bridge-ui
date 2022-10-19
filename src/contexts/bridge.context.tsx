@@ -142,7 +142,7 @@ const bridgeContext = createContext<BridgeContext>({
 
 const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
-  const { connectedProvider, account, changeNetwork } = useProvidersContext();
+  const { connectedProvider, changeNetwork } = useProvidersContext();
   const { getToken, addWrappedToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
 
@@ -610,11 +610,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       if (!env) {
         return Promise.reject("Env is not defined");
       }
-      if (!isAsyncTaskDataAvailable(account)) {
-        return Promise.reject("Account is not defined");
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
+        return Promise.reject("connectedProvider data is not available");
       }
 
-      const pendingTxs = storage.getAccountPendingTxs(account.data, env);
+      const account = connectedProvider.data.account;
+      const pendingTxs = storage.getAccountPendingTxs(account, env);
       const isPendingDepositInApiBridges = (depositTxHash: string) => {
         return bridges.find((bridge) => {
           return (
@@ -635,11 +636,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             pendingTx.type === "deposit" &&
             isPendingDepositInApiBridges(pendingTx.depositTxHash)
           ) {
-            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
           }
 
           if (pendingTx.type === "claim" && isPendingClaimInApiBridges(pendingTx.claimTxHash)) {
-            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
           }
 
           const txHash =
@@ -649,24 +650,24 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           const tx = await provider.getTransaction(txHash);
 
           if (isTxCanceled(tx)) {
-            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
           }
 
           if (isTxMined(tx)) {
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
             if (hasTxBeenReverted(txReceipt)) {
-              return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+              return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
             }
           }
 
           if (Date.now() > pendingTx.timestamp + PENDING_TX_TIMEOUT) {
-            return storage.removeAccountPendingTx(account.data, env, pendingTx.depositTxHash);
+            return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
           }
         })
       );
     },
-    [account, env]
+    [connectedProvider, env]
   );
 
   const getPendingBridges = useCallback(
@@ -679,12 +680,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Env is not available");
       }
 
-      if (!isAsyncTaskDataAvailable(account)) {
-        return Promise.reject("Account is not defined");
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
+        return Promise.reject("connectedProvider data is not available");
       }
 
       return Promise.all(
-        storage.getAccountPendingTxs(account.data, env).map(async (tx) => {
+        storage.getAccountPendingTxs(connectedProvider.data.account, env).map(async (tx) => {
           const chain = env.chains.find((chain) => chain.key === tx.from.key);
           const token = await addWrappedToken({ token: tx.token });
           const tokenPrice =
@@ -718,7 +719,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         })
       );
     },
-    [env, account, cleanPendingTxs, addWrappedToken, getTokenPrice]
+    [env, connectedProvider, cleanPendingTxs, addWrappedToken, getTokenPrice]
   );
 
   const bridge = useCallback(
@@ -737,14 +738,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Connected provider is not available");
       }
 
-      if (!isAsyncTaskDataAvailable(account)) {
-        throw new Error("User account is not available");
-      }
-
-      const contract = Bridge__factory.connect(
-        from.bridgeContractAddress,
-        connectedProvider.data.provider.getSigner()
-      );
+      const { provider, account, chainId } = connectedProvider.data;
+      const contract = Bridge__factory.connect(from.bridgeContractAddress, provider.getSigner());
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         gasPrice: await from.provider.getGasPrice(),
@@ -752,15 +747,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       };
       const executeBridge = async () => {
         const canUsePermit = await isPermitSupported({
-          account: account.data,
           chain: from,
+          account,
           token,
         });
         const permitData = canUsePermit
           ? await permit({
               token,
-              provider: connectedProvider.data.provider,
-              owner: account.data,
+              provider: provider,
+              owner: account,
               spender: from.bridgeContractAddress,
               value: amount,
             })
@@ -769,7 +764,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         return contract
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
           .then((txData) => {
-            storage.addAccountPendingTx(account.data, env, {
+            storage.addAccountPendingTx(account, env, {
               type: "deposit",
               depositTxHash: txData.hash,
               from,
@@ -783,7 +778,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           });
       };
 
-      if (from.chainId === connectedProvider.data.chainId) {
+      if (from.chainId === chainId) {
         return executeBridge();
       } else {
         return changeNetwork(from)
@@ -793,7 +788,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeBridge);
       }
     },
-    [env, connectedProvider, account, estimateBridgeGasLimit, changeNetwork]
+    [env, connectedProvider, estimateBridgeGasLimit, changeNetwork]
   );
 
   const claim = useCallback(
@@ -815,17 +810,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       if (env === undefined) {
         throw new Error("Env is not available");
       }
-      if (!isAsyncTaskDataAvailable(account)) {
-        throw new Error("Account is not available");
-      }
 
-      const contract = Bridge__factory.connect(
-        to.bridgeContractAddress,
-        connectedProvider.data.provider.getSigner()
-      );
-
+      const { provider, account, chainId } = connectedProvider.data;
+      const contract = Bridge__factory.connect(to.bridgeContractAddress, provider.getSigner());
       const isL2Claim = to.key === "polygon-zkevm";
-
       const apiUrl = env.bridgeApiUrl;
       const networkId = from.networkId;
 
@@ -858,7 +846,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
           )
           .then((txData) => {
-            storage.addAccountPendingTx(account.data, env, {
+            storage.addAccountPendingTx(account, env, {
               type: "claim",
               depositTxHash,
               claimTxHash: txData.hash,
@@ -872,7 +860,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             return txData;
           });
 
-      if (to.chainId === connectedProvider.data.chainId) {
+      if (to.chainId === chainId) {
         return executeClaim();
       } else {
         return changeNetwork(to)
@@ -882,7 +870,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           .then(executeClaim);
       }
     },
-    [account, changeNetwork, connectedProvider, env]
+    [connectedProvider, env, changeNetwork]
   );
 
   const value = useMemo(

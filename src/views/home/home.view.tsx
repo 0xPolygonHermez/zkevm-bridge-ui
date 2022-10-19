@@ -24,7 +24,7 @@ const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { getMaxEtherBridge } = useBridgeContext();
   const [maxEtherBridge, setMaxEtherBridge] = useState<BigNumber>();
-  const { account } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
 
   const onFormSubmit = (formData: FormData) => {
     setFormData(formData);
@@ -48,11 +48,13 @@ const Home = (): JSX.Element => {
   return (
     <div className={classes.contentWrapper}>
       <Header />
-      {account.status === "successful" && (
+      {connectedProvider.status === "successful" && (
         <>
           <div className={classes.ethereumAddress}>
             <MetaMaskIcon className={classes.metaMaskIcon} />
-            <Typography type="body1">{getPartiallyHiddenEthereumAddress(account.data)}</Typography>
+            <Typography type="body1">
+              {getPartiallyHiddenEthereumAddress(connectedProvider.data.account)}
+            </Typography>
           </div>
           <div className={classes.networkBoxWrapper}>
             <NetworkBox />
@@ -67,7 +69,7 @@ const Home = (): JSX.Element => {
           />
           <BridgeForm
             formData={formData}
-            account={account.data}
+            account={connectedProvider.data.account}
             maxEtherBridge={maxEtherBridge}
             onResetForm={onResetForm}
             onSubmit={onFormSubmit}
