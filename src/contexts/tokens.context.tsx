@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
+import { BigNumber, constants as ethersConstants } from "ethers";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import axios from "axios";
 
@@ -77,11 +77,6 @@ interface ApproveParams {
 
 interface TokensContext {
   tokens?: Token[];
-  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
-  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
-    originNetwork: number;
-    originTokenAddress: string;
-  }>;
   addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getToken: (params: GetTokenParams) => Promise<Token>;
@@ -93,12 +88,6 @@ interface TokensContext {
 const tokensContextNotReadyMsg = "The bridge context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
-  computeWrappedTokenAddress: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getNativeTokenInfo: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
   addWrappedToken: () => {
     return Promise.reject(tokensContextNotReadyMsg);
   },
@@ -138,18 +127,8 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         otherChain.bridgeContractAddress,
         otherChain.provider
       );
-      const tokenImplementationAddress = await bridgeContract.tokenImplementation();
-      const salt = ethersUtils.solidityKeccak256(
-        ["uint32", "address"],
-        [nativeChain.networkId, token.address]
-      );
-      const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
-        2
-      )}5af43d82803e903d91602b57fd5bf3`;
-      const hashInitCode = ethersUtils.keccak256(minimalBytecodeProxy);
 
-      return ethersUtils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
-      // return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
+      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
     },
     []
   );
@@ -364,8 +343,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(() => {
     return {
       tokens,
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
       getTokenFromAddress,
       getToken,
       getErc20TokenBalance,
@@ -375,8 +352,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     };
   }, [
     tokens,
-    computeWrappedTokenAddress,
-    getNativeTokenInfo,
     getTokenFromAddress,
     getToken,
     getErc20TokenBalance,
