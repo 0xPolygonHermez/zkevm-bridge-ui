@@ -12,7 +12,12 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
   listItem: {
     padding: [theme.spacing(0.25), 0],
   },
-  metaMaskButton: {
+  buttons: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(4),
+  },
+  button: {
     borderRadius: 8,
     display: "flex",
     alignItems: "center",
@@ -30,7 +35,7 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
       opacity: 0.75,
     },
   },
-  metaMaskIcon: {
+  buttonIcon: {
     width: 20,
     marginRight: theme.spacing(1),
   },

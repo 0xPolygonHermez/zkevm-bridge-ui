@@ -7,13 +7,11 @@ import Card from "src/views/shared/card/card.view";
 import { ReactComponent as ConversionIcon } from "src/assets/icons/currency-conversion.svg";
 import { ReactComponent as CheckedIcon } from "src/assets/icons/checkbox-checked.svg";
 import { ReactComponent as UncheckedIcon } from "src/assets/icons/checkbox-unchecked.svg";
-import { ReactComponent as LogoutIcon } from "src/assets/icons/logout.svg";
 import { ReactComponent as EurIcon } from "src/assets/icons/currencies/eur.svg";
 import { ReactComponent as UsdIcon } from "src/assets/icons/currencies/usd.svg";
 import { ReactComponent as JpyIcon } from "src/assets/icons/currencies/jpy.svg";
 import { ReactComponent as GbpIcon } from "src/assets/icons/currencies/gbp.svg";
 import { ReactComponent as CnyIcon } from "src/assets/icons/currencies/cny.svg";
-import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { getCurrency, setCurrency } from "src/adapters/storage";
 import { Currency } from "src/domain";
@@ -21,7 +19,6 @@ import { Currency } from "src/domain";
 const Settings: FC = () => {
   const classes = useSettingsStyles();
   const env = useEnvContext();
-  const { disconnectProvider } = useProvidersContext();
   const [preferredCurrency, setPreferredCurrency] = useState<Currency>(getCurrency());
   const currencies = [
     { id: Currency.EUR, icon: <EurIcon /> },
@@ -30,10 +27,6 @@ const Settings: FC = () => {
     { id: Currency.CNY, icon: <CnyIcon /> },
     { id: Currency.JPY, icon: <JpyIcon /> },
   ];
-
-  const onDisconnectProvider = () => {
-    void disconnectProvider();
-  };
 
   const onChangePreferredCurrency = (currency: Currency) => {
     setPreferredCurrency(currency);
@@ -82,13 +75,6 @@ const Settings: FC = () => {
             </div>
           </div>
         )}
-        <div className={classes.logout} role="button" onClick={onDisconnectProvider}>
-          <Typography type="body1" className={classes.logoutText}>
-            <LogoutIcon />
-            Log out
-          </Typography>
-          <Typography type="body2">Disconnect your wallet</Typography>
-        </div>
       </Card>
     </div>
   );

@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
+import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
@@ -8,10 +9,11 @@ import { useErrorContext } from "src/contexts/error.context";
 import Card from "src/views/shared/card/card.view";
 import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
 import Typography from "src/views/shared/typography/typography.view";
-import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { parseError } from "src/adapters/error";
 import { Message } from "src/domain";
+import { POLYGON_SUPPORT_URL } from "src/constants";
 
 const NetworkBox: FC = () => {
   const classes = useNetworkBoxStyles();
@@ -105,16 +107,29 @@ const NetworkBox: FC = () => {
             </Typography>
           </li>
         </ul>
-        <button
-          className={classes.metaMaskButton}
-          disabled={
-            isAddNetworkButtonDisabled || connectedProvider?.chainId === polygonZkEVMChain.chainId
-          }
-          onClick={onAddNetwork}
-        >
-          <MetaMaskIcon className={classes.metaMaskIcon} />
-          Add to MetaMask
-        </button>
+        <div className={classes.buttons}>
+          <button
+            className={classes.button}
+            disabled={
+              isAddNetworkButtonDisabled ||
+              (isAsyncTaskDataAvailable(connectedProvider) &&
+                connectedProvider.data.chainId === polygonZkEVMChain.chainId)
+            }
+            onClick={onAddNetwork}
+          >
+            <MetaMaskIcon className={classes.buttonIcon} />
+            Add to MetaMask
+          </button>
+          <a
+            className={classes.button}
+            href={POLYGON_SUPPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <NewWindowIcon className={classes.buttonIcon} />
+            Report an issue
+          </a>
+        </div>
       </div>
     </Card>
   );

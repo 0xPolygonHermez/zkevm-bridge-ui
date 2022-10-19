@@ -56,7 +56,7 @@ const BridgeConfirmation: FC = () => {
   const { bridge, estimateBridgeGas } = useBridgeContext();
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
@@ -77,7 +77,7 @@ const BridgeConfirmation: FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<AsyncTask<Gas, string>>({
     status: "pending",
   });
-  const estimateGasPollInterval = useRef<NodeJS.Timer>();
+  const estimateGasPollInterval = useRef<number>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   const startGasPolling = useCallback(() => {
@@ -87,14 +87,14 @@ const BridgeConfirmation: FC = () => {
           ? { status: "reloading", data: currentEstimatedGas.data }
           : { status: "loading" }
       );
-      if (formData && isAsyncTaskDataAvailable(account) && tokenBalance) {
+      if (formData && connectedProvider.status === "successful" && tokenBalance) {
         const { token, amount, from, to } = formData;
 
         estimateBridgeGas({
           from: from,
           to: to,
           token: token,
-          destinationAddress: account.data,
+          destinationAddress: connectedProvider.data.account,
         })
           .then((newGas) => {
             setEstimatedGas((oldGas) => {
@@ -190,8 +190,8 @@ const BridgeConfirmation: FC = () => {
       }
     };
     void estimateGas();
-    estimateGasPollInterval.current = setInterval(estimateGas, AUTO_REFRESH_RATE);
-  }, [account, callIfMounted, estimateBridgeGas, formData, notifyError, tokenBalance]);
+    estimateGasPollInterval.current = window.setInterval(estimateGas, AUTO_REFRESH_RATE);
+  }, [connectedProvider, formData, tokenBalance, callIfMounted, estimateBridgeGas, notifyError]);
 
   const stopGasPolling = useCallback(() => {
     clearInterval(estimateGasPollInterval.current);
@@ -207,12 +207,12 @@ const BridgeConfirmation: FC = () => {
     // Load the balance of the token when it's not available
     if (formData?.token.balance) {
       setTokenBalance(formData.token.balance);
-    } else if (formData && isAsyncTaskDataAvailable(account)) {
+    } else if (formData && connectedProvider.status === "successful") {
       const { from, token } = formData;
       const isTokenEther = token.address === ethersConstants.AddressZero;
       if (isTokenEther) {
         void from.provider
-          .getBalance(account.data)
+          .getBalance(connectedProvider.data.account)
           .then((balance) =>
             callIfMounted(() => {
               setTokenBalance(balance);
@@ -228,7 +228,7 @@ const BridgeConfirmation: FC = () => {
         getErc20TokenBalance({
           chain: from,
           tokenAddress: selectTokenAddress(token, from),
-          accountAddress: account.data,
+          accountAddress: connectedProvider.data.account,
         })
           .then((balance) =>
             callIfMounted(() => {
@@ -242,16 +242,16 @@ const BridgeConfirmation: FC = () => {
           );
       }
     }
-  }, [account, formData, getErc20TokenBalance, notifyError, callIfMounted]);
+  }, [connectedProvider, formData, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (connectedProvider && formData && account.status === "successful") {
+    if (connectedProvider.status === "successful" && formData) {
       const { from, token, amount } = formData;
       if (token.address === ethersConstants.AddressZero) {
         setIsTxApprovalRequired(false);
       } else {
         isPermitSupported({
-          account: account.data,
+          account: connectedProvider.data.account,
           chain: formData.from,
           token,
         })
@@ -264,7 +264,7 @@ const BridgeConfirmation: FC = () => {
                   provider: from.provider,
                   token: token,
                   amount: amount,
-                  owner: account.data,
+                  owner: connectedProvider.data.account,
                   spender: from.bridgeContractAddress,
                 })
                   .then((isAllowed) =>
@@ -279,17 +279,14 @@ const BridgeConfirmation: FC = () => {
           .catch(notifyError);
       }
     }
-  }, [
-    formData,
-    account,
-    connectedProvider,
-    isContractAllowedToSpendToken,
-    notifyError,
-    callIfMounted,
-  ]);
+  }, [formData, connectedProvider, isContractAllowedToSpendToken, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (formData && formData.from.chainId === connectedProvider?.chainId) {
+    if (
+      connectedProvider.status === "successful" &&
+      formData &&
+      formData.from.chainId === connectedProvider.data.chainId
+    ) {
       setError(undefined);
     }
   }, [connectedProvider, formData]);
@@ -343,15 +340,15 @@ const BridgeConfirmation: FC = () => {
   }, [formData, tokens, estimatedGas, getTokenPrice, callIfMounted]);
 
   const onApprove = () => {
-    if (connectedProvider && account.status === "successful" && formData) {
+    if (isAsyncTaskDataAvailable(connectedProvider) && formData) {
       setApprovalTask({ status: "loading" });
       const { token, amount, from } = formData;
       void approve({
         from,
         token,
-        owner: account.data,
+        owner: connectedProvider.data.account,
         spender: from.bridgeContractAddress,
-        provider: connectedProvider.provider,
+        provider: connectedProvider.data.provider,
         amount,
       })
         .then(() => {
@@ -383,7 +380,7 @@ const BridgeConfirmation: FC = () => {
   const onBridge = () => {
     if (
       formData &&
-      isAsyncTaskDataAvailable(account) &&
+      isAsyncTaskDataAvailable(connectedProvider) &&
       isAsyncTaskDataAvailable(estimatedGas) &&
       maxPossibleAmountConsideringFee
     ) {
@@ -397,7 +394,7 @@ const BridgeConfirmation: FC = () => {
         token,
         amount: maxPossibleAmountConsideringFee,
         to,
-        destinationAddress: account.data,
+        destinationAddress: connectedProvider.data.account,
         gas: estimatedGas.data,
       })
         .then(() => {

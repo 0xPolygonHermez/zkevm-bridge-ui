@@ -22,8 +22,10 @@ const NetworkSelector: FC = () => {
   const [selectedChain, setSelectedChain] = useState<Chain>();
 
   useEffect(() => {
-    if (env && connectedProvider) {
-      const selectedChain = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
+    if (env && connectedProvider.status === "successful") {
+      const selectedChain = env.chains.find(
+        (chain) => chain.chainId === connectedProvider.data.chainId
+      );
       if (selectedChain) {
         setSelectedChain(selectedChain);
       }

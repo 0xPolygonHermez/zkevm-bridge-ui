@@ -275,9 +275,9 @@ const BridgeForm: FC<BridgeFormProps> = ({
 
   useEffect(() => {
     // Load the default values after the network is changed
-    if (env && connectedProvider && formData === undefined) {
-      const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
-      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
+    if (env && connectedProvider.status === "successful" && formData === undefined) {
+      const from = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
+      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.data.chainId);
       if (from && to) {
         setSelectedChains({ from, to });
         setToken(getEtherToken(from));
