@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { BigNumber, constants as ethersConstants } from "ethers";
 
@@ -59,7 +59,7 @@ const BridgeConfirmation: FC = () => {
   const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
     useTokensContext();
   const [isFadeVisible, setIsFadeVisible] = useState(true);
-  const [isBridgeButtonDisabled, setIsBridgeButtonDisabled] = useState(false);
+  const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxPossibleAmountConsideringFee, setMaxPossibleAmountConsideringFee] =
     useState<BigNumber>();
@@ -75,6 +75,7 @@ const BridgeConfirmation: FC = () => {
   const [estimatedFee, setEstimatedFee] = useState<AsyncTask<BigNumber, string>>({
     status: "pending",
   });
+  const feePollingInterval = useRef<number>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -259,10 +260,20 @@ const BridgeConfirmation: FC = () => {
                   setShouldUpdateOnScreenFee(hasOnScreenFeeChanged);
 
                   setMaxPossibleAmountConsideringFee((oldMaxPossibleAmountConsideringFee) => {
+                    const formattedOldMaxPossibleAmountConsideringFee =
+                      oldMaxPossibleAmountConsideringFee &&
+                      (oldMaxPossibleAmountConsideringFee.isNegative()
+                        ? "0"
+                        : formatTokenAmount(oldMaxPossibleAmountConsideringFee, token));
+
+                    const formattedNewMaxPossibleAmountConsideringFee =
+                      newMaxPossibleAmountConsideringFee.isNegative()
+                        ? "0"
+                        : formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+
                     const hasOnScreenAmountChanged =
-                      oldMaxPossibleAmountConsideringFee !== undefined &&
-                      formatTokenAmount(oldMaxPossibleAmountConsideringFee, token) !==
-                        formatTokenAmount(newMaxPossibleAmountConsideringFee, token);
+                      formattedOldMaxPossibleAmountConsideringFee !==
+                      formattedNewMaxPossibleAmountConsideringFee;
 
                     setShouldUpdateOnScreenAmount(hasOnScreenAmountChanged);
 
@@ -305,10 +316,10 @@ const BridgeConfirmation: FC = () => {
       }
     };
     estimateFee();
-    const intervalId = setInterval(estimateFee, AUTO_REFRESH_RATE);
+    feePollingInterval.current = window.setInterval(estimateFee, AUTO_REFRESH_RATE);
 
     return () => {
-      clearInterval(intervalId);
+      clearInterval(feePollingInterval.current);
     };
   }, [
     connectedProvider,
@@ -364,9 +375,10 @@ const BridgeConfirmation: FC = () => {
       isAsyncTaskDataAvailable(connectedProvider) &&
       maxPossibleAmountConsideringFee
     ) {
+      clearInterval(feePollingInterval.current);
       const { token, from, to } = formData;
 
-      setIsBridgeButtonDisabled(true);
+      setIsBridgeInProgress(true);
 
       bridge({
         from,
@@ -385,7 +397,7 @@ const BridgeConfirmation: FC = () => {
         })
         .catch((error) => {
           callIfMounted(() => {
-            setIsBridgeButtonDisabled(false);
+            setIsBridgeInProgress(false);
             if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
@@ -442,11 +454,26 @@ const BridgeConfirmation: FC = () => {
       FIAT_DISPLAY_PRECISION
     );
 
-  const tokenAmountString = `${formatTokenAmount(maxPossibleAmountConsideringFee, token)} ${
-    token.symbol
-  }`;
+  const tokenAmountString = `${
+    maxPossibleAmountConsideringFee.gt(0)
+      ? formatTokenAmount(maxPossibleAmountConsideringFee, token)
+      : "0"
+  } ${token.symbol}`;
+
   const fiatAmountString = env.fiatExchangeRates.areEnabled
     ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
+    : undefined;
+
+  const absMaxPossibleAmountConsideringFee = formatTokenAmount(
+    maxPossibleAmountConsideringFee.abs(),
+    etherToken
+  );
+
+  const feeBaseErrorString = "You don't have enough ETH to cover the transaction fee";
+  const feeErrorString = maxPossibleAmountConsideringFee.isNegative()
+    ? `${feeBaseErrorString}\nYou need at least ${absMaxPossibleAmountConsideringFee} extra ETH`
+    : maxPossibleAmountConsideringFee.eq(0)
+    ? `${feeBaseErrorString}\nThe maximum transferable amount is 0 after considering the fee`
     : undefined;
 
   const etherFeeString = `${formatTokenAmount(estimatedFee.data, etherToken)} ${etherToken.symbol}`;
@@ -498,7 +525,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <BridgeButton
-          isDisabled={isBridgeButtonDisabled}
+          isDisabled={maxPossibleAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
           isTxApprovalRequired={isTxApprovalRequired}
           approvalTask={approvalTask}
@@ -508,6 +535,7 @@ const BridgeConfirmation: FC = () => {
         {isTxApprovalRequired && <ApprovalInfo />}
         {error && <Error error={error} />}
       </div>
+      {feeErrorString && <Error className={classes.error} error={feeErrorString} />}
     </div>
   );
 };
