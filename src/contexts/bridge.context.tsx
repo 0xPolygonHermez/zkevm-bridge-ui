@@ -30,6 +30,7 @@ import { calculateFee } from "src/utils/fees";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
 import { selectTokenAddress } from "src/utils/tokens";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import {
   permit,
@@ -40,7 +41,6 @@ import {
   hasTxBeenReverted,
 } from "src/adapters/ethereum";
 import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge } from "src/domain";
-import { isAsyncTaskDataAvailable } from "src/utils/types";
 import * as storage from "src/adapters/storage";
 
 interface GetMaxEtherBridgeParams {
@@ -733,7 +733,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Env is not available");
       }
 
-      if (connectedProvider === undefined) {
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
         throw new Error("Connected provider is not available");
       }
 
@@ -743,7 +743,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       const contract = Bridge__factory.connect(
         from.bridgeContractAddress,
-        connectedProvider.provider.getSigner()
+        connectedProvider.data.provider.getSigner()
       );
       const overrides: PayableOverrides = {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
@@ -759,7 +759,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         const permitData = canUsePermit
           ? await permit({
               token,
-              provider: connectedProvider.provider,
+              provider: connectedProvider.data.provider,
               owner: account.data,
               spender: from.bridgeContractAddress,
               value: amount,
@@ -783,7 +783,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           });
       };
 
-      if (from.chainId === connectedProvider.chainId) {
+      if (from.chainId === connectedProvider.data.chainId) {
         return executeBridge();
       } else {
         return changeNetwork(from)
@@ -809,7 +809,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         depositTxHash,
       },
     }: ClaimParams): Promise<ContractTransaction> => {
-      if (connectedProvider === undefined) {
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
         throw new Error("Connected provider is not available");
       }
       if (env === undefined) {
@@ -821,7 +821,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       const contract = Bridge__factory.connect(
         to.bridgeContractAddress,
-        connectedProvider.provider.getSigner()
+        connectedProvider.data.provider.getSigner()
       );
 
       const isL2Claim = to.key === "polygon-zkevm";
@@ -872,7 +872,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             return txData;
           });
 
-      if (to.chainId === connectedProvider.chainId) {
+      if (to.chainId === connectedProvider.data.chainId) {
         return executeClaim();
       } else {
         return changeNetwork(to)

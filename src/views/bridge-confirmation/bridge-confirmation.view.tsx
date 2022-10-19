@@ -119,7 +119,11 @@ const BridgeConfirmation: FC = () => {
   }, [account, formData, getErc20TokenBalance, notifyError, callIfMounted]);
 
   useEffect(() => {
-    if (connectedProvider && formData && account.status === "successful") {
+    if (
+      connectedProvider.status === "successful" &&
+      isAsyncTaskDataAvailable(account) &&
+      formData
+    ) {
       const { from, token, amount } = formData;
       if (token.address === ethersConstants.AddressZero) {
         setIsTxApprovalRequired(false);
@@ -163,7 +167,11 @@ const BridgeConfirmation: FC = () => {
   ]);
 
   useEffect(() => {
-    if (formData && formData.from.chainId === connectedProvider?.chainId) {
+    if (
+      connectedProvider.status === "successful" &&
+      formData &&
+      formData.from.chainId === connectedProvider.data.chainId
+    ) {
       setError(undefined);
     }
   }, [connectedProvider, formData]);
@@ -324,7 +332,11 @@ const BridgeConfirmation: FC = () => {
   ]);
 
   const onApprove = () => {
-    if (connectedProvider && account.status === "successful" && formData) {
+    if (
+      isAsyncTaskDataAvailable(connectedProvider) &&
+      isAsyncTaskDataAvailable(account) &&
+      formData
+    ) {
       setApprovalTask({ status: "loading" });
       const { token, amount, from } = formData;
       void approve({
@@ -332,7 +344,7 @@ const BridgeConfirmation: FC = () => {
         token,
         owner: account.data,
         spender: from.bridgeContractAddress,
-        provider: connectedProvider.provider,
+        provider: connectedProvider.data.provider,
         amount,
       })
         .then(() => {

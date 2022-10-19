@@ -19,7 +19,11 @@ import { useEnvContext } from "src/contexts/env.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { AsyncTask, isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isMetaMaskUserRejectedRequestError,
+} from "src/utils/types";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
@@ -112,8 +116,8 @@ const BridgeDetails: FC = () => {
   };
 
   useEffect(() => {
-    if (bridge.status === "successful") {
-      if (bridge.data.to.chainId === connectedProvider?.chainId) {
+    if (isAsyncTaskDataAvailable(bridge) && connectedProvider.status === "successful") {
+      if (bridge.data.to.chainId === connectedProvider.data.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }

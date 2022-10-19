@@ -19,10 +19,11 @@ import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Chain, Env, Token } from "src/domain";
 import { getEthereumErc20Tokens } from "src/adapters/tokens";
 import { getEtherToken } from "src/constants";
 import * as ethereum from "src/adapters/ethereum";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
+import { Chain, Env, Token } from "src/domain";
 
 interface ComputeWrappedTokenAddressParams {
   token: Token;
@@ -318,14 +319,14 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
   const approve = useCallback(
     ({ from, token, amount, provider, owner, spender }: ApproveParams) => {
-      if (connectedProvider === undefined) {
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
         throw new Error("Connected provider is not available");
       }
 
       const executeApprove = async () =>
         ethereum.approve({ token, amount, provider, owner, spender });
 
-      if (from.chainId === connectedProvider.chainId) {
+      if (from.chainId === connectedProvider.data.chainId) {
         return executeApprove();
       } else {
         return changeNetwork(from)

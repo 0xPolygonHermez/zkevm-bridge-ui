@@ -8,13 +8,21 @@ const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
   const { connectedProvider } = useProvidersContext();
   const { pathname, search } = useLocation();
 
-  if (!connectedProvider) {
-    return (
-      <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
-    );
+  switch (connectedProvider.status) {
+    case "pending":
+    case "loading": {
+      return null;
+    }
+    case "failed": {
+      return (
+        <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
+      );
+    }
+    case "reloading":
+    case "successful": {
+      return <>{children}</>;
+    }
   }
-
-  return <>{children}</>;
 };
 
 export default PrivateRoute;
