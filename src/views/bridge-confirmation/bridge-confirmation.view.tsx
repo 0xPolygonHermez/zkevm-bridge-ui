@@ -88,13 +88,15 @@ const BridgeConfirmation: FC = () => {
           : { status: "loading" }
       );
       if (formData && connectedProvider.status === "successful" && tokenBalance) {
-        const { token, amount, from, to } = formData;
+        const { from, to, token, amount } = formData;
+        const destinationAddress = connectedProvider.data.account;
 
         estimateBridgeGas({
-          from: from,
-          to: to,
-          token: token,
-          destinationAddress: connectedProvider.data.account,
+          from,
+          to,
+          token,
+          amount,
+          destinationAddress,
         })
           .then((newGas) => {
             setEstimatedGas((oldGas) => {

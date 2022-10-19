@@ -4,7 +4,6 @@ import {
   ContractTransaction,
   CallOverrides,
 } from "ethers";
-import { parseUnits } from "ethers/lib/utils";
 import axios, { AxiosRequestConfig } from "axios";
 import {
   createContext,
@@ -48,8 +47,9 @@ interface GetMaxEtherBridgeParams {
 
 interface EstimateBridgeGasParams {
   from: Chain;
-  token: Token;
   to: Chain;
+  token: Token;
+  amount: BigNumber;
   destinationAddress: string;
 }
 
@@ -668,9 +668,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeGas = useCallback(
-    async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
+    async ({
+      from,
+      to,
+      token,
+      amount,
+      destinationAddress,
+    }: EstimateBridgeGasParams): Promise<Gas> => {
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
-      const amount = parseUnits("0", token.decimals);
       const overrides: CallOverrides =
         token.address === ethersConstants.AddressZero
           ? { value: amount, from: destinationAddress }
@@ -734,7 +739,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         ...(gas
           ? gas.data
-          : (await estimateBridgeGas({ from, to, token, destinationAddress })).data),
+          : (await estimateBridgeGas({ from, to, token, amount, destinationAddress })).data),
       };
 
       const executeBridge = async () => {
