@@ -314,13 +314,21 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
       if (parsedAccounts.success && isAsyncTaskDataAvailable(connectedProvider)) {
         const account: string | undefined = parsedAccounts.data[0];
         if (account) {
-          setConnectedProvider({
-            status: "successful",
-            data: {
-              ...connectedProvider.data,
-              account: getChecksumAddress(account),
-            },
-          });
+          try {
+            setConnectedProvider({
+              status: "successful",
+              data: {
+                ...connectedProvider.data,
+                account: getChecksumAddress(account),
+              },
+            });
+          } catch (error) {
+            setConnectedProvider({
+              status: "failed",
+              error: "An error occurred connecting the provider",
+            });
+            notifyError(error);
+          }
         } else {
           setConnectedProvider({ status: "pending" });
         }
@@ -357,7 +365,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         externalProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
-  }, [connectProvider, connectedProvider, navigate]);
+  }, [connectProvider, connectedProvider, navigate, notifyError]);
 
   const value = useMemo(
     () => ({
