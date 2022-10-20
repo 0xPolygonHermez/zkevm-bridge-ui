@@ -133,16 +133,8 @@ const BridgeDetails: FC = () => {
           depositCount,
           networkId,
         })
-          .then(async (bridge) => {
-            const tx = await connectedProvider.data.provider.getTransaction(bridge.depositTxHash);
-
-            if (!tx) {
-              throw new Error(`DepositTx not found: ${bridge.depositTxHash}`);
-            }
-
-            const allowedAccounts = [tx.from, bridge.destinationAddress];
-
-            if (!allowedAccounts.includes(connectedProvider.data.account)) {
+          .then((bridge) => {
+            if (bridge.destinationAddress !== connectedProvider.data.account) {
               return navigate(routes.activity.path);
             }
 
