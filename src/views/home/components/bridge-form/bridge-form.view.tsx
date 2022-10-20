@@ -9,7 +9,7 @@ import TokenList from "src/views/home/components/token-list/token-list.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Button from "src/views/shared/button/button.view";
 import { useEnvContext } from "src/contexts/env.context";
@@ -377,7 +377,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
         <Button type="submit" disabled={!amount || amount.isZero() || inputError !== undefined}>
           Continue
         </Button>
-        {amount && inputError && <Error error={inputError} />}
+        {amount && inputError && <ErrorMessage error={inputError} />}
       </div>
       {chains && (
         <ChainList

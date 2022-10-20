@@ -655,6 +655,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             status: "pending",
             from: tx.from,
             to: tx.to,
+            destinationAddress: tx.destinationAddress,
             depositTxHash: tx.depositTxHash,
             claimTxHash: tx.type === "claim" ? tx.claimTxHash : undefined,
             token,
@@ -764,6 +765,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             storage.addAccountPendingTx(account, env, {
               type: "deposit",
               depositTxHash: txData.hash,
+              destinationAddress,
               from,
               to,
               timestamp: Date.now(),
@@ -846,6 +848,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             storage.addAccountPendingTx(account, env, {
               type: "claim",
               depositTxHash,
+              destinationAddress,
               claimTxHash: txData.hash,
               from,
               to,

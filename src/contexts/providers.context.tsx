@@ -35,6 +35,7 @@ import {
   WalletName,
   ConnectedProvider,
 } from "src/domain";
+import { getChecksumAddress } from "src/utils/addresses";
 
 interface ProvidersContext {
   connectedProvider: AsyncTask<ConnectedProvider, string>;
@@ -97,7 +98,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         } else {
           setConnectedProvider({
             status: "successful",
-            data: { provider: web3Provider, chainId: currentNetworkChainId, account },
+            data: {
+              provider: web3Provider,
+              chainId: currentNetworkChainId,
+              account: getChecksumAddress(account),
+            },
           });
         }
       } catch (error) {
@@ -171,7 +176,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             .then((accounts) => {
               setConnectedProvider({
                 status: "successful",
-                data: { provider: web3Provider, chainId, account: accounts[0] },
+                data: {
+                  provider: web3Provider,
+                  chainId,
+                  account: getChecksumAddress(accounts[0]),
+                },
               });
             })
             .catch((error) => {
@@ -307,7 +316,10 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         if (account) {
           setConnectedProvider({
             status: "successful",
-            data: { ...connectedProvider.data, account },
+            data: {
+              ...connectedProvider.data,
+              account: getChecksumAddress(account),
+            },
           });
         } else {
           setConnectedProvider({ status: "pending" });
