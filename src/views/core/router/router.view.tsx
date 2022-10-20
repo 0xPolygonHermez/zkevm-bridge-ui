@@ -9,13 +9,10 @@ import { useEnvContext } from "src/contexts/env.context";
 const Router: FC = () => {
   const env = useEnvContext();
 
-  if (!env) {
-    return null;
-  }
-
-  const filteredRoutes = areSettingsVisible(env)
-    ? routes
-    : Object.values(routes).filter((route) => route.path !== routes.settings.path);
+  const filteredRoutes =
+    !env || areSettingsVisible(env)
+      ? routes
+      : Object.values(routes).filter((route) => route.path !== routes.settings.path);
 
   return (
     <Routes>
