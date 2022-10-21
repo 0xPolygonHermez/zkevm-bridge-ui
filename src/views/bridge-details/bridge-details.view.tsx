@@ -134,11 +134,11 @@ const BridgeDetails: FC = () => {
           networkId,
         })
           .then((bridge) => {
-            if (bridge.destinationAddress !== connectedProvider.data.account) {
-              return navigate(routes.activity.path);
-            }
-
             callIfMounted(() => {
+              if (bridge.destinationAddress !== connectedProvider.data.account) {
+                return navigate(routes.activity.path);
+              }
+
               setBridge({
                 status: "successful",
                 data: bridge,
