@@ -148,7 +148,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             } else {
               return setConnectedProvider({
                 status: "failed",
-                error: `We can't detect your wallet\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
+                error: `We can't detect your wallet.\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
               });
             }
           } catch (error) {
@@ -302,7 +302,13 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   useEffect(() => {
     if (connectedProvider.status === "pending") {
       const web3Provider = getMetamaskProvider();
-      if (web3Provider && env) {
+
+      if (!web3Provider) {
+        setConnectedProvider({
+          status: "failed",
+          error: "",
+        });
+      } else if (env) {
         void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
           const account: string | undefined = accounts[0];
           if (account) {
