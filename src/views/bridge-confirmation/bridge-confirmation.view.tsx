@@ -86,7 +86,6 @@ const BridgeConfirmation: FC = () => {
           from,
           to,
           token,
-          amount,
           destinationAddress,
         })
           .then((gas: Gas) => {
