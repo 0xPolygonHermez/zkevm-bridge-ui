@@ -55,11 +55,15 @@ const providersContext = createContext<ProvidersContext>({
 
 const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   const navigate = useNavigate();
+  const env = useEnvContext();
+  const { notifyError } = useErrorContext();
   const [connectedProvider, setConnectedProvider] = useState<AsyncTask<ConnectedProvider, string>>({
     status: "pending",
   });
-  const env = useEnvContext();
-  const { notifyError } = useErrorContext();
+  // This is a hack to workaround this MetaMask issue:
+  // https://github.com/MetaMask/metamask-extension/issues/13375
+  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
+  const IS_SWITCHING_NETWORK_DELAY = 1000;
 
   const getMetamaskProvider = () => {
     if (window.ethereum && window.ethereum.isMetaMask) {
@@ -197,6 +201,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const switchNetwork = (chain: Chain, connectedProvider: Web3Provider): Promise<void> => {
+    setIsSwitchingNetwork(true);
     if (!connectedProvider.provider.request) {
       return Promise.reject(
         new Error("No request method is available from the provider to switch the Ethereum chain")
@@ -218,11 +223,17 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         if (!isMetaMaskResourceUnavailableError(error)) {
           throw error;
         }
+      })
+      .finally(() => {
+        setTimeout(() => {
+          setIsSwitchingNetwork(false);
+        }, IS_SWITCHING_NETWORK_DELAY);
       });
   };
 
   const addNetwork = useCallback(
     (chain: Chain): Promise<void> => {
+      setIsSwitchingNetwork(true);
       const provider = getMetamaskProvider();
       if (!provider) {
         return Promise.reject(new Error("No provider is available"));
@@ -258,6 +269,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           if (!isMetaMaskResourceUnavailableError(error)) {
             throw error;
           }
+        })
+        .finally(() => {
+          setTimeout(() => {
+            setIsSwitchingNetwork(false);
+          }, IS_SWITCHING_NETWORK_DELAY);
         });
     },
     [connectedProvider]
@@ -345,7 +361,9 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     };
 
     const onDisconnect = () => {
-      setConnectedProvider({ status: "pending" });
+      if (!isSwitchingNetwork) {
+        setConnectedProvider({ status: "pending" });
+      }
     };
 
     if (externalProvider && "on" in externalProvider && typeof externalProvider.on === "function") {
@@ -365,7 +383,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         externalProvider.removeListener(EthereumEvent.DISCONNECT, onDisconnect);
       }
     };
-  }, [connectProvider, connectedProvider, navigate, notifyError]);
+  }, [connectedProvider, isSwitchingNetwork, connectProvider, navigate, notifyError]);
 
   const value = useMemo(
     () => ({
