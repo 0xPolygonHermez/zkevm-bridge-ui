@@ -9,6 +9,7 @@ const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "center",
     flexDirection: "column",
     flex: 1,
+    marginBottom: theme.spacing(10),
   },
   logo: {
     width: "100%",
