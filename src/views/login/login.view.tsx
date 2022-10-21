@@ -7,7 +7,7 @@ import Policy from "src/views/login/components/policy/policy.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 import NetworkBox from "src/views/shared/network-box/network-box.view";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -88,7 +88,9 @@ const Login: FC = () => {
               <WalletList onSelectWallet={onCheckAndConnectProvider} />
             </>
           </Card>
-          {connectedProvider.status === "failed" && <Error error={connectedProvider.error} />}
+          {connectedProvider.status === "failed" && (
+            <ErrorMessage error={connectedProvider.error} />
+          )}
         </div>
       </div>
       {showPolicy && <Policy onClose={() => setShowPolicy(false)} onConnect={onConnectProvider} />}

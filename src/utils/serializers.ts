@@ -18,6 +18,7 @@ interface CommonPendingTx {
   timestamp: number;
   token: Token;
   amount: BigNumber;
+  destinationAddress: string;
 }
 
 type PendingDepositTxData = {
@@ -40,6 +41,7 @@ export type PendingTx = PendingDepositTx | PendingClaimTx;
 interface CommonSerializedPendingTx {
   from: ChainKey;
   to: ChainKey;
+  destinationAddress: string;
   timestamp: number;
   token: Token;
   amount: string;
@@ -72,41 +74,45 @@ const pendingTxDepositParser = (env: Env) =>
       .object({
         type: z.literal("deposit"),
         depositTxHash: z.string(),
+        destinationAddress: z.string(),
         from: chainKeyParser,
         to: chainKeyParser,
         timestamp: z.number(),
         token: tokenParser,
         amount: z.string(),
       })
-      .transform(({ amount, depositTxHash, from, timestamp, to, token, type }, ctx) => {
-        const fromChain = env.chains.find((chain) => chain.key === from);
-        const toChain = env.chains.find((chain) => chain.key === to);
-        if (!fromChain) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["from"],
-            message: "We couldn't find the 'from' chain when parsing the PendingDepositTx",
-          });
-          return z.NEVER;
+      .transform(
+        ({ amount, depositTxHash, destinationAddress, from, timestamp, to, token, type }, ctx) => {
+          const fromChain = env.chains.find((chain) => chain.key === from);
+          const toChain = env.chains.find((chain) => chain.key === to);
+          if (!fromChain) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["from"],
+              message: "We couldn't find the 'from' chain when parsing the PendingDepositTx",
+            });
+            return z.NEVER;
+          }
+          if (!toChain) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["to"],
+              message: "We couldn't find the 'to' chain when parsing the PendingDepositTx",
+            });
+            return z.NEVER;
+          }
+          return {
+            destinationAddress,
+            from: fromChain,
+            to: toChain,
+            timestamp,
+            token,
+            amount: ethersUtils.parseUnits(amount, token.decimals),
+            type,
+            depositTxHash,
+          };
         }
-        if (!toChain) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["to"],
-            message: "We couldn't find the 'to' chain when parsing the PendingDepositTx",
-          });
-          return z.NEVER;
-        }
-        return {
-          from: fromChain,
-          to: toChain,
-          timestamp,
-          token,
-          amount: ethersUtils.parseUnits(amount, token.decimals),
-          type,
-          depositTxHash,
-        };
-      })
+      )
   );
 
 const pendingTxClaimParser = (env: Env) =>
@@ -115,6 +121,7 @@ const pendingTxClaimParser = (env: Env) =>
       .object({
         type: z.literal("claim"),
         depositTxHash: z.string(),
+        destinationAddress: z.string(),
         claimTxHash: z.string(),
         from: chainKeyParser,
         to: chainKeyParser,
@@ -123,7 +130,20 @@ const pendingTxClaimParser = (env: Env) =>
         amount: z.string(),
       })
       .transform(
-        ({ amount, claimTxHash, depositTxHash, from, timestamp, to, token, type }, ctx) => {
+        (
+          {
+            amount,
+            claimTxHash,
+            depositTxHash,
+            destinationAddress,
+            from,
+            timestamp,
+            to,
+            token,
+            type,
+          },
+          ctx
+        ) => {
           const fromChain = env.chains.find((chain) => chain.key === from);
           const toChain = env.chains.find((chain) => chain.key === to);
           if (!fromChain) {
@@ -143,6 +163,7 @@ const pendingTxClaimParser = (env: Env) =>
             return z.NEVER;
           }
           return {
+            destinationAddress,
             from: fromChain,
             to: toChain,
             timestamp: timestamp,
@@ -176,6 +197,7 @@ const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   const commonSerializedPendingTx: CommonSerializedPendingTx = {
     from: pendingTx.from.key,
     to: pendingTx.to.key,
+    destinationAddress: pendingTx.destinationAddress,
     timestamp: pendingTx.timestamp,
     token: pendingTx.token,
     amount: ethersUtils.formatUnits(pendingTx.amount, pendingTx.token.decimals),

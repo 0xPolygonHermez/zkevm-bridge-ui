@@ -8,7 +8,7 @@ import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import routes from "src/routes";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Icon from "src/views/shared/icon/icon.view";
 import { getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
@@ -547,9 +547,9 @@ const BridgeConfirmation: FC = () => {
           onBridge={onBridge}
         />
         {isTxApprovalRequired && <ApprovalInfo />}
-        {error && <Error error={error} />}
+        {error && <ErrorMessage error={error} />}
       </div>
-      {feeErrorString && <Error className={classes.error} error={feeErrorString} />}
+      {feeErrorString && <ErrorMessage className={classes.error} error={feeErrorString} />}
     </div>
   );
 };

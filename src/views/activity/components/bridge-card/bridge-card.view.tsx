@@ -8,7 +8,7 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import { Bridge } from "src/domain";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
@@ -117,7 +117,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
       {status === "on-hold" && (
         <div className={classes.bottom}>
           {networkError ? (
-            <Error error={`Switch to ${to.name} to continue`} type="body2" />
+            <ErrorMessage error={`Switch to ${to.name} to continue`} type="body2" />
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}

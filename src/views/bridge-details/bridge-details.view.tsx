@@ -8,7 +8,7 @@ import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Typography from "src/views/shared/typography/typography.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Button from "src/views/shared/button/button.view";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
@@ -124,7 +124,7 @@ const BridgeDetails: FC = () => {
   }, [connectedProvider, bridge]);
 
   useEffect(() => {
-    if (env) {
+    if (env && connectedProvider.status === "successful") {
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -135,6 +135,10 @@ const BridgeDetails: FC = () => {
         })
           .then((bridge) => {
             callIfMounted(() => {
+              if (bridge.destinationAddress !== connectedProvider.data.account) {
+                return navigate(routes.activity.path);
+              }
+
               setBridge({
                 status: "successful",
                 data: bridge,
@@ -160,7 +164,7 @@ const BridgeDetails: FC = () => {
         });
       }
     }
-  }, [env, bridgeId, notifyError, getBridge, callIfMounted]);
+  }, [env, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -395,7 +399,7 @@ const BridgeDetails: FC = () => {
               >
                 Finalise
               </Button>
-              {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
+              {incorrectNetworkMessage && <ErrorMessage error={incorrectNetworkMessage} />}
             </div>
           )}
         </div>
