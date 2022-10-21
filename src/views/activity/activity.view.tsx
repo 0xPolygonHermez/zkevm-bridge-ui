@@ -13,6 +13,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
+import { isAxiosCancelRequestError } from "src/adapters/bridge-api";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
@@ -39,6 +40,8 @@ const Activity: FC = () => {
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<string[]>([]);
   const [areBridgesDisabled, setAreBridgesDisabled] = useState<boolean>(false);
   const classes = useActivityStyles({ displayAll });
+
+  const fetchBridgesAbortController = useRef<AbortController>(new AbortController());
 
   const headerBorderObserved = useRef<HTMLDivElement>(null);
   const headerBorderTarget = useRef<HTMLDivElement>(null);
@@ -113,11 +116,13 @@ const Activity: FC = () => {
   const processFetchBridgesError = useCallback(
     (error: unknown) => {
       callIfMounted(() => {
-        setBridgeList({
-          status: "failed",
-          error: undefined,
-        });
-        notifyError(error);
+        if (!isAxiosCancelRequestError(error)) {
+          setBridgeList({
+            status: "failed",
+            error: undefined,
+          });
+          notifyError(error);
+        }
       });
     },
     [callIfMounted, notifyError]
@@ -127,10 +132,14 @@ const Activity: FC = () => {
     if (
       env &&
       isAsyncTaskDataAvailable(connectedProvider) &&
-      bridgeList.status === "successful" &&
+      isAsyncTaskDataAvailable<Bridge[], undefined, true>(bridgeList) &&
       bridgeList.data.length < total
     ) {
       setBridgeList({ status: "loading-more-items", data: bridgeList.data });
+
+      // A new page requested by the user cancels any other fetch in progress
+      fetchBridgesAbortController.current.abort();
+
       fetchBridges({
         type: "reload",
         env,
@@ -149,6 +158,7 @@ const Activity: FC = () => {
 
   useEffect(() => {
     if (env && connectedProvider.status === "successful") {
+      fetchBridgesAbortController.current = new AbortController();
       const loadBridges = () => {
         fetchBridges({
           type: "load",
@@ -156,6 +166,7 @@ const Activity: FC = () => {
           ethereumAddress: connectedProvider.data.account,
           limit: PAGE_SIZE,
           offset: 0,
+          abortSignal: fetchBridgesAbortController.current.signal,
         })
           .then(({ bridges, total }) => {
             callIfMounted(() => {
@@ -167,6 +178,9 @@ const Activity: FC = () => {
       };
       loadBridges();
     }
+    return () => {
+      fetchBridgesAbortController.current.abort();
+    };
   }, [
     connectedProvider,
     env,
@@ -188,11 +202,13 @@ const Activity: FC = () => {
             ? { status: "reloading", data: bridgeList.data }
             : { status: "loading" }
         );
+        fetchBridgesAbortController.current = new AbortController();
         fetchBridges({
           type: "reload",
           env,
           ethereumAddress: connectedProvider.data.account,
           quantity: lastLoadedItem,
+          abortSignal: fetchBridgesAbortController.current.signal,
         })
           .then(({ bridges, total }) => {
             callIfMounted(() => {
