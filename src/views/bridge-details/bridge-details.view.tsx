@@ -8,7 +8,7 @@ import Card from "src/views/shared/card/card.view";
 import Header from "src/views/shared/header/header.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Typography from "src/views/shared/typography/typography.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Button from "src/views/shared/button/button.view";
 import PageLoader from "src/views/shared/page-loader/page-loader.view";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
@@ -19,8 +19,12 @@ import { useEnvContext } from "src/contexts/env.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { AsyncTask, isMetamaskUserRejectedRequestError } from "src/utils/types";
-import { getBridgeStatus, getChainName, getCurrencySymbol } from "src/utils/labels";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isMetaMaskUserRejectedRequestError,
+} from "src/utils/types";
+import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
@@ -37,7 +41,11 @@ interface Fees {
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
   const step1Promise = bridge.from.provider
-    .getTransaction(bridge.depositTxHash)
+    .getTransaction(
+      bridge.status === "pending"
+        ? bridge.claimTxHash || bridge.depositTxHash
+        : bridge.depositTxHash
+    )
     .then((txResponse) => {
       return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
     })
@@ -67,7 +75,7 @@ const BridgeDetails: FC = () => {
   const { notifyError } = useErrorContext();
   const { claim, getBridge } = useBridgeContext();
   const { tokens } = useTokensContext();
-  const { account, connectedProvider } = useProvidersContext();
+  const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const [bridge, setBridge] = useState<AsyncTask<Bridge, string>>({
@@ -93,12 +101,10 @@ const BridgeDetails: FC = () => {
         .catch((error) => {
           callIfMounted(() => {
             setIsFinaliseButtonDisabled(false);
-            if (isMetamaskUserRejectedRequestError(error) === false) {
+            if (isMetaMaskUserRejectedRequestError(error) === false) {
               void parseError(error).then((parsed) => {
                 if (parsed === "wrong-network") {
-                  setIncorrectNetworkMessage(
-                    `Switch to ${getChainName(bridge.data.to)} to continue`
-                  );
+                  setIncorrectNetworkMessage(`Switch to ${bridge.data.to.name} to continue`);
                 } else {
                   notifyError(error);
                 }
@@ -110,15 +116,15 @@ const BridgeDetails: FC = () => {
   };
 
   useEffect(() => {
-    if (bridge.status === "successful") {
-      if (bridge.data.to.chainId === connectedProvider?.chainId) {
+    if (isAsyncTaskDataAvailable(bridge) && connectedProvider.status === "successful") {
+      if (bridge.data.to.chainId === connectedProvider.data.chainId) {
         setIncorrectNetworkMessage(undefined);
       }
     }
   }, [connectedProvider, bridge]);
 
   useEffect(() => {
-    if (env && account.status === "successful") {
+    if (env && connectedProvider.status === "successful") {
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -129,6 +135,10 @@ const BridgeDetails: FC = () => {
         })
           .then((bridge) => {
             callIfMounted(() => {
+              if (bridge.destinationAddress !== connectedProvider.data.account) {
+                return navigate(routes.activity.path);
+              }
+
               setBridge({
                 status: "successful",
                 data: bridge,
@@ -154,7 +164,7 @@ const BridgeDetails: FC = () => {
         });
       }
     }
-  }, [account, env, bridgeId, notifyError, getBridge, callIfMounted]);
+  }, [env, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -267,9 +277,9 @@ const BridgeDetails: FC = () => {
       return <Navigate to={routes.activity.path} replace />;
     }
     case "successful": {
-      const { status, amount, from, to, token, depositTxHash } = bridge.data;
+      const { status, amount, from, to, token } = bridge.data;
 
-      const bridgeTxUrl = `${from.explorerUrl}/tx/${depositTxHash}`;
+      const bridgeTxUrl = `${from.explorerUrl}/tx/${bridge.data.depositTxHash}`;
       const claimTxUrl =
         bridge.data.status === "completed"
           ? `${to.explorerUrl}/tx/${bridge.data.claimTxHash}`
@@ -334,7 +344,7 @@ const BridgeDetails: FC = () => {
             </div>
             <div className={classes.row}>
               <Typography type="body2" className={classes.alignRow}>
-                Step 1 Fee ({getChainName(bridge.data.from)})
+                Step 1 Fee ({bridge.data.from.name})
               </Typography>
               <Typography type="body1" className={classes.alignRow}>
                 {step1FeeString}
@@ -344,7 +354,7 @@ const BridgeDetails: FC = () => {
             {bridge.data.status === "completed" && (
               <div className={classes.row}>
                 <Typography type="body2" className={classes.alignRow}>
-                  Step 2 Fee ({getChainName(bridge.data.to)})
+                  Step 2 Fee ({bridge.data.to.name})
                 </Typography>
                 <Typography type="body1" className={classes.alignRow}>
                   {step2FeeString}
@@ -389,7 +399,7 @@ const BridgeDetails: FC = () => {
               >
                 Finalise
               </Button>
-              {incorrectNetworkMessage && <Error error={incorrectNetworkMessage} />}
+              {incorrectNetworkMessage && <ErrorMessage error={incorrectNetworkMessage} />}
             </div>
           )}
         </div>

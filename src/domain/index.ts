@@ -1,15 +1,40 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 
-export interface Chain {
-  key: "ethereum" | "polygon-zkevm";
+export type ChainKey = "ethereum" | "polygon-zkevm";
+
+export interface CommonChain {
+  key: ChainKey;
+  name: string;
   Icon: ComponentType<{ className?: string }>;
   provider: JsonRpcProvider;
   networkId: number;
   chainId: number;
-  contractAddress: string;
+  bridgeContractAddress: string;
   explorerUrl: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+}
+
+export type EthereumChain = CommonChain & {
+  key: "ethereum";
+  poeContractAddress: string;
+};
+
+export type ZkEVMChain = CommonChain & {
+  key: "polygon-zkevm";
+};
+
+export type Chain = EthereumChain | ZkEVMChain;
+
+export interface ConnectedProvider {
+  provider: Web3Provider;
+  chainId: number;
+  account: string;
 }
 
 export interface Token {
@@ -28,7 +53,7 @@ export interface Token {
 
 export interface Env {
   bridgeApiUrl: string;
-  chains: [Chain, Chain];
+  chains: [EthereumChain, ZkEVMChain];
   fiatExchangeRates:
     | {
         areEnabled: false;
@@ -47,7 +72,6 @@ export interface RouterState {
 
 export enum EthereumChainId {
   MAINNET = 1,
-  RINKEBY = 4,
   GOERLI = 5,
 }
 
@@ -60,6 +84,11 @@ export enum EthereumEvent {
   ACCOUNTS_CHANGED = "accountsChanged",
   CHAIN_CHANGED = "chainChanged",
   DISCONNECT = "disconnect",
+}
+
+export enum TxStatus {
+  REVERTED = 0,
+  SUCCESSFUL = 1,
 }
 
 export enum Currency {
@@ -97,6 +126,14 @@ interface BridgeCommonFields {
   depositTxHash: string;
 }
 
+export type PendingBridge = Pick<
+  BridgeCommonFields,
+  "depositTxHash" | "destinationAddress" | "from" | "to" | "token" | "amount" | "fiatAmount"
+> & {
+  status: "pending";
+  claimTxHash?: string;
+};
+
 export type InitiatedBridge = BridgeCommonFields & {
   status: "initiated";
 };
@@ -107,10 +144,10 @@ export type OnHoldBridge = BridgeCommonFields & {
 
 export type CompletedBridge = BridgeCommonFields & {
   status: "completed";
-  claimTxHash: string;
+  claimTxHash: NonNullable<PendingBridge["claimTxHash"]>;
 };
 
-export type Bridge = InitiatedBridge | OnHoldBridge | CompletedBridge;
+export type Bridge = PendingBridge | InitiatedBridge | OnHoldBridge | CompletedBridge;
 
 export interface Deposit {
   token: Token;
@@ -149,3 +186,24 @@ export interface FormData {
   token: Token;
   amount: BigNumber;
 }
+
+export enum PolicyCheck {
+  Checked = "checked",
+  Unchecked = "unchecked",
+}
+
+export type Gas =
+  | {
+      type: "eip-1559";
+      data: {
+        gasLimit: BigNumber;
+        maxFeePerGas: BigNumber;
+      };
+    }
+  | {
+      type: "legacy";
+      data: {
+        gasLimit: BigNumber;
+        gasPrice: BigNumber;
+      };
+    };

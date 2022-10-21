@@ -61,6 +61,10 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 8,
     marginRight: "auto",
   },
+  pendingStatus: {
+    color: theme.palette.warning.main,
+    backgroundColor: theme.palette.warning.light,
+  },
   greenStatus: {
     color: theme.palette.success.main,
     backgroundColor: theme.palette.success.light,

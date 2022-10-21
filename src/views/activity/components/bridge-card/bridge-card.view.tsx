@@ -8,9 +8,9 @@ import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
 import routes from "src/routes";
 import Icon from "src/views/shared/icon/icon.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import { Bridge } from "src/domain";
-import { getChainName, getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
 import { getCurrency } from "src/adapters/storage";
 
@@ -19,7 +19,7 @@ export interface BridgeCardProps {
   networkError: boolean;
   isFinaliseDisabled: boolean;
   showFiatAmount: boolean;
-  onClaim: () => void;
+  onClaim?: () => void;
 }
 
 const BridgeCard: FC<BridgeCardProps> = ({
@@ -29,13 +29,15 @@ const BridgeCard: FC<BridgeCardProps> = ({
   isFinaliseDisabled,
   onClaim,
 }) => {
-  const { status, id, to, amount, token, fiatAmount } = bridge;
+  const { status, to, amount, token, fiatAmount } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    onClaim();
+    if (onClaim) {
+      onClaim();
+    }
   };
 
   const preferredCurrencySymbol = getCurrencySymbol(getCurrency());
@@ -56,7 +58,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
   return (
     <Card
       className={classes.card}
-      onClick={() => navigate(`${routes.bridgeDetails.path.split(":")[0]}${id}`)}
+      onClick={() => {
+        if (bridge.status !== "pending") {
+          navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
+        }
+      }}
     >
       <div className={classes.top}>
         <div className={classes.row}>
@@ -77,7 +83,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.row}>
               <span
                 className={`${classes.statusBox} ${
-                  status === "completed" ? classes.greenStatus : ""
+                  bridge.status === "pending"
+                    ? classes.pendingStatus
+                    : bridge.status === "completed"
+                    ? classes.greenStatus
+                    : ""
                 }`}
               >
                 {getBridgeStatus(status)}
@@ -94,7 +104,11 @@ const BridgeCard: FC<BridgeCardProps> = ({
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          <Typography type="body2">Step 2 will require signature</Typography>
+          {bridge.from.key === "ethereum" ? (
+            <Typography type="body2">Step 2 will require signature</Typography>
+          ) : (
+            <Typography type="body2">Waiting for validity proof</Typography>
+          )}
           <button disabled className={classes.finaliseButton}>
             Finalise
           </button>
@@ -103,7 +117,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
       {status === "on-hold" && (
         <div className={classes.bottom}>
           {networkError ? (
-            <Error error={`Switch to ${getChainName(to)} to continue`} type="body2" />
+            <ErrorMessage error={`Switch to ${to.name} to continue`} type="body2" />
           ) : (
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}

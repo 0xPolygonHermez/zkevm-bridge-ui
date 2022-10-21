@@ -35,24 +35,24 @@ export const jsonRpcError = StrictSchema<JsonRpcError>()(
   })
 );
 
-export interface MetamaskUserRejectedRequestError {
+export interface MetaMaskUserRejectedRequestError {
   code: 4001;
   message: string;
 }
 
-export const metamaskUserRejectedRequestError = StrictSchema<MetamaskUserRejectedRequestError>()(
+export const metaMaskUserRejectedRequestError = StrictSchema<MetaMaskUserRejectedRequestError>()(
   z.object({
     code: z.literal(4001),
     message: z.string(),
   })
 );
 
-export interface MetamaskRequestAccountsError {
+export interface MetaMaskResourceUnavailableError {
   code: -32002;
   message: string;
 }
 
-export const metamaskRequestAccountsError = StrictSchema<MetamaskRequestAccountsError>()(
+export const metaMaskResourceUnavailableError = StrictSchema<MetaMaskResourceUnavailableError>()(
   z.object({
     code: z.literal(-32002),
     message: z.string(),
@@ -71,17 +71,24 @@ export const ethersInsufficientFundsError = StrictSchema<EthersInsufficientFunds
   })
 );
 
-export interface MetamaskUnknownChainError {
+export interface MetaMaskUnknownChainError {
   code: 4902;
   message: string;
 }
 
-export const metamaskUnknownChainError = StrictSchema<MetamaskUnknownChainError>()(
+export const metaMaskUnknownChainError = StrictSchema<MetaMaskUnknownChainError>()(
   z.object({
     code: z.literal(4902),
     message: z.string(),
   })
 );
+
+export enum ProviderError {
+  Ethereum = "ethereum",
+  PolygonZkEVM = "polygon-zkevm",
+}
+
+export const providerError = StrictSchema<ProviderError>()(z.nativeEnum(ProviderError));
 
 function sanitizeErrorMessage(errorMessage: string): string {
   try {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TransactionResponse, TransactionReceipt } from "@ethersproject/abstract-provider";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber, constants as ethersConstants } from "ethers";
 import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
@@ -7,9 +8,18 @@ import { Erc20__factory } from "src/types/contracts/erc-20";
 import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
 import { selectTokenAddress } from "src/utils/tokens";
-import { Token, Chain } from "src/domain";
+import { Token, Chain, TxStatus } from "src/domain";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
+
+const silentlyGetConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
+  if (!provider.provider.request) {
+    throw Error("No request method is available from the provider to get the Ethereum accounts");
+  }
+  return provider.provider
+    .request({ method: "eth_accounts" })
+    .then((accounts) => ethereumAccountsParser.parse(accounts));
+};
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
   return provider
@@ -202,8 +212,21 @@ const getErc20TokenEncodedMetadata = async ({
   return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
 };
 
+function isTxMined(tx: TransactionResponse | null): boolean {
+  return tx !== null && tx.blockNumber !== null;
+}
+
+function isTxCanceled(tx: TransactionResponse | null): boolean {
+  return tx === null;
+}
+
+function hasTxBeenReverted(txReceipt: TransactionReceipt): boolean {
+  return txReceipt.status === TxStatus.REVERTED;
+}
+
 export {
   ethereumAccountsParser,
+  silentlyGetConnectedAccounts,
   getConnectedAccounts,
   isPermitSupported,
   approve,
@@ -211,4 +234,7 @@ export {
   permit,
   getErc20TokenMetadata,
   getErc20TokenEncodedMetadata,
+  isTxMined,
+  isTxCanceled,
+  hasTxBeenReverted,
 };

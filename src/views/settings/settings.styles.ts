@@ -51,21 +51,6 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     marginLeft: theme.spacing(1),
     flex: 1,
   },
-  logout: {
-    padding: [0, theme.spacing(3), theme.spacing(3)],
-    cursor: "pointer",
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
-  },
-  logoutText: {
-    borderTop: `1px solid ${theme.palette.grey.light}`,
-    paddingTop: theme.spacing(3),
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
   radioInput: {
     position: "absolute",
     opacity: 0,

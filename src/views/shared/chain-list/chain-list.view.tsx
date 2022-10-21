@@ -1,11 +1,10 @@
 import React, { FC } from "react";
 
-import useListStyles from "src/views/home/components/chain-list/chain-list.styles";
+import useListStyles from "src/views/shared/chain-list/chain-list.styles";
 import Card from "src/views/shared/card/card.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Portal from "src/views/shared/portal/portal.view";
 import { Chain } from "src/domain";
-import { getChainName } from "src/utils/labels";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 
 interface ChainListProps {
@@ -36,7 +35,7 @@ const ChainList: FC<ChainListProps> = ({ chains, onClick, onClose }) => {
             {chains.map((chain) => (
               <button className={classes.button} key={chain.key} onClick={() => onClick(chain)}>
                 <chain.Icon className={classes.icon} />
-                <Typography type="body1">{getChainName(chain)}</Typography>
+                <Typography type="body1">{chain.name}</Typography>
               </button>
             ))}
           </div>

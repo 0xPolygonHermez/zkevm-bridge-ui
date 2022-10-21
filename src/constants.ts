@@ -1,9 +1,11 @@
 import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 
-import { Chain, Currency, Token } from "src/domain";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
+import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
+import { ProviderError } from "src/adapters/error";
+import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
 
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
@@ -14,17 +16,27 @@ export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
+export const CUSTOM_TOKENS_KEY = "customTokens";
+
+export const PENDING_TXS_KEY = "pendingTxs";
+
+export const POLICY_CHECK_KEY = "policyCheck";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
-export const SNACKBAR_AUTO_HIDE_DURATION = 5000;
+export const SNACKBAR_AUTO_HIDE_DURATION = 5 * 1000; //5s in ms
 
-export const AUTO_REFRESH_RATE = 10000;
+export const AUTO_REFRESH_RATE = 10 * 1000; //10s in ms
 
 export const PAGE_SIZE = 25;
+
+export const PENDING_TX_TIMEOUT = 30 * 60 * 1000; // 30min in ms
+
+export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 20; // 20%
 
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",
@@ -36,10 +48,10 @@ export const REPORT_ERROR_FORM_ENTRIES = {
 export const REPORT_ERROR_FORM_URL =
   "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
 
-export const BRIDGE_CALL_GAS_INCREASE_PERCENTAGE = 10;
-
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
+
+export const POLYGON_SUPPORT_URL = "https://support.polygon.technology";
 
 export const getChains = ({
   ethereum,
@@ -48,39 +60,60 @@ export const getChains = ({
   ethereum: {
     rpcUrl: string;
     explorerUrl: string;
-    contractAddress: string;
+    bridgeContractAddress: string;
+    poeContractAddress: string;
   };
   polygonZkEVM: {
     rpcUrl: string;
     explorerUrl: string;
-    contractAddress: string;
+    bridgeContractAddress: string;
     networkId: number;
   };
-}): Promise<[Chain, Chain]> => {
+}): Promise<[EthereumChain, ZkEVMChain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
   const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
-  return Promise.all([ethereumProvider.getNetwork(), polygonZkEVMProvider.getNetwork()]).then(
-    ([ethereumNetwork, polygonZkEVMNetwork]) => [
-      {
-        key: "ethereum",
-        networkId: 0,
-        Icon: EthChainIcon,
-        provider: ethereumProvider,
-        chainId: ethereumNetwork.chainId,
-        contractAddress: ethereum.contractAddress,
-        explorerUrl: ethereum.explorerUrl,
-      },
-      {
-        key: "polygon-zkevm",
-        networkId: polygonZkEVM.networkId,
-        Icon: PolygonZkEVMChainIcon,
-        provider: polygonZkEVMProvider,
-        chainId: polygonZkEVMNetwork.chainId,
-        contractAddress: polygonZkEVM.contractAddress,
-        explorerUrl: polygonZkEVM.explorerUrl,
-      },
-    ]
+  const poeContract = ProofOfEfficiency__factory.connect(
+    ethereum.poeContractAddress,
+    ethereumProvider
   );
+
+  return Promise.all([
+    ethereumProvider.getNetwork().catch(() => Promise.reject(ProviderError.Ethereum)),
+    polygonZkEVMProvider.getNetwork().catch(() => Promise.reject(ProviderError.PolygonZkEVM)),
+    poeContract.networkName().catch(() => Promise.reject(ProviderError.Ethereum)),
+  ]).then(([ethereumNetwork, polygonZkEVMNetwork, polygonZkEVMNetworkName]) => [
+    {
+      key: "ethereum",
+      name: EthereumChainId.GOERLI === ethereumNetwork.chainId ? "Ethereum Goerli" : "Ethereum",
+      networkId: 0,
+      Icon: EthChainIcon,
+      provider: ethereumProvider,
+      chainId: ethereumNetwork.chainId,
+      bridgeContractAddress: ethereum.bridgeContractAddress,
+      explorerUrl: ethereum.explorerUrl,
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      poeContractAddress: ethereum.poeContractAddress,
+    },
+    {
+      key: "polygon-zkevm",
+      name: polygonZkEVMNetworkName,
+      networkId: polygonZkEVM.networkId,
+      Icon: PolygonZkEVMChainIcon,
+      provider: polygonZkEVMProvider,
+      chainId: polygonZkEVMNetwork.chainId,
+      bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
+      explorerUrl: polygonZkEVM.explorerUrl,
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+    },
+  ]);
 };
 
 export const getEtherToken = (chain: Chain): Token => {

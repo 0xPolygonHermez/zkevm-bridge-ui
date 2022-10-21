@@ -4,12 +4,12 @@ import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "e
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
 import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
-import ChainList from "src/views/home/components/chain-list/chain-list.view";
+import ChainList from "src/views/shared/chain-list/chain-list.view";
 import TokenList from "src/views/home/components/token-list/token-list.view";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import Typography from "src/views/shared/typography/typography.view";
 import Card from "src/views/shared/card/card.view";
-import Error from "src/views/shared/error/error.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Button from "src/views/shared/button/button.view";
 import { useEnvContext } from "src/contexts/env.context";
@@ -17,18 +17,19 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask } from "src/utils/types";
-import { getChainName } from "src/utils/labels";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
 import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
+import Spinner from "src/views/shared/spinner/spinner.view";
 
 interface BridgeFormProps {
   account: string;
   formData?: FormData;
-  resetForm: () => void;
+  maxEtherBridge?: BigNumber;
+  onResetForm: () => void;
   onSubmit: (formData: FormData) => void;
 }
 
@@ -37,7 +38,13 @@ interface SelectedChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmit }) => {
+const BridgeForm: FC<BridgeFormProps> = ({
+  account,
+  formData,
+  maxEtherBridge,
+  onResetForm,
+  onSubmit,
+}) => {
   const callIfMounted = useCallIfMounted();
   const classes = useBridgeFormStyles();
   const env = useEnvContext();
@@ -268,9 +275,9 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
 
   useEffect(() => {
     // Load the default values after the network is changed
-    if (env && connectedProvider && formData === undefined) {
-      const from = env.chains.find((chain) => chain.chainId === connectedProvider.chainId);
-      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.chainId);
+    if (env && connectedProvider.status === "successful" && formData === undefined) {
+      const from = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
+      const to = env.chains.find((chain) => chain.chainId !== connectedProvider.data.chainId);
       if (from && to) {
         setSelectedChains({ from, to });
         setToken(getEtherToken(from));
@@ -278,7 +285,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectedProvider, env]);
+  }, [connectedProvider]);
 
   useEffect(() => {
     // Load default form values
@@ -286,12 +293,16 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
       setSelectedChains({ from: formData.from, to: formData.to });
       setToken(formData.token);
       setAmount(formData.amount);
-      resetForm();
+      onResetForm();
     }
-  }, [formData, resetForm]);
+  }, [formData, onResetForm]);
 
-  if (!env || !selectedChains || !token) {
-    return null;
+  if (!env || !selectedChains || !token || !maxEtherBridge) {
+    return (
+      <div className={classes.spinner}>
+        <Spinner />
+      </div>
+    );
   }
 
   const fromBalance = tokens?.find((tkn) => tkn.address === token.address)?.balance;
@@ -315,7 +326,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
               type="button"
             >
               <selectedChains.from.Icon />
-              <Typography type="body1">{getChainName(selectedChains.from)}</Typography>
+              <Typography type="body1">{selectedChains.from.name}</Typography>
               <CaretDown />
             </button>
           </div>
@@ -336,6 +347,8 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
             value={amount}
             token={token}
             balance={fromBalance || BigNumber.from(0)}
+            from={selectedChains.from}
+            maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
           />
         </div>
@@ -349,7 +362,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
             <Typography type="body2">To</Typography>
             <div className={classes.toChain}>
               <selectedChains.to.Icon />
-              <Typography type="body1">{getChainName(selectedChains.to)}</Typography>
+              <Typography type="body1">{selectedChains.to.name}</Typography>
             </div>
           </div>
           <div className={classes.rightBox}>
@@ -364,7 +377,7 @@ const BridgeForm: FC<BridgeFormProps> = ({ account, formData, resetForm, onSubmi
         <Button type="submit" disabled={!amount || amount.isZero() || inputError !== undefined}>
           Continue
         </Button>
-        {amount && inputError && <Error error={inputError} />}
+        {amount && inputError && <ErrorMessage error={inputError} />}
       </div>
       {chains && (
         <ChainList

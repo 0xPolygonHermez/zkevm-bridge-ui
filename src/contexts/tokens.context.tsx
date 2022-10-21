@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
+import { BigNumber, constants as ethersConstants } from "ethers";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import axios from "axios";
 
@@ -19,10 +19,11 @@ import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { Chain, Env, Token } from "src/domain";
 import { getEthereumErc20Tokens } from "src/adapters/tokens";
 import { getEtherToken } from "src/constants";
 import * as ethereum from "src/adapters/ethereum";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
+import { Chain, Env, Token } from "src/domain";
 
 interface ComputeWrappedTokenAddressParams {
   token: Token;
@@ -76,11 +77,6 @@ interface ApproveParams {
 
 interface TokensContext {
   tokens?: Token[];
-  computeWrappedTokenAddress: (params: ComputeWrappedTokenAddressParams) => Promise<string>;
-  getNativeTokenInfo: (params: GetNativeTokenInfoParams) => Promise<{
-    originNetwork: number;
-    originTokenAddress: string;
-  }>;
   addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getToken: (params: GetTokenParams) => Promise<Token>;
@@ -92,12 +88,6 @@ interface TokensContext {
 const tokensContextNotReadyMsg = "The bridge context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
-  computeWrappedTokenAddress: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getNativeTokenInfo: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
   addWrappedToken: () => {
     return Promise.reject(tokensContextNotReadyMsg);
   },
@@ -134,21 +124,11 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       otherChain,
     }: ComputeWrappedTokenAddressParams): Promise<string> => {
       const bridgeContract = Bridge__factory.connect(
-        otherChain.contractAddress,
+        otherChain.bridgeContractAddress,
         otherChain.provider
       );
-      const tokenImplementationAddress = await bridgeContract.tokenImplementation();
-      const salt = ethersUtils.solidityKeccak256(
-        ["uint32", "address"],
-        [nativeChain.networkId, token.address]
-      );
-      const minimalBytecodeProxy = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${tokenImplementationAddress.slice(
-        2
-      )}5af43d82803e903d91602b57fd5bf3`;
-      const hashInitCode = ethersUtils.keccak256(minimalBytecodeProxy);
 
-      return ethersUtils.getCreate2Address(bridgeContract.address, salt, hashInitCode);
-      // return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
+      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
     },
     []
   );
@@ -164,7 +144,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       originNetwork: number;
       originTokenAddress: string;
     }> => {
-      const bridgeContract = Bridge__factory.connect(chain.contractAddress, chain.provider);
+      const bridgeContract = Bridge__factory.connect(chain.bridgeContractAddress, chain.provider);
 
       return bridgeContract.wrappedTokenToTokenInfo(token.address).then((tokenInfo) => {
         if (tokenInfo.originTokenAddress === ethersConstants.AddressZero) {
@@ -318,14 +298,14 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
   const approve = useCallback(
     ({ from, token, amount, provider, owner, spender }: ApproveParams) => {
-      if (connectedProvider === undefined) {
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
         throw new Error("Connected provider is not available");
       }
 
       const executeApprove = async () =>
         ethereum.approve({ token, amount, provider, owner, spender });
 
-      if (from.chainId === connectedProvider.chainId) {
+      if (from.chainId === connectedProvider.data.chainId) {
         return executeApprove();
       } else {
         return changeNetwork(from)
@@ -363,8 +343,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const value = useMemo(() => {
     return {
       tokens,
-      computeWrappedTokenAddress,
-      getNativeTokenInfo,
       getTokenFromAddress,
       getToken,
       getErc20TokenBalance,
@@ -374,8 +352,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     };
   }, [
     tokens,
-    computeWrappedTokenAddress,
-    getNativeTokenInfo,
     getTokenFromAddress,
     getToken,
     getErc20TokenBalance,

@@ -8,6 +8,7 @@ interface Env {
   VITE_ETHEREUM_RPC_URL: string;
   VITE_ETHEREUM_EXPLORER_URL: string;
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
+  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: string;
   VITE_POLYGON_ZK_EVM_RPC_URL: string;
   VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
@@ -23,6 +24,7 @@ const envToDomain = ({
   VITE_ETHEREUM_RPC_URL,
   VITE_ETHEREUM_EXPLORER_URL,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
   VITE_POLYGON_ZK_EVM_RPC_URL,
   VITE_POLYGON_ZK_EVM_EXPLORER_URL,
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
@@ -40,13 +42,14 @@ const envToDomain = ({
     ethereum: {
       rpcUrl: VITE_ETHEREUM_RPC_URL,
       explorerUrl: VITE_ETHEREUM_EXPLORER_URL,
-      contractAddress: VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+      bridgeContractAddress: VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+      poeContractAddress: VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
     },
     polygonZkEVM: {
       networkId: polygonZkEVMNetworkId,
       rpcUrl: VITE_POLYGON_ZK_EVM_RPC_URL,
       explorerUrl: VITE_POLYGON_ZK_EVM_EXPLORER_URL,
-      contractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
+      bridgeContractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
     },
   }).then((chains) => {
     const ethereumChain = chains.find((chain) => chain.key === "ethereum");
@@ -99,6 +102,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_ETHEREUM_RPC_URL: z.string().url(),
       VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
       VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: z.string().length(42),
       VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
