@@ -24,20 +24,22 @@ const EnvProvider: FC<PropsWithChildren> = (props) => {
   const location = useLocation();
 
   useEffect(() => {
-    loadEnv()
-      .then(setEnv)
-      .catch((e) => {
-        const error = providerError.safeParse(e);
+    if (!env) {
+      loadEnv()
+        .then(setEnv)
+        .catch((e) => {
+          const error = providerError.safeParse(e);
 
-        if (location.pathname !== routes.networkError.path) {
-          if (error.success) {
-            navigate(routes.networkError.path, { state: error.data });
-          } else {
-            notifyError(e);
+          if (location.pathname !== routes.networkError.path) {
+            if (error.success) {
+              navigate(routes.networkError.path, { state: error.data });
+            } else {
+              notifyError(e);
+            }
           }
-        }
-      });
-  }, [location, navigate, notifyError]);
+        });
+    }
+  }, [env, location, navigate, notifyError]);
 
   const value = useMemo(() => {
     return env;

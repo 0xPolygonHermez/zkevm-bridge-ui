@@ -285,7 +285,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
       setAmount(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectedProvider]);
+  }, [connectedProvider, env]);
 
   useEffect(() => {
     // Load default form values
