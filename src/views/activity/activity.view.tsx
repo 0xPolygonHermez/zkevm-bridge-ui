@@ -157,26 +157,24 @@ const Activity: FC = () => {
   };
 
   useEffect(() => {
+    // Initial load
     if (env && connectedProvider.status === "successful") {
       fetchBridgesAbortController.current = new AbortController();
-      const loadBridges = () => {
-        fetchBridges({
-          type: "load",
-          env,
-          ethereumAddress: connectedProvider.data.account,
-          limit: PAGE_SIZE,
-          offset: 0,
-          abortSignal: fetchBridgesAbortController.current.signal,
+      fetchBridges({
+        type: "load",
+        env,
+        ethereumAddress: connectedProvider.data.account,
+        limit: PAGE_SIZE,
+        offset: 0,
+        abortSignal: fetchBridgesAbortController.current.signal,
+      })
+        .then(({ bridges, total }) => {
+          callIfMounted(() => {
+            processFetchBridgesSuccess(bridges);
+            setTotal(total);
+          });
         })
-          .then(({ bridges, total }) => {
-            callIfMounted(() => {
-              processFetchBridgesSuccess(bridges);
-              setTotal(total);
-            });
-          })
-          .catch(processFetchBridgesError);
-      };
-      loadBridges();
+        .catch(processFetchBridgesError);
     }
     return () => {
       fetchBridgesAbortController.current.abort();
@@ -191,6 +189,7 @@ const Activity: FC = () => {
   ]);
 
   useEffect(() => {
+    // Polling
     if (
       env &&
       connectedProvider.status === "successful" &&
