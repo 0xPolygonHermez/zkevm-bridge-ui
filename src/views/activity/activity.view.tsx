@@ -282,77 +282,75 @@ const Activity: FC = () => {
     return loader;
   }
 
-  return (() => {
-    switch (bridgeList.status) {
-      case "pending":
-      case "loading": {
-        return loader;
-      }
-      case "failed": {
-        return (
-          <div className={classes.contentWrapper}>
-            <Header title="Activity" backTo={{ routeKey: "home" }} />
-            <Tabs all={0} pending={0} />
-            <EmptyMessage />
-          </div>
-        );
-      }
-      case "successful":
-      case "loading-more-items":
-      case "reloading": {
-        const pendingBridges = bridgeList.data.filter((bridge) => bridge.status === "pending");
-        const filteredList = displayAll ? bridgeList.data : pendingBridges;
-
-        return (
-          <>
-            <div ref={headerBorderObserved}></div>
-            <div className={classes.stickyContent} ref={headerBorderTarget}>
-              <div className={classes.contentWrapper}>
-                <Header title="Activity" backTo={{ routeKey: "home" }} />
-                <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
-              </div>
-            </div>
-            <div className={classes.contentWrapper}>
-              {filteredList.length ? (
-                <InfiniteScroll
-                  isLoading={bridgeList.status === "loading-more-items"}
-                  onLoadNextPage={onLoadNextPage}
-                >
-                  {filteredList.map((bridge) =>
-                    bridge.status === "pending" ? (
-                      <div
-                        className={classes.bridgeCardwrapper}
-                        key={bridge.depositTxHash || bridge.claimTxHash}
-                      >
-                        <BridgeCard
-                          bridge={bridge}
-                          networkError={false}
-                          isFinaliseDisabled={true}
-                          showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
-                        />
-                      </div>
-                    ) : (
-                      <div className={classes.bridgeCardwrapper} key={bridge.id}>
-                        <BridgeCard
-                          bridge={bridge}
-                          networkError={wrongNetworkBridges.includes(bridge.id)}
-                          isFinaliseDisabled={areBridgesDisabled}
-                          showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
-                          onClaim={() => onClaim(bridge)}
-                        />
-                      </div>
-                    )
-                  )}
-                </InfiniteScroll>
-              ) : (
-                <EmptyMessage />
-              )}
-            </div>
-          </>
-        );
-      }
+  switch (bridgeList.status) {
+    case "pending":
+    case "loading": {
+      return loader;
     }
-  })();
+    case "failed": {
+      return (
+        <div className={classes.contentWrapper}>
+          <Header title="Activity" backTo={{ routeKey: "home" }} />
+          <Tabs all={0} pending={0} />
+          <EmptyMessage />
+        </div>
+      );
+    }
+    case "successful":
+    case "loading-more-items":
+    case "reloading": {
+      const pendingBridges = bridgeList.data.filter((bridge) => bridge.status === "pending");
+      const filteredList = displayAll ? bridgeList.data : pendingBridges;
+
+      return (
+        <>
+          <div ref={headerBorderObserved}></div>
+          <div className={classes.stickyContent} ref={headerBorderTarget}>
+            <div className={classes.contentWrapper}>
+              <Header title="Activity" backTo={{ routeKey: "home" }} />
+              <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
+            </div>
+          </div>
+          <div className={classes.contentWrapper}>
+            {filteredList.length ? (
+              <InfiniteScroll
+                isLoading={bridgeList.status === "loading-more-items"}
+                onLoadNextPage={onLoadNextPage}
+              >
+                {filteredList.map((bridge) =>
+                  bridge.status === "pending" ? (
+                    <div
+                      className={classes.bridgeCardwrapper}
+                      key={bridge.depositTxHash || bridge.claimTxHash}
+                    >
+                      <BridgeCard
+                        bridge={bridge}
+                        networkError={false}
+                        isFinaliseDisabled={true}
+                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                      />
+                    </div>
+                  ) : (
+                    <div className={classes.bridgeCardwrapper} key={bridge.id}>
+                      <BridgeCard
+                        bridge={bridge}
+                        networkError={wrongNetworkBridges.includes(bridge.id)}
+                        isFinaliseDisabled={areBridgesDisabled}
+                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                        onClaim={() => onClaim(bridge)}
+                      />
+                    </div>
+                  )
+                )}
+              </InfiniteScroll>
+            ) : (
+              <EmptyMessage />
+            )}
+          </div>
+        </>
+      );
+    }
+  }
 };
 
 export default Activity;
