@@ -214,11 +214,11 @@ const BridgeDetails: FC = () => {
   }, [env, bridge, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
-    if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
+    if (tokens && env?.fiatExchangeRates.areEnabled && bridge.status === "successful") {
       const { from } = bridge.data;
 
       // fiat fees
-      const token = tokens?.find((t) => t.symbol === "WETH");
+      const token = tokens.find((t) => t.symbol === "WETH");
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {
