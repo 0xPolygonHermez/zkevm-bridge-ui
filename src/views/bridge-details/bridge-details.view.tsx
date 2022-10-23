@@ -124,7 +124,7 @@ const BridgeDetails: FC = () => {
   }, [connectedProvider, bridge]);
 
   useEffect(() => {
-    if (env && connectedProvider.status === "successful") {
+    if (env && connectedProvider.status === "successful" && tokens) {
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -164,7 +164,7 @@ const BridgeDetails: FC = () => {
         });
       }
     }
-  }, [env, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
+  }, [env, tokens, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
