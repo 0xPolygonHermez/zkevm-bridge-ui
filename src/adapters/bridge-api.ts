@@ -174,12 +174,14 @@ interface GetDepositParams {
   apiUrl: string;
   networkId: number;
   depositCount: number;
+  abortSignal?: AbortSignal;
 }
 
 export const getDeposit = ({
   apiUrl,
   networkId,
   depositCount,
+  abortSignal,
 }: GetDepositParams): Promise<DepositOutput> => {
   return axios
     .request({
@@ -190,6 +192,7 @@ export const getDeposit = ({
         net_id: networkId,
         deposit_cnt: depositCount,
       },
+      signal: abortSignal,
     })
     .then((res) => {
       const parsedData = getDepositResponseParser.safeParse(res.data);

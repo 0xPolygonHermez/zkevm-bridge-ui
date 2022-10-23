@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -28,11 +28,12 @@ import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
-import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useTokensContext } from "src/contexts/tokens.context";
+import { isAxiosCancelRequestError } from "src/adapters/bridge-api";
+import { Bridge } from "src/domain";
 
 interface Fees {
   step1?: BigNumber;
@@ -91,6 +92,8 @@ const BridgeDetails: FC = () => {
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
+  const getBridgeAbortController = useRef<AbortController>(new AbortController());
+
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
       setIsFinaliseButtonDisabled(true);
@@ -125,6 +128,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && connectedProvider.status === "successful" && tokens) {
+      getBridgeAbortController.current = new AbortController();
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -132,6 +136,7 @@ const BridgeDetails: FC = () => {
           env,
           depositCount,
           networkId,
+          abortSignal: getBridgeAbortController.current.signal,
         })
           .then((bridge) => {
             callIfMounted(() => {
@@ -146,13 +151,15 @@ const BridgeDetails: FC = () => {
             });
           })
           .catch((error) => {
-            callIfMounted(() => {
-              notifyError(error);
-              setBridge({
-                status: "failed",
-                error: "Bridge not found",
+            if (!isAxiosCancelRequestError(error)) {
+              callIfMounted(() => {
+                notifyError(error);
+                setBridge({
+                  status: "failed",
+                  error: "Bridge not found",
+                });
               });
-            });
+            }
           });
       } else {
         callIfMounted(() => {
@@ -163,6 +170,9 @@ const BridgeDetails: FC = () => {
           });
         });
       }
+      return () => {
+        getBridgeAbortController.current.abort();
+      };
     }
   }, [env, tokens, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
 

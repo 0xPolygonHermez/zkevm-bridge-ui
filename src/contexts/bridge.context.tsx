@@ -47,6 +47,7 @@ type GetBridgeParams = {
   env: Env;
   networkId: number;
   depositCount: number;
+  abortSignal?: AbortSignal;
 };
 
 interface GetBridgesParams {
@@ -149,12 +150,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   type TokenPrices = Partial<Record<string, Price>>;
 
   const getBridge = useCallback(
-    async ({ env, networkId, depositCount }: GetBridgeParams): Promise<Bridge> => {
+    async ({ env, networkId, depositCount, abortSignal }: GetBridgeParams): Promise<Bridge> => {
       const apiUrl = env.bridgeApiUrl;
       const apiDeposit = await getDeposit({
         apiUrl,
         networkId,
         depositCount,
+        abortSignal,
       });
 
       const {
