@@ -12,6 +12,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
+import { useTokensContext } from "src/contexts/tokens.context";
 import { parseError } from "src/adapters/error";
 import { isAxiosCancelRequestError } from "src/adapters/bridge-api";
 import {
@@ -31,6 +32,7 @@ const Activity: FC = () => {
   const { connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
+  const { tokens } = useTokensContext();
   const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined, true>>({
     status: "pending",
   });
@@ -158,7 +160,7 @@ const Activity: FC = () => {
 
   useEffect(() => {
     // Initial load
-    if (env && connectedProvider.status === "successful") {
+    if (env && connectedProvider.status === "successful" && tokens) {
       fetchBridgesAbortController.current = new AbortController();
       fetchBridges({
         type: "load",
@@ -182,6 +184,7 @@ const Activity: FC = () => {
   }, [
     connectedProvider,
     env,
+    tokens,
     callIfMounted,
     fetchBridges,
     processFetchBridgesError,
@@ -267,17 +270,23 @@ const Activity: FC = () => {
     </div>
   );
 
+  const loader = (
+    <div className={classes.contentWrapper}>
+      <Header title="Activity" backTo={{ routeKey: "home" }} />
+      <Tabs all={0} pending={0} />
+      <PageLoader />
+    </div>
+  );
+
+  if (!tokens) {
+    return loader;
+  }
+
   return (() => {
     switch (bridgeList.status) {
       case "pending":
       case "loading": {
-        return (
-          <div className={classes.contentWrapper}>
-            <Header title="Activity" backTo={{ routeKey: "home" }} />
-            <Tabs all={0} pending={0} />
-            <PageLoader />
-          </div>
-        );
+        return loader;
       }
       case "failed": {
         return (

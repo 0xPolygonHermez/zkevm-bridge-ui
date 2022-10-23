@@ -35,6 +35,7 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     lineHeight: `${theme.spacing(1.75)}px`,
   },
   selectorBoxes: {
+    width: "100%",
     maxWidth: theme.maxWidth,
     display: "flex",
     margin: [theme.spacing(5), "auto", theme.spacing(2)],
@@ -71,13 +72,19 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
   },
   contentWrapper: {
     padding: [0, theme.spacing(2)],
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
   },
   emptyMessage: {
-    textAlign: "center",
-    lineHeight: "26px",
+    width: "100%",
     maxWidth: theme.maxWidth,
-    padding: 100,
-    margin: "auto",
+    alignSelf: "center",
+    textAlign: "center",
+    padding: [50, theme.spacing(2)],
+    [theme.breakpoints.upSm]: {
+      padding: 100,
+    },
   },
   bridgeCardwrapper: {
     "&:not(:last-child)": {
