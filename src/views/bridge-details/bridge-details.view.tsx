@@ -151,15 +151,15 @@ const BridgeDetails: FC = () => {
             });
           })
           .catch((error) => {
-            if (!isCancelRequestError(error)) {
-              callIfMounted(() => {
+            callIfMounted(() => {
+              if (!isCancelRequestError(error)) {
                 notifyError(error);
                 setBridge({
                   status: "failed",
                   error: "Bridge not found",
                 });
-              });
-            }
+              }
+            });
           });
       } else {
         callIfMounted(() => {
