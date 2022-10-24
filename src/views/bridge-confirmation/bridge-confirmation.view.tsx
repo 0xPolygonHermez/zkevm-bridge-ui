@@ -78,7 +78,6 @@ const BridgeConfirmation: FC = () => {
         const { from, to, token, amount } = formData;
         const destinationAddress = connectedProvider.data.account;
 
-        console.log("Pasa");
         setEstimatedGas(
           estimatedGas.status === "successful"
             ? { status: "reloading", data: estimatedGas.data }
@@ -136,10 +135,6 @@ const BridgeConfirmation: FC = () => {
       };
 
       connectedProvider.data.provider.on("block", onBlock);
-
-      if (estimatedGas.status === "pending") {
-        onBlock();
-      }
 
       return () => {
         connectedProvider.data.provider.off("block", onBlock);
