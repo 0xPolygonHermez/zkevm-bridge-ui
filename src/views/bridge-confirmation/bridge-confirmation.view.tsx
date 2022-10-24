@@ -58,7 +58,7 @@ const BridgeConfirmation: FC = () => {
     useTokensContext();
   const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
-  const [maxAmountIncludingFee, setMaxAmountIncludingFee] = useState<BigNumber>();
+  const [maxAmountConsideringFee, setMaxAmountConsideringFee] = useState<BigNumber>();
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
@@ -108,9 +108,9 @@ const BridgeConfirmation: FC = () => {
                   ? amount.sub(tokenBalanceRemainder)
                   : amount;
 
-              setMaxAmountIncludingFee(newMaxAmountIncludingFee);
+              setMaxAmountConsideringFee(newMaxAmountIncludingFee);
             } else {
-              setMaxAmountIncludingFee(amount);
+              setMaxAmountConsideringFee(amount);
             }
 
             setFadeClass(classes.fadeOut);
@@ -335,7 +335,7 @@ const BridgeConfirmation: FC = () => {
       formData &&
       isAsyncTaskDataAvailable(connectedProvider) &&
       isAsyncTaskDataAvailable(estimatedGas) &&
-      maxAmountIncludingFee
+      maxAmountConsideringFee
     ) {
       const { token, from, to } = formData;
 
@@ -344,7 +344,7 @@ const BridgeConfirmation: FC = () => {
       bridge({
         from,
         token,
-        amount: maxAmountIncludingFee,
+        amount: maxAmountConsideringFee,
         to,
         destinationAddress: connectedProvider.data.account,
         gas: estimatedGas.data,
@@ -379,7 +379,7 @@ const BridgeConfirmation: FC = () => {
     !formData ||
     !tokenBalance ||
     !isAsyncTaskDataAvailable(estimatedGas) ||
-    !maxAmountIncludingFee
+    !maxAmountConsideringFee
   ) {
     return <PageLoader />;
   }
@@ -395,7 +395,7 @@ const BridgeConfirmation: FC = () => {
         precision: FIAT_DISPLAY_PRECISION,
       },
       {
-        value: maxAmountIncludingFee,
+        value: maxAmountConsideringFee,
         precision: token.decimals,
       },
       FIAT_DISPLAY_PRECISION
@@ -418,7 +418,7 @@ const BridgeConfirmation: FC = () => {
     );
 
   const tokenAmountString = `${
-    maxAmountIncludingFee.gt(0) ? formatTokenAmount(maxAmountIncludingFee, token) : "0"
+    maxAmountConsideringFee.gt(0) ? formatTokenAmount(maxAmountConsideringFee, token) : "0"
   } ${token.symbol}`;
 
   const fiatAmountString = env.fiatExchangeRates.areEnabled
@@ -426,14 +426,14 @@ const BridgeConfirmation: FC = () => {
     : undefined;
 
   const absMaxPossibleAmountConsideringFee = formatTokenAmount(
-    maxAmountIncludingFee.abs(),
+    maxAmountConsideringFee.abs(),
     etherToken
   );
 
   const feeBaseErrorString = "You don't have enough ETH to cover the transaction fee";
-  const feeErrorString = maxAmountIncludingFee.isNegative()
+  const feeErrorString = maxAmountConsideringFee.isNegative()
     ? `${feeBaseErrorString}\nYou need at least ${absMaxPossibleAmountConsideringFee} extra ETH`
-    : maxAmountIncludingFee.eq(0)
+    : maxAmountConsideringFee.eq(0)
     ? `${feeBaseErrorString}\nThe maximum transferable amount is 0 after considering the fee`
     : undefined;
 
@@ -473,7 +473,7 @@ const BridgeConfirmation: FC = () => {
       </Card>
       <div className={classes.button}>
         <BridgeButton
-          isDisabled={maxAmountIncludingFee.lte(0) || isBridgeInProgress}
+          isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
           isTxApprovalRequired={isTxApprovalRequired}
           approvalTask={approvalTask}
