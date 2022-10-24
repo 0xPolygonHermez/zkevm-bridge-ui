@@ -14,6 +14,7 @@ const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.white,
     cursor: "pointer",
     gap: theme.spacing(1),
+    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
