@@ -103,10 +103,9 @@ const BridgeConfirmation: FC = () => {
               const amountIncludingFee = amount.add(newFee);
               const tokenBalanceRemainder = amountIncludingFee.sub(tokenBalance);
               const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
-              const newMaxAmountIncludingFee =
-                isTokenEther && !doesAmountExceedsTokenBalance
-                  ? amount.sub(tokenBalanceRemainder)
-                  : amount;
+              const newMaxAmountIncludingFee = !doesAmountExceedsTokenBalance
+                ? amount.sub(tokenBalanceRemainder)
+                : amount;
 
               setMaxAmountConsideringFee(newMaxAmountIncludingFee);
             } else {
