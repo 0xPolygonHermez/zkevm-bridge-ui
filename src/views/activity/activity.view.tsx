@@ -64,11 +64,7 @@ const Activity: FC = () => {
         bridge,
       })
         .then(() => {
-          if (
-            bridgeList.status === "successful" ||
-            bridgeList.status === "reloading" ||
-            bridgeList.status === "loading-more-items"
-          ) {
+          if (isAsyncTaskDataAvailable<Bridge[], undefined, true>(bridgeList)) {
             processFetchBridgesSuccess(bridgeList.data);
           }
           openSnackbar({
