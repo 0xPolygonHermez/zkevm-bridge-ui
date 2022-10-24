@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -28,11 +28,12 @@ import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { deserializeBridgeId } from "src/utils/serializers";
-import { Bridge } from "src/domain";
 import routes from "src/routes";
 import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useTokensContext } from "src/contexts/tokens.context";
+import { isCancelRequestError } from "src/adapters/bridge-api";
+import { Bridge } from "src/domain";
 
 interface Fees {
   step1?: BigNumber;
@@ -73,7 +74,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { claim, getBridge } = useBridgeContext();
+  const { claim, fetchBridge } = useBridgeContext();
   const { tokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
@@ -90,6 +91,8 @@ const BridgeDetails: FC = () => {
   const classes = useBridgeDetailsStyles({
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
+
+  const fetchBridgeAbortController = useRef<AbortController>(new AbortController());
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
@@ -124,14 +127,16 @@ const BridgeDetails: FC = () => {
   }, [connectedProvider, bridge]);
 
   useEffect(() => {
-    if (env && connectedProvider.status === "successful") {
+    if (env && connectedProvider.status === "successful" && tokens) {
+      fetchBridgeAbortController.current = new AbortController();
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
-        void getBridge({
+        void fetchBridge({
           env,
           depositCount,
           networkId,
+          abortSignal: fetchBridgeAbortController.current.signal,
         })
           .then((bridge) => {
             callIfMounted(() => {
@@ -147,11 +152,13 @@ const BridgeDetails: FC = () => {
           })
           .catch((error) => {
             callIfMounted(() => {
-              notifyError(error);
-              setBridge({
-                status: "failed",
-                error: "Bridge not found",
-              });
+              if (!isCancelRequestError(error)) {
+                notifyError(error);
+                setBridge({
+                  status: "failed",
+                  error: "Bridge not found",
+                });
+              }
             });
           });
       } else {
@@ -163,8 +170,11 @@ const BridgeDetails: FC = () => {
           });
         });
       }
+      return () => {
+        fetchBridgeAbortController.current.abort();
+      };
     }
-  }, [env, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
+  }, [env, tokens, bridgeId, connectedProvider, notifyError, fetchBridge, callIfMounted, navigate]);
 
   useEffect(() => {
     if (bridge.status === "successful") {
@@ -214,11 +224,11 @@ const BridgeDetails: FC = () => {
   }, [env, bridge, getTokenPrice, callIfMounted]);
 
   useEffect(() => {
-    if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
+    if (tokens && env?.fiatExchangeRates.areEnabled && bridge.status === "successful") {
       const { from } = bridge.data;
 
       // fiat fees
-      const token = tokens?.find((t) => t.symbol === "WETH");
+      const token = tokens.find((t) => t.symbol === "WETH");
       if (token) {
         getTokenPrice({ token, chain: from })
           .then((tokenPrice) => {

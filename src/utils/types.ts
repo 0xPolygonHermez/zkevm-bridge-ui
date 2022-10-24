@@ -43,10 +43,16 @@ export type AsyncTask<D, E, P = false> = P extends true
       | ReloadingAsyncTask<D>
       | FailedAsyncTask<E>;
 
-export function isAsyncTaskDataAvailable<D, E>(
-  task: AsyncTask<D, E>
-): task is SuccessfulAsyncTask<D> | ReloadingAsyncTask<D> {
-  return task.status === "successful" || task.status === "reloading";
+export function isAsyncTaskDataAvailable<D, E, P = false>(
+  task: AsyncTask<D, E, P>
+): task is P extends true
+  ? SuccessfulAsyncTask<D> | ReloadingAsyncTask<D> | LoadingMoreItemsAsyncTask<D>
+  : SuccessfulAsyncTask<D> | ReloadingAsyncTask<D> {
+  return (
+    task.status === "successful" ||
+    task.status === "reloading" ||
+    task.status === "loading-more-items"
+  );
 }
 
 export type Exact<T, U> = [T, U] extends [U, T] ? true : false;

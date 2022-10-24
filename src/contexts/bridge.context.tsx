@@ -4,16 +4,7 @@ import {
   ContractTransaction,
   CallOverrides,
 } from "ethers";
-import axios, { AxiosRequestConfig } from "axios";
-import {
-  createContext,
-  FC,
-  useContext,
-  useCallback,
-  useRef,
-  useMemo,
-  PropsWithChildren,
-} from "react";
+import { createContext, FC, useContext, useCallback, useMemo, PropsWithChildren } from "react";
 
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -52,10 +43,11 @@ interface EstimateBridgeGasParams {
   destinationAddress: string;
 }
 
-type GetBridgeParams = {
+type FetchBridgeParams = {
   env: Env;
   networkId: number;
   depositCount: number;
+  abortSignal?: AbortSignal;
 };
 
 interface GetBridgesParams {
@@ -63,18 +55,20 @@ interface GetBridgesParams {
   ethereumAddress: string;
   limit: number;
   offset: number;
-  cancelToken?: AxiosRequestConfig["cancelToken"];
+  abortSignal?: AbortSignal;
 }
 
 interface RefreshBridgesParams {
   env: Env;
   ethereumAddress: string;
   quantity: number;
+  abortSignal?: AbortSignal;
 }
 
 type FetchBridgesParams = {
   env: Env;
   ethereumAddress: string;
+  abortSignal?: AbortSignal;
 } & (
   | {
       type: "load";
@@ -103,7 +97,7 @@ interface ClaimParams {
 interface BridgeContext {
   getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
   estimateBridgeGas: (params: EstimateBridgeGasParams) => Promise<Gas>;
-  getBridge: (params: GetBridgeParams) => Promise<Bridge>;
+  fetchBridge: (params: FetchBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
     total: number;
@@ -122,7 +116,7 @@ const bridgeContext = createContext<BridgeContext>({
   estimateBridgeGas: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  getBridge: () => {
+  fetchBridge: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   fetchBridges: () => {
@@ -155,15 +149,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   type Price = BigNumber | null;
   type TokenPrices = Partial<Record<string, Price>>;
 
-  const refreshCancelTokenSource = useRef(axios.CancelToken.source());
-
-  const getBridge = useCallback(
-    async ({ env, networkId, depositCount }: GetBridgeParams): Promise<Bridge> => {
+  const fetchBridge = useCallback(
+    async ({ env, networkId, depositCount, abortSignal }: FetchBridgeParams): Promise<Bridge> => {
       const apiUrl = env.bridgeApiUrl;
       const apiDeposit = await getDeposit({
         apiUrl,
         networkId,
         depositCount,
+        abortSignal,
       });
 
       const {
@@ -291,7 +284,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       ethereumAddress,
       limit,
       offset,
-      cancelToken,
+      abortSignal,
     }: GetBridgesParams): Promise<{
       bridges: Bridge[];
       total: number;
@@ -302,7 +295,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         ethereumAddress,
         limit,
         offset,
-        cancelToken,
+        abortSignal,
       });
 
       const deposits = await Promise.all(
@@ -485,11 +478,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       env,
       ethereumAddress,
       quantity,
+      abortSignal,
     }: RefreshBridgesParams): Promise<{
       bridges: Bridge[];
       total: number;
     }> => {
-      refreshCancelTokenSource.current = axios.CancelToken.source();
       const completePages = Math.floor(quantity / REFRESH_PAGE_SIZE);
       const remainderBridges = quantity % REFRESH_PAGE_SIZE;
       const requiredRequests = Math.max(
@@ -510,7 +503,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 ethereumAddress,
                 limit,
                 offset,
-                cancelToken: refreshCancelTokenSource.current.token,
+                abortSignal,
               });
             })
         )
@@ -530,19 +523,19 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       total: number;
     }> => {
       if (params.type === "load") {
-        // fetching new data prevails over possible reloads in progress so we cancel them
-        refreshCancelTokenSource.current.cancel();
         return getBridges({
           env: params.env,
           ethereumAddress: params.ethereumAddress,
           limit: params.limit,
           offset: params.offset,
+          abortSignal: params.abortSignal,
         });
       } else {
         return refreshBridges({
           env: params.env,
           ethereumAddress: params.ethereumAddress,
           quantity: params.quantity,
+          abortSignal: params.abortSignal,
         });
       }
     },
@@ -871,7 +864,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     () => ({
       getMaxEtherBridge,
       estimateBridgeGas,
-      getBridge,
+      fetchBridge,
       fetchBridges,
       getPendingBridges,
       bridge,
@@ -880,7 +873,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     [
       getMaxEtherBridge,
       estimateBridgeGas,
-      getBridge,
+      fetchBridge,
       fetchBridges,
       getPendingBridges,
       bridge,
