@@ -32,7 +32,7 @@ import routes from "src/routes";
 import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { isAxiosCancelRequestError } from "src/adapters/bridge-api";
+import { isCancelRequestError } from "src/adapters/bridge-api";
 import { Bridge } from "src/domain";
 
 interface Fees {
@@ -151,7 +151,7 @@ const BridgeDetails: FC = () => {
             });
           })
           .catch((error) => {
-            if (!isAxiosCancelRequestError(error)) {
+            if (!isCancelRequestError(error)) {
               callIfMounted(() => {
                 notifyError(error);
                 setBridge({

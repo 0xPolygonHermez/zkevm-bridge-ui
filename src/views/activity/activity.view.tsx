@@ -14,7 +14,7 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { parseError } from "src/adapters/error";
-import { isAxiosCancelRequestError } from "src/adapters/bridge-api";
+import { isCancelRequestError } from "src/adapters/bridge-api";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
@@ -118,7 +118,7 @@ const Activity: FC = () => {
   const processFetchBridgesError = useCallback(
     (error: unknown) => {
       callIfMounted(() => {
-        if (!isAxiosCancelRequestError(error)) {
+        if (!isCancelRequestError(error)) {
           setBridgeList({
             status: "failed",
             error: undefined,

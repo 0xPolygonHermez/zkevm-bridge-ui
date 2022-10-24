@@ -237,6 +237,6 @@ export const getMerkleProof = ({
     });
 };
 
-export function isAxiosCancelRequestError(error: unknown): boolean {
+export function isCancelRequestError(error: unknown): boolean {
   return axios.isCancel(error);
 }
