@@ -74,7 +74,7 @@ const BridgeDetails: FC = () => {
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { claim, getBridge } = useBridgeContext();
+  const { claim, fetchBridge } = useBridgeContext();
   const { tokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
@@ -92,7 +92,7 @@ const BridgeDetails: FC = () => {
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
-  const getBridgeAbortController = useRef<AbortController>(new AbortController());
+  const fetchBridgeAbortController = useRef<AbortController>(new AbortController());
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
@@ -128,15 +128,15 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && connectedProvider.status === "successful" && tokens) {
-      getBridgeAbortController.current = new AbortController();
+      fetchBridgeAbortController.current = new AbortController();
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
-        void getBridge({
+        void fetchBridge({
           env,
           depositCount,
           networkId,
-          abortSignal: getBridgeAbortController.current.signal,
+          abortSignal: fetchBridgeAbortController.current.signal,
         })
           .then((bridge) => {
             callIfMounted(() => {
@@ -171,10 +171,10 @@ const BridgeDetails: FC = () => {
         });
       }
       return () => {
-        getBridgeAbortController.current.abort();
+        fetchBridgeAbortController.current.abort();
       };
     }
-  }, [env, tokens, bridgeId, connectedProvider, notifyError, getBridge, callIfMounted, navigate]);
+  }, [env, tokens, bridgeId, connectedProvider, notifyError, fetchBridge, callIfMounted, navigate]);
 
   useEffect(() => {
     if (bridge.status === "successful") {

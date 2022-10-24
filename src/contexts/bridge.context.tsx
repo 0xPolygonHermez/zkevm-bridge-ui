@@ -43,7 +43,7 @@ interface EstimateBridgeGasParams {
   destinationAddress: string;
 }
 
-type GetBridgeParams = {
+type FetchBridgeParams = {
   env: Env;
   networkId: number;
   depositCount: number;
@@ -97,7 +97,7 @@ interface ClaimParams {
 interface BridgeContext {
   getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
   estimateBridgeGas: (params: EstimateBridgeGasParams) => Promise<Gas>;
-  getBridge: (params: GetBridgeParams) => Promise<Bridge>;
+  fetchBridge: (params: FetchBridgeParams) => Promise<Bridge>;
   fetchBridges: (params: FetchBridgesParams) => Promise<{
     bridges: Bridge[];
     total: number;
@@ -116,7 +116,7 @@ const bridgeContext = createContext<BridgeContext>({
   estimateBridgeGas: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  getBridge: () => {
+  fetchBridge: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
   fetchBridges: () => {
@@ -149,8 +149,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   type Price = BigNumber | null;
   type TokenPrices = Partial<Record<string, Price>>;
 
-  const getBridge = useCallback(
-    async ({ env, networkId, depositCount, abortSignal }: GetBridgeParams): Promise<Bridge> => {
+  const fetchBridge = useCallback(
+    async ({ env, networkId, depositCount, abortSignal }: FetchBridgeParams): Promise<Bridge> => {
       const apiUrl = env.bridgeApiUrl;
       const apiDeposit = await getDeposit({
         apiUrl,
@@ -864,7 +864,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     () => ({
       getMaxEtherBridge,
       estimateBridgeGas,
-      getBridge,
+      fetchBridge,
       fetchBridges,
       getPendingBridges,
       bridge,
@@ -873,7 +873,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     [
       getMaxEtherBridge,
       estimateBridgeGas,
-      getBridge,
+      fetchBridge,
       fetchBridges,
       getPendingBridges,
       bridge,
