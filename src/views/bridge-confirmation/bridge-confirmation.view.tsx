@@ -78,9 +78,9 @@ const BridgeConfirmation: FC = () => {
         const { from, to, token, amount } = formData;
         const destinationAddress = connectedProvider.data.account;
 
-        setEstimatedGas(
-          estimatedGas.status === "successful"
-            ? { status: "reloading", data: estimatedGas.data }
+        setEstimatedGas((oldEstimatedGas) =>
+          oldEstimatedGas.status === "successful"
+            ? { status: "reloading", data: oldEstimatedGas.data }
             : { status: "loading" }
         );
 
@@ -145,9 +145,7 @@ const BridgeConfirmation: FC = () => {
     classes,
     connectedProvider,
     estimateBridgeGas,
-    estimatedGas,
     formData,
-    isBridgeInProgress,
     notifyError,
     tokenBalance,
   ]);
