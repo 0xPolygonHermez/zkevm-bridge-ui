@@ -70,6 +70,7 @@ const BridgeConfirmation: FC = () => {
     status: "pending",
   });
   const [fadeClass, setFadeClass] = useState<string>();
+  const [shouldAmountFade, setShouldAmountFade] = useState(false);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -78,9 +79,9 @@ const BridgeConfirmation: FC = () => {
         const { from, to, token, amount } = formData;
         const destinationAddress = connectedProvider.data.account;
 
-        setEstimatedGas((oldEstimatedGas) =>
-          oldEstimatedGas.status === "successful"
-            ? { status: "reloading", data: oldEstimatedGas.data }
+        setEstimatedGas(
+          isAsyncTaskDataAvailable(estimatedGas)
+            ? { status: "reloading", data: estimatedGas.data }
             : { status: "loading" }
         );
 
@@ -98,24 +99,30 @@ const BridgeConfirmation: FC = () => {
             }
 
             const isTokenEther = token.address === ethersConstants.AddressZero;
+            const newMaxAmountConsideringFee = (() => {
+              if (isTokenEther) {
+                const amountConsideringFee = amount.add(newFee);
+                const tokenBalanceRemainder = amountConsideringFee.sub(tokenBalance);
+                const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
+                const newMaxAmountConsideringFee = !doesAmountExceedsTokenBalance
+                  ? amount.sub(tokenBalanceRemainder)
+                  : amount;
 
-            if (isTokenEther) {
-              const amountIncludingFee = amount.add(newFee);
-              const tokenBalanceRemainder = amountIncludingFee.sub(tokenBalance);
-              const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
-              const newMaxAmountIncludingFee = !doesAmountExceedsTokenBalance
-                ? amount.sub(tokenBalanceRemainder)
-                : amount;
+                return newMaxAmountConsideringFee;
+              } else {
+                return amount;
+              }
+            })();
 
-              setMaxAmountConsideringFee(newMaxAmountIncludingFee);
-            } else {
-              setMaxAmountConsideringFee(amount);
-            }
-
+            setShouldAmountFade(!maxAmountConsideringFee?.eq(newMaxAmountConsideringFee));
             setFadeClass(classes.fadeOut);
             setTimeout(() => {
               setEstimatedGas({ status: "successful", data: gas });
               setFadeClass(classes.fadeIn);
+              setMaxAmountConsideringFee(newMaxAmountConsideringFee);
+              setTimeout(() => {
+                setShouldAmountFade(false);
+              }, FADE_DURATION_IN_MS);
             }, FADE_DURATION_IN_MS);
           })
           .catch((error) => {
@@ -145,7 +152,9 @@ const BridgeConfirmation: FC = () => {
     classes,
     connectedProvider,
     estimateBridgeGas,
+    estimatedGas,
     formData,
+    maxAmountConsideringFee,
     notifyError,
     tokenBalance,
   ]);
@@ -443,12 +452,14 @@ const BridgeConfirmation: FC = () => {
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <Typography type="h1">{tokenAmountString}</Typography>
-        {fiatAmountString && (
-          <Typography className={classes.fiat} type="body2">
-            {fiatAmountString}
-          </Typography>
-        )}
+        <div className={shouldAmountFade && fadeClass ? fadeClass : ""}>
+          <Typography type="h1">{tokenAmountString}</Typography>
+          {fiatAmountString && (
+            <Typography className={classes.fiat} type="body2">
+              {fiatAmountString}
+            </Typography>
+          )}
+        </div>
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />
