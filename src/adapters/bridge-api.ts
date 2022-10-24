@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 import { z } from "zod";
 
 import { StrictSchema } from "src/utils/type-safety";
@@ -132,7 +132,7 @@ interface GetDepositsParams {
   ethereumAddress: string;
   limit?: number;
   offset?: number;
-  cancelToken?: AxiosRequestConfig["cancelToken"];
+  abortSignal?: AbortSignal;
 }
 
 export const getDeposits = ({
@@ -140,7 +140,7 @@ export const getDeposits = ({
   ethereumAddress,
   limit = PAGE_SIZE,
   offset = 0,
-  cancelToken,
+  abortSignal,
 }: GetDepositsParams): Promise<{
   deposits: DepositOutput[];
   total: number;
@@ -154,7 +154,7 @@ export const getDeposits = ({
         limit,
         offset,
       },
-      cancelToken,
+      signal: abortSignal,
     })
     .then((res) => {
       const parsedData = getDepositsResponseParser.safeParse(res.data);
@@ -174,12 +174,14 @@ interface GetDepositParams {
   apiUrl: string;
   networkId: number;
   depositCount: number;
+  abortSignal?: AbortSignal;
 }
 
 export const getDeposit = ({
   apiUrl,
   networkId,
   depositCount,
+  abortSignal,
 }: GetDepositParams): Promise<DepositOutput> => {
   return axios
     .request({
@@ -190,6 +192,7 @@ export const getDeposit = ({
         net_id: networkId,
         deposit_cnt: depositCount,
       },
+      signal: abortSignal,
     })
     .then((res) => {
       const parsedData = getDepositResponseParser.safeParse(res.data);
@@ -233,3 +236,7 @@ export const getMerkleProof = ({
       }
     });
 };
+
+export function isCancelRequestError(error: unknown): boolean {
+  return axios.isCancel(error);
+}

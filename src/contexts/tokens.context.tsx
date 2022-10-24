@@ -85,27 +85,15 @@ interface TokensContext {
   approve: (params: ApproveParams) => Promise<void>;
 }
 
-const tokensContextNotReadyMsg = "The bridge context is not yet ready";
+const tokensContextNotReadyMsg = "The tokens context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
-  addWrappedToken: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getTokenFromAddress: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getToken: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  getErc20TokenBalance: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  isContractAllowedToSpendToken: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
-  approve: () => {
-    return Promise.reject(tokensContextNotReadyMsg);
-  },
+  addWrappedToken: () => Promise.reject(tokensContextNotReadyMsg),
+  getTokenFromAddress: () => Promise.reject(tokensContextNotReadyMsg),
+  getToken: () => Promise.reject(tokensContextNotReadyMsg),
+  getErc20TokenBalance: () => Promise.reject(tokensContextNotReadyMsg),
+  isContractAllowedToSpendToken: () => Promise.reject(tokensContextNotReadyMsg),
+  approve: () => Promise.reject(tokensContextNotReadyMsg),
 });
 
 const TokensProvider: FC<PropsWithChildren> = (props) => {
