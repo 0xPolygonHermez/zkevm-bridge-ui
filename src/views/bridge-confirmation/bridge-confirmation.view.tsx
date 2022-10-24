@@ -39,6 +39,7 @@ import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info
 import { Gas } from "src/domain";
 
 const FADE_DURATION_IN_SECONDS = 0.5;
+const FADE_DURATION_IN_MS = FADE_DURATION_IN_SECONDS * 1000;
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -68,6 +69,7 @@ const BridgeConfirmation: FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<AsyncTask<Gas, string>>({
     status: "pending",
   });
+  const [fadeClass, setFadeClass] = useState<string>();
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -111,7 +113,11 @@ const BridgeConfirmation: FC = () => {
               setMaxAmountIncludingFee(amount);
             }
 
-            setEstimatedGas({ status: "successful", data: gas });
+            setFadeClass(classes.fadeOut);
+            setTimeout(() => {
+              setEstimatedGas({ status: "successful", data: gas });
+              setFadeClass(classes.fadeIn);
+            }, FADE_DURATION_IN_MS);
           })
           .catch((error) => {
             if (isEthersInsufficientFundsError(error)) {
@@ -137,6 +143,7 @@ const BridgeConfirmation: FC = () => {
     }
   }, [
     callIfMounted,
+    classes,
     connectedProvider,
     estimateBridgeGas,
     estimatedGas,
@@ -458,7 +465,7 @@ const BridgeConfirmation: FC = () => {
         </div>
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
-          <div className={classes.fee}>
+          <div className={`${classes.fee} ${fadeClass || ""}`}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
             <Typography type="body1">{feeString}</Typography>
           </div>
