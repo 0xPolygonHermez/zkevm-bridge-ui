@@ -37,6 +37,7 @@ import BridgeButton from "src/views/bridge-confirmation/components/bridge-button
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
 import { Gas } from "src/domain";
+import useDebouncedBlock from "src/hooks/use-debounced-block";
 
 const FADE_DURATION_IN_SECONDS = 0.5;
 const FADE_DURATION_IN_MS = FADE_DURATION_IN_SECONDS * 1000;
@@ -71,6 +72,7 @@ const BridgeConfirmation: FC = () => {
   });
   const [fadeClass, setFadeClass] = useState<string>();
   const [shouldAmountFade, setShouldAmountFade] = useState(false);
+  const addBlockListener = useDebouncedBlock(connectedProvider);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
@@ -79,9 +81,9 @@ const BridgeConfirmation: FC = () => {
         const { from, to, token, amount } = formData;
         const destinationAddress = connectedProvider.data.account;
 
-        setEstimatedGas(
-          isAsyncTaskDataAvailable(estimatedGas)
-            ? { status: "reloading", data: estimatedGas.data }
+        setEstimatedGas((oldEstimatedGas) =>
+          isAsyncTaskDataAvailable(oldEstimatedGas)
+            ? { status: "reloading", data: oldEstimatedGas.data }
             : { status: "loading" }
         );
 
@@ -141,13 +143,10 @@ const BridgeConfirmation: FC = () => {
           });
       };
 
-      connectedProvider.data.provider.on("block", onBlock);
-
-      return () => {
-        connectedProvider.data.provider.off("block", onBlock);
-      };
+      addBlockListener(onBlock);
     }
   }, [
+    addBlockListener,
     callIfMounted,
     classes,
     connectedProvider,
