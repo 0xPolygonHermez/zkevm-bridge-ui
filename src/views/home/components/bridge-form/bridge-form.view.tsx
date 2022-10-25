@@ -305,7 +305,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
     );
   }
 
-  const fromBalance = tokens?.find((tkn) => tkn.address === token.address)?.balance;
+  const balanceFrom = tokens?.find((tkn) => tkn.address === token.address)?.balance;
 
   const tokenListSearchError =
     tokenListCustomToken.status === "failed"
@@ -333,7 +333,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {`${fromBalance ? formatTokenAmount(fromBalance, token) : "--"} ${token.symbol}`}
+              {`${formatTokenAmount(balanceFrom || BigNumber.from(0), token)} ${token.symbol}`}
             </Typography>
           </div>
         </div>
@@ -346,7 +346,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <AmountInput
             value={amount}
             token={token}
-            balance={fromBalance || BigNumber.from(0)}
+            balance={balanceFrom || BigNumber.from(0)}
             from={selectedChains.from}
             maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
@@ -368,7 +368,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {`${balanceTo ? formatTokenAmount(balanceTo, token) : "--"} ${token.symbol}`}
+              {`${formatTokenAmount(balanceTo || BigNumber.from(0), token)} ${token.symbol}`}
             </Typography>
           </div>
         </div>

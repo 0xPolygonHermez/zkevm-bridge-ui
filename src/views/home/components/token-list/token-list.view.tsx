@@ -1,4 +1,5 @@
 import { FC, MouseEvent, useEffect, useState, useRef } from "react";
+import { BigNumber } from "ethers";
 
 import useListStyles from "src/views/home/components/token-list/token-list.styles";
 import TokenDetails from "src/views/home/components/token-details/token-details.view";
@@ -164,7 +165,7 @@ const TokenList: FC<TokenListProps> = ({
                         ) : (
                           <div className={classes.tokenRightElements}>
                             <Typography type="body2" className={classes.tokenBalance}>
-                              {`${token.balance ? formatTokenAmount(token.balance, token) : "--"} ${
+                              {`${formatTokenAmount(token.balance || BigNumber.from(0), token)} ${
                                 token.symbol
                               }`}
                             </Typography>
