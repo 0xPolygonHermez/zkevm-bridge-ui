@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useRef } from "react";
+import { FC, useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { BigNumber } from "ethers";
 
@@ -92,8 +92,6 @@ const BridgeDetails: FC = () => {
     status: bridge.status === "successful" ? bridge.data.status : undefined,
   });
 
-  const fetchBridgeAbortController = useRef<AbortController>(new AbortController());
-
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
       setIsFinaliseButtonDisabled(true);
@@ -128,7 +126,7 @@ const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env && connectedProvider.status === "successful" && tokens) {
-      fetchBridgeAbortController.current = new AbortController();
+      const abortController = new AbortController();
       const parsedBridgeId = deserializeBridgeId(bridgeId);
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
@@ -136,7 +134,7 @@ const BridgeDetails: FC = () => {
           env,
           depositCount,
           networkId,
-          abortSignal: fetchBridgeAbortController.current.signal,
+          abortSignal: abortController.signal,
         })
           .then((bridge) => {
             callIfMounted(() => {
@@ -171,7 +169,7 @@ const BridgeDetails: FC = () => {
         });
       }
       return () => {
-        fetchBridgeAbortController.current.abort();
+        abortController.abort();
       };
     }
   }, [env, tokens, bridgeId, connectedProvider, notifyError, fetchBridge, callIfMounted, navigate]);
