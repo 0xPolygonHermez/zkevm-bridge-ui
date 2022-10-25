@@ -116,7 +116,10 @@ const BridgeConfirmation: FC = () => {
               }
             })();
 
-            setShouldAmountFade(!maxAmountConsideringFee?.eq(newMaxAmountConsideringFee));
+            setMaxAmountConsideringFee((oldMaxAmountConsideringFee) => {
+              setShouldAmountFade(!oldMaxAmountConsideringFee?.eq(newMaxAmountConsideringFee));
+              return oldMaxAmountConsideringFee;
+            });
             setFadeClass(classes.fadeOut);
             setTimeout(() => {
               setEstimatedGas({ status: "successful", data: gas });
@@ -153,7 +156,6 @@ const BridgeConfirmation: FC = () => {
     estimateBridgeGas,
     estimatedGas,
     formData,
-    maxAmountConsideringFee,
     notifyError,
     tokenBalance,
   ]);
