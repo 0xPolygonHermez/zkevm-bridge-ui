@@ -127,7 +127,6 @@ const BridgeConfirmation: FC = () => {
     }
   }, [
     callIfMounted,
-    classes,
     connectedProvider,
     estimateBridgeGas,
     estimatedGas,
@@ -429,14 +428,12 @@ const BridgeConfirmation: FC = () => {
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <div>
-          <Typography type="h1">{tokenAmountString}</Typography>
-          {fiatAmountString && (
-            <Typography className={classes.fiat} type="body2">
-              {fiatAmountString}
-            </Typography>
-          )}
-        </div>
+        <Typography type="h1">{tokenAmountString}</Typography>
+        {fiatAmountString && (
+          <Typography className={classes.fiat} type="body2">
+            {fiatAmountString}
+          </Typography>
+        )}
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />

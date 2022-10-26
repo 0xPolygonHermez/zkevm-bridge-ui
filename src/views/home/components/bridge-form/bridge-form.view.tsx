@@ -217,6 +217,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
   );
 
   useEffect(() => {
+    notifyError(new Error("WTF"));
     // Load the balances of all the tokens in the primary network (From)
     if (selectedChains) {
       const tokens = getTokens(selectedChains.from);
@@ -233,7 +234,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
         });
       });
     }
-  }, [selectedChains, callIfMounted, getTokenBalance, getTokens]);
+  }, [selectedChains, callIfMounted, getTokenBalance, getTokens, notifyError]);
 
   useEffect(() => {
     // Load the balance of the selected token in the secondary network (To)
