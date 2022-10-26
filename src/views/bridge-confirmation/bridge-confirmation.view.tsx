@@ -37,16 +37,10 @@ import BridgeButton from "src/views/bridge-confirmation/components/bridge-button
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
 import { Gas } from "src/domain";
-import useDebouncedBlock from "src/hooks/use-debounced-block";
-
-const FADE_DURATION_IN_SECONDS = 0.5;
-const FADE_DURATION_IN_MS = FADE_DURATION_IN_SECONDS * 1000;
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
-  const classes = useBridgeConfirmationStyles({
-    fadeDurationInSeconds: FADE_DURATION_IN_SECONDS,
-  });
+  const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
@@ -70,86 +64,68 @@ const BridgeConfirmation: FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<AsyncTask<Gas, string>>({
     status: "pending",
   });
-  const [fadeClass, setFadeClass] = useState<string>();
-  const [shouldAmountFade, setShouldAmountFade] = useState(false);
-  const addBlockListener = useDebouncedBlock(connectedProvider);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
-    if (connectedProvider.status === "successful" && formData && tokenBalance) {
-      const onBlock = () => {
-        const { from, to, token, amount } = formData;
-        const destinationAddress = connectedProvider.data.account;
+    if (
+      connectedProvider.status === "successful" &&
+      estimatedGas.status === "pending" &&
+      formData &&
+      tokenBalance
+    ) {
+      const { from, to, token, amount } = formData;
+      const destinationAddress = connectedProvider.data.account;
 
-        setEstimatedGas((oldEstimatedGas) =>
-          isAsyncTaskDataAvailable(oldEstimatedGas)
-            ? { status: "reloading", data: oldEstimatedGas.data }
-            : { status: "loading" }
-        );
+      setEstimatedGas({ status: "loading" });
 
-        void estimateBridgeGas({
-          from,
-          to,
-          token,
-          destinationAddress,
-        })
-          .then((gas: Gas) => {
-            const newFee = calculateFee(gas);
+      void estimateBridgeGas({
+        from,
+        to,
+        token,
+        destinationAddress,
+      })
+        .then((gas: Gas) => {
+          const newFee = calculateFee(gas);
 
-            if (!newFee) {
-              setEstimatedGas({ status: "failed", error: "Gas data is not available" });
-            }
+          if (!newFee) {
+            setEstimatedGas({ status: "failed", error: "Gas data is not available" });
+          }
 
-            const isTokenEther = token.address === ethersConstants.AddressZero;
-            const newMaxAmountConsideringFee = (() => {
-              if (isTokenEther) {
-                const amountConsideringFee = amount.add(newFee);
-                const tokenBalanceRemainder = amountConsideringFee.sub(tokenBalance);
-                const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
-                const newMaxAmountConsideringFee = !doesAmountExceedsTokenBalance
-                  ? amount.sub(tokenBalanceRemainder)
-                  : amount;
+          const isTokenEther = token.address === ethersConstants.AddressZero;
+          const newMaxAmountConsideringFee = (() => {
+            if (isTokenEther) {
+              const amountConsideringFee = amount.add(newFee);
+              const tokenBalanceRemainder = amountConsideringFee.sub(tokenBalance);
+              const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
+              const newMaxAmountConsideringFee = !doesAmountExceedsTokenBalance
+                ? amount.sub(tokenBalanceRemainder)
+                : amount;
 
-                return newMaxAmountConsideringFee;
-              } else {
-                return amount;
-              }
-            })();
-
-            setMaxAmountConsideringFee((oldMaxAmountConsideringFee) => {
-              setShouldAmountFade(!oldMaxAmountConsideringFee?.eq(newMaxAmountConsideringFee));
-              return oldMaxAmountConsideringFee;
-            });
-            setFadeClass(classes.fadeOut);
-            setTimeout(() => {
-              setEstimatedGas({ status: "successful", data: gas });
-              setFadeClass(classes.fadeIn);
-              setMaxAmountConsideringFee(newMaxAmountConsideringFee);
-              setTimeout(() => {
-                setShouldAmountFade(false);
-              }, FADE_DURATION_IN_MS);
-            }, FADE_DURATION_IN_MS);
-          })
-          .catch((error) => {
-            if (isEthersInsufficientFundsError(error)) {
-              callIfMounted(() => {
-                setEstimatedGas({
-                  status: "failed",
-                  error: "You don't have enough ETH to pay for the fees",
-                });
-              });
+              return newMaxAmountConsideringFee;
             } else {
-              callIfMounted(() => {
-                notifyError(error);
-              });
+              return amount;
             }
-          });
-      };
+          })();
 
-      addBlockListener(onBlock);
+          setMaxAmountConsideringFee(newMaxAmountConsideringFee);
+          setEstimatedGas({ status: "successful", data: gas });
+        })
+        .catch((error) => {
+          if (isEthersInsufficientFundsError(error)) {
+            callIfMounted(() => {
+              setEstimatedGas({
+                status: "failed",
+                error: "You don't have enough ETH to pay for the fees",
+              });
+            });
+          } else {
+            callIfMounted(() => {
+              notifyError(error);
+            });
+          }
+        });
     }
   }, [
-    addBlockListener,
     callIfMounted,
     classes,
     connectedProvider,
@@ -453,7 +429,7 @@ const BridgeConfirmation: FC = () => {
       <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
       <Card className={classes.card}>
         <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
-        <div className={shouldAmountFade && fadeClass ? fadeClass : ""}>
+        <div>
           <Typography type="h1">{tokenAmountString}</Typography>
           {fiatAmountString && (
             <Typography className={classes.fiat} type="body2">
@@ -474,7 +450,7 @@ const BridgeConfirmation: FC = () => {
         </div>
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
-          <div className={`${classes.fee} ${fadeClass || ""}`}>
+          <div className={classes.fee}>
             <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
             <Typography type="body1">{feeString}</Typography>
           </div>
