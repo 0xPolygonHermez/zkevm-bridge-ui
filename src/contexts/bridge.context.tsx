@@ -12,8 +12,9 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import {
-  BRIDGE_CALL_GAS_INCREASE_PERCENTAGE,
+  BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE,
   FIAT_DISPLAY_PRECISION,
+  GAS_PRICE_INCREASE_PERCENTAGE,
   PENDING_TX_TIMEOUT,
 } from "src/constants";
 import { multiplyAmounts } from "src/utils/amounts";
@@ -683,7 +684,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               .then((gasLimit) => {
                 const gasIncrease = gasLimit
                   .div(BigNumber.from(100))
-                  .mul(BRIDGE_CALL_GAS_INCREASE_PERCENTAGE);
+                  .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
 
                 return gasLimit.add(gasIncrease);
               })
@@ -691,15 +692,22 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       const { maxFeePerGas, gasPrice } = await from.provider.getFeeData();
 
-      return maxFeePerGas
-        ? { type: "eip-1559", data: { gasLimit, maxFeePerGas } }
-        : {
-            type: "legacy",
-            data: {
-              gasLimit,
-              gasPrice: gasPrice ? gasPrice : await from.provider.getGasPrice(),
-            },
-          };
+      if (maxFeePerGas) {
+        return { type: "eip-1559", data: { gasLimit, maxFeePerGas } };
+      } else {
+        const legacyGasPrice = gasPrice || (await from.provider.getGasPrice());
+        const gasPriceIncrease = legacyGasPrice
+          .div(BigNumber.from(100))
+          .mul(GAS_PRICE_INCREASE_PERCENTAGE);
+
+        return {
+          type: "legacy",
+          data: {
+            gasLimit,
+            gasPrice: legacyGasPrice.add(gasPriceIncrease),
+          },
+        };
+      }
     },
     []
   );

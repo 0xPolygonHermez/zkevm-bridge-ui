@@ -2,20 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-interface StylesProps {
-  fadeDurationInSeconds: number;
-}
-
 const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
-  fadeIn: {
-    transition: ({ fadeDurationInSeconds }: StylesProps) =>
-      `opacity ${fadeDurationInSeconds}s ease-in-out`,
-  },
-  fadeOut: {
-    opacity: 0,
-    transition: ({ fadeDurationInSeconds }: StylesProps) =>
-      `opacity ${fadeDurationInSeconds}s ease-in-out`,
-  },
   card: {
     width: "100%",
     maxWidth: theme.maxWidth,
