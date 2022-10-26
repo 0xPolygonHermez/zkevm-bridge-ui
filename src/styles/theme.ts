@@ -10,7 +10,7 @@ const theme = {
     grey: {
       light: "#f0f1f6",
       main: "#e2e5ee",
-      dark: "#7c7e96",
+      dark: "#78798d",
       veryDark: "#363740",
     },
     warning: {
