@@ -9,7 +9,7 @@ import Icon from "src/views/shared/icon/icon.view";
 import Portal from "src/views/shared/portal/portal.view";
 import Spinner from "src/views/shared/spinner/spinner.view";
 import { isChainCustomToken } from "src/adapters/storage";
-import { AsyncTask } from "src/utils/types";
+import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { ReactComponent as ArrowLeftIcon } from "src/assets/icons/arrow-left.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
@@ -64,7 +64,6 @@ const TokenList: FC<TokenListProps> = ({
   const [screen, setScreen] = useState<Screen>({
     type: "token-list",
   });
-
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -164,11 +163,34 @@ const TokenList: FC<TokenListProps> = ({
                           </button>
                         ) : (
                           <div className={classes.tokenRightElements}>
-                            <Typography type="body2" className={classes.tokenBalance}>
-                              {`${formatTokenAmount(token.balance || BigNumber.from(0), token)} ${
-                                token.symbol
-                              }`}
-                            </Typography>
+                            {(() => {
+                              if (!token.balance) {
+                                return <></>;
+                              }
+
+                              switch (token.balance.status) {
+                                case "pending":
+                                case "loading": {
+                                  return <Spinner size={18} />;
+                                }
+                                case "reloading":
+                                case "successful":
+                                case "failed": {
+                                  const formattedTokenAmount = formatTokenAmount(
+                                    isAsyncTaskDataAvailable(token.balance)
+                                      ? token.balance.data
+                                      : BigNumber.from(0),
+                                    token
+                                  );
+
+                                  return (
+                                    <Typography type="body2" className={classes.tokenBalance}>
+                                      {`${formattedTokenAmount} ${token.symbol}`}
+                                    </Typography>
+                                  );
+                                }
+                              }
+                            })()}
                             <button
                               className={classes.tokenInfoButton}
                               onClick={() => {

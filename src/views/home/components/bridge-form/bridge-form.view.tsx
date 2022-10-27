@@ -16,7 +16,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { AsyncTask } from "src/utils/types";
+import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -63,13 +63,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const [tokenListCustomToken, setTokenListCustomToken] = useState<AsyncTask<Token, string>>({
     status: "pending",
   });
-
-  const getTokens = useCallback(
-    (chain: Chain) => {
-      return [...getChainCustomTokens(chain), ...(defaultTokens || [getEtherToken(chain)])];
-    },
-    [defaultTokens]
-  );
 
   const getTokenFilterByTerm = (term: string) => (token: Token) =>
     term.length === 0 ||
@@ -119,8 +112,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
         getTokenBalance(token, selectedChains.from)
           .then((balance) => {
             callIfMounted(() => {
-              setFilteredTokens([{ ...token, balance }]);
-              setTokenListCustomToken({ status: "successful", data: { ...token, balance } });
+              setFilteredTokens([{ ...token, balance: { status: "successful", data: balance } }]);
+              setTokenListCustomToken({
+                status: "successful",
+                data: { ...token, balance: { status: "successful", data: balance } },
+              });
             });
           })
           .catch(() => {
@@ -217,23 +213,69 @@ const BridgeForm: FC<BridgeFormProps> = ({
   );
 
   useEffect(() => {
-    // Load the balances of all the tokens in the primary network (From)
-    if (selectedChains) {
-      const tokens = getTokens(selectedChains.from);
-      void Promise.all(
-        tokens.map(
-          (token: Token): Promise<Token> =>
-            getTokenBalance(token, selectedChains.from)
-              .then((balance) => ({ ...token, balance }))
-              .catch(() => ({ ...token, balance: undefined }))
-        )
-      ).then((tokensWithBalance) => {
-        callIfMounted(() => {
-          setTokens(tokensWithBalance);
-        });
+    // Load all the tokens for the selected chain without their balance
+    if (!tokens && selectedChains && defaultTokens) {
+      const { from } = selectedChains;
+      const chainTokens = [...getChainCustomTokens(from), ...defaultTokens];
+
+      setTokens(
+        chainTokens.map((token) => ({
+          ...token,
+          balance: {
+            status: "pending",
+          },
+        }))
+      );
+    }
+  }, [defaultTokens, selectedChains, tokens]);
+
+  useEffect(() => {
+    // Load the balances of all the tokens of the primary chain (from)
+    const areTokensPending = tokens?.some((tkn) => tkn.balance?.status === "pending");
+
+    if (selectedChains && tokens && areTokensPending) {
+      const getUpdatedTokens = (tokens: Token[] | undefined, tokenWithBalance: Token) =>
+        tokens
+          ? tokens.map((tkn) => (tkn.address === tokenWithBalance.address ? tokenWithBalance : tkn))
+          : undefined;
+
+      setTokens((oldTokens) =>
+        !oldTokens
+          ? undefined
+          : oldTokens.map((tkn) => ({ ...tkn, balance: { status: "loading" } }))
+      );
+
+      tokens.map((token: Token) => {
+        getTokenBalance(token, selectedChains.from)
+          .then((balance): void => {
+            callIfMounted(() => {
+              const updatedToken: Token = {
+                ...token,
+                balance: {
+                  status: "successful",
+                  data: balance,
+                },
+              };
+
+              setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
+            });
+          })
+          .catch(() => {
+            callIfMounted(() => {
+              const updatedToken: Token = {
+                ...token,
+                balance: {
+                  status: "failed",
+                  error: "Couldn't retrieve token balance",
+                },
+              };
+
+              setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
+            });
+          });
       });
     }
-  }, [selectedChains, callIfMounted, getTokenBalance, getTokens, notifyError]);
+  }, [callIfMounted, defaultTokens, getTokenBalance, selectedChains, tokens]);
 
   useEffect(() => {
     // Load the balance of the selected token in the secondary network (To)
@@ -332,9 +374,32 @@ const BridgeForm: FC<BridgeFormProps> = ({
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">
-              {`${formatTokenAmount(balanceFrom || BigNumber.from(0), token)} ${token.symbol}`}
-            </Typography>
+            {(() => {
+              if (!balanceFrom) {
+                return <></>;
+              }
+
+              switch (balanceFrom.status) {
+                case "pending":
+                case "loading": {
+                  return <Spinner size={20} />;
+                }
+                case "reloading":
+                case "successful":
+                case "failed": {
+                  const formattedTokenAmount = formatTokenAmount(
+                    isAsyncTaskDataAvailable(balanceFrom) ? balanceFrom.data : BigNumber.from(0),
+                    token
+                  );
+
+                  return (
+                    <Typography type="body1">
+                      {`${formattedTokenAmount} ${token.symbol}`}
+                    </Typography>
+                  );
+                }
+              }
+            })()}
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
@@ -346,7 +411,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <AmountInput
             value={amount}
             token={token}
-            balance={balanceFrom || BigNumber.from(0)}
+            balance={
+              balanceFrom && isAsyncTaskDataAvailable(balanceFrom)
+                ? balanceFrom.data
+                : BigNumber.from(0)
+            }
             from={selectedChains.from}
             maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
