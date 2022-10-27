@@ -36,15 +36,20 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     border: "none",
     backgroundColor: "transparent",
     cursor: "pointer",
+    borderRadius: "50%",
     marginLeft: theme.spacing(2.5),
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.75),
+    transition: theme.hoverTransition,
+    "&:hover": {
+      background: theme.palette.grey.veryDark,
+    },
   },
   closeIcon: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
     "& rect": {
       fill: theme.palette.white,
     },
@@ -56,6 +61,10 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     borderRadius: 12,
     padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
     cursor: "pointer",
+    transition: theme.hoverTransition,
+    "&:hover": {
+      backgroundColor: theme.palette.grey.dark,
+    },
   },
 }));
 
