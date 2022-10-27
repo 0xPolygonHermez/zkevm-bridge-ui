@@ -142,7 +142,7 @@ const Activity: FC = () => {
     if (
       env &&
       isAsyncTaskDataAvailable(connectedProvider) &&
-      isAsyncTaskDataAvailable<Bridge[], undefined, true>(apiBridges) &&
+      apiBridges.status === "successful" &&
       apiBridges.data.length < total
     ) {
       setApiBridges({ status: "loading-more-items", data: apiBridges.data });
