@@ -327,9 +327,8 @@ const Activity: FC = () => {
     case "successful":
     case "loading-more-items":
     case "reloading": {
-      const filteredList = displayAll
-        ? mergeBridges(apiBridges.data, pendingBridges.data)
-        : pendingBridges.data;
+      const allBridges = mergeBridges(apiBridges.data, pendingBridges.data);
+      const filteredList = displayAll ? allBridges : pendingBridges.data;
 
       return (
         <>
@@ -337,7 +336,7 @@ const Activity: FC = () => {
           <div className={classes.stickyContent} ref={headerBorderTarget}>
             <div className={classes.contentWrapper}>
               <Header title="Activity" backTo={{ routeKey: "home" }} />
-              <Tabs all={apiBridges.data.length} pending={pendingBridges.data.length} />
+              <Tabs all={allBridges.length} pending={pendingBridges.data.length} />
             </div>
           </div>
           <div className={classes.contentWrapper}>
