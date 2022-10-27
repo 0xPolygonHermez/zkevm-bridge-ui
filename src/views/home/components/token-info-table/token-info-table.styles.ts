@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
+const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
   wrapper: {
     background: theme.palette.white,
   },
@@ -65,4 +65,4 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTokenDetailsStyles;
+export default useTokenInfoTableStyles;

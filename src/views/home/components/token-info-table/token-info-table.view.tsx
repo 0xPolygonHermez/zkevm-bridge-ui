@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { constants as ethersConstants } from "ethers";
 
-import useTokenDetailsStyles from "src/views/home/components/token-details/token-details.styles";
+import useTokenInfoTableStyles from "src/views/home/components/token-info-table/token-info-table.styles";
 import Typography from "src/views/shared/typography/typography.view";
 import { getShortenedEthereumAddress } from "src/utils/addresses";
 import { copyToClipboard } from "src/utils/browser";
@@ -10,13 +10,13 @@ import { useEnvContext } from "src/contexts/env.context";
 import { ReactComponent as CopyIcon } from "src/assets/icons/copy.svg";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 
-interface TokenDetailsProps {
+interface TokenInfoTableProps {
   token: Token;
   className?: string;
 }
 
-const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
-  const classes = useTokenDetailsStyles();
+const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
+  const classes = useTokenInfoTableStyles();
   const env = useEnvContext();
 
   if (!env) {
@@ -178,4 +178,4 @@ const TokenDetails: FC<TokenDetailsProps> = ({ token, className }) => {
   }
 };
 
-export default TokenDetails;
+export default TokenInfoTable;
