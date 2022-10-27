@@ -16,7 +16,6 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
-import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
@@ -24,6 +23,7 @@ import { Chain, Token, FormData } from "src/domain";
 import { getEtherToken } from "src/constants";
 import Spinner from "src/views/shared/spinner/spinner.view";
 import TokenSelector from "src/views/home/components/token-selector/token-selector.view";
+import TokenBalance from "src/views/shared/token-balance/token-balance.view";
 
 interface BridgeFormProps {
   account: string;
@@ -300,34 +300,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
-            {(() => {
-              const spinner = <Spinner size={20} />;
-
-              if (!balanceFrom) {
-                return spinner;
-              }
-
-              switch (balanceFrom.status) {
-                case "pending":
-                case "loading": {
-                  return spinner;
-                }
-                case "reloading":
-                case "successful":
-                case "failed": {
-                  const formattedTokenAmount = formatTokenAmount(
-                    isAsyncTaskDataAvailable(balanceFrom) ? balanceFrom.data : BigNumber.from(0),
-                    token
-                  );
-
-                  return (
-                    <Typography type="body1">
-                      {`${formattedTokenAmount} ${token.symbol}`}
-                    </Typography>
-                  );
-                }
-              }
-            })()}
+            <TokenBalance
+              token={{ ...token, balance: balanceFrom }}
+              spinnerSize={14}
+              typographyProps={{ type: "body1" }}
+            />
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
@@ -364,36 +341,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
-            <Typography type="body1">
-              {(() => {
-                const spinner = <Spinner size={20} />;
-
-                if (!balanceTo) {
-                  return spinner;
-                }
-
-                switch (balanceTo.status) {
-                  case "pending":
-                  case "loading":
-                  case "reloading": {
-                    return spinner;
-                  }
-                  case "successful":
-                  case "failed": {
-                    const formattedTokenAmount = formatTokenAmount(
-                      isAsyncTaskDataAvailable(balanceTo) ? balanceTo.data : BigNumber.from(0),
-                      token
-                    );
-
-                    return (
-                      <Typography type="body1">
-                        {`${formattedTokenAmount} ${token.symbol}`}
-                      </Typography>
-                    );
-                  }
-                }
-              })()}
-            </Typography>
+            <TokenBalance
+              token={{ ...token, balance: balanceTo }}
+              spinnerSize={14}
+              typographyProps={{ type: "body1" }}
+            />
           </div>
         </div>
       </Card>

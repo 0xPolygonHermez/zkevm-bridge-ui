@@ -6,8 +6,7 @@ import Icon from "src/views/shared/icon/icon.view";
 
 import Spinner from "src/views/shared/spinner/spinner.view";
 import { isChainCustomToken } from "src/adapters/storage";
-import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
-import { formatTokenAmount } from "src/utils/amounts";
+import { AsyncTask } from "src/utils/types";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
@@ -16,6 +15,7 @@ import { Chain, Token } from "src/domain";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import TokenBalance from "src/views/shared/token-balance/token-balance.view";
 
 interface SelectedChains {
   from: Chain;
@@ -244,34 +244,11 @@ const TokenList: FC<TokenListProps> = ({
                   </button>
                 ) : (
                   <div className={classes.tokenRightElements}>
-                    {(() => {
-                      if (!token.balance) {
-                        return <></>;
-                      }
-
-                      switch (token.balance.status) {
-                        case "pending":
-                        case "loading": {
-                          return <Spinner size={18} />;
-                        }
-                        case "reloading":
-                        case "successful":
-                        case "failed": {
-                          const formattedTokenAmount = formatTokenAmount(
-                            isAsyncTaskDataAvailable(token.balance)
-                              ? token.balance.data
-                              : BigNumber.from(0),
-                            token
-                          );
-
-                          return (
-                            <Typography type="body2" className={classes.tokenBalance}>
-                              {`${formattedTokenAmount} ${token.symbol}`}
-                            </Typography>
-                          );
-                        }
-                      }
-                    })()}
+                    <TokenBalance
+                      token={token}
+                      spinnerSize={16}
+                      typographyProps={{ type: "body2", className: classes.tokenBalance }}
+                    />
                     <button
                       className={classes.tokenInfoButton}
                       onClick={() => onNavigateToTokenDetails(token)}
