@@ -15,7 +15,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { isAsyncTaskDataAvailable } from "src/utils/types";
+import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import { formatTokenAmount } from "src/utils/amounts";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
@@ -51,7 +51,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const { notifyError } = useErrorContext();
   const { getErc20TokenBalance, tokens: defaultTokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
-  const [balanceTo, setBalanceTo] = useState<BigNumber>();
+  const [balanceTo, setBalanceTo] = useState<AsyncTask<BigNumber, string>>({ status: "pending" });
   const [inputError, setInputError] = useState<string>();
   const [selectedChains, setSelectedChains] = useState<SelectedChains>();
   const [token, setToken] = useState<Token>();
@@ -140,7 +140,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
 
   useEffect(() => {
     // Load all the tokens for the selected chain without their balance
-    if (!tokens && selectedChains && defaultTokens) {
+    if (selectedChains && defaultTokens) {
       const { from } = selectedChains;
       const chainTokens = [...getChainCustomTokens(from), ...defaultTokens];
 
@@ -153,7 +153,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
         }))
       );
     }
-  }, [defaultTokens, selectedChains, tokens]);
+  }, [defaultTokens, selectedChains]);
 
   useEffect(() => {
     // Load the balances of all the tokens of the primary chain (from)
@@ -207,18 +207,25 @@ const BridgeForm: FC<BridgeFormProps> = ({
     // Load the balance of the selected token in the secondary network (To)
     if (selectedChains && token) {
       const isTokenEther = token.address === ethersConstants.AddressZero;
+
+      setBalanceTo((currentBalanceTo) =>
+        currentBalanceTo.status === "successful"
+          ? { status: "reloading", data: currentBalanceTo.data }
+          : { status: "loading" }
+      );
+
       if (isTokenEther) {
         void selectedChains.to.provider
           .getBalance(account)
           .then((balance) =>
             callIfMounted(() => {
-              setBalanceTo(balance);
+              setBalanceTo({ status: "successful", data: balance });
             })
           )
           .catch((error) => {
             callIfMounted(() => {
               notifyError(error);
-              setBalanceTo(undefined);
+              setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
             });
           });
       } else {
@@ -229,12 +236,12 @@ const BridgeForm: FC<BridgeFormProps> = ({
         })
           .then((balance) =>
             callIfMounted(() => {
-              setBalanceTo(balance);
+              setBalanceTo({ status: "successful", data: balance });
             })
           )
           .catch(() =>
             callIfMounted(() => {
-              setBalanceTo(undefined);
+              setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
             })
           );
       }
@@ -294,14 +301,16 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             {(() => {
+              const spinner = <Spinner size={20} />;
+
               if (!balanceFrom) {
-                return <></>;
+                return spinner;
               }
 
               switch (balanceFrom.status) {
                 case "pending":
                 case "loading": {
-                  return <Spinner size={20} />;
+                  return spinner;
                 }
                 case "reloading":
                 case "successful":
@@ -356,7 +365,34 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <Typography type="body1">
-              {`${formatTokenAmount(balanceTo || BigNumber.from(0), token)} ${token.symbol}`}
+              {(() => {
+                const spinner = <Spinner size={20} />;
+
+                if (!balanceTo) {
+                  return spinner;
+                }
+
+                switch (balanceTo.status) {
+                  case "pending":
+                  case "loading":
+                  case "reloading": {
+                    return spinner;
+                  }
+                  case "successful":
+                  case "failed": {
+                    const formattedTokenAmount = formatTokenAmount(
+                      isAsyncTaskDataAvailable(balanceTo) ? balanceTo.data : BigNumber.from(0),
+                      token
+                    );
+
+                    return (
+                      <Typography type="body1">
+                        {`${formattedTokenAmount} ${token.symbol}`}
+                      </Typography>
+                    );
+                  }
+                }
+              })()}
             </Typography>
           </div>
         </div>
