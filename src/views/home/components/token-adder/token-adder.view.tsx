@@ -20,7 +20,7 @@ const TokenAdder: FC<TokenAdderProps> = ({ token, onClose, onAddToken, onNavigat
   const classes = useTokenAdderStyles();
 
   return (
-    <div>
+    <div className={classes.tokenAdder}>
       <div className={classes.header}>
         <button className={classes.backButton} onClick={onNavigateToTokenList}>
           <ArrowLeftIcon className={classes.backButtonIcon} />

@@ -81,7 +81,6 @@ const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(1),
   },
   addTokenButton: {
-    width: "100%",
     margin: theme.spacing(2),
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.white,
