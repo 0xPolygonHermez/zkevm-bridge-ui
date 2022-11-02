@@ -3,6 +3,10 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useTokenListStyles = createUseStyles((theme: Theme) => ({
+  tokenList: {
+    display: "flex",
+    flexDirection: "column",
+  },
   header: {
     display: "flex",
     alignItems: "center",
@@ -74,7 +78,7 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
   },
   list: {
     overflowY: "auto",
-    height: 270,
+    height: 376,
     margin: [theme.spacing(2)],
     "&::-webkit-scrollbar": {
       width: "4px",

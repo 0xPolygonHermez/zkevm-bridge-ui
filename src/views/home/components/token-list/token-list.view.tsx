@@ -173,7 +173,7 @@ const TokenList: FC<TokenListProps> = ({
       : undefined;
 
   return (
-    <div>
+    <div className={classes.tokenList}>
       <div className={classes.header}>
         <Typography type="h2">Select token</Typography>
         <button className={classes.closeButton} onClick={onClose}>
