@@ -178,7 +178,6 @@ const TokenList: FC<TokenListProps> = ({
       <div className={classes.searchInputContainer}>
         <MagnifyingGlassIcon className={classes.searchIcon} />
         <input
-          autoFocus
           placeholder="Enter token name or address"
           type="search"
           className={classes.searchInput}
@@ -210,20 +209,19 @@ const TokenList: FC<TokenListProps> = ({
               customToken.status === "successful" &&
               customToken.data.address === token.address;
 
-            return (
-              <div key={token.address} className={classes.tokenButtonWrapper}>
-                <button
-                  role="button"
-                  className={classes.tokenButton}
-                  onClick={() => onSelectToken(token)}
-                >
-                  <div className={classes.tokenInfo}>
-                    <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
-                    <Typography type="body1">{token.name}</Typography>
-                  </div>
-                </button>
-
-                {isNonImportedCustomToken ? (
+            if (isNonImportedCustomToken) {
+              return (
+                <div key={token.address} className={classes.tokenButtonWrapper}>
+                  <button
+                    role="button"
+                    className={classes.tokenButton}
+                    onClick={() => onSelectToken(token)}
+                  >
+                    <div className={classes.tokenInfo}>
+                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                      <Typography type="body1">{token.name}</Typography>
+                    </div>
+                  </button>
                   <button
                     className={classes.addTokenButton}
                     onClick={() => {
@@ -238,23 +236,37 @@ const TokenList: FC<TokenListProps> = ({
                   >
                     <Typography type="body1">Add token</Typography>
                   </button>
-                ) : (
-                  <div className={classes.tokenRightElements}>
-                    <TokenBalance
-                      token={token}
-                      spinnerSize={16}
-                      typographyProps={{ type: "body2", className: classes.tokenBalance }}
-                    />
-                    <button
-                      className={classes.tokenInfoButton}
-                      onClick={() => onNavigateToTokenDetails(token)}
-                    >
-                      <InfoIcon className={classes.tokenInfoButtonIcon} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
+                </div>
+              );
+            } else {
+              return (
+                <div key={token.address} className={classes.tokenButtonWrapper}>
+                  <button
+                    role="button"
+                    className={classes.tokenButton}
+                    onClick={() => onSelectToken(token)}
+                  >
+                    <div className={classes.tokenInfoWithBalance}>
+                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                      <Typography type="body1">{token.name}</Typography>
+                      <div className={classes.tokenBalanceWrapper}>
+                        <TokenBalance
+                          token={token}
+                          spinnerSize={16}
+                          typographyProps={{ type: "body2", className: classes.tokenBalance }}
+                        />
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    className={classes.tokenInfoButton}
+                    onClick={() => onNavigateToTokenDetails(token)}
+                  >
+                    <InfoIcon className={classes.tokenInfoButtonIcon} />
+                  </button>
+                </div>
+              );
+            }
           })
         )}
       </div>

@@ -91,6 +91,11 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
   },
+  tokenInfoWithBalance: {
+    display: "flex",
+    alignItems: "center",
+    marginRight: 48,
+  },
   tokenIcon: {
     marginRight: theme.spacing(1),
   },
@@ -108,18 +113,17 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
   },
-  tokenRightElements: {
-    position: "absolute",
-    top: 12,
-    right: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
+  tokenBalanceWrapper: {
+    marginLeft: "auto",
   },
   tokenBalance: {
     color: theme.palette.black,
-    marginRight: theme.spacing(1),
   },
   tokenInfoButton: {
+    position: "absolute",
+    right: theme.spacing(2),
+    top: "50%",
+    transform: "translateY(-50%)",
     border: "none",
     height: 32,
     width: 32,
