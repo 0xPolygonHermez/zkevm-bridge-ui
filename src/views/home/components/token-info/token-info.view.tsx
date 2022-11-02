@@ -41,7 +41,7 @@ const TokenInfo: FC<TokenInfoProps> = ({
           <XMarkIcon className={classes.closeButtonIcon} />
         </button>
       </div>
-      <TokenInfoTable token={token} className={classes.tokenDetails} />
+      <TokenInfoTable token={token} className={classes.tokenInfoTable} />
       {isImportedCustomToken && (
         <button className={classes.removeTokenButton} onClick={() => onRemoveToken(token)}>
           <DeleteIcon /> <Typography type="body1">Remove custom token</Typography>

@@ -37,7 +37,7 @@ const TokenAdder: FC<TokenAdderProps> = ({ token, onClose, onAddToken, onNavigat
           Interact carefully with any new or suspicious token
         </Typography>
       </div>
-      <TokenInfoTable token={token} className={classes.tokenDetails} />
+      <TokenInfoTable token={token} className={classes.tokenInfoTable} />
       <button className={classes.addTokenButton} onClick={() => onAddToken(token)}>
         Add {token.name}
       </button>

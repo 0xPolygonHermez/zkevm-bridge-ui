@@ -76,7 +76,7 @@ const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
   disclaimerBoxMessage: {
     color: theme.palette.grey.dark,
   },
-  tokenDetails: {
+  tokenInfoTable: {
     margin: [theme.spacing(1), theme.spacing(2)],
     padding: theme.spacing(1),
   },

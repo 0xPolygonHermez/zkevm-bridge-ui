@@ -62,7 +62,7 @@ const useTokenInfoStyles = createUseStyles((theme: Theme) => ({
   tokenIcon: {
     marginRight: theme.spacing(1),
   },
-  tokenDetails: {
+  tokenInfoTable: {
     margin: [theme.spacing(1), theme.spacing(2)],
     padding: theme.spacing(1),
   },
