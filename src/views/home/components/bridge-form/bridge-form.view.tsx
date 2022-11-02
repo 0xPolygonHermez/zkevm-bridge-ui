@@ -81,17 +81,17 @@ const BridgeForm: FC<BridgeFormProps> = ({
     setIsTokenListOpen(true);
   };
 
-  const handleSelectToken = (token: Token) => {
+  const onSelectToken = (token: Token) => {
     setToken(token);
     setIsTokenListOpen(false);
     setAmount(undefined);
   };
 
-  const handleCloseTokenSelector = () => {
+  const onCloseTokenSelector = () => {
     setIsTokenListOpen(false);
   };
 
-  const handleAddToken = (token: Token) => {
+  const onAddToken = (token: Token) => {
     if (tokens) {
       // We don't want to store the balance of the user in the local storage
       const { name, symbol, address, decimals, chainId, logoURI, wrappedToken } = token;
@@ -101,7 +101,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
     }
   };
 
-  const handleRemoveToken = (tokenToRemove: Token) => {
+  const onRemoveToken = (tokenToRemove: Token) => {
     if (tokens) {
       removeCustomToken(tokenToRemove);
       setTokens(tokens.filter((token) => token.address !== tokenToRemove.address));
@@ -367,10 +367,10 @@ const BridgeForm: FC<BridgeFormProps> = ({
           account={account}
           chains={selectedChains}
           tokens={tokens}
-          onClose={handleCloseTokenSelector}
-          onAddToken={handleAddToken}
-          onRemoveToken={handleRemoveToken}
-          onSelectToken={handleSelectToken}
+          onClose={onCloseTokenSelector}
+          onAddToken={onAddToken}
+          onRemoveToken={onRemoveToken}
+          onSelectToken={onSelectToken}
         />
       )}
     </form>

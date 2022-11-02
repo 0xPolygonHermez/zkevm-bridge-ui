@@ -136,7 +136,7 @@ const TokenList: FC<TokenListProps> = ({
     }
   };
 
-  const handleSearchInputchange = (value: string): void => {
+  const onSearchInputchange = (value: string): void => {
     if (tokens) {
       setSearchInputValue(value);
       updateTokenList(tokens, value);
@@ -188,11 +188,11 @@ const TokenList: FC<TokenListProps> = ({
           className={classes.searchInput}
           value={searchInputValue}
           onChange={(event) => {
-            handleSearchInputchange(event.target.value);
+            onSearchInputchange(event.target.value);
           }}
         />
         {searchInputValue !== "" && (
-          <button className={classes.clearSearchButton} onClick={() => handleSearchInputchange("")}>
+          <button className={classes.clearSearchButton} onClick={() => onSearchInputchange("")}>
             <XMarkIcon className={classes.clearSearchButtonIcon} />
           </button>
         )}

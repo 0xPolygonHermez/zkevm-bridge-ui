@@ -51,40 +51,40 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     type: "token-list",
   });
 
-  const handleOutsideClick = (event: MouseEvent) => {
+  const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
       onClose();
     }
   };
 
-  const handleNavigateToTokenAdder = (token: Token) => {
+  const onNavigateToTokenAdder = (token: Token) => {
     setScreen({
       type: "token-adder",
       token,
     });
   };
 
-  const handleNavigateToTokenDetails = (token: Token) => {
+  const onNavigateToTokenDetails = (token: Token) => {
     setScreen({
       type: "token-info",
       token,
     });
   };
 
-  const handleNavigateToTokenList = () => {
+  const onNavigateToTokenList = () => {
     setScreen({
       type: "token-list",
     });
   };
 
-  const handleAddToken = (token: Token) => {
+  const onAddTokenToList = (token: Token) => {
     onAddToken(token);
     setScreen({
       type: "token-list",
     });
   };
 
-  const handleRemoveToken = (token: Token) => {
+  const onRemoveTokenFromList = (token: Token) => {
     onRemoveToken(token);
     setScreen({
       type: "token-list",
@@ -107,7 +107,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
 
   return (
     <Portal>
-      <div className={classes.background} onMouseDown={handleOutsideClick}>
+      <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
           {(() => {
             switch (screen.type) {
@@ -118,8 +118,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     chains={chains}
                     tokens={tokens}
                     onClose={onClose}
-                    onNavigateToTokenAdder={handleNavigateToTokenAdder}
-                    onNavigateToTokenDetails={handleNavigateToTokenDetails}
+                    onNavigateToTokenAdder={onNavigateToTokenAdder}
+                    onNavigateToTokenDetails={onNavigateToTokenDetails}
                     onSelectToken={onSelectToken}
                   />
                 );
@@ -128,8 +128,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                 return (
                   <TokenAdder
                     token={screen.token}
-                    onAddToken={handleAddToken}
-                    onNavigateToTokenList={handleNavigateToTokenList}
+                    onAddToken={onAddTokenToList}
+                    onNavigateToTokenList={onNavigateToTokenList}
                     onClose={onClose}
                   />
                 );
@@ -140,8 +140,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     chain={chains.from}
                     token={screen.token}
                     onClose={onClose}
-                    onNavigateToTokenList={handleNavigateToTokenList}
-                    onRemoveToken={handleRemoveToken}
+                    onNavigateToTokenList={onNavigateToTokenList}
+                    onRemoveToken={onRemoveTokenFromList}
                   />
                 );
               }
