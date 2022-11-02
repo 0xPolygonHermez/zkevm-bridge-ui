@@ -29,6 +29,10 @@ const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
   },
+  chainIcon: {
+    height: 20,
+    width: 20,
+  },
   tokenAddress: {
     display: "flex",
     alignItems: "center",

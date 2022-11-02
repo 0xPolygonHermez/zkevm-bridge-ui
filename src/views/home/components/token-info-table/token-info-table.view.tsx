@@ -108,7 +108,7 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
     const nativeAddressRow = nativeTokenChain ? (
       <div className={classes.row}>
         <Typography type="body2" className={classes.alignRow}>
-          <nativeTokenChain.Icon />
+          <nativeTokenChain.Icon className={classes.chainIcon} />
           {`${nativeTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
         </Typography>
         <div className={classes.rowRightBlock}>
@@ -139,7 +139,7 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
       wrappedTokenChain && wrappedTokenAddress ? (
         <div className={classes.row}>
           <Typography type="body2" className={classes.alignRow}>
-            <wrappedTokenChain.Icon />
+            <wrappedTokenChain.Icon className={classes.chainIcon} />
             {`${wrappedTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
           </Typography>
           <div className={classes.rowRightBlock}>
