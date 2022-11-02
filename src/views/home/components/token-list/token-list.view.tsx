@@ -213,6 +213,7 @@ const TokenList: FC<TokenListProps> = ({
               !isImportedCustomToken &&
               customToken.status === "successful" &&
               customToken.data.address === token.address;
+
             return (
               <div key={token.address} className={classes.tokenButtonWrapper}>
                 <button

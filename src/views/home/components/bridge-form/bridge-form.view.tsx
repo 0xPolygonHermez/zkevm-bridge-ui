@@ -12,7 +12,6 @@ import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import Icon from "src/views/shared/icon/icon.view";
 import Button from "src/views/shared/button/button.view";
 import { useEnvContext } from "src/contexts/env.context";
-import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
@@ -48,7 +47,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const classes = useBridgeFormStyles();
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
-  const { notifyError } = useErrorContext();
   const { getErc20TokenBalance, tokens: defaultTokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
   const [balanceTo, setBalanceTo] = useState<AsyncTask<BigNumber, string>>({ status: "pending" });
@@ -206,47 +204,21 @@ const BridgeForm: FC<BridgeFormProps> = ({
   useEffect(() => {
     // Load the balance of the selected token in the secondary network (To)
     if (selectedChains && token) {
-      const isTokenEther = token.address === ethersConstants.AddressZero;
+      setBalanceTo({ status: "loading" });
 
-      setBalanceTo((currentBalanceTo) =>
-        currentBalanceTo.status === "successful"
-          ? { status: "reloading", data: currentBalanceTo.data }
-          : { status: "loading" }
-      );
-
-      if (isTokenEther) {
-        void selectedChains.to.provider
-          .getBalance(account)
-          .then((balance) =>
-            callIfMounted(() => {
-              setBalanceTo({ status: "successful", data: balance });
-            })
-          )
-          .catch((error) => {
-            callIfMounted(() => {
-              notifyError(error);
-              setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
-            });
+      getTokenBalance(token, selectedChains.to)
+        .then((balance) =>
+          callIfMounted(() => {
+            setBalanceTo({ status: "successful", data: balance });
+          })
+        )
+        .catch(() => {
+          callIfMounted(() => {
+            setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
           });
-      } else {
-        getErc20TokenBalance({
-          chain: selectedChains.to,
-          tokenAddress: selectTokenAddress(token, selectedChains.to),
-          accountAddress: account,
-        })
-          .then((balance) =>
-            callIfMounted(() => {
-              setBalanceTo({ status: "successful", data: balance });
-            })
-          )
-          .catch(() =>
-            callIfMounted(() => {
-              setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
-            })
-          );
-      }
+        });
     }
-  }, [selectedChains, account, token, getErc20TokenBalance, notifyError, callIfMounted]);
+  }, [callIfMounted, getTokenBalance, selectedChains, token]);
 
   useEffect(() => {
     // Load the default values after the network is changed
