@@ -16,6 +16,7 @@ import { useTokensContext } from "src/contexts/tokens.context";
 import { selectTokenAddress } from "src/utils/tokens";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import TokenBalance from "src/views/shared/token-balance/token-balance.view";
+import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
 
 interface SelectedChains {
   from: Chain;
@@ -173,12 +174,7 @@ const TokenList: FC<TokenListProps> = ({
 
   return (
     <div className={classes.tokenList}>
-      <div className={classes.header}>
-        <Typography type="h2">Select token</Typography>
-        <button className={classes.closeButton} onClick={onClose}>
-          <XMarkIcon className={classes.closeButtonIcon} />
-        </button>
-      </div>
+      <TokenSelectorHeader title="Select token" onClose={onClose} />
       <div className={classes.searchInputContainer}>
         <MagnifyingGlassIcon className={classes.searchIcon} />
         <input
