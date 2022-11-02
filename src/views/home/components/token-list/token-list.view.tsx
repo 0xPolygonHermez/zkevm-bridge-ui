@@ -128,8 +128,7 @@ const TokenList: FC<TokenListProps> = ({
               callIfMounted(() => {
                 setCustomToken({
                   status: "failed",
-                  error:
-                    "The token contract cannot be called on any network. Please make sure the contract is deployed on a network.",
+                  error: "The token couldn't be found on any network.",
                 });
               })
             )
@@ -167,7 +166,7 @@ const TokenList: FC<TokenListProps> = ({
 
   const error =
     customToken.status === "failed"
-      ? "Token not supported"
+      ? customToken.error
       : searchInputValue.length > 0 && filteredTokens.length === 0
       ? "No result found"
       : undefined;
