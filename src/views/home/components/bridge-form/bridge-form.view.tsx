@@ -240,12 +240,14 @@ const BridgeForm: FC<BridgeFormProps> = ({
     if (env && connectedProvider.status === "successful" && formData === undefined) {
       const from = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
       const to = env.chains.find((chain) => chain.chainId !== connectedProvider.data.chainId);
+
       if (from && to) {
         setSelectedChains({ from, to });
         setToken(getEtherToken(from));
       }
       setAmount(undefined);
     }
+    // This prevents the form from being reset when coming back from BridgeConfirmation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedProvider, env]);
 
