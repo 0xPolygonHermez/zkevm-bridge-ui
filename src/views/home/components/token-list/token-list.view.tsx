@@ -174,6 +174,7 @@ const TokenList: FC<TokenListProps> = ({
       <div className={classes.searchInputContainer}>
         <MagnifyingGlassIcon className={classes.searchIcon} />
         <input
+          ref={inputRef}
           placeholder="Enter token name or address"
           type="search"
           className={classes.searchInput}
