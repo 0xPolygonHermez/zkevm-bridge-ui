@@ -10,7 +10,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: theme.spacing(20),
     padding: [0, theme.spacing(1)],
   },
   card: {
