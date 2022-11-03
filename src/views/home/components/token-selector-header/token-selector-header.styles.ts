@@ -8,7 +8,7 @@ const useTokenSelectorHeaderStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     justifyContent: "center",
     padding: [theme.spacing(0.5), 0],
-    margin: [theme.spacing(2)],
+    marginBottom: theme.spacing(1),
     position: "relative",
   },
   backButton: {

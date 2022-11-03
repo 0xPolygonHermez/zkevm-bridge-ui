@@ -195,7 +195,7 @@ const TokenList: FC<TokenListProps> = ({
       <div className={classes.list}>
         {customToken.status === "loading" ? (
           <div className={classes.centeredElement}>
-            <Spinner size={24} />
+            <Spinner />
           </div>
         ) : error ? (
           <Typography type="body2" className={classes.centeredElement}>

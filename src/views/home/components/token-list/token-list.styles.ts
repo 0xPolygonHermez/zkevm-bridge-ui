@@ -6,22 +6,23 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
   tokenList: {
     display: "flex",
     flexDirection: "column",
+    height: "100%",
   },
   searchInputContainer: {
     width: "100%",
     display: "flex",
     alignItems: "center",
-    padding: [0, theme.spacing(2)],
+    marginBottom: theme.spacing(2),
     borderBottom: `1px solid ${theme.palette.grey.light}`,
   },
   searchInput: {
     width: "100%",
     border: 0,
     outline: 0,
-    lineHeight: "36px",
+    padding: [theme.spacing(2), 0],
   },
   searchIcon: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1.25),
   },
   clearSearchButton: {
     border: 0,
@@ -47,9 +48,8 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
     },
   },
   list: {
+    height: "100%",
     overflowY: "auto",
-    height: 376,
-    margin: [theme.spacing(2)],
     "&::-webkit-scrollbar": {
       width: "4px",
     },

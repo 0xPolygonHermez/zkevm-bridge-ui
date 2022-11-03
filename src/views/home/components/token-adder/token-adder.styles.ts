@@ -4,13 +4,14 @@ import { Theme } from "src/styles/theme";
 
 const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
   tokenAdder: {
+    flex: 1,
     display: "flex",
     flexDirection: "column",
   },
   disclaimerBox: {
     display: "flex",
     alignItems: "center",
-    margin: [theme.spacing(1), theme.spacing(2)],
+    marginTop: theme.spacing(2),
     padding: theme.spacing(2),
     backgroundColor: theme.palette.grey.light,
     borderRadius: 8,
@@ -22,11 +23,10 @@ const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
     color: theme.palette.grey.dark,
   },
   tokenInfoTable: {
-    margin: [theme.spacing(1), theme.spacing(2)],
-    padding: theme.spacing(1),
+    marginTop: theme.spacing(3),
+    flex: 1,
   },
   addTokenButton: {
-    margin: theme.spacing(2),
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.white,
     fontSize: "20px",
