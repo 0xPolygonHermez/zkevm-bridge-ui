@@ -2,7 +2,7 @@ import { FC, PropsWithChildren } from "react";
 
 import useTypographyStyles from "src/views/shared/typography/typography.styles";
 
-type TypographyProps = PropsWithChildren<{
+export type TypographyProps = PropsWithChildren<{
   type: "h1" | "h2" | "body1" | "body2";
   className?: string;
 }>;
