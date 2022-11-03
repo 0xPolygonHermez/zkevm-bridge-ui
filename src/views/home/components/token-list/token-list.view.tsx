@@ -28,7 +28,7 @@ interface TokenListProps {
   chains: SelectedChains;
   tokens: Token[];
   onClose: () => void;
-  onNavigateToTokenDetails: (token: Token) => void;
+  onNavigateToTokenInfo: (token: Token) => void;
   onNavigateToTokenAdder: (token: Token) => void;
   onSelectToken: (token: Token) => void;
 }
@@ -39,7 +39,7 @@ const TokenList: FC<TokenListProps> = ({
   tokens,
   onClose,
   onNavigateToTokenAdder,
-  onNavigateToTokenDetails,
+  onNavigateToTokenInfo,
   onSelectToken,
 }) => {
   const classes = useTokenListStyles();
@@ -249,7 +249,7 @@ const TokenList: FC<TokenListProps> = ({
                   </button>
                   <button
                     className={classes.tokenInfoButton}
-                    onClick={() => onNavigateToTokenDetails(token)}
+                    onClick={() => onNavigateToTokenInfo(token)}
                   >
                     <InfoIcon className={classes.tokenInfoButtonIcon} />
                   </button>

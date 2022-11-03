@@ -22,9 +22,11 @@ const TokenSelectorHeader: FC<TokenSelectorHeaderProps> = ({ title, onClose, onG
         </button>
       )}
       <Typography type="h2">{title}</Typography>
-      <button className={classes.closeButton} onClick={onClose}>
-        <XMarkIcon className={classes.closeButtonIcon} />
-      </button>
+      {onClose && (
+        <button className={classes.closeButton} onClick={onClose}>
+          <XMarkIcon className={classes.closeButtonIcon} />
+        </button>
+      )}
     </div>
   );
 };

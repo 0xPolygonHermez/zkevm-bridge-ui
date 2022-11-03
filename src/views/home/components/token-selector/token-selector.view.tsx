@@ -64,7 +64,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     });
   };
 
-  const onNavigateToTokenDetails = (token: Token) => {
+  const onNavigateToTokenInfo = (token: Token) => {
     setScreen({
       type: "token-info",
       token,
@@ -119,7 +119,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     tokens={tokens}
                     onClose={onClose}
                     onNavigateToTokenAdder={onNavigateToTokenAdder}
-                    onNavigateToTokenDetails={onNavigateToTokenDetails}
+                    onNavigateToTokenInfo={onNavigateToTokenInfo}
                     onSelectToken={onSelectToken}
                   />
                 );
