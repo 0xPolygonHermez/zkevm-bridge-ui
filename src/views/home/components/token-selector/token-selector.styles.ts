@@ -10,6 +10,7 @@ const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: [0, theme.spacing(1)],
   },
   card: {
     width: "100%",

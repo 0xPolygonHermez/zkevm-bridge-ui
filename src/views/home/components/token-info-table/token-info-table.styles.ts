@@ -7,7 +7,6 @@ const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.white,
   },
   row: {
-    height: 48,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -15,9 +14,10 @@ const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(1), 0],
     gap: theme.spacing(1),
     [theme.breakpoints.upSm]: {
+      height: 48,
       alignItems: "center",
       flexDirection: "row",
-      padding: [theme.spacing(2), 0],
+      padding: 0,
     },
   },
   alignRow: {
@@ -37,12 +37,11 @@ const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
-    padding: [0, theme.spacing(1)],
+    paddingRight: theme.spacing(1),
   },
   button: {
+    display: "flex",
     border: "none",
-    height: 32,
-    width: 32,
     padding: theme.spacing(1),
     background: "transparent",
     cursor: "pointer",

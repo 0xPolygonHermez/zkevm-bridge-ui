@@ -63,7 +63,7 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
     const ethereumRow = (
       <div className={classes.row}>
         <Typography type="body2" className={classes.alignRow}>
-          <ethereum.Icon />
+          <ethereum.Icon className={classes.chainIcon} />
           L1 token address
         </Typography>
         <Typography type="body1" className={classes.alignRow}>
@@ -75,7 +75,7 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
     const polygonZkEVMRow = (
       <div className={classes.row}>
         <Typography type="body2" className={classes.alignRow}>
-          <polygonZkEVM.Icon />
+          <polygonZkEVM.Icon className={classes.chainIcon} />
           L2 token address
         </Typography>
         <Typography type="body1" className={classes.alignRow}>
