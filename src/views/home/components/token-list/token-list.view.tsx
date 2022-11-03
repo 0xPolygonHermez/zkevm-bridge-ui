@@ -44,7 +44,7 @@ const TokenList: FC<TokenListProps> = ({
 }) => {
   const classes = useTokenListStyles();
   const callIfMounted = useCallIfMounted();
-  const { addWrappedToken, getErc20TokenBalance, getTokenFromAddress } = useTokensContext();
+  const { getErc20TokenBalance, getTokenFromAddress } = useTokensContext();
   const [searchInputValue, setSearchInputValue] = useState<string>("");
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({
@@ -221,15 +221,7 @@ const TokenList: FC<TokenListProps> = ({
                   </button>
                   <button
                     className={classes.addTokenButton}
-                    onClick={() => {
-                      addWrappedToken({ token })
-                        .then((newToken) => {
-                          onNavigateToTokenAdder(newToken);
-                        })
-                        .catch(() => {
-                          onNavigateToTokenAdder(token);
-                        });
-                    }}
+                    onClick={() => onNavigateToTokenAdder(token)}
                   >
                     <Typography type="body1">Add token</Typography>
                   </button>
