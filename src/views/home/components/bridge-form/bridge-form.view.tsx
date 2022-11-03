@@ -49,6 +49,9 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const env = useEnvContext();
   const { getErc20TokenBalance, tokens: defaultTokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
+  const [balanceFrom, setBalanceFrom] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
   const [balanceTo, setBalanceTo] = useState<AsyncTask<BigNumber, string>>({ status: "pending" });
   const [inputError, setInputError] = useState<string>();
   const [selectedChains, setSelectedChains] = useState<SelectedChains>();
@@ -202,10 +205,22 @@ const BridgeForm: FC<BridgeFormProps> = ({
   }, [callIfMounted, defaultTokens, getTokenBalance, selectedChains, tokens]);
 
   useEffect(() => {
-    // Load the balance of the selected token in the secondary network (To)
+    // Load the balance of the selected token in both networks
     if (selectedChains && token) {
+      setBalanceFrom({ status: "loading" });
       setBalanceTo({ status: "loading" });
 
+      getTokenBalance(token, selectedChains.from)
+        .then((balance) =>
+          callIfMounted(() => {
+            setBalanceFrom({ status: "successful", data: balance });
+          })
+        )
+        .catch(() => {
+          callIfMounted(() => {
+            setBalanceFrom({ status: "failed", error: "Couldn't retrieve token balance" });
+          });
+        });
       getTokenBalance(token, selectedChains.to)
         .then((balance) =>
           callIfMounted(() => {
@@ -251,8 +266,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
       </div>
     );
   }
-
-  const balanceFrom = tokens?.find((tkn) => tkn.address === token.address)?.balance;
 
   return (
     <form className={classes.form} onSubmit={onFormSubmit}>
