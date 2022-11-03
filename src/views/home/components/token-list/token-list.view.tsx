@@ -26,7 +26,7 @@ interface SelectedChains {
 interface TokenListProps {
   account: string;
   chains: SelectedChains;
-  tokens?: Token[];
+  tokens: Token[];
   onClose: () => void;
   onNavigateToTokenDetails: (token: Token) => void;
   onNavigateToTokenAdder: (token: Token) => void;
@@ -138,12 +138,10 @@ const TokenList: FC<TokenListProps> = ({
   };
 
   const onSearchInputchange = (value: string): void => {
-    if (tokens) {
-      setSearchInputValue(value);
-      updateTokenList(tokens, value);
-      if (value === "") {
-        setCustomToken({ status: "pending" });
-      }
+    setSearchInputValue(value);
+    updateTokenList(tokens, value);
+    if (value === "") {
+      setCustomToken({ status: "pending" });
     }
   };
 
@@ -160,9 +158,7 @@ const TokenList: FC<TokenListProps> = ({
   }, []);
 
   useEffect(() => {
-    if (tokens) {
-      setFilteredTokens(tokens);
-    }
+    setFilteredTokens(tokens);
   }, [tokens]);
 
   const error =

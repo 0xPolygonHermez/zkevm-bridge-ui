@@ -29,7 +29,7 @@ interface SelectedChains {
 interface TokenSelectorProps {
   account: string;
   chains: SelectedChains;
-  tokens?: Token[];
+  tokens: Token[];
   onAddToken: (token: Token) => void;
   onClose: () => void;
   onRemoveToken: (token: Token) => void;

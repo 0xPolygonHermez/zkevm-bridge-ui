@@ -244,7 +244,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
     }
   }, [formData, onResetForm]);
 
-  if (!env || !selectedChains || !token || !maxEtherBridge) {
+  if (!env || !selectedChains || !tokens || !token || !maxEtherBridge) {
     return (
       <div className={classes.spinner}>
         <Spinner />
