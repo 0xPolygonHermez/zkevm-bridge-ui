@@ -166,41 +166,39 @@ const BridgeForm: FC<BridgeFormProps> = ({
           ? tokens.map((tkn) => (tkn.address === updatedToken.address ? updatedToken : tkn))
           : undefined;
 
-      setTokens((oldTokens) =>
-        !oldTokens
-          ? undefined
-          : oldTokens.map((tkn) => ({ ...tkn, balance: { status: "loading" } }))
+      setTokens(() =>
+        tokens.map((token: Token) => {
+          getTokenBalance(token, selectedChains.from)
+            .then((balance): void => {
+              callIfMounted(() => {
+                const updatedToken: Token = {
+                  ...token,
+                  balance: {
+                    status: "successful",
+                    data: balance,
+                  },
+                };
+
+                setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
+              });
+            })
+            .catch(() => {
+              callIfMounted(() => {
+                const updatedToken: Token = {
+                  ...token,
+                  balance: {
+                    status: "failed",
+                    error: "Couldn't retrieve token balance",
+                  },
+                };
+
+                setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
+              });
+            });
+
+          return { ...token, balance: { status: "loading" } };
+        })
       );
-
-      tokens.map((token: Token) => {
-        getTokenBalance(token, selectedChains.from)
-          .then((balance): void => {
-            callIfMounted(() => {
-              const updatedToken: Token = {
-                ...token,
-                balance: {
-                  status: "successful",
-                  data: balance,
-                },
-              };
-
-              setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
-            });
-          })
-          .catch(() => {
-            callIfMounted(() => {
-              const updatedToken: Token = {
-                ...token,
-                balance: {
-                  status: "failed",
-                  error: "Couldn't retrieve token balance",
-                },
-              };
-
-              setTokens((currentTokens) => getUpdatedTokens(currentTokens, updatedToken));
-            });
-          });
-      });
     }
   }, [callIfMounted, defaultTokens, getTokenBalance, selectedChains, tokens]);
 
@@ -260,7 +258,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
       onResetForm();
     }
   }, [formData, onResetForm]);
-
+  console.log(tokens);
   if (!env || !selectedChains || !tokens || !token || !maxEtherBridge) {
     return (
       <div className={classes.spinner}>
