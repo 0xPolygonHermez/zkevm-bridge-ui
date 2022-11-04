@@ -8,9 +8,9 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
     height: "100vh",
     display: "flex",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "center",
-    paddingTop: theme.spacing(20),
+    padding: [0, theme.spacing(1)],
   },
   card: {
     width: "100%",

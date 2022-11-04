@@ -45,7 +45,7 @@ const AmountInput: FC<AmountInputProps> = ({
     }
   };
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const decimals = token.decimals;
     const regexToken = `^(?!0\\d|\\.)\\d*(?:\\.\\d{0,${decimals}})?$`;
@@ -59,7 +59,7 @@ const AmountInput: FC<AmountInputProps> = ({
     }
   };
 
-  const handleMax = () => {
+  const onMax = () => {
     const maxPossibleAmount =
       shouldApplyMaxEtherBridgeLimit && balance.gt(maxEtherBridge) ? maxEtherBridge : balance;
     if (maxPossibleAmount.gt(0)) {
@@ -80,7 +80,7 @@ const AmountInput: FC<AmountInputProps> = ({
 
   return (
     <div className={classes.wrapper}>
-      <button className={classes.maxButton} type="button" onClick={handleMax}>
+      <button className={classes.maxButton} type="button" onClick={onMax}>
         <Typography type="body2" className={classes.maxText}>
           MAX
         </Typography>
@@ -90,7 +90,7 @@ const AmountInput: FC<AmountInputProps> = ({
         value={inputValue}
         placeholder="0.00"
         autoFocus
-        onChange={handleInputChange}
+        onChange={onInputChange}
       />
     </div>
   );

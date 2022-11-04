@@ -2,89 +2,27 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useListStyles = createUseStyles((theme: Theme) => ({
-  background: {
-    background: theme.palette.transparency,
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    paddingTop: theme.spacing(20),
-  },
-  card: {
-    width: "100%",
-    maxWidth: 500,
+const useTokenListStyles = createUseStyles((theme: Theme) => ({
+  tokenList: {
     display: "flex",
     flexDirection: "column",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: [theme.spacing(0.5), 0],
-    margin: [theme.spacing(2)],
-    position: "relative",
-  },
-  closeButton: {
-    position: "absolute",
-    right: 0,
-    width: theme.spacing(4),
-    height: theme.spacing(4),
-    background: theme.palette.grey.light,
-    border: 0,
-    padding: 0,
-    borderRadius: "50%",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: theme.hoverTransition,
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-  },
-  closeButtonIcon: {
-    width: 16,
-    height: 16,
-  },
-  backButton: {
-    position: "absolute",
-    left: 0,
-    width: theme.spacing(4),
-    height: theme.spacing(4),
-    background: theme.palette.grey.light,
-    border: 0,
-    padding: 0,
-    borderRadius: "50%",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: theme.hoverTransition,
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-  },
-  backButtonIcon: {
-    width: 16,
-    height: 16,
+    height: "100%",
   },
   searchInputContainer: {
     width: "100%",
     display: "flex",
     alignItems: "center",
-    padding: [0, theme.spacing(2)],
+    marginBottom: theme.spacing(2),
     borderBottom: `1px solid ${theme.palette.grey.light}`,
   },
   searchInput: {
     width: "100%",
     border: 0,
     outline: 0,
-    lineHeight: "36px",
+    padding: [theme.spacing(2), 0],
   },
   searchIcon: {
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(1.25),
   },
   clearSearchButton: {
     border: 0,
@@ -110,9 +48,8 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     },
   },
   list: {
+    height: "100%",
     overflowY: "auto",
-    maxHeight: 270,
-    margin: [theme.spacing(2)],
     "&::-webkit-scrollbar": {
       width: "4px",
     },
@@ -122,6 +59,12 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     "&::-webkit-scrollbar-thumb:hover": {
       backgroundColor: theme.palette.grey.dark,
     },
+  },
+  centeredElement: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   tokenButtonWrapper: {
     position: "relative",
@@ -148,6 +91,11 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
   },
+  tokenInfoWithBalance: {
+    display: "flex",
+    alignItems: "center",
+    marginRight: 48,
+  },
   tokenIcon: {
     marginRight: theme.spacing(1),
   },
@@ -165,18 +113,17 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       background: theme.palette.grey.main,
     },
   },
-  tokenRightElements: {
-    position: "absolute",
-    top: 12,
-    right: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
+  tokenBalanceWrapper: {
+    marginLeft: "auto",
   },
   tokenBalance: {
     color: theme.palette.black,
-    marginRight: theme.spacing(1),
   },
   tokenInfoButton: {
+    position: "absolute",
+    right: theme.spacing(2),
+    top: "50%",
+    transform: "translateY(-50%)",
     border: "none",
     height: 32,
     width: 32,
@@ -193,63 +140,6 @@ const useListStyles = createUseStyles((theme: Theme) => ({
       fill: theme.palette.grey.dark,
     },
   },
-  centeredElement: {
-    height: 250,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  disclaimerBox: {
-    display: "flex",
-    alignItems: "center",
-    margin: [theme.spacing(1), theme.spacing(2)],
-    padding: theme.spacing(2),
-    backgroundColor: theme.palette.grey.light,
-    borderRadius: 8,
-  },
-  disclaimerBoxWarningIcon: {
-    marginRight: theme.spacing(1),
-  },
-  disclaimerBoxMessage: {
-    color: theme.palette.grey.dark,
-  },
-  tokenDetails: {
-    margin: [theme.spacing(1), theme.spacing(2)],
-    padding: theme.spacing(1),
-  },
-  finalAddTokenButton: {
-    margin: theme.spacing(2),
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
-    fontSize: "20px",
-    lineHeight: "24px",
-    padding: theme.spacing(2),
-    borderRadius: 80,
-    border: "none",
-    cursor: "pointer",
-    transition: theme.hoverTransition,
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  },
-  deleteTokenButton: {
-    display: "flex",
-    justifyContent: "center",
-    gap: theme.spacing(2),
-    margin: theme.spacing(2),
-    backgroundColor: theme.palette.grey.light,
-    color: theme.palette.black,
-    fontSize: "20px",
-    lineHeight: "24px",
-    padding: theme.spacing(1),
-    borderRadius: 9,
-    border: "none",
-    cursor: "pointer",
-    transition: theme.hoverTransition,
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
-  },
 }));
 
-export default useListStyles;
+export default useTokenListStyles;

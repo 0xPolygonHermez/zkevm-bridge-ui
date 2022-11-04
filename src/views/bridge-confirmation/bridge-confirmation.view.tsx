@@ -137,8 +137,8 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     // Load the balance of the token when it's not available
-    if (formData?.token.balance) {
-      setTokenBalance(formData.token.balance);
+    if (formData?.token.balance && isAsyncTaskDataAvailable(formData.token.balance)) {
+      setTokenBalance(formData.token.balance.data);
     } else if (formData && connectedProvider.status === "successful") {
       const { from, token } = formData;
       const isTokenEther = token.address === ethersConstants.AddressZero;

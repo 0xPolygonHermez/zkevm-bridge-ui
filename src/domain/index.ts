@@ -1,6 +1,7 @@
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import { AsyncTask } from "src/utils/types";
 
 export type ChainKey = "ethereum" | "polygon-zkevm";
 
@@ -44,7 +45,7 @@ export interface Token {
   decimals: number;
   chainId: number;
   logoURI: string;
-  balance?: BigNumber;
+  balance?: AsyncTask<BigNumber, string>;
   wrappedToken?: {
     address: string;
     chainId: number;

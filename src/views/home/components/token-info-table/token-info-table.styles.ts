@@ -2,12 +2,11 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
+const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
   wrapper: {
     background: theme.palette.white,
   },
   row: {
-    height: 48,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -15,9 +14,10 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(1), 0],
     gap: theme.spacing(1),
     [theme.breakpoints.upSm]: {
+      height: 48,
       alignItems: "center",
       flexDirection: "row",
-      padding: [theme.spacing(2), 0],
+      padding: 0,
     },
   },
   alignRow: {
@@ -29,16 +29,19 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     alignItems: "center",
   },
+  chainIcon: {
+    height: 20,
+    width: 20,
+  },
   tokenAddress: {
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
-    padding: [0, theme.spacing(1)],
+    paddingRight: theme.spacing(1),
   },
   button: {
+    display: "flex",
     border: "none",
-    height: 32,
-    width: 32,
     padding: theme.spacing(1),
     background: "transparent",
     cursor: "pointer",
@@ -65,4 +68,4 @@ const useTokenDetailsStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default useTokenDetailsStyles;
+export default useTokenInfoTableStyles;
