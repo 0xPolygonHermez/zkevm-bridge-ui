@@ -208,3 +208,9 @@ export type Gas =
         gasPrice: BigNumber;
       };
     };
+
+export enum Permit {
+  DAI = "dai",
+  STANDARD_EIP_2612 = "standard-eip-2612",
+  UNISWAP_EIP_2612 = "uniswap-eip-2612",
+}
