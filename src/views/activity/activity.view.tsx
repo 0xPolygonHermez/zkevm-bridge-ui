@@ -21,7 +21,7 @@ import {
   isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
 import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
-import { Bridge } from "src/domain";
+import { Bridge, PendingBridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import useIntersection from "src/hooks/use-intersection";
 
@@ -33,7 +33,10 @@ const Activity: FC = () => {
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
   const { tokens } = useTokensContext();
-  const [bridgeList, setBridgeList] = useState<AsyncTask<Bridge[], undefined, true>>({
+  const [apiBridges, setApiBridges] = useState<AsyncTask<Bridge[], undefined, true>>({
+    status: "pending",
+  });
+  const [pendingBridges, setPendingBridges] = useState<AsyncTask<PendingBridge[], undefined>>({
     status: "pending",
   });
   const [displayAll, setDisplayAll] = useState(true);
@@ -64,9 +67,6 @@ const Activity: FC = () => {
         bridge,
       })
         .then(() => {
-          if (isAsyncTaskDataAvailable<Bridge[], undefined, true>(bridgeList)) {
-            processFetchBridgesSuccess(bridgeList.data);
-          }
           openSnackbar({
             type: "success-msg",
             text: "Transaction successfully submitted.",
@@ -86,36 +86,48 @@ const Activity: FC = () => {
           });
         })
         .finally(() => {
-          setAreBridgesDisabled(false);
+          if (isAsyncTaskDataAvailable<Bridge[], undefined, true>(apiBridges)) {
+            getPendingBridges(apiBridges.data)
+              .then((data) => {
+                callIfMounted(() => {
+                  setPendingBridges({ status: "successful", data });
+                });
+              })
+              .catch((error) => {
+                callIfMounted(() => {
+                  notifyError(error);
+                });
+              })
+              .finally(() => setAreBridgesDisabled(false));
+          }
         });
     }
   };
 
   const processFetchBridgesSuccess = useCallback(
     (bridges: Bridge[]) => {
-      void getPendingBridges(bridges).then((pendingBridges) => {
-        callIfMounted(() => {
-          const filteredApiBridges = bridges.filter((bridge) => {
-            const isBridgePresentInPendingBridges =
-              (bridge.status === "pending" || bridge.status === "on-hold") &&
-              pendingBridges.find(
-                (pendingBridge) => pendingBridge.depositTxHash === bridge.depositTxHash
-              ) !== undefined;
-            return isBridgePresentInPendingBridges ? false : true;
+      setLastLoadedItem(bridges.length);
+      setApiBridges({ status: "successful", data: bridges });
+      getPendingBridges(bridges)
+        .then((data) => {
+          callIfMounted(() => {
+            setPendingBridges({ status: "successful", data });
           });
-          setLastLoadedItem(bridges.length);
-          setBridgeList({ status: "successful", data: [...pendingBridges, ...filteredApiBridges] });
+        })
+        .catch((error) => {
+          callIfMounted(() => {
+            notifyError(error);
+          });
         });
-      });
     },
-    [getPendingBridges, callIfMounted]
+    [callIfMounted, getPendingBridges, notifyError]
   );
 
   const processFetchBridgesError = useCallback(
     (error: unknown) => {
       callIfMounted(() => {
         if (!isCancelRequestError(error)) {
-          setBridgeList({
+          setApiBridges({
             status: "failed",
             error: undefined,
           });
@@ -130,10 +142,10 @@ const Activity: FC = () => {
     if (
       env &&
       isAsyncTaskDataAvailable(connectedProvider) &&
-      isAsyncTaskDataAvailable<Bridge[], undefined, true>(bridgeList) &&
-      bridgeList.data.length < total
+      apiBridges.status === "successful" &&
+      apiBridges.data.length < total
     ) {
-      setBridgeList({ status: "loading-more-items", data: bridgeList.data });
+      setApiBridges({ status: "loading-more-items", data: apiBridges.data });
 
       // A new page requested by the user cancels any other fetch in progress
       fetchBridgesAbortController.current.abort();
@@ -155,7 +167,7 @@ const Activity: FC = () => {
   };
 
   useEffect(() => {
-    // Initial load
+    // Initial API load
     if (env && connectedProvider.status === "successful" && tokens) {
       fetchBridgesAbortController.current = new AbortController();
       fetchBridges({
@@ -192,12 +204,12 @@ const Activity: FC = () => {
     if (
       env &&
       connectedProvider.status === "successful" &&
-      (bridgeList.status === "successful" || bridgeList.status === "failed")
+      (apiBridges.status === "successful" || apiBridges.status === "failed")
     ) {
       const refreshBridges = () => {
-        setBridgeList(
-          bridgeList.status === "successful"
-            ? { status: "reloading", data: bridgeList.data }
+        setApiBridges(
+          apiBridges.status === "successful"
+            ? { status: "reloading", data: apiBridges.data }
             : { status: "loading" }
         );
         fetchBridgesAbortController.current = new AbortController();
@@ -224,7 +236,7 @@ const Activity: FC = () => {
     }
   }, [
     connectedProvider,
-    bridgeList,
+    apiBridges,
     env,
     lastLoadedItem,
     fetchBridges,
@@ -236,6 +248,26 @@ const Activity: FC = () => {
   useEffect(() => {
     setWrongNetworkBridges([]);
   }, [connectedProvider]);
+
+  const mergeBridges = (apiBridges: Bridge[], pendingBridges: PendingBridge[]) => {
+    return [
+      ...pendingBridges.filter(
+        (pendingBridge) =>
+          apiBridges.find(
+            (apiBridge) => pendingBridge.depositTxHash === apiBridge.depositTxHash
+          ) === undefined
+      ),
+      ...apiBridges.reduce(
+        (acc: Bridge[], curr: Bridge) => [
+          ...acc,
+          pendingBridges.find(
+            (pendingBridge) => pendingBridge.depositTxHash === curr.depositTxHash
+          ) || curr,
+        ],
+        []
+      ),
+    ];
+  };
 
   const EmptyMessage = () => (
     <Card className={classes.emptyMessage}>
@@ -274,11 +306,11 @@ const Activity: FC = () => {
     </div>
   );
 
-  if (!tokens) {
+  if (!tokens || !isAsyncTaskDataAvailable(pendingBridges)) {
     return loader;
   }
 
-  switch (bridgeList.status) {
+  switch (apiBridges.status) {
     case "pending":
     case "loading": {
       return loader;
@@ -295,8 +327,8 @@ const Activity: FC = () => {
     case "successful":
     case "loading-more-items":
     case "reloading": {
-      const pendingBridges = bridgeList.data.filter((bridge) => bridge.status === "pending");
-      const filteredList = displayAll ? bridgeList.data : pendingBridges;
+      const allBridges = mergeBridges(apiBridges.data, pendingBridges.data);
+      const filteredList = displayAll ? allBridges : pendingBridges.data;
 
       return (
         <>
@@ -304,13 +336,13 @@ const Activity: FC = () => {
           <div className={classes.stickyContent} ref={headerBorderTarget}>
             <div className={classes.contentWrapper}>
               <Header title="Activity" backTo={{ routeKey: "home" }} />
-              <Tabs all={bridgeList.data.length} pending={pendingBridges.length} />
+              <Tabs all={allBridges.length} pending={pendingBridges.data.length} />
             </div>
           </div>
           <div className={classes.contentWrapper}>
             {filteredList.length ? (
               <InfiniteScroll
-                isLoading={bridgeList.status === "loading-more-items"}
+                isLoading={apiBridges.status === "loading-more-items"}
                 onLoadNextPage={onLoadNextPage}
               >
                 {filteredList.map((bridge) =>
