@@ -218,10 +218,10 @@ export type TokenSpendPermission =
     }
   | {
       type: "permit";
-      permitTypeHash: PermitTypeHash;
+      permit: Permit;
     };
 
-export enum PermitTypeHash {
+export enum Permit {
   DAI = "DAI",
   EIP_2612_STANDARD = "EIP_2612_STANDARD",
   EIP_2612_UNISWAP = "EIP_2612_UNISWAP",

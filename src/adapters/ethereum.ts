@@ -7,7 +7,7 @@ import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
 import { Erc20__factory } from "src/types/contracts/erc-20";
 import { StrictSchema } from "src/utils/type-safety";
 import { selectTokenAddress } from "src/utils/tokens";
-import { Token, Chain, TxStatus, PermitTypeHash } from "src/domain";
+import { Token, Chain, TxStatus, Permit } from "src/domain";
 import {
   DAI_PERMIT_TYPEHASH,
   EIP_2612_PERMIT_TYPEHASH,
@@ -32,15 +32,12 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-interface DiscoverPermitTypeHashParams {
+interface DiscoverPermitParams {
   chain: Chain;
   token: Token;
 }
 
-const discoverPermitTypeHash = ({
-  chain,
-  token,
-}: DiscoverPermitTypeHashParams): Promise<PermitTypeHash> => {
+const discoverPermit = ({ chain, token }: DiscoverPermitParams): Promise<Permit> => {
   if (token.address === ethersConstants.AddressZero) {
     return Promise.reject();
   }
@@ -48,7 +45,7 @@ const discoverPermitTypeHash = ({
   return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
     switch (permitTypehash) {
       case DAI_PERMIT_TYPEHASH: {
-        return PermitTypeHash.DAI;
+        return Permit.DAI;
       }
       case EIP_2612_PERMIT_TYPEHASH: {
         return contract
@@ -57,10 +54,10 @@ const discoverPermitTypeHash = ({
           .then((domainTypehash) => {
             switch (domainTypehash) {
               case EIP_2612_STANDARD_DOMAIN_TYPEHASH: {
-                return PermitTypeHash.EIP_2612_STANDARD;
+                return Permit.EIP_2612_STANDARD;
               }
               case EIP_2612_UNISWAP_DOMAIN_TYPEHASH: {
-                return PermitTypeHash.EIP_2612_UNISWAP;
+                return Permit.EIP_2612_UNISWAP;
               }
               default: {
                 return Promise.reject();
@@ -254,7 +251,7 @@ export {
   ethereumAccountsParser,
   silentlyGetConnectedAccounts,
   getConnectedAccounts,
-  discoverPermitTypeHash,
+  discoverPermit,
   approve,
   isContractAllowedToSpendToken,
   permit,

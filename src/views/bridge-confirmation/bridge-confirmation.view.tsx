@@ -22,7 +22,7 @@ import {
 } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { discoverPermitTypeHash, isContractAllowedToSpendToken } from "src/adapters/ethereum";
+import { discoverPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -184,13 +184,13 @@ const BridgeConfirmation: FC = () => {
       if (isTokenEther) {
         setTokenSpendPermission({ type: "non-required" });
       } else {
-        discoverPermitTypeHash({
+        discoverPermit({
           chain: from,
           token,
         })
-          .then((permitTypeHash) => {
+          .then((permit) => {
             callIfMounted(() => {
-              setTokenSpendPermission({ type: "permit", permitTypeHash });
+              setTokenSpendPermission({ type: "permit", permit });
             });
           })
           .catch(() => {
