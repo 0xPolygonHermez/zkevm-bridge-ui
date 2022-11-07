@@ -15,7 +15,7 @@ const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
   card: {
     width: "100%",
     maxWidth: 500,
-    height: 511,
+    height: 515,
     display: "flex",
     flexDirection: "column",
     padding: theme.spacing(2),
