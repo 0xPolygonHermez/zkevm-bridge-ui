@@ -22,7 +22,7 @@ import {
 } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { isPermitSupported } from "src/adapters/ethereum";
+import { discoverPermitTypeHash } from "src/adapters/ethereum";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -36,7 +36,7 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { Gas } from "src/domain";
+import { Gas, TokenSpendPermission } from "src/domain";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -57,7 +57,7 @@ const BridgeConfirmation: FC = () => {
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
-  const [isTxApprovalRequired, setIsTxApprovalRequired] = useState<boolean>(false);
+  const [tokenSpendPermission, setTokenSpendPermission] = useState<TokenSpendPermission>();
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
     status: "pending",
   });
@@ -183,35 +183,34 @@ const BridgeConfirmation: FC = () => {
       const isTokenEther = token.address === ethersConstants.AddressZero;
 
       if (isTokenEther) {
-        setIsTxApprovalRequired(false);
+        setTokenSpendPermission({ type: "non-required" });
       } else {
-        isPermitSupported({
-          account: connectedProvider.data.account,
-          chain: formData.from,
+        discoverPermitTypeHash({
+          chain: from,
           token,
         })
-          .then((canUsePermit) => {
+          .then((permitTypeHash) => {
             callIfMounted(() => {
-              if (canUsePermit) {
-                setIsTxApprovalRequired(false);
-              } else {
-                void isContractAllowedToSpendToken({
-                  provider: from.provider,
-                  token: token,
-                  amount: amount,
-                  owner: connectedProvider.data.account,
-                  spender: from.bridgeContractAddress,
-                })
-                  .then((isAllowed) =>
-                    callIfMounted(() => {
-                      setIsTxApprovalRequired(!isAllowed);
-                    })
-                  )
-                  .catch(notifyError);
-              }
+              setTokenSpendPermission({ type: "permit", permitTypeHash });
             });
           })
-          .catch(notifyError);
+          .catch(() => {
+            void isContractAllowedToSpendToken({
+              provider: from.provider,
+              token: token,
+              amount: amount,
+              owner: connectedProvider.data.account,
+              spender: from.bridgeContractAddress,
+            })
+              .then((isAllowed) =>
+                callIfMounted(() => {
+                  setTokenSpendPermission(
+                    isAllowed ? { type: "non-required" } : { type: "approve" }
+                  );
+                })
+              )
+              .catch(notifyError);
+          });
       }
     }
   }, [formData, connectedProvider, isContractAllowedToSpendToken, notifyError, callIfMounted]);
@@ -289,7 +288,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           callIfMounted(() => {
             setApprovalTask({ status: "successful", data: null });
-            setIsTxApprovalRequired(false);
+            setTokenSpendPermission(undefined);
           });
         })
         .catch((error) => {
@@ -317,7 +316,8 @@ const BridgeConfirmation: FC = () => {
       formData &&
       isAsyncTaskDataAvailable(connectedProvider) &&
       isAsyncTaskDataAvailable(estimatedGas) &&
-      maxAmountConsideringFee
+      maxAmountConsideringFee &&
+      tokenSpendPermission
     ) {
       const { token, from, to } = formData;
 
@@ -329,6 +329,7 @@ const BridgeConfirmation: FC = () => {
         amount: maxAmountConsideringFee,
         to,
         destinationAddress: connectedProvider.data.account,
+        tokenSpendPermission,
         gas: estimatedGas.data,
       })
         .then(() => {
@@ -361,7 +362,8 @@ const BridgeConfirmation: FC = () => {
     !formData ||
     !tokenBalance ||
     !isAsyncTaskDataAvailable(estimatedGas) ||
-    !maxAmountConsideringFee
+    !maxAmountConsideringFee ||
+    !tokenSpendPermission
   ) {
     return <PageLoader />;
   }
@@ -457,12 +459,12 @@ const BridgeConfirmation: FC = () => {
         <BridgeButton
           isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
-          isTxApprovalRequired={isTxApprovalRequired}
+          isTxApprovalRequired={tokenSpendPermission.type === "approve"}
           approvalTask={approvalTask}
           onApprove={onApprove}
           onBridge={onBridge}
         />
-        {isTxApprovalRequired && <ApprovalInfo />}
+        {tokenSpendPermission.type === "approve" && <ApprovalInfo />}
         {error && <ErrorMessage error={error} />}
       </div>
       {feeErrorString && <ErrorMessage className={classes.error} error={feeErrorString} />}

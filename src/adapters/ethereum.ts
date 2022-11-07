@@ -8,7 +8,13 @@ import { Erc20__factory } from "src/types/contracts/erc-20";
 import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
 import { selectTokenAddress } from "src/utils/tokens";
-import { Token, Chain, TxStatus } from "src/domain";
+import { Token, Chain, TxStatus, PermitTypeHash } from "src/domain";
+import {
+  DAI_PERMIT_TYPEHASH,
+  EIP_2612_PERMIT_TYPEHASH,
+  EIP_2612_STANDARD_DOMAIN_TYPEHASH,
+  EIP_2612_UNISWAP_DOMAIN_TYPEHASH,
+} from "src/constants";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
@@ -27,26 +33,47 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-interface IsPermitSupportedParams {
-  account: string;
+interface DiscoverPermitTypeHashParams {
   chain: Chain;
   token: Token;
 }
 
-const isPermitSupported = async ({
-  account,
+const discoverPermitTypeHash = ({
   chain,
   token,
-}: IsPermitSupportedParams): Promise<boolean> => {
+}: DiscoverPermitTypeHashParams): Promise<PermitTypeHash> => {
   if (token.address === ethersConstants.AddressZero) {
-    return false;
+    return Promise.reject();
   }
-  const tokenContractWithPermit = Erc20Permit__factory.connect(token.address, chain.provider);
-  try {
-    return !!(await tokenContractWithPermit.nonces(account));
-  } catch (err) {
-    return false;
-  }
+  const contract = Erc20Permit__factory.connect(token.address, chain.provider);
+  return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
+    switch (permitTypehash) {
+      case DAI_PERMIT_TYPEHASH: {
+        return PermitTypeHash.DAI;
+      }
+      case EIP_2612_PERMIT_TYPEHASH: {
+        return contract
+          .DOMAIN_TYPEHASH()
+          .catch(() => contract.EIP712DOMAIN_HASH())
+          .then((domainTypehash) => {
+            switch (domainTypehash) {
+              case EIP_2612_STANDARD_DOMAIN_TYPEHASH: {
+                return PermitTypeHash.EIP_2612_STANDARD;
+              }
+              case EIP_2612_UNISWAP_DOMAIN_TYPEHASH: {
+                return PermitTypeHash.EIP_2612_UNISWAP;
+              }
+              default: {
+                return Promise.reject();
+              }
+            }
+          });
+      }
+      default: {
+        return Promise.reject();
+      }
+    }
+  });
 };
 
 interface ApproveParams {
@@ -228,7 +255,7 @@ export {
   ethereumAccountsParser,
   silentlyGetConnectedAccounts,
   getConnectedAccounts,
-  isPermitSupported,
+  discoverPermitTypeHash,
   approve,
   isContractAllowedToSpendToken,
   permit,

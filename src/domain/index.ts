@@ -209,8 +209,20 @@ export type Gas =
       };
     };
 
-export enum Permit {
-  DAI = "dai",
-  STANDARD_EIP_2612 = "standard-eip-2612",
-  UNISWAP_EIP_2612 = "uniswap-eip-2612",
+export type TokenSpendPermission =
+  | {
+      type: "non-required";
+    }
+  | {
+      type: "approve";
+    }
+  | {
+      type: "permit";
+      permitTypeHash: PermitTypeHash;
+    };
+
+export enum PermitTypeHash {
+  DAI = "DAI",
+  EIP_2612_STANDARD = "EIP_2612_STANDARD",
+  EIP_2612_UNISWAP = "EIP_2612_UNISWAP",
 }

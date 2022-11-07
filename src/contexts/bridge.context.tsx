@@ -24,13 +24,22 @@ import { isAsyncTaskDataAvailable } from "src/utils/types";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import {
   permit,
-  isPermitSupported,
   getErc20TokenEncodedMetadata,
   isTxCanceled,
   isTxMined,
   hasTxBeenReverted,
 } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge, Gas } from "src/domain";
+import {
+  Env,
+  Chain,
+  Token,
+  Bridge,
+  OnHoldBridge,
+  Deposit,
+  PendingBridge,
+  Gas,
+  TokenSpendPermission,
+} from "src/domain";
 import * as storage from "src/adapters/storage";
 
 interface GetMaxEtherBridgeParams {
@@ -88,6 +97,7 @@ interface BridgeParams {
   amount: BigNumber;
   to: Chain;
   destinationAddress: string;
+  tokenSpendPermission: TokenSpendPermission;
   gas?: Gas;
 }
 
@@ -719,6 +729,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       amount,
       to,
       destinationAddress,
+      tokenSpendPermission,
       gas,
     }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
@@ -739,20 +750,16 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       };
 
       const executeBridge = async () => {
-        const canUsePermit = await isPermitSupported({
-          chain: from,
-          account,
-          token,
-        });
-        const permitData = canUsePermit
-          ? await permit({
-              token,
-              provider: provider,
-              owner: account,
-              spender: from.bridgeContractAddress,
-              value: amount,
-            })
-          : "0x";
+        const permitData =
+          tokenSpendPermission.type === "permit"
+            ? await permit({
+                token,
+                provider: provider,
+                owner: account,
+                spender: from.bridgeContractAddress,
+                value: amount,
+              })
+            : "0x";
 
         return contract
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
