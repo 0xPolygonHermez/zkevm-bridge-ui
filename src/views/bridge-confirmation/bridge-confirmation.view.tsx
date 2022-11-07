@@ -22,7 +22,7 @@ import {
 } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { discoverPermitTypeHash } from "src/adapters/ethereum";
+import { discoverPermitTypeHash, isContractAllowedToSpendToken } from "src/adapters/ethereum";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -49,8 +49,7 @@ const BridgeConfirmation: FC = () => {
   const { openSnackbar } = useUIContext();
   const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
-    useTokensContext();
+  const { approve, getErc20TokenBalance, tokens } = useTokensContext();
   const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxAmountConsideringFee, setMaxAmountConsideringFee] = useState<BigNumber>();
@@ -213,7 +212,7 @@ const BridgeConfirmation: FC = () => {
           });
       }
     }
-  }, [formData, connectedProvider, isContractAllowedToSpendToken, notifyError, callIfMounted]);
+  }, [formData, connectedProvider, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (
