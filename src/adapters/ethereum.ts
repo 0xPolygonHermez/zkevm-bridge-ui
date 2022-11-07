@@ -5,7 +5,6 @@ import { BigNumber, constants as ethersConstants } from "ethers";
 import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
 
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
 import { selectTokenAddress } from "src/utils/tokens";
 import { Token, Chain, TxStatus, PermitTypeHash } from "src/domain";
@@ -45,7 +44,7 @@ const discoverPermitTypeHash = ({
   if (token.address === ethersConstants.AddressZero) {
     return Promise.reject();
   }
-  const contract = Erc20Permit__factory.connect(token.address, chain.provider);
+  const contract = Erc20__factory.connect(token.address, chain.provider);
   return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
     switch (permitTypehash) {
       case DAI_PERMIT_TYPEHASH: {
@@ -155,9 +154,9 @@ const permit = async ({
     throw new Error("Cannot perform a permit on ETH");
   }
 
-  const erc20PermitContract = Erc20Permit__factory.connect(token.address, provider.getSigner());
-  const nonce = await erc20PermitContract.nonces(owner);
-  const name = await erc20PermitContract.name();
+  const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
+  const nonce = await erc20Contract.nonces(owner);
+  const name = await erc20Contract.name();
   const deadline = ethersConstants.MaxUint256;
   const chainId = (await provider.getNetwork()).chainId;
   const domain = {
@@ -186,7 +185,7 @@ const permit = async ({
   const signature = await provider.getSigner()._signTypedData(domain, types, values);
   const { v, r, s } = splitSignature(signature);
 
-  return erc20PermitContract.interface.encodeFunctionData("permit", [
+  return erc20Contract.interface.encodeFunctionData("permit", [
     owner,
     spender,
     value,
