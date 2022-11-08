@@ -33,8 +33,6 @@ environment variable by your own:
 cp .env.example .env
 ```
 
-If you omit it, you won't be able to see token prices converted to your local fiat currency.
-
 If you want to see token prices converted to your local fiat currency in the UI you'll need to
 register [here](https://exchangeratesapi.io) to obtain an API Key. Once you get it, you need to set
 the `VITE_USE_FIAT_EXCHANGE_RATES` env var to `true` and fill this required env vars as well:
@@ -64,8 +62,8 @@ docker build . -t zkevm-bridge-ui:local
 ```
 
 The Docker image won't build the UI until you run it, in order to be able to use dynamic environment
-variables and facilitate the deployment process. The environment variables you need to pass are the
-same as those in the `.env.example` file but without the `VITE` prefix.
+variables and facilitate the deployment process. The env vars that you need to pass to the
+`docker run` cmd are the same as those in the `.env.example` file but without the `VITE` prefix.
 
 ## Disclaimer
 
