@@ -53,7 +53,7 @@ npm run dev
 ## Docker image
 
 A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically
-generate and push images to DockerHub on updates to the **develop** and **master** branches.
+generate and push images to DockerHub on updates to the **develop** and **main** branches.
 
 To locally generate a Docker image of the zkEVM Bridge UI, you can just run the following command:
 
