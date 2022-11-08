@@ -33,38 +33,39 @@ environment variable by your own:
 cp .env.example .env
 ```
 
-If you want to connect to some known environment, we provide three prefilled `.env` files, which you
-can also use to create your `.env` file:
+If you omit it, you won't be able to see token prices converted to your local fiat currency.
 
-- `.env.integration`: Locally deployed zkEVM.
-- `.env.internal-testnet`: Official internal testnet, which is used to do the official demos.
-- `.env.fetestnet`: Internal testnet used by us, the zkEVM Bridge UI team to speed up the
-  development.
+If you want to see token prices converted to your local fiat currency in the UI you'll need to
+register [here](https://exchangeratesapi.io) to obtain an API Key. Once you get it, you need to set
+the `VITE_USE_FIAT_EXCHANGE_RATES` env var to `true` and fill this required env vars as well:
 
-Take into account that regardless of the option you choose, you will need to manually add the
-`VITE_FIAT_EXCHANGE_RATES_API_KEY` environment variable, which you can obtain
-[here](https://exchangeratesapi.io/). If you omit it, you won't be able to see token prices
-converted to your local fiat currency.
+- `VITE_FIAT_EXCHANGE_RATES_API_URL`
+- `VITE_FIAT_EXCHANGE_RATES_API_KEY`
+- `VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS`
+
+If you just want to omit fiat conversion you can just disable this feature by setting the
+`VITE_USE_FIAT_EXCHANGE_RATES` env var to `false`.
+
+Finally, to run the UI in development mode, you just need to run:
+
+```sh
+npm run dev
+```
 
 ## Docker image
 
 A [GitHub action](.github/workflows/push-docker-develop.yml) is already configured to automatically
-generate and push images to DockerHub on updates to the **develop** branch.
+generate and push images to DockerHub on updates to the **develop** and **master** branches.
 
 To locally generate a Docker image of the zkEVM Bridge UI, you can just run the following command:
 
 ```sh
-docker build . --build-arg ENVIRONMENT=integration --build-arg VITE_FIAT_EXCHANGE_RATES_API_KEY=XXXX -t zkevm-bridge-ui:local
+docker build . -t zkevm-bridge-ui:local
 ```
 
-The `ENVIRONMENT` build-arg is just the name of any of the supported environments:
-
-- `integration`
-- `internal-testnet`
-- `fetestnet`
-
-And as we've seen before in the [development section](#development), you will also need to provide
-the `VITE_FIAT_EXCHANGE_RATES_API_KEY` environment variable as a build-arg.
+The Docker image won't build the UI until you run it, in order to be able to use dynamic environment
+variables and facilitate the deployment process. The environment variables you need to pass are the
+same as those in the `.env.example` file but without the `VITE` prefix.
 
 ## Disclaimer
 
