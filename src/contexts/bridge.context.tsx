@@ -13,6 +13,7 @@ import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import {
   BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE,
+  BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE,
   FIAT_DISPLAY_PRECISION,
   GAS_PRICE_INCREASE_PERCENTAGE,
   PENDING_TX_TIMEOUT,
@@ -51,6 +52,7 @@ interface EstimateBridgeGasParams {
   to: Chain;
   token: Token;
   destinationAddress: string;
+  tokenSpendPermission: TokenSpendPermission;
 }
 
 type FetchBridgeParams = {
@@ -672,7 +674,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeGas = useCallback(
-    async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
+    async ({
+      from,
+      to,
+      token,
+      destinationAddress,
+      tokenSpendPermission,
+    }: EstimateBridgeGasParams): Promise<Gas> => {
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
       const amount = BigNumber.from(0);
       const overrides: CallOverrides =
@@ -692,11 +700,17 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 overrides
               )
               .then((gasLimit) => {
-                const gasIncrease = gasLimit
+                const gasLimitIncrease = gasLimit
                   .div(BigNumber.from(100))
                   .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
 
-                return gasLimit.add(gasIncrease);
+                const permitGasLimitIncrease = BigNumber.from(
+                  BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE
+                );
+
+                return tokenSpendPermission.type === "permit"
+                  ? gasLimit.add(gasLimitIncrease).add(permitGasLimitIncrease)
+                  : gasLimit.add(gasLimitIncrease);
               })
           : BigNumber.from(300000);
 
@@ -746,7 +760,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         ...(gas
           ? gas.data
-          : (await estimateBridgeGas({ from, to, token, destinationAddress })).data),
+          : (await estimateBridgeGas({ from, to, token, destinationAddress, tokenSpendPermission }))
+              .data),
       };
 
       const executeBridge = async () => {
@@ -755,9 +770,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             ? await permit({
                 token,
                 provider: provider,
-                owner: account,
+                account: account,
                 spender: from.bridgeContractAddress,
                 value: amount,
+                permit: tokenSpendPermission.permit,
               })
             : "0x";
 

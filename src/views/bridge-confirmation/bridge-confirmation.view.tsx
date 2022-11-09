@@ -36,7 +36,7 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { Gas, TokenSpendPermission } from "src/domain";
+import { Gas, TokenSpendPermission, Permit } from "src/domain";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -70,7 +70,8 @@ const BridgeConfirmation: FC = () => {
       connectedProvider.status === "successful" &&
       estimatedGas.status === "pending" &&
       formData &&
-      tokenBalance
+      tokenBalance &&
+      tokenSpendPermission
     ) {
       const { from, to, token, amount } = formData;
       const destinationAddress = connectedProvider.data.account;
@@ -82,6 +83,7 @@ const BridgeConfirmation: FC = () => {
         to,
         token,
         destinationAddress,
+        tokenSpendPermission,
       })
         .then((gas: Gas) => {
           const newFee = calculateFee(gas);
@@ -132,6 +134,7 @@ const BridgeConfirmation: FC = () => {
     formData,
     notifyError,
     tokenBalance,
+    tokenSpendPermission,
   ]);
 
   useEffect(() => {
@@ -184,32 +187,40 @@ const BridgeConfirmation: FC = () => {
       if (isTokenEther) {
         setTokenSpendPermission({ type: "non-required" });
       } else {
-        discoverPermit({
-          chain: from,
-          token,
+        isContractAllowedToSpendToken({
+          provider: from.provider,
+          token: token,
+          amount: amount,
+          owner: connectedProvider.data.account,
+          spender: from.bridgeContractAddress,
         })
-          .then((permit) => {
+          .then((isAllowed) => {
             callIfMounted(() => {
-              setTokenSpendPermission({ type: "permit", permit });
+              if (isAllowed) {
+                setTokenSpendPermission({ type: "non-required" });
+              } else {
+                discoverPermit({
+                  chain: from,
+                  token,
+                })
+                  .then((permit) => {
+                    callIfMounted(() => {
+                      // ToDo: DAI permit is not supported by the contract until this PR is merged and deployed:
+                      // https://github.com/0xPolygonHermez/zkevm-contracts/pull/68
+                      if (permit === Permit.DAI) {
+                        setTokenSpendPermission({ type: "approve" });
+                      } else {
+                        setTokenSpendPermission({ type: "permit", permit });
+                      }
+                    });
+                  })
+                  .catch(() => {
+                    setTokenSpendPermission({ type: "approve" });
+                  });
+              }
             });
           })
-          .catch(() => {
-            void isContractAllowedToSpendToken({
-              provider: from.provider,
-              token: token,
-              amount: amount,
-              owner: connectedProvider.data.account,
-              spender: from.bridgeContractAddress,
-            })
-              .then((isAllowed) =>
-                callIfMounted(() => {
-                  setTokenSpendPermission(
-                    isAllowed ? { type: "non-required" } : { type: "approve" }
-                  );
-                })
-              )
-              .catch(notifyError);
-          });
+          .catch(notifyError);
       }
     }
   }, [formData, connectedProvider, notifyError, callIfMounted]);
@@ -287,7 +298,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           callIfMounted(() => {
             setApprovalTask({ status: "successful", data: null });
-            setTokenSpendPermission(undefined);
+            setTokenSpendPermission({ type: "non-required" });
           });
         })
         .catch((error) => {

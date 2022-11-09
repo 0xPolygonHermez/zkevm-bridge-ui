@@ -135,62 +135,121 @@ const isContractAllowedToSpendToken = async ({
 interface PermitParams {
   token: Token;
   provider: Web3Provider;
-  owner: string;
+  account: string;
   spender: string;
   value: BigNumber;
+  permit: Permit;
 }
 
 const permit = async ({
   token,
   provider,
-  owner,
+  account,
   spender,
   value,
+  permit,
 }: PermitParams): Promise<string> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot perform a permit on ETH");
   }
 
-  const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
-  const nonce = await erc20Contract.nonces(owner);
+  const signer = provider.getSigner();
+  const erc20Contract = Erc20__factory.connect(token.address, signer);
+  const nonce = await erc20Contract.nonces(account);
   const name = await erc20Contract.name();
-  const deadline = ethersConstants.MaxUint256;
+  const { MaxUint256 } = ethersConstants;
   const chainId = (await provider.getNetwork()).chainId;
-  const domain = {
-    name,
-    version: "1",
-    chainId: chainId,
-    verifyingContract: token.address,
-  };
-  const types = {
-    Permit: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" },
-    ],
-  };
-  const values = {
-    owner,
-    spender,
-    value,
-    nonce,
-    deadline,
-  };
 
-  const signature = await provider.getSigner()._signTypedData(domain, types, values);
-  const { v, r, s } = splitSignature(signature);
+  switch (permit) {
+    case Permit.DAI: {
+      const domain = {
+        name,
+        version: "1",
+        chainId,
+        verifyingContract: token.address,
+      };
 
-  return erc20Contract.interface.encodeFunctionData("permit", [
-    owner,
-    spender,
-    value,
-    deadline,
-    v,
-    r,
-    s,
-  ]);
+      const types = {
+        Permit: [
+          { name: "holder", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "nonce", type: "uint256" },
+          { name: "expiry", type: "uint256" },
+          { name: "allowed", type: "bool" },
+        ],
+      };
+
+      const values = {
+        holder: account,
+        spender,
+        nonce,
+        expiry: MaxUint256,
+        allowed: true,
+      };
+
+      const signature = await signer._signTypedData(domain, types, values);
+      const { v, r, s } = splitSignature(signature);
+
+      return erc20Contract.interface.encodeFunctionData("permit", [
+        account,
+        spender,
+        MaxUint256,
+        1,
+        v,
+        r,
+        s,
+      ]);
+    }
+    case Permit.EIP_2612_STANDARD:
+    case Permit.EIP_2612_UNISWAP: {
+      const eip2612StandardDomain = {
+        name,
+        version: "1",
+        chainId,
+        verifyingContract: token.address,
+      };
+
+      const eip2612UniswapDomain = {
+        name,
+        chainId,
+        verifyingContract: token.address,
+      };
+
+      const domain =
+        permit === Permit.EIP_2612_STANDARD ? eip2612StandardDomain : eip2612UniswapDomain;
+
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      };
+
+      const values = {
+        owner: account,
+        spender,
+        value,
+        nonce,
+        deadline: MaxUint256,
+      };
+
+      const signature = await signer._signTypedData(domain, types, values);
+      const { v, r, s } = splitSignature(signature);
+
+      return erc20Contract.interface.encodeFunctionData("permit", [
+        account,
+        spender,
+        value,
+        MaxUint256,
+        v,
+        r,
+        s,
+      ]);
+    }
+  }
 };
 
 interface GetErc20TokenMetadataParams {
