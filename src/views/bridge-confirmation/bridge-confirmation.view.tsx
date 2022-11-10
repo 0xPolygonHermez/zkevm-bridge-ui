@@ -22,7 +22,7 @@ import {
 } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { isPermitSupported } from "src/adapters/ethereum";
+import { getPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -36,7 +36,7 @@ import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { Gas } from "src/domain";
+import { Gas, TokenSpendPermission, Permit } from "src/domain";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -49,15 +49,14 @@ const BridgeConfirmation: FC = () => {
   const { openSnackbar } = useUIContext();
   const { connectedProvider } = useProvidersContext();
   const { getTokenPrice } = usePriceOracleContext();
-  const { approve, isContractAllowedToSpendToken, getErc20TokenBalance, tokens } =
-    useTokensContext();
+  const { approve, getErc20TokenBalance, tokens } = useTokensContext();
   const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxAmountConsideringFee, setMaxAmountConsideringFee] = useState<BigNumber>();
   const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
   const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
-  const [isTxApprovalRequired, setIsTxApprovalRequired] = useState<boolean>(false);
+  const [tokenSpendPermission, setTokenSpendPermission] = useState<TokenSpendPermission>();
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
     status: "pending",
   });
@@ -71,7 +70,8 @@ const BridgeConfirmation: FC = () => {
       connectedProvider.status === "successful" &&
       estimatedGas.status === "pending" &&
       formData &&
-      tokenBalance
+      tokenBalance &&
+      tokenSpendPermission
     ) {
       const { from, to, token, amount } = formData;
       const destinationAddress = connectedProvider.data.account;
@@ -83,6 +83,7 @@ const BridgeConfirmation: FC = () => {
         to,
         token,
         destinationAddress,
+        tokenSpendPermission,
       })
         .then((gas: Gas) => {
           const newFee = calculateFee(gas);
@@ -133,6 +134,7 @@ const BridgeConfirmation: FC = () => {
     formData,
     notifyError,
     tokenBalance,
+    tokenSpendPermission,
   ]);
 
   useEffect(() => {
@@ -183,38 +185,45 @@ const BridgeConfirmation: FC = () => {
       const isTokenEther = token.address === ethersConstants.AddressZero;
 
       if (isTokenEther) {
-        setIsTxApprovalRequired(false);
+        setTokenSpendPermission({ type: "none" });
       } else {
-        isPermitSupported({
-          account: connectedProvider.data.account,
-          chain: formData.from,
-          token,
+        isContractAllowedToSpendToken({
+          provider: from.provider,
+          token: token,
+          amount: amount,
+          owner: connectedProvider.data.account,
+          spender: from.bridgeContractAddress,
         })
-          .then((canUsePermit) => {
+          .then((isAllowed) => {
             callIfMounted(() => {
-              if (canUsePermit) {
-                setIsTxApprovalRequired(false);
+              if (isAllowed) {
+                setTokenSpendPermission({ type: "none" });
               } else {
-                void isContractAllowedToSpendToken({
-                  provider: from.provider,
-                  token: token,
-                  amount: amount,
-                  owner: connectedProvider.data.account,
-                  spender: from.bridgeContractAddress,
+                getPermit({
+                  chain: from,
+                  token,
                 })
-                  .then((isAllowed) =>
+                  .then((permit) => {
                     callIfMounted(() => {
-                      setIsTxApprovalRequired(!isAllowed);
-                    })
-                  )
-                  .catch(notifyError);
+                      // ToDo: DAI permit is not supported by the contract until this PR is merged and deployed:
+                      // https://github.com/0xPolygonHermez/zkevm-contracts/pull/68
+                      if (permit === Permit.DAI) {
+                        setTokenSpendPermission({ type: "approval" });
+                      } else {
+                        setTokenSpendPermission({ type: "permit", permit });
+                      }
+                    });
+                  })
+                  .catch(() => {
+                    setTokenSpendPermission({ type: "approval" });
+                  });
               }
             });
           })
           .catch(notifyError);
       }
     }
-  }, [formData, connectedProvider, isContractAllowedToSpendToken, notifyError, callIfMounted]);
+  }, [formData, connectedProvider, notifyError, callIfMounted]);
 
   useEffect(() => {
     if (
@@ -289,7 +298,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           callIfMounted(() => {
             setApprovalTask({ status: "successful", data: null });
-            setIsTxApprovalRequired(false);
+            setTokenSpendPermission({ type: "none" });
           });
         })
         .catch((error) => {
@@ -317,7 +326,8 @@ const BridgeConfirmation: FC = () => {
       formData &&
       isAsyncTaskDataAvailable(connectedProvider) &&
       isAsyncTaskDataAvailable(estimatedGas) &&
-      maxAmountConsideringFee
+      maxAmountConsideringFee &&
+      tokenSpendPermission
     ) {
       const { token, from, to } = formData;
 
@@ -329,6 +339,7 @@ const BridgeConfirmation: FC = () => {
         amount: maxAmountConsideringFee,
         to,
         destinationAddress: connectedProvider.data.account,
+        tokenSpendPermission,
         gas: estimatedGas.data,
       })
         .then(() => {
@@ -361,7 +372,8 @@ const BridgeConfirmation: FC = () => {
     !formData ||
     !tokenBalance ||
     !isAsyncTaskDataAvailable(estimatedGas) ||
-    !maxAmountConsideringFee
+    !maxAmountConsideringFee ||
+    !tokenSpendPermission
   ) {
     return <PageLoader />;
   }
@@ -457,12 +469,12 @@ const BridgeConfirmation: FC = () => {
         <BridgeButton
           isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
-          isTxApprovalRequired={isTxApprovalRequired}
+          isTxApprovalRequired={tokenSpendPermission.type === "approval"}
           approvalTask={approvalTask}
           onApprove={onApprove}
           onBridge={onBridge}
         />
-        {isTxApprovalRequired && <ApprovalInfo />}
+        {tokenSpendPermission.type === "approval" && <ApprovalInfo />}
         {error && <ErrorMessage error={error} />}
       </div>
       {feeErrorString && <ErrorMessage className={classes.error} error={feeErrorString} />}

@@ -13,6 +13,7 @@ import { useTokensContext } from "src/contexts/tokens.context";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import {
   BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE,
+  BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE,
   FIAT_DISPLAY_PRECISION,
   GAS_PRICE_INCREASE_PERCENTAGE,
   PENDING_TX_TIMEOUT,
@@ -24,13 +25,22 @@ import { isAsyncTaskDataAvailable } from "src/utils/types";
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
 import {
   permit,
-  isPermitSupported,
   getErc20TokenEncodedMetadata,
   isTxCanceled,
   isTxMined,
   hasTxBeenReverted,
 } from "src/adapters/ethereum";
-import { Env, Chain, Token, Bridge, OnHoldBridge, Deposit, PendingBridge, Gas } from "src/domain";
+import {
+  Env,
+  Chain,
+  Token,
+  Bridge,
+  OnHoldBridge,
+  Deposit,
+  PendingBridge,
+  Gas,
+  TokenSpendPermission,
+} from "src/domain";
 import * as storage from "src/adapters/storage";
 
 interface GetMaxEtherBridgeParams {
@@ -42,6 +52,7 @@ interface EstimateBridgeGasParams {
   to: Chain;
   token: Token;
   destinationAddress: string;
+  tokenSpendPermission: TokenSpendPermission;
 }
 
 type FetchBridgeParams = {
@@ -88,6 +99,7 @@ interface BridgeParams {
   amount: BigNumber;
   to: Chain;
   destinationAddress: string;
+  tokenSpendPermission: TokenSpendPermission;
   gas?: Gas;
 }
 
@@ -662,7 +674,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const estimateBridgeGas = useCallback(
-    async ({ from, to, token, destinationAddress }: EstimateBridgeGasParams): Promise<Gas> => {
+    async ({
+      from,
+      to,
+      token,
+      destinationAddress,
+      tokenSpendPermission,
+    }: EstimateBridgeGasParams): Promise<Gas> => {
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
       const amount = BigNumber.from(0);
       const overrides: CallOverrides =
@@ -682,11 +700,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 overrides
               )
               .then((gasLimit) => {
-                const gasIncrease = gasLimit
+                const gasLimitIncrease = gasLimit
                   .div(BigNumber.from(100))
                   .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
 
-                return gasLimit.add(gasIncrease);
+                const increasedGasLimit = gasLimit.add(gasLimitIncrease);
+
+                return tokenSpendPermission.type === "permit"
+                  ? increasedGasLimit.add(BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE)
+                  : increasedGasLimit;
               })
           : BigNumber.from(300000);
 
@@ -719,6 +741,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       amount,
       to,
       destinationAddress,
+      tokenSpendPermission,
       gas,
     }: BridgeParams): Promise<ContractTransaction> => {
       if (env === undefined) {
@@ -735,24 +758,22 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         value: token.address === ethersConstants.AddressZero ? amount : undefined,
         ...(gas
           ? gas.data
-          : (await estimateBridgeGas({ from, to, token, destinationAddress })).data),
+          : (await estimateBridgeGas({ from, to, token, destinationAddress, tokenSpendPermission }))
+              .data),
       };
 
       const executeBridge = async () => {
-        const canUsePermit = await isPermitSupported({
-          chain: from,
-          account,
-          token,
-        });
-        const permitData = canUsePermit
-          ? await permit({
-              token,
-              provider: provider,
-              owner: account,
-              spender: from.bridgeContractAddress,
-              value: amount,
-            })
-          : "0x";
+        const permitData =
+          tokenSpendPermission.type === "permit"
+            ? await permit({
+                token,
+                provider: provider,
+                account: account,
+                spender: from.bridgeContractAddress,
+                value: amount,
+                permit: tokenSpendPermission.permit,
+              })
+            : "0x";
 
         return contract
           .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)

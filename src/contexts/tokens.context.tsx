@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { BigNumber, constants as ethersConstants } from "ethers";
-import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import { Web3Provider } from "@ethersproject/providers";
 import axios from "axios";
 
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
@@ -58,14 +58,6 @@ interface GetErc20TokenBalanceParams {
   accountAddress: string;
 }
 
-interface IsContractAllowedToSpendTokenParams {
-  token: Token;
-  amount: BigNumber;
-  provider: JsonRpcProvider;
-  owner: string;
-  spender: string;
-}
-
 interface ApproveParams {
   from: Chain;
   token: Token;
@@ -81,7 +73,6 @@ interface TokensContext {
   getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
   getToken: (params: GetTokenParams) => Promise<Token>;
   getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
-  isContractAllowedToSpendToken: (params: IsContractAllowedToSpendTokenParams) => Promise<boolean>;
   approve: (params: ApproveParams) => Promise<void>;
 }
 
@@ -92,7 +83,6 @@ const tokensContext = createContext<TokensContext>({
   getTokenFromAddress: () => Promise.reject(tokensContextNotReadyMsg),
   getToken: () => Promise.reject(tokensContextNotReadyMsg),
   getErc20TokenBalance: () => Promise.reject(tokensContextNotReadyMsg),
-  isContractAllowedToSpendToken: () => Promise.reject(tokensContextNotReadyMsg),
   approve: () => Promise.reject(tokensContextNotReadyMsg),
 });
 
@@ -277,13 +267,6 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
     []
   );
 
-  const isContractAllowedToSpendToken = useCallback(
-    async ({ token, amount, provider, owner, spender }: IsContractAllowedToSpendTokenParams) => {
-      return ethereum.isContractAllowedToSpendToken({ token, amount, provider, owner, spender });
-    },
-    []
-  );
-
   const approve = useCallback(
     ({ from, token, amount, provider, owner, spender }: ApproveParams) => {
       if (!isAsyncTaskDataAvailable(connectedProvider)) {
@@ -335,18 +318,9 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       getToken,
       getErc20TokenBalance,
       addWrappedToken,
-      isContractAllowedToSpendToken,
       approve,
     };
-  }, [
-    tokens,
-    getTokenFromAddress,
-    getToken,
-    getErc20TokenBalance,
-    addWrappedToken,
-    isContractAllowedToSpendToken,
-    approve,
-  ]);
+  }, [tokens, getTokenFromAddress, getToken, getErc20TokenBalance, addWrappedToken, approve]);
 
   return <tokensContext.Provider value={value} {...props} />;
 };

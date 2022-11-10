@@ -7,6 +7,18 @@ import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficie
 import { ProviderError } from "src/adapters/error";
 import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
 
+export const DAI_PERMIT_TYPEHASH =
+  "0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb";
+
+export const EIP_2612_PERMIT_TYPEHASH =
+  "0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9";
+
+export const EIP_2612_DOMAIN_TYPEHASH =
+  "0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f";
+
+export const UNISWAP_DOMAIN_TYPEHASH =
+  "0x8cad95687ba82c2ce50e74f7b754645e5117c3a5bec8151c0726d5857980a866";
+
 export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
 export const UNISWAP_V2_ROUTER_02_INIT_CODE_HASH =
@@ -38,7 +50,9 @@ export const PENDING_TX_TIMEOUT = 30 * 60 * 1000; // 30min in ms
 
 export const BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE = 20; // 20%
 
-export const GAS_PRICE_INCREASE_PERCENTAGE = 50; //
+export const BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE = 50000;
+
+export const GAS_PRICE_INCREASE_PERCENTAGE = 50; // 50%
 
 export const REPORT_ERROR_FORM_ENTRIES = {
   url: "entry.2056392454",

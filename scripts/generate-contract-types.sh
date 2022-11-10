@@ -15,4 +15,3 @@ npx typechain --target ethers-v5 --out-dir $BASE_PATH/proof-of-efficiency "abis/
 
 # Generate ERC-20 contract types
 npx typechain --target ethers-v5 --out-dir $BASE_PATH/erc-20 "abis/erc-20.json"
-npx typechain --target ethers-v5 --out-dir $BASE_PATH/erc-20-permit "abis/erc-20-permit.json"

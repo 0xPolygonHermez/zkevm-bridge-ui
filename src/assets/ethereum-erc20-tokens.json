@@ -25,11 +25,19 @@
   },
   {
     "name": "Dai Stablecoin",
-    "address": "0x5C221E77624690fff6dd741493D735a17716c26B",
+    "address": "0xD7E55eB808693D5Ff81a3391c59886C7E0449f35",
     "symbol": "DAI",
     "decimals": 18,
     "chainId": 5,
     "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
+  },
+  {
+    "name": "Polygon",
+    "address": "0x4701Aa9471d7bfAc765D87dcb1Ea6BB23AD32733",
+    "chainId": 5,
+    "symbol": "MATIC",
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png"
   },
   {
     "name": "Wrapped Ether",

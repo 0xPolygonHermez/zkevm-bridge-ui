@@ -5,10 +5,15 @@ import { BigNumber, constants as ethersConstants } from "ethers";
 import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
 
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { Erc20Permit__factory } from "src/types/contracts/erc-20-permit";
 import { StrictSchema } from "src/utils/type-safety";
 import { selectTokenAddress } from "src/utils/tokens";
-import { Token, Chain, TxStatus } from "src/domain";
+import { Token, Chain, TxStatus, Permit } from "src/domain";
+import {
+  DAI_PERMIT_TYPEHASH,
+  EIP_2612_PERMIT_TYPEHASH,
+  EIP_2612_DOMAIN_TYPEHASH,
+  UNISWAP_DOMAIN_TYPEHASH,
+} from "src/constants";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
@@ -27,26 +32,43 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-interface IsPermitSupportedParams {
-  account: string;
+interface GetPermitParams {
   chain: Chain;
   token: Token;
 }
 
-const isPermitSupported = async ({
-  account,
-  chain,
-  token,
-}: IsPermitSupportedParams): Promise<boolean> => {
+const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
   if (token.address === ethersConstants.AddressZero) {
-    return false;
+    return Promise.reject(new Error("Native currency does't require permit"));
   }
-  const tokenContractWithPermit = Erc20Permit__factory.connect(token.address, chain.provider);
-  try {
-    return !!(await tokenContractWithPermit.nonces(account));
-  } catch (err) {
-    return false;
-  }
+  const contract = Erc20__factory.connect(token.address, chain.provider);
+  return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
+    switch (permitTypehash) {
+      case DAI_PERMIT_TYPEHASH: {
+        return Permit.DAI;
+      }
+      case EIP_2612_PERMIT_TYPEHASH: {
+        return Promise.any([contract.DOMAIN_TYPEHASH(), contract.EIP712DOMAIN_HASH()]).then(
+          (domainTypehash) => {
+            switch (domainTypehash) {
+              case EIP_2612_DOMAIN_TYPEHASH: {
+                return Permit.EIP_2612;
+              }
+              case UNISWAP_DOMAIN_TYPEHASH: {
+                return Permit.UNISWAP;
+              }
+              default: {
+                return Promise.reject(new Error(`Unsupported domain typehash: ${domainTypehash}`));
+              }
+            }
+          }
+        );
+      }
+      default: {
+        return Promise.reject(new Error(`Unsupported permit typehash: ${permitTypehash}`));
+      }
+    }
+  });
 };
 
 interface ApproveParams {
@@ -112,62 +134,120 @@ const isContractAllowedToSpendToken = async ({
 interface PermitParams {
   token: Token;
   provider: Web3Provider;
-  owner: string;
+  account: string;
   spender: string;
   value: BigNumber;
+  permit: Permit;
 }
 
 const permit = async ({
   token,
   provider,
-  owner,
+  account,
   spender,
   value,
+  permit,
 }: PermitParams): Promise<string> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot perform a permit on ETH");
   }
 
-  const erc20PermitContract = Erc20Permit__factory.connect(token.address, provider.getSigner());
-  const nonce = await erc20PermitContract.nonces(owner);
-  const name = await erc20PermitContract.name();
-  const deadline = ethersConstants.MaxUint256;
+  const signer = provider.getSigner();
+  const erc20Contract = Erc20__factory.connect(token.address, signer);
+  const nonce = await erc20Contract.nonces(account);
+  const name = await erc20Contract.name();
+  const { MaxUint256 } = ethersConstants;
   const chainId = (await provider.getNetwork()).chainId;
-  const domain = {
-    name,
-    version: "1",
-    chainId: chainId,
-    verifyingContract: token.address,
-  };
-  const types = {
-    Permit: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" },
-    ],
-  };
-  const values = {
-    owner,
-    spender,
-    value,
-    nonce,
-    deadline,
-  };
 
-  const signature = await provider.getSigner()._signTypedData(domain, types, values);
-  const { v, r, s } = splitSignature(signature);
+  switch (permit) {
+    case Permit.DAI: {
+      const domain = {
+        name,
+        version: "1",
+        chainId,
+        verifyingContract: token.address,
+      };
 
-  return erc20PermitContract.interface.encodeFunctionData("permit", [
-    owner,
-    spender,
-    value,
-    deadline,
-    v,
-    r,
-    s,
-  ]);
+      const types = {
+        Permit: [
+          { name: "holder", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "nonce", type: "uint256" },
+          { name: "expiry", type: "uint256" },
+          { name: "allowed", type: "bool" },
+        ],
+      };
+
+      const values = {
+        holder: account,
+        spender,
+        nonce,
+        expiry: MaxUint256,
+        allowed: true,
+      };
+
+      const signature = await signer._signTypedData(domain, types, values);
+      const { v, r, s } = splitSignature(signature);
+
+      return erc20Contract.interface.encodeFunctionData("permit", [
+        account,
+        spender,
+        MaxUint256,
+        1,
+        v,
+        r,
+        s,
+      ]);
+    }
+    case Permit.EIP_2612:
+    case Permit.UNISWAP: {
+      const eip2612StandardDomain = {
+        name,
+        version: "1",
+        chainId,
+        verifyingContract: token.address,
+      };
+
+      const eip2612UniswapDomain = {
+        name,
+        chainId,
+        verifyingContract: token.address,
+      };
+
+      const domain = permit === Permit.EIP_2612 ? eip2612StandardDomain : eip2612UniswapDomain;
+
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      };
+
+      const values = {
+        owner: account,
+        spender,
+        value,
+        nonce,
+        deadline: MaxUint256,
+      };
+
+      const signature = await signer._signTypedData(domain, types, values);
+      const { v, r, s } = splitSignature(signature);
+
+      return erc20Contract.interface.encodeFunctionData("permit", [
+        account,
+        spender,
+        value,
+        MaxUint256,
+        v,
+        r,
+        s,
+      ]);
+    }
+  }
 };
 
 interface GetErc20TokenMetadataParams {
@@ -228,7 +308,7 @@ export {
   ethereumAccountsParser,
   silentlyGetConnectedAccounts,
   getConnectedAccounts,
-  isPermitSupported,
+  getPermit,
   approve,
   isContractAllowedToSpendToken,
   permit,

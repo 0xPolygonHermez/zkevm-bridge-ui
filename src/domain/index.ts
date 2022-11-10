@@ -208,3 +208,21 @@ export type Gas =
         gasPrice: BigNumber;
       };
     };
+
+export type TokenSpendPermission =
+  | {
+      type: "none";
+    }
+  | {
+      type: "approval";
+    }
+  | {
+      type: "permit";
+      permit: Permit;
+    };
+
+export enum Permit {
+  DAI = "DAI",
+  EIP_2612 = "EIP_2612",
+  UNISWAP = "UNISWAP",
+}
