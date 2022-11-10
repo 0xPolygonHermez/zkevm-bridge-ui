@@ -39,7 +39,7 @@ interface DiscoverPermitParams {
 
 const discoverPermit = ({ chain, token }: DiscoverPermitParams): Promise<Permit> => {
   if (token.address === ethersConstants.AddressZero) {
-    return Promise.reject();
+    return Promise.reject(new Error("Native currency does't require permit"));
   }
   const contract = Erc20__factory.connect(token.address, chain.provider);
   return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
@@ -60,13 +60,13 @@ const discoverPermit = ({ chain, token }: DiscoverPermitParams): Promise<Permit>
                 return Permit.EIP_2612_UNISWAP;
               }
               default: {
-                return Promise.reject();
+                return Promise.reject(new Error(`Unsupported domain typehash: ${domainTypehash}`));
               }
             }
           });
       }
       default: {
-        return Promise.reject();
+        return Promise.reject(new Error(`Unsupported permit typehash: ${permitTypehash}`));
       }
     }
   });
