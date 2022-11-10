@@ -32,12 +32,12 @@ const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
     .then((accounts) => ethereumAccountsParser.parse(accounts));
 };
 
-interface DiscoverPermitParams {
+interface GetPermitParams {
   chain: Chain;
   token: Token;
 }
 
-const discoverPermit = ({ chain, token }: DiscoverPermitParams): Promise<Permit> => {
+const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
   if (token.address === ethersConstants.AddressZero) {
     return Promise.reject(new Error("Native currency does't require permit"));
   }
@@ -310,7 +310,7 @@ export {
   ethereumAccountsParser,
   silentlyGetConnectedAccounts,
   getConnectedAccounts,
-  discoverPermit,
+  getPermit,
   approve,
   isContractAllowedToSpendToken,
   permit,

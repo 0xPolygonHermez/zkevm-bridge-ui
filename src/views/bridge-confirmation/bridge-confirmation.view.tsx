@@ -22,7 +22,7 @@ import {
 } from "src/utils/types";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
-import { discoverPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
+import { getPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
@@ -199,7 +199,7 @@ const BridgeConfirmation: FC = () => {
               if (isAllowed) {
                 setTokenSpendPermission({ type: "allowed" });
               } else {
-                discoverPermit({
+                getPermit({
                   chain: from,
                   token,
                 })
