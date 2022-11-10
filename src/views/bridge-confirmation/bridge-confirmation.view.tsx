@@ -208,14 +208,14 @@ const BridgeConfirmation: FC = () => {
                       // ToDo: DAI permit is not supported by the contract until this PR is merged and deployed:
                       // https://github.com/0xPolygonHermez/zkevm-contracts/pull/68
                       if (permit === Permit.DAI) {
-                        setTokenSpendPermission({ type: "approve" });
+                        setTokenSpendPermission({ type: "approval" });
                       } else {
                         setTokenSpendPermission({ type: "permit", permit });
                       }
                     });
                   })
                   .catch(() => {
-                    setTokenSpendPermission({ type: "approve" });
+                    setTokenSpendPermission({ type: "approval" });
                   });
               }
             });
@@ -469,12 +469,12 @@ const BridgeConfirmation: FC = () => {
         <BridgeButton
           isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
           token={token}
-          isTxApprovalRequired={tokenSpendPermission.type === "approve"}
+          isTxApprovalRequired={tokenSpendPermission.type === "approval"}
           approvalTask={approvalTask}
           onApprove={onApprove}
           onBridge={onBridge}
         />
-        {tokenSpendPermission.type === "approve" && <ApprovalInfo />}
+        {tokenSpendPermission.type === "approval" && <ApprovalInfo />}
         {error && <ErrorMessage error={error} />}
       </div>
       {feeErrorString && <ErrorMessage className={classes.error} error={feeErrorString} />}

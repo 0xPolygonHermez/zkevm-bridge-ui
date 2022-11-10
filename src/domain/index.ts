@@ -214,7 +214,7 @@ export type TokenSpendPermission =
       type: "none";
     }
   | {
-      type: "approve";
+      type: "approval";
     }
   | {
       type: "permit";
