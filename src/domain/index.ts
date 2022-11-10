@@ -211,7 +211,7 @@ export type Gas =
 
 export type TokenSpendPermission =
   | {
-      type: "allowed";
+      type: "none";
     }
   | {
       type: "approve";

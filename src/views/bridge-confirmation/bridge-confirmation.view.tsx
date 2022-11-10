@@ -185,7 +185,7 @@ const BridgeConfirmation: FC = () => {
       const isTokenEther = token.address === ethersConstants.AddressZero;
 
       if (isTokenEther) {
-        setTokenSpendPermission({ type: "allowed" });
+        setTokenSpendPermission({ type: "none" });
       } else {
         isContractAllowedToSpendToken({
           provider: from.provider,
@@ -197,7 +197,7 @@ const BridgeConfirmation: FC = () => {
           .then((isAllowed) => {
             callIfMounted(() => {
               if (isAllowed) {
-                setTokenSpendPermission({ type: "allowed" });
+                setTokenSpendPermission({ type: "none" });
               } else {
                 getPermit({
                   chain: from,
@@ -298,7 +298,7 @@ const BridgeConfirmation: FC = () => {
         .then(() => {
           callIfMounted(() => {
             setApprovalTask({ status: "successful", data: null });
-            setTokenSpendPermission({ type: "allowed" });
+            setTokenSpendPermission({ type: "none" });
           });
         })
         .catch((error) => {
