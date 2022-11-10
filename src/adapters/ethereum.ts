@@ -11,8 +11,8 @@ import { Token, Chain, TxStatus, Permit } from "src/domain";
 import {
   DAI_PERMIT_TYPEHASH,
   EIP_2612_PERMIT_TYPEHASH,
-  EIP_2612_STANDARD_DOMAIN_TYPEHASH,
-  EIP_2612_UNISWAP_DOMAIN_TYPEHASH,
+  EIP_2612_DOMAIN_TYPEHASH,
+  UNISWAP_DOMAIN_TYPEHASH,
 } from "src/constants";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
@@ -51,11 +51,11 @@ const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
         return Promise.any([contract.DOMAIN_TYPEHASH(), contract.EIP712DOMAIN_HASH()]).then(
           (domainTypehash) => {
             switch (domainTypehash) {
-              case EIP_2612_STANDARD_DOMAIN_TYPEHASH: {
-                return Permit.EIP_2612_STANDARD;
+              case EIP_2612_DOMAIN_TYPEHASH: {
+                return Permit.EIP_2612;
               }
-              case EIP_2612_UNISWAP_DOMAIN_TYPEHASH: {
-                return Permit.EIP_2612_UNISWAP;
+              case UNISWAP_DOMAIN_TYPEHASH: {
+                return Permit.UNISWAP;
               }
               default: {
                 return Promise.reject(new Error(`Unsupported domain typehash: ${domainTypehash}`));
@@ -199,8 +199,8 @@ const permit = async ({
         s,
       ]);
     }
-    case Permit.EIP_2612_STANDARD:
-    case Permit.EIP_2612_UNISWAP: {
+    case Permit.EIP_2612:
+    case Permit.UNISWAP: {
       const eip2612StandardDomain = {
         name,
         version: "1",
@@ -214,8 +214,7 @@ const permit = async ({
         verifyingContract: token.address,
       };
 
-      const domain =
-        permit === Permit.EIP_2612_STANDARD ? eip2612StandardDomain : eip2612UniswapDomain;
+      const domain = permit === Permit.EIP_2612 ? eip2612StandardDomain : eip2612UniswapDomain;
 
       const types = {
         Permit: [

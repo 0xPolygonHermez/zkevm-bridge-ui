@@ -223,6 +223,6 @@ export type TokenSpendPermission =
 
 export enum Permit {
   DAI = "DAI",
-  EIP_2612_STANDARD = "EIP_2612_STANDARD",
-  EIP_2612_UNISWAP = "EIP_2612_UNISWAP",
+  EIP_2612 = "EIP_2612",
+  UNISWAP = "UNISWAP",
 }
