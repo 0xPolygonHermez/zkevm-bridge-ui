@@ -48,10 +48,8 @@ const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
         return Permit.DAI;
       }
       case EIP_2612_PERMIT_TYPEHASH: {
-        return contract
-          .DOMAIN_TYPEHASH()
-          .catch(() => contract.EIP712DOMAIN_HASH())
-          .then((domainTypehash) => {
+        return Promise.any([contract.DOMAIN_TYPEHASH(), contract.EIP712DOMAIN_HASH()]).then(
+          (domainTypehash) => {
             switch (domainTypehash) {
               case EIP_2612_STANDARD_DOMAIN_TYPEHASH: {
                 return Permit.EIP_2612_STANDARD;
@@ -63,7 +61,8 @@ const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
                 return Promise.reject(new Error(`Unsupported domain typehash: ${domainTypehash}`));
               }
             }
-          });
+          }
+        );
       }
       default: {
         return Promise.reject(new Error(`Unsupported permit typehash: ${permitTypehash}`));
