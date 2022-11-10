@@ -704,13 +704,11 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                   .div(BigNumber.from(100))
                   .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
 
-                const permitGasLimitIncrease = BigNumber.from(
-                  BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE
-                );
+                const increasedGasLimit = gasLimit.add(gasLimitIncrease);
 
                 return tokenSpendPermission.type === "permit"
-                  ? gasLimit.add(gasLimitIncrease).add(permitGasLimitIncrease)
-                  : gasLimit.add(gasLimitIncrease);
+                  ? increasedGasLimit.add(BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE)
+                  : increasedGasLimit;
               })
           : BigNumber.from(300000);
 
