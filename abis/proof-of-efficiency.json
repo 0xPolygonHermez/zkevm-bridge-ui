@@ -137,6 +137,12 @@
         "type": "uint64"
       },
       {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stateRoot",
+        "type": "bytes32"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "aggregator",
@@ -180,6 +186,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "name": "batchNumToStateRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -258,19 +283,6 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "currentStateRoot",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -731,6 +743,11 @@
         "internalType": "bytes32",
         "name": "newStateRoot",
         "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "batchNum",
+        "type": "uint64"
       }
     ],
     "name": "setStateRoot",
