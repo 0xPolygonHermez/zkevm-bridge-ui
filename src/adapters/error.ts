@@ -1,9 +1,9 @@
-import { z, ZodError } from "zod";
-import * as platform from "platform";
+import platform from "platform";
 import * as StackTrace from "stacktrace-js";
+import { ZodError, z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
 import { REPORT_ERROR_FORM_ENTRIES, REPORT_ERROR_FORM_URL } from "src/constants";
+import { StrictSchema } from "src/utils/type-safety";
 
 interface MessageKeyError {
   message: string;
@@ -17,21 +17,21 @@ const messageKeyErrorParser = StrictSchema<MessageKeyError>()(
 
 export interface JsonRpcError {
   code: number;
-  message: string;
   data: {
     code: number;
     message: string;
   };
+  message: string;
 }
 
 export const jsonRpcError = StrictSchema<JsonRpcError>()(
   z.object({
     code: z.number(),
-    message: z.string(),
     data: z.object({
       code: z.number(),
       message: z.string(),
     }),
+    message: z.string(),
   })
 );
 

@@ -1,16 +1,38 @@
 import { createUseStyles } from "react-jss";
 
-import { Theme } from "src/styles/theme";
 import { Bridge } from "src/domain";
+import { Theme } from "src/styles/theme";
 
 interface StylesProps {
   status?: Bridge["status"];
 }
 
 const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
+  alignRow: {
+    alignItems: "center",
+    display: "flex",
+    gap: theme.spacing(1),
+  },
+  balance: {
+    alignItems: "center",
+    borderBottom: `1px solid ${theme.palette.grey.light}`,
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(1),
+    justifyContent: "center",
+    marginBottom: theme.spacing(1.5),
+    paddingBottom: theme.spacing(3),
+  },
+  card: {
+    margin: [theme.spacing(5), "auto", 0],
+    maxWidth: theme.maxWidth,
+    padding: theme.spacing(3),
+    width: "100%",
+  },
+  contentWrapper: {
+    padding: [0, theme.spacing(2)],
+  },
   dot: {
-    width: 6,
-    height: 6,
     backgroundColor: ({ status }: StylesProps) => {
       switch (status) {
         case "completed":
@@ -22,72 +44,32 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
       }
     },
     borderRadius: "50%",
+    height: 6,
+    width: 6,
   },
-  card: {
-    padding: theme.spacing(3),
-    width: "100%",
-    maxWidth: theme.maxWidth,
-    margin: [theme.spacing(5), "auto", 0],
-  },
-  balance: {
-    display: "flex",
-    justifyContent: "center",
+  explorerButton: {
+    "&:hover": {
+      backgroundColor: theme.palette.grey.main,
+    },
     alignItems: "center",
-    flexDirection: "column",
+    backgroundColor: theme.palette.grey.light,
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    display: "flex",
     gap: theme.spacing(1),
-    borderBottom: `1px solid ${theme.palette.grey.light}`,
-    paddingBottom: theme.spacing(3),
-    marginBottom: theme.spacing(1.5),
-  },
-  tokenIcon: {
-    width: 48,
-    height: 48,
-    margin: [theme.spacing(1), 0, theme.spacing(2)],
+    padding: [theme.spacing(1), theme.spacing(2)],
   },
   fiat: {
     color: theme.palette.grey.dark,
     fontSize: 14,
   },
-  row: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    flexDirection: "column",
-    padding: [theme.spacing(2), 0],
-    gap: theme.spacing(1),
-    [theme.breakpoints.upSm]: {
-      alignItems: "center",
-      flexDirection: "row",
-      padding: [theme.spacing(2.5), 0],
-    },
-  },
-  alignRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-  },
-  lastRow: {
-    paddingBottom: 0,
-  },
-  explorerButton: {
-    display: "flex",
-    cursor: "pointer",
-    padding: [theme.spacing(1), theme.spacing(2)],
-    gap: theme.spacing(1),
-    alignItems: "center",
-    border: "none",
-    borderRadius: 8,
-    backgroundColor: theme.palette.grey.light,
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
-  },
   finaliseRow: {
+    alignItems: "center",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
     gap: theme.spacing(1),
+    justifyContent: "center",
     margin: [theme.spacing(3), 0],
     [theme.breakpoints.upSm]: {
       margin: [theme.spacing(6), 0],
@@ -98,8 +80,26 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
       fill: theme.palette.white,
     },
   },
-  contentWrapper: {
-    padding: [0, theme.spacing(2)],
+  lastRow: {
+    paddingBottom: 0,
+  },
+  row: {
+    alignItems: "flex-start",
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(1),
+    justifyContent: "space-between",
+    padding: [theme.spacing(2), 0],
+    [theme.breakpoints.upSm]: {
+      alignItems: "center",
+      flexDirection: "row",
+      padding: [theme.spacing(2.5), 0],
+    },
+  },
+  tokenIcon: {
+    height: 48,
+    margin: [theme.spacing(1), 0, theme.spacing(2)],
+    width: 48,
   },
 }));
 

@@ -5,72 +5,72 @@ import { Theme } from "src/styles/theme";
 const useAppStyles = createUseStyles((theme: Theme) => ({
   "@font-face": [
     {
-      fontFamily: "Modern Era",
-      src: "url('/fonts/modern-era/ModernEra-Regular.woff2') format('woff2')",
       fallbacks: [
         { src: "url('/fonts/modern-era/ModernEra-Regular.woff') format('woff')" },
         { src: "url('/fonts/modern-era/ModernEra-Regular.ttf') format('truetype')" },
       ],
-      fontWeight: 400,
+      fontFamily: "Modern Era",
       fontStyle: "normal",
+      fontWeight: 400,
+      src: "url('/fonts/modern-era/ModernEra-Regular.woff2') format('woff2')",
     },
     {
-      fontFamily: "Modern Era",
-      src: "url('/fonts/modern-era/ModernEra-Medium.woff2') format('woff2')",
       fallbacks: [
         { src: "url('/fonts/modern-era/ModernEra-Medium.woff') format('woff')" },
         { src: "url('/fonts/modern-era/ModernEra-Medium.ttf') format('truetype')" },
       ],
-      fontWeight: 500,
+      fontFamily: "Modern Era",
       fontStyle: "normal",
+      fontWeight: 500,
+      src: "url('/fonts/modern-era/ModernEra-Medium.woff2') format('woff2')",
     },
     {
-      fontFamily: "Modern Era",
-      src: "url('/fonts/modern-era/ModernEra-Bold.woff2') format('woff2')",
       fallbacks: [
         { src: "url('/fonts/modern-era/ModernEra-Bold.woff') format('woff')" },
         { src: "url('/fonts/modern-era/ModernEra-Bold.ttf') format('truetype')" },
       ],
-      fontWeight: 700,
+      fontFamily: "Modern Era",
       fontStyle: "normal",
+      fontWeight: 700,
+      src: "url('/fonts/modern-era/ModernEra-Bold.woff2') format('woff2')",
     },
     {
-      fontFamily: "Modern Era",
-      src: "url('/fonts/modern-era/ModernEra-ExtraBold.woff2') format('woff2')",
       fallbacks: [
         { src: "url('/fonts/modern-era/ModernEra-ExtraBold.woff') format('woff')" },
         { src: "url('/fonts/modern-era/ModernEra-ExtraBold.ttf') format('truetype')" },
       ],
-      fontWeight: 800,
+      fontFamily: "Modern Era",
       fontStyle: "normal",
+      fontWeight: 800,
+      src: "url('/fonts/modern-era/ModernEra-ExtraBold.woff2') format('woff2')",
     },
   ],
   "@global": {
-    "*": {
-      boxSizing: "border-box",
-    },
-    body: {
-      fontFamily: "Modern Era",
-      fontSize: 16,
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      color: theme.palette.black,
-    },
     "#app-root": {
-      zIndex: 0,
-      position: "relative",
-      display: "flex",
-      flexDirection: "column",
       alignItems: "center",
+      display: "flex",
       flex: 1,
+      flexDirection: "column",
+      position: "relative",
+      zIndex: 0,
     },
     "#portal-root": {
       zIndex: 1,
     },
+    "*": {
+      boxSizing: "border-box",
+    },
     a: {
-      textDecoration: "none",
       color: "inherit",
+      textDecoration: "none",
+    },
+    body: {
+      color: theme.palette.black,
+      display: "flex",
+      flexDirection: "column",
+      fontFamily: "Modern Era",
+      fontSize: 16,
+      minHeight: "100vh",
     },
     "input[type='search']::-webkit-search-cancel-button": {
       "-webkit-appearance": "none",

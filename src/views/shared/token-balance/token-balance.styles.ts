@@ -4,8 +4,8 @@ import { Theme } from "src/styles/theme";
 
 const useTokenBalanceStyles = createUseStyles((theme: Theme) => ({
   loader: {
-    display: "flex",
     alignItems: "center",
+    display: "flex",
     gap: theme.spacing(0.25),
   },
 }));

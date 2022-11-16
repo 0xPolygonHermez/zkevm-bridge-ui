@@ -1,35 +1,35 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
+import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
-import Typography from "src/views/shared/typography/typography.view";
-import Card from "src/views/shared/card/card.view";
-import routes from "src/routes";
-import Icon from "src/views/shared/icon/icon.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import { Bridge } from "src/domain";
+import routes from "src/routes";
+import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount, formatFiatAmount } from "src/utils/amounts";
-import { getCurrency } from "src/adapters/storage";
+import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
+import Card from "src/views/shared/card/card.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
+import Icon from "src/views/shared/icon/icon.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 export interface BridgeCardProps {
   bridge: Bridge;
-  networkError: boolean;
   isFinaliseDisabled: boolean;
-  showFiatAmount: boolean;
+  networkError: boolean;
   onClaim?: () => void;
+  showFiatAmount: boolean;
 }
 
 const BridgeCard: FC<BridgeCardProps> = ({
   bridge,
-  networkError,
-  showFiatAmount,
   isFinaliseDisabled,
+  networkError,
   onClaim,
+  showFiatAmount,
 }) => {
-  const { status, to, amount, token, fiatAmount } = bridge;
+  const { amount, fiatAmount, status, to, token } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
 
@@ -50,7 +50,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
 
   const bridgeAmount = (
     <div className={classes.token}>
-      <Icon url={token.logoURI} className={classes.tokenIcon} size={20} />
+      <Icon className={classes.tokenIcon} size={20} url={token.logoURI} />
       <Typography type="body1">{tokenAmountString}</Typography>
     </div>
   );
@@ -75,7 +75,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
           </div>
           <div className={classes.info}>
             <div className={classes.row}>
-              <Typography type="body1" className={classes.label}>
+              <Typography className={classes.label} type="body1">
                 {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
               </Typography>
               {fiatAmountString && bridgeAmount}
@@ -93,7 +93,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
                 {getBridgeStatus(status)}
               </span>
               {fiatAmountString && (
-                <Typography type="body1" className={classes.fiat}>
+                <Typography className={classes.fiat} type="body1">
                   {fiatAmountString}
                 </Typography>
               )}
@@ -109,7 +109,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
           ) : (
             <Typography type="body2">Waiting for validity proof</Typography>
           )}
-          <button disabled className={classes.finaliseButton}>
+          <button className={classes.finaliseButton} disabled>
             Finalise
           </button>
         </div>
@@ -122,9 +122,9 @@ const BridgeCard: FC<BridgeCardProps> = ({
             <Typography type="body2">Signature required to finalise the bridge</Typography>
           )}
           <button
+            className={classes.finaliseButton}
             disabled={isFinaliseDisabled}
             onClick={onClick}
-            className={classes.finaliseButton}
           >
             Finalise
           </button>

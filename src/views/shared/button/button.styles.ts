@@ -7,32 +7,32 @@ interface StyleProps {
 }
 
 const useButtonStyles = createUseStyles((theme: Theme) => ({
-  spinner: {
-    paddingLeft: ({ addSpinnerSpacing }: StyleProps) =>
-      addSpinnerSpacing ? theme.spacing(1.5) : 0,
-  },
   button: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
-    fontSize: "20px",
-    lineHeight: "24px",
-    padding: [theme.spacing(2), theme.spacing(10)],
-    borderRadius: 80,
-    border: "none",
-    minWidth: "260px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: theme.hoverTransition,
+    "&:disabled": {
+      backgroundColor: theme.palette.grey.dark,
+      cursor: "default",
+      opacity: 0.4,
+    },
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
     },
-    "&:disabled": {
-      backgroundColor: theme.palette.grey.dark,
-      opacity: 0.4,
-      cursor: "default",
-    },
+    alignItems: "center",
+    backgroundColor: theme.palette.primary.main,
+    border: "none",
+    borderRadius: 80,
+    color: theme.palette.white,
+    cursor: "pointer",
+    display: "flex",
+    fontSize: "20px",
+    justifyContent: "center",
+    lineHeight: "24px",
+    minWidth: "260px",
+    padding: [theme.spacing(2), theme.spacing(10)],
+    transition: theme.hoverTransition,
+  },
+  spinner: {
+    paddingLeft: ({ addSpinnerSpacing }: StyleProps) =>
+      addSpinnerSpacing ? theme.spacing(1.5) : 0,
   },
 }));
 

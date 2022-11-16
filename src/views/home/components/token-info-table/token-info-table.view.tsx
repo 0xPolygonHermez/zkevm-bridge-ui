@@ -1,21 +1,21 @@
-import { FC } from "react";
 import { constants as ethersConstants } from "ethers";
+import { FC } from "react";
 
-import useTokenInfoTableStyles from "src/views/home/components/token-info-table/token-info-table.styles";
-import Typography from "src/views/shared/typography/typography.view";
-import { getShortenedEthereumAddress } from "src/utils/addresses";
-import { copyToClipboard } from "src/utils/browser";
-import { Token } from "src/domain";
-import { useEnvContext } from "src/contexts/env.context";
 import { ReactComponent as CopyIcon } from "src/assets/icons/copy.svg";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
+import { useEnvContext } from "src/contexts/env.context";
+import { Token } from "src/domain";
+import { getShortenedEthereumAddress } from "src/utils/addresses";
+import { copyToClipboard } from "src/utils/browser";
+import useTokenInfoTableStyles from "src/views/home/components/token-info-table/token-info-table.styles";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface TokenInfoTableProps {
-  token: Token;
   className?: string;
+  token: Token;
 }
 
-const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
+const TokenInfoTable: FC<TokenInfoTableProps> = ({ className, token }) => {
   const classes = useTokenInfoTableStyles();
   const env = useEnvContext();
 
@@ -25,10 +25,10 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
   const nameRow = (
     <div className={classes.row}>
-      <Typography type="body2" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body2">
         Token name
       </Typography>
-      <Typography type="body1" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body1">
         {token.name}
       </Typography>
     </div>
@@ -36,10 +36,10 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
   const symbolRow = (
     <div className={classes.row}>
-      <Typography type="body2" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body2">
         Token symbol
       </Typography>
-      <Typography type="body1" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body1">
         {token.symbol}
       </Typography>
     </div>
@@ -47,10 +47,10 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
   const decimalsRow = (
     <div className={classes.row}>
-      <Typography type="body2" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body2">
         Token decimals
       </Typography>
-      <Typography type="body1" className={classes.alignRow}>
+      <Typography className={classes.alignRow} type="body1">
         {token.decimals}
       </Typography>
     </div>
@@ -62,11 +62,11 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
     const ethereumRow = (
       <div className={classes.row}>
-        <Typography type="body2" className={classes.alignRow}>
+        <Typography className={classes.alignRow} type="body2">
           <ethereum.Icon className={classes.chainIcon} />
           L1 token address
         </Typography>
-        <Typography type="body1" className={classes.alignRow}>
+        <Typography className={classes.alignRow} type="body1">
           {getShortenedEthereumAddress(ethersConstants.AddressZero)}
         </Typography>
       </div>
@@ -74,11 +74,11 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
     const polygonZkEVMRow = (
       <div className={classes.row}>
-        <Typography type="body2" className={classes.alignRow}>
+        <Typography className={classes.alignRow} type="body2">
           <polygonZkEVM.Icon className={classes.chainIcon} />
           L2 token address
         </Typography>
-        <Typography type="body1" className={classes.alignRow}>
+        <Typography className={classes.alignRow} type="body1">
           {getShortenedEthereumAddress(ethersConstants.AddressZero)}
         </Typography>
       </div>
@@ -107,12 +107,12 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
 
     const nativeAddressRow = nativeTokenChain ? (
       <div className={classes.row}>
-        <Typography type="body2" className={classes.alignRow}>
+        <Typography className={classes.alignRow} type="body2">
           <nativeTokenChain.Icon className={classes.chainIcon} />
           {`${nativeTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
         </Typography>
         <div className={classes.rowRightBlock}>
-          <Typography type="body1" className={classes.tokenAddress}>
+          <Typography className={classes.tokenAddress} type="body1">
             {getShortenedEthereumAddress(nativeTokenAddress)}
           </Typography>
           <button
@@ -126,8 +126,8 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
           <a
             className={classes.button}
             href={`${nativeTokenChain.explorerUrl}/address/${nativeTokenAddress}`}
-            target="_blank"
             rel="noreferrer"
+            target="_blank"
           >
             <NewWindowIcon className={classes.newWindowIcon} />
           </a>
@@ -138,12 +138,12 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
     const wrappedAddressRow =
       wrappedTokenChain && wrappedTokenAddress ? (
         <div className={classes.row}>
-          <Typography type="body2" className={classes.alignRow}>
+          <Typography className={classes.alignRow} type="body2">
             <wrappedTokenChain.Icon className={classes.chainIcon} />
             {`${wrappedTokenChain.key === "ethereum" ? "L1" : "L2"} token address`}
           </Typography>
           <div className={classes.rowRightBlock}>
-            <Typography type="body1" className={classes.tokenAddress}>
+            <Typography className={classes.tokenAddress} type="body1">
               {getShortenedEthereumAddress(wrappedTokenAddress)}
             </Typography>
             <button
@@ -157,8 +157,8 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ token, className }) => {
             <a
               className={classes.button}
               href={`${wrappedTokenChain.explorerUrl}/address/${wrappedTokenAddress}`}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <NewWindowIcon className={classes.newWindowIcon} />
             </a>

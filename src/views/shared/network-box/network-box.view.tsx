@@ -1,24 +1,24 @@
 import { FC, useState } from "react";
 
+import { parseError } from "src/adapters/error";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
+import { POLYGON_SUPPORT_URL } from "src/constants";
 import { useEnvContext } from "src/contexts/env.context";
+import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { useErrorContext } from "src/contexts/error.context";
+import { Message } from "src/domain";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import Card from "src/views/shared/card/card.view";
 import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
 import Typography from "src/views/shared/typography/typography.view";
-import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { parseError } from "src/adapters/error";
-import { Message } from "src/domain";
-import { POLYGON_SUPPORT_URL } from "src/constants";
 
 const NetworkBox: FC = () => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
-  const { connectedProvider, addNetwork } = useProvidersContext();
+  const { addNetwork, connectedProvider } = useProvidersContext();
   const [isAddNetworkButtonDisabled, setIsAddNetworkButtonDisabled] = useState(false);
   const { openSnackbar } = useUIContext();
   const callIfMounted = useCallIfMounted();
@@ -32,8 +32,8 @@ const NetworkBox: FC = () => {
   const polygonZkEVMChain = env.chains[1];
 
   const successMsg: Message = {
-    type: "success-msg",
     text: `${polygonZkEVMChain.name} network successfully added`,
+    type: "success-msg",
   };
 
   const onAddNetwork = (): void => {
@@ -84,10 +84,10 @@ const NetworkBox: FC = () => {
             <Typography type="body2">
               Block explorer URL:{" "}
               <a
-                href={polygonZkEVMChain.explorerUrl}
-                target="_blank"
-                rel="noreferrer"
                 className={classes.link}
+                href={polygonZkEVMChain.explorerUrl}
+                rel="noreferrer"
+                target="_blank"
               >
                 {polygonZkEVMChain.explorerUrl}
               </a>
@@ -97,10 +97,10 @@ const NetworkBox: FC = () => {
             <Typography type="body2">
               L1 Goerli Smart Contract:{" "}
               <a
+                className={classes.link}
                 href={`${ethereumChain.explorerUrl}/address/${ethereumChain.poeContractAddress}`}
                 rel="noreferrer"
                 target="_blank"
-                className={classes.link}
               >
                 {ethereumChain.poeContractAddress}
               </a>
@@ -123,8 +123,8 @@ const NetworkBox: FC = () => {
           <a
             className={classes.button}
             href={POLYGON_SUPPORT_URL}
-            target="_blank"
             rel="noopener noreferrer"
+            target="_blank"
           >
             <NewWindowIcon className={classes.buttonIcon} />
             Report an issue

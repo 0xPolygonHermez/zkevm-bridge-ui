@@ -2,27 +2,27 @@ import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
-import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
-import Typography from "src/views/shared/typography/typography.view";
 import { Chain, Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
+import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface AmountInputProps {
-  value?: BigNumber;
-  token: Token;
   balance: BigNumber;
   from: Chain;
   maxEtherBridge: BigNumber;
   onChange: (params: { amount?: BigNumber; error?: string }) => void;
+  token: Token;
+  value?: BigNumber;
 }
 
 const AmountInput: FC<AmountInputProps> = ({
-  value,
-  token,
   balance,
   from,
   maxEtherBridge,
   onChange,
+  token,
+  value,
 }) => {
   const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
@@ -80,17 +80,17 @@ const AmountInput: FC<AmountInputProps> = ({
 
   return (
     <div className={classes.wrapper}>
-      <button className={classes.maxButton} type="button" onClick={onMax}>
-        <Typography type="body2" className={classes.maxText}>
+      <button className={classes.maxButton} onClick={onMax} type="button">
+        <Typography className={classes.maxText} type="body2">
           MAX
         </Typography>
       </button>
       <input
-        className={classes.amountInput}
-        value={inputValue}
-        placeholder="0.00"
         autoFocus
+        className={classes.amountInput}
         onChange={onInputChange}
+        placeholder="0.00"
+        value={inputValue}
       />
     </div>
   );

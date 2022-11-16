@@ -1,27 +1,27 @@
 import { FC } from "react";
 
-import Typography from "src/views/shared/typography/typography.view";
-import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
-import useTokenInfoStyles from "src/views/home/components/token-info/token-info.styles";
 import { isChainCustomToken } from "src/adapters/storage";
+import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
 import { Chain, Token } from "src/domain";
 import TokenInfoTable from "src/views/home/components/token-info-table/token-info-table.view";
+import useTokenInfoStyles from "src/views/home/components/token-info/token-info.styles";
 import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface TokenInfoProps {
   chain: Chain;
-  token: Token;
   onClose: () => void;
   onNavigateToTokenList: () => void;
   onRemoveToken: (token: Token) => void;
+  token: Token;
 }
 
 const TokenInfo: FC<TokenInfoProps> = ({
   chain,
-  token,
   onClose,
   onNavigateToTokenList,
   onRemoveToken,
+  token,
 }) => {
   const classes = useTokenInfoStyles();
 
@@ -29,8 +29,8 @@ const TokenInfo: FC<TokenInfoProps> = ({
 
   return (
     <div className={classes.tokenInfo}>
-      <TokenSelectorHeader title={token.name} onClose={onClose} onGoBack={onNavigateToTokenList} />
-      <TokenInfoTable token={token} className={classes.tokenInfoTable} />
+      <TokenSelectorHeader onClose={onClose} onGoBack={onNavigateToTokenList} title={token.name} />
+      <TokenInfoTable className={classes.tokenInfoTable} token={token} />
       {isImportedCustomToken && (
         <button className={classes.removeTokenButton} onClick={() => onRemoveToken(token)}>
           <DeleteIcon /> <Typography type="body1">Remove custom token</Typography>

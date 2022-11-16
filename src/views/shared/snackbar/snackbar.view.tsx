@@ -1,11 +1,11 @@
-import React from "react";
+import { useEffect } from "react";
 
-import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
+import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
-import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
 import { Message } from "src/domain";
+import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
 
 interface SnackbarProps {
   message: Message;
@@ -26,7 +26,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (message.type !== "error") {
       const closingTimeoutId = setTimeout(onClose, SNACKBAR_AUTO_HIDE_DURATION);
       return () => clearTimeout(closingTimeoutId);
@@ -43,7 +43,7 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
       </div>
     );
   } else {
-    const { text = "An error occurred. Would you mind reporting it?", parsed } = message;
+    const { parsed, text = "An error occurred. Would you mind reporting it?" } = message;
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>

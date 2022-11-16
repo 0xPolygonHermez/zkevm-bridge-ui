@@ -1,39 +1,39 @@
+import { Web3Provider } from "@ethersproject/providers";
+import axios from "axios";
+import { BigNumber, constants as ethersConstants } from "ethers";
 import {
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { BigNumber, constants as ethersConstants } from "ethers";
-import { Web3Provider } from "@ethersproject/providers";
-import axios from "axios";
 
+import * as ethereum from "src/adapters/ethereum";
+import { cleanupCustomTokens, getCustomTokens } from "src/adapters/storage";
+import { getEthereumErc20Tokens } from "src/adapters/tokens";
 import tokenIconDefaultUrl from "src/assets/icons/tokens/erc20-icon.svg";
-import { Erc20__factory } from "src/types/contracts/erc-20";
-import { Bridge__factory } from "src/types/contracts/bridge";
-import { getCustomTokens, cleanupCustomTokens } from "src/adapters/storage";
+import { getEtherToken } from "src/constants";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
-import { getEthereumErc20Tokens } from "src/adapters/tokens";
-import { getEtherToken } from "src/constants";
-import * as ethereum from "src/adapters/ethereum";
-import { isAsyncTaskDataAvailable } from "src/utils/types";
 import { Chain, Env, Token } from "src/domain";
+import { Bridge__factory } from "src/types/contracts/bridge";
+import { Erc20__factory } from "src/types/contracts/erc-20";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface ComputeWrappedTokenAddressParams {
-  token: Token;
   nativeChain: Chain;
   otherChain: Chain;
+  token: Token;
 }
 
 interface GetNativeTokenInfoParams {
-  token: Token;
   chain: Chain;
+  token: Token;
 }
 
 interface AddWrappedTokenParams {
@@ -46,50 +46,50 @@ interface GetTokenFromAddressParams {
 }
 
 interface GetTokenParams {
-  env: Env;
-  tokenAddress: string;
-  originNetwork: number;
   chain: Chain;
+  env: Env;
+  originNetwork: number;
+  tokenAddress: string;
 }
 
 interface GetErc20TokenBalanceParams {
+  accountAddress: string;
   chain: Chain;
   tokenAddress: string;
-  accountAddress: string;
 }
 
 interface ApproveParams {
-  from: Chain;
-  token: Token;
   amount: BigNumber;
-  provider: Web3Provider;
+  from: Chain;
   owner: string;
+  provider: Web3Provider;
   spender: string;
+  token: Token;
 }
 
 interface TokensContext {
-  tokens?: Token[];
   addWrappedToken: (params: AddWrappedTokenParams) => Promise<Token>;
-  getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
-  getToken: (params: GetTokenParams) => Promise<Token>;
-  getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
   approve: (params: ApproveParams) => Promise<void>;
+  getErc20TokenBalance: (params: GetErc20TokenBalanceParams) => Promise<BigNumber>;
+  getToken: (params: GetTokenParams) => Promise<Token>;
+  getTokenFromAddress: (params: GetTokenFromAddressParams) => Promise<Token>;
+  tokens?: Token[];
 }
 
 const tokensContextNotReadyMsg = "The tokens context is not yet ready";
 
 const tokensContext = createContext<TokensContext>({
   addWrappedToken: () => Promise.reject(tokensContextNotReadyMsg),
-  getTokenFromAddress: () => Promise.reject(tokensContextNotReadyMsg),
-  getToken: () => Promise.reject(tokensContextNotReadyMsg),
-  getErc20TokenBalance: () => Promise.reject(tokensContextNotReadyMsg),
   approve: () => Promise.reject(tokensContextNotReadyMsg),
+  getErc20TokenBalance: () => Promise.reject(tokensContextNotReadyMsg),
+  getToken: () => Promise.reject(tokensContextNotReadyMsg),
+  getTokenFromAddress: () => Promise.reject(tokensContextNotReadyMsg),
 });
 
 const TokensProvider: FC<PropsWithChildren> = (props) => {
   const env = useEnvContext();
   const { notifyError } = useErrorContext();
-  const { connectedProvider, changeNetwork } = useProvidersContext();
+  const { changeNetwork, connectedProvider } = useProvidersContext();
   const [tokens, setTokens] = useState<Token[]>();
 
   /**
@@ -97,9 +97,9 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
    */
   const computeWrappedTokenAddress = useCallback(
     async ({
-      token,
       nativeChain,
       otherChain,
+      token,
     }: ComputeWrappedTokenAddressParams): Promise<string> => {
       const bridgeContract = Bridge__factory.connect(
         otherChain.bridgeContractAddress,
@@ -116,8 +116,8 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
    */
   const getNativeTokenInfo = useCallback(
     ({
-      token,
       chain,
+      token,
     }: GetNativeTokenInfoParams): Promise<{
       originNetwork: number;
       originTokenAddress: string;
@@ -153,7 +153,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
           nativeChain.chainId === ethereumChain.chainId ? polygonZkEVMChain : ethereumChain;
 
         // first we check if the provided address belongs to a wrapped token
-        return getNativeTokenInfo({ token, chain: nativeChain })
+        return getNativeTokenInfo({ chain: nativeChain, token })
           .then(({ originNetwork, originTokenAddress }) => {
             // if this is the case we use originTokenAddress as native and token.address as wrapped
             const originalTokenChain = env?.chains.find(
@@ -177,9 +177,9 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
           .catch(() => {
             // if the provided address is native we compute the wrapped address
             return computeWrappedTokenAddress({
-              token,
               nativeChain,
               otherChain: wrappedChain,
+              token,
             })
               .then((wrappedAddress) => {
                 const newToken: Token = {
@@ -214,12 +214,12 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         .then(() => trustWalletLogoUrl)
         .catch(() => tokenIconDefaultUrl);
       const token: Token = {
-        name,
-        decimals,
-        symbol,
         address,
         chainId,
+        decimals,
         logoURI,
+        name,
+        symbol,
       };
       return addWrappedToken({ token });
     },
@@ -227,7 +227,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const getToken = useCallback(
-    async ({ env, tokenAddress, originNetwork, chain }: GetTokenParams): Promise<Token> => {
+    async ({ chain, env, originNetwork, tokenAddress }: GetTokenParams): Promise<Token> => {
       const token = [...getCustomTokens(), ...(tokens || [getEtherToken(chain)])].find(
         (token) =>
           token.address === tokenAddress ||
@@ -256,7 +256,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const getErc20TokenBalance = useCallback(
-    async ({ chain, tokenAddress, accountAddress }: GetErc20TokenBalanceParams) => {
+    async ({ accountAddress, chain, tokenAddress }: GetErc20TokenBalanceParams) => {
       const isTokenEther = tokenAddress === ethersConstants.AddressZero;
       if (isTokenEther) {
         return Promise.reject(new Error("Ether is not supported as ERC20 token"));
@@ -268,13 +268,13 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const approve = useCallback(
-    ({ from, token, amount, provider, owner, spender }: ApproveParams) => {
+    ({ amount, from, owner, provider, spender, token }: ApproveParams) => {
       if (!isAsyncTaskDataAvailable(connectedProvider)) {
         throw new Error("Connected provider is not available");
       }
 
       const executeApprove = async () =>
-        ethereum.approve({ token, amount, provider, owner, spender });
+        ethereum.approve({ amount, owner, provider, spender, token });
 
       if (from.chainId === connectedProvider.data.chainId) {
         return executeApprove();
@@ -313,12 +313,12 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(() => {
     return {
-      tokens,
-      getTokenFromAddress,
-      getToken,
-      getErc20TokenBalance,
       addWrappedToken,
       approve,
+      getErc20TokenBalance,
+      getToken,
+      getTokenFromAddress,
+      tokens,
     };
   }, [tokens, getTokenFromAddress, getToken, getErc20TokenBalance, addWrappedToken, approve]);
 

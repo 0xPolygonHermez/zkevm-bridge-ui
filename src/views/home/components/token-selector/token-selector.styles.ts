@@ -4,21 +4,21 @@ import { Theme } from "src/styles/theme";
 
 const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
   background: {
-    background: theme.palette.transparency,
-    width: "100%",
-    height: "100vh",
-    display: "flex",
     alignItems: "center",
+    background: theme.palette.transparency,
+    display: "flex",
+    height: "100vh",
     justifyContent: "center",
     padding: [0, theme.spacing(1)],
+    width: "100%",
   },
   card: {
-    width: "100%",
-    maxWidth: 500,
-    height: 515,
     display: "flex",
     flexDirection: "column",
+    height: 515,
+    maxWidth: 500,
     padding: theme.spacing(2),
+    width: "100%",
   },
 }));
 

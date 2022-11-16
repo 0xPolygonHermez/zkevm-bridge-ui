@@ -1,10 +1,10 @@
 import { FC } from "react";
 
-import useWalletListStyles from "src/views/login/components/wallet-list/wallet-list.styles";
-import { WalletName } from "src/domain";
 import { ReactComponent as CaretRightIcon } from "src/assets/icons/caret-right.svg";
-import Typography from "src/views/shared/typography/typography.view";
+import { WalletName } from "src/domain";
 import WalletIcon from "src/views/login/components/wallet-icon/wallet-icon.view";
+import useWalletListStyles from "src/views/login/components/wallet-list/wallet-list.styles";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface WalletListProps {
   onSelectWallet: (walletName: WalletName) => void;
@@ -17,12 +17,12 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
     <ul className={classes.walletList}>
       <li
         className={classes.wallet}
-        role="button"
         onClick={() => onSelectWallet(WalletName.METAMASK)}
+        role="button"
       >
-        <WalletIcon walletName={WalletName.METAMASK} size="sm" className={classes.walletIcon} />
+        <WalletIcon className={classes.walletIcon} size="sm" walletName={WalletName.METAMASK} />
         <div className={classes.walletInfo}>
-          <Typography type="body1" className={classes.walletName}>
+          <Typography className={classes.walletName} type="body1">
             {WalletName.METAMASK}
           </Typography>
           <Typography type="body2">Connect using web wallet</Typography>

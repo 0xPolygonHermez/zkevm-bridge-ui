@@ -16,11 +16,11 @@ export const calculateFee = (gas: Gas): BigNumber => {
 export const calculateTransactionResponseFee = (
   transactionResponse: TransactionResponse
 ): BigNumber | undefined => {
-  const { gasLimit, maxFeePerGas, gasPrice } = transactionResponse;
+  const { gasLimit, gasPrice, maxFeePerGas } = transactionResponse;
   const gas: Gas | undefined = maxFeePerGas
-    ? { type: "eip-1559", data: { gasLimit, maxFeePerGas } }
+    ? { data: { gasLimit, maxFeePerGas }, type: "eip-1559" }
     : gasPrice
-    ? { type: "legacy", data: { gasLimit, gasPrice } }
+    ? { data: { gasLimit, gasPrice }, type: "legacy" }
     : undefined;
 
   return gas && calculateFee(gas);

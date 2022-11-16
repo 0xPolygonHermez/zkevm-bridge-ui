@@ -3,20 +3,20 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useLayoutStyles = createUseStyles((theme: Theme) => ({
-  layout: {
-    width: "100%",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    background: theme.palette.grey.light,
-  },
   container: {
-    width: "100%",
+    display: "flex",
     flex: 1,
+    flexDirection: "column",
     margin: [0, "auto"],
     paddingBottom: theme.spacing(2),
+    width: "100%",
+  },
+  layout: {
+    background: theme.palette.grey.light,
     display: "flex",
     flexDirection: "column",
+    minHeight: "100vh",
+    width: "100%",
   },
 }));
 

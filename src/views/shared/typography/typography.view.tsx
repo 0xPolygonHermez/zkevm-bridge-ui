@@ -3,11 +3,11 @@ import { FC, PropsWithChildren } from "react";
 import useTypographyStyles from "src/views/shared/typography/typography.styles";
 
 export type TypographyProps = PropsWithChildren<{
-  type: "h1" | "h2" | "body1" | "body2";
   className?: string;
+  type: "h1" | "h2" | "body1" | "body2";
 }>;
 
-const Typography: FC<TypographyProps> = ({ type, className, children }) => {
+const Typography: FC<TypographyProps> = ({ children, className, type }) => {
   const classes = useTypographyStyles();
   const Component = type === "body1" || type === "body2" ? "p" : type;
 

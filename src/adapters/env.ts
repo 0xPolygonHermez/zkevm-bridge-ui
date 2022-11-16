@@ -1,55 +1,55 @@
 import { z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
-import * as domain from "src/domain";
 import { getChains, getUsdcToken } from "src/constants";
+import * as domain from "src/domain";
+import { StrictSchema } from "src/utils/type-safety";
 
 interface Env {
-  VITE_ETHEREUM_RPC_URL: string;
-  VITE_ETHEREUM_EXPLORER_URL: string;
-  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
-  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: string;
-  VITE_POLYGON_ZK_EVM_RPC_URL: string;
-  VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
-  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
-  VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
   VITE_BRIDGE_API_URL: string;
-  VITE_USE_FIAT_EXCHANGE_RATES: string;
-  VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
+  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
+  VITE_ETHEREUM_EXPLORER_URL: string;
+  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: string;
+  VITE_ETHEREUM_RPC_URL: string;
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
+  VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
+  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
+  VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
+  VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
+  VITE_POLYGON_ZK_EVM_RPC_URL: string;
+  VITE_USE_FIAT_EXCHANGE_RATES: string;
 }
 
 const envToDomain = ({
-  VITE_ETHEREUM_RPC_URL,
-  VITE_ETHEREUM_EXPLORER_URL,
-  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
-  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
-  VITE_POLYGON_ZK_EVM_RPC_URL,
-  VITE_POLYGON_ZK_EVM_EXPLORER_URL,
-  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
-  VITE_POLYGON_ZK_EVM_NETWORK_ID,
   VITE_BRIDGE_API_URL,
-  VITE_USE_FIAT_EXCHANGE_RATES,
-  VITE_FIAT_EXCHANGE_RATES_API_URL,
+  VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+  VITE_ETHEREUM_EXPLORER_URL,
+  VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
+  VITE_ETHEREUM_RPC_URL,
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
+  VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+  VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
+  VITE_POLYGON_ZK_EVM_EXPLORER_URL,
+  VITE_POLYGON_ZK_EVM_NETWORK_ID,
+  VITE_POLYGON_ZK_EVM_RPC_URL,
+  VITE_USE_FIAT_EXCHANGE_RATES,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
   const useFiatExchangeRates = z.boolean().parse(VITE_USE_FIAT_EXCHANGE_RATES === "true");
 
   return getChains({
     ethereum: {
-      rpcUrl: VITE_ETHEREUM_RPC_URL,
-      explorerUrl: VITE_ETHEREUM_EXPLORER_URL,
       bridgeContractAddress: VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
+      explorerUrl: VITE_ETHEREUM_EXPLORER_URL,
       poeContractAddress: VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
+      rpcUrl: VITE_ETHEREUM_RPC_URL,
     },
     polygonZkEVM: {
+      bridgeContractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
+      explorerUrl: VITE_POLYGON_ZK_EVM_EXPLORER_URL,
       networkId: polygonZkEVMNetworkId,
       rpcUrl: VITE_POLYGON_ZK_EVM_RPC_URL,
-      explorerUrl: VITE_POLYGON_ZK_EVM_EXPLORER_URL,
-      bridgeContractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
     },
   }).then((chains) => {
     const ethereumChain = chains.find((chain) => chain.key === "ethereum");
@@ -84,9 +84,9 @@ const envToDomain = ({
       bridgeApiUrl: VITE_BRIDGE_API_URL,
       chains,
       fiatExchangeRates: {
-        areEnabled: true,
-        apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
         apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
+        apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
+        areEnabled: true,
         usdcToken: getUsdcToken({
           address: VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
           chainId: ethereumChain.chainId,
@@ -99,19 +99,19 @@ const envToDomain = ({
 const envParser = StrictSchema<Env, domain.Env>()(
   z
     .object({
-      VITE_ETHEREUM_RPC_URL: z.string().url(),
-      VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
-      VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
-      VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: z.string().length(42),
-      VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
-      VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
-      VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
-      VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),
       VITE_BRIDGE_API_URL: z.string().url(),
-      VITE_USE_FIAT_EXCHANGE_RATES: z.string(),
-      VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
+      VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
+      VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_ETHEREUM_RPC_URL: z.string().url(),
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
+      VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
+      VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
+      VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
+      VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),
+      VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
+      VITE_USE_FIAT_EXCHANGE_RATES: z.string(),
     })
     .transform(envToDomain)
 );

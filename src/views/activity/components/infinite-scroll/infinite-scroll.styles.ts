@@ -7,11 +7,11 @@ const useInfiniteScrollStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
   spinnerWrapper: {
-    width: "100%",
-    display: "flex",
     alignItems: "center",
+    display: "flex",
     justifyContent: "center",
     paddingTop: theme.spacing(3),
+    width: "100%",
   },
 }));
 

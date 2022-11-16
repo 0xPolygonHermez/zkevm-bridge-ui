@@ -1,9 +1,9 @@
 import { FC, MouseEvent } from "react";
 
 import usePolicyStyles from "src/views/login/components/policy/policy.styles";
-import Typography from "src/views/shared/typography/typography.view";
-import Portal from "src/views/shared/portal/portal.view";
 import Card from "src/views/shared/card/card.view";
+import Portal from "src/views/shared/portal/portal.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface PolicyProps {
   onClose: () => void;

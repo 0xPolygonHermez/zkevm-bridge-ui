@@ -1,20 +1,20 @@
-import { ReactElement, FC } from "react";
+import { FC, ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import { ReactComponent as ArrowLeftIcon } from "src/assets/icons/arrow-left.svg";
+import { RouterState } from "src/domain";
 import routes from "src/routes";
 import useHeaderStyles from "src/views/shared/header/header.styles";
-import Typography from "src/views/shared/typography/typography.view";
-import { RouterState } from "src/domain";
 import NetworkSelector from "src/views/shared/network-selector/network-selector.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface HeaderProps {
-  title: string;
-  backTo: { routeKey: keyof typeof routes; state?: RouterState };
   Subtitle?: ReactElement;
+  backTo: { routeKey: keyof typeof routes; state?: RouterState };
+  title: string;
 }
 
-const Header: FC<HeaderProps> = ({ title, backTo, Subtitle }) => {
+const Header: FC<HeaderProps> = ({ backTo, Subtitle, title }) => {
   const classes = useHeaderStyles();
   const route = routes[backTo.routeKey].path;
 
@@ -22,7 +22,7 @@ const Header: FC<HeaderProps> = ({ title, backTo, Subtitle }) => {
     <header className={classes.header}>
       <div className={classes.topRow}>
         <div className={`${classes.block} ${classes.leftBlock}`}>
-          <Link to={route} state={backTo.state} className={classes.sideButton}>
+          <Link className={classes.sideButton} state={backTo.state} to={route}>
             <ArrowLeftIcon className={classes.icon} />
           </Link>
         </div>

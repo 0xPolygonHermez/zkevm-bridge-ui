@@ -1,10 +1,10 @@
 import { FC } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { useEnvContext } from "src/contexts/env.context";
 import routes from "src/routes";
 import { areSettingsVisible } from "src/utils/feature-toggles";
 import PrivateRoute from "src/views/shared/private-route/private-route.view";
-import { useEnvContext } from "src/contexts/env.context";
 
 const Router: FC = () => {
   const env = useEnvContext();
@@ -16,10 +16,8 @@ const Router: FC = () => {
 
   return (
     <Routes>
-      {Object.values(filteredRoutes).map(({ path, Component, isPrivate }) => (
+      {Object.values(filteredRoutes).map(({ Component, isPrivate, path }) => (
         <Route
-          key={path}
-          path={path}
           element={
             isPrivate ? (
               <PrivateRoute>
@@ -29,9 +27,11 @@ const Router: FC = () => {
               <Component />
             )
           }
+          key={path}
+          path={path}
         />
       ))}
-      <Route path="*" element={<Navigate to={routes.home.path} />} />
+      <Route element={<Navigate to={routes.home.path} />} path="*" />
     </Routes>
   );
 };

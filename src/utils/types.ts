@@ -9,23 +9,23 @@ interface LoadingAsyncTask {
 }
 
 interface FailedAsyncTask<E> {
-  status: "failed";
   error: E;
+  status: "failed";
 }
 
 interface SuccessfulAsyncTask<D> {
-  status: "successful";
   data: D;
+  status: "successful";
 }
 
 interface ReloadingAsyncTask<D> {
-  status: "reloading";
   data: D;
+  status: "reloading";
 }
 
 interface LoadingMoreItemsAsyncTask<D> {
-  status: "loading-more-items";
   data: D;
+  status: "loading-more-items";
 }
 
 export type AsyncTask<D, E, P = false> = P extends true

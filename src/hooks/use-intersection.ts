@@ -1,11 +1,11 @@
 function useIntersection({
+  className,
   observed,
   target,
-  className,
 }: {
+  className: string;
   observed: React.RefObject<HTMLDivElement>;
   target: React.RefObject<HTMLDivElement>;
-  className: string;
 }): void {
   const observer = new IntersectionObserver((entries) => {
     const entry = entries[0];

@@ -1,19 +1,19 @@
 import { FC } from "react";
 
-import { WalletName } from "src/domain";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconnect.svg";
+import { WalletName } from "src/domain";
 import useWalletIconStyles from "src/views/login/components/wallet-icon/wallet-icon.styles";
 
 export type WalletIconSize = "sm" | "lg";
 
 interface WalletIconProps {
-  walletName: WalletName;
-  size: WalletIconSize;
   className?: string;
+  size: WalletIconSize;
+  walletName: WalletName;
 }
 
-const WalletIcon: FC<WalletIconProps> = ({ walletName, size, className }) => {
+const WalletIcon: FC<WalletIconProps> = ({ className, size, walletName }) => {
   const classes = useWalletIconStyles({ size });
 
   switch (walletName) {

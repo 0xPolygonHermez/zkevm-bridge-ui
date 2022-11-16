@@ -3,8 +3,8 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 interface StyleProps {
-  size: number;
   color?: string;
+  size: number;
 }
 
 const useSpinnerStyles = createUseStyles((theme: Theme) => ({
@@ -12,23 +12,23 @@ const useSpinnerStyles = createUseStyles((theme: Theme) => ({
     from: { transform: "rotate(0deg)" },
     to: { transform: "rotate(360deg)" },
   },
+  bottomCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
+    stroke: color,
+    strokeOpacity: 0.2,
+  }),
   root: ({ size }: StyleProps) => ({
-    width: size,
     height: size,
     overflow: "hidden",
+    width: size,
   }),
   svg: {
     animation: "$spin 0.8s linear infinite",
   },
   topCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
     stroke: color,
-    strokeLinecap: "round",
     strokeDasharray: "30px 200px",
     strokeDashoffset: "0px",
-  }),
-  bottomCircle: ({ color = theme.palette.grey.dark }: StyleProps) => ({
-    stroke: color,
-    strokeOpacity: 0.2,
+    strokeLinecap: "round",
   }),
 }));
 

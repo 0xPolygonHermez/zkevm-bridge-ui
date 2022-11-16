@@ -1,24 +1,24 @@
+import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
-import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { AsyncTask } from "src/utils/types";
 
 export type ChainKey = "ethereum" | "polygon-zkevm";
 
 export interface CommonChain {
+  Icon: ComponentType<{ className?: string }>;
+  bridgeContractAddress: string;
+  chainId: number;
+  explorerUrl: string;
   key: ChainKey;
   name: string;
-  Icon: ComponentType<{ className?: string }>;
-  provider: JsonRpcProvider;
-  networkId: number;
-  chainId: number;
-  bridgeContractAddress: string;
-  explorerUrl: string;
   nativeCurrency: {
+    decimals: number;
     name: string;
     symbol: string;
-    decimals: number;
   };
+  networkId: number;
+  provider: JsonRpcProvider;
 }
 
 export type EthereumChain = CommonChain & {
@@ -33,19 +33,19 @@ export type ZkEVMChain = CommonChain & {
 export type Chain = EthereumChain | ZkEVMChain;
 
 export interface ConnectedProvider {
-  provider: Web3Provider;
-  chainId: number;
   account: string;
+  chainId: number;
+  provider: Web3Provider;
 }
 
 export interface Token {
+  address: string;
+  balance?: AsyncTask<BigNumber, string>;
+  chainId: number;
+  decimals: number;
+  logoURI: string;
   name: string;
   symbol: string;
-  address: string;
-  decimals: number;
-  chainId: number;
-  logoURI: string;
-  balance?: AsyncTask<BigNumber, string>;
   wrappedToken?: {
     address: string;
     chainId: number;
@@ -60,9 +60,9 @@ export interface Env {
         areEnabled: false;
       }
     | {
-        areEnabled: true;
-        apiUrl: string;
         apiKey: string;
+        apiUrl: string;
+        areEnabled: true;
         usdcToken: Token;
       };
 }
@@ -93,11 +93,11 @@ export enum TxStatus {
 }
 
 export enum Currency {
-  EUR = "EUR",
-  USD = "USD",
-  JPY = "JPY",
-  GBP = "GBP",
   CNY = "CNY",
+  EUR = "EUR",
+  GBP = "GBP",
+  JPY = "JPY",
+  USD = "USD"
 }
 
 export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
@@ -105,34 +105,34 @@ export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
 // User notifications
 export type Message =
   | {
-      type: "success-msg" | "error-msg";
       text: string;
+      type: "success-msg" | "error-msg";
     }
   | {
-      type: "error";
-      text?: string;
       parsed: string;
+      text?: string;
+      type: "error";
     };
 
 interface BridgeCommonFields {
-  id: string;
-  token: Token;
   amount: BigNumber;
-  fiatAmount: BigNumber | undefined;
-  from: Chain;
-  to: Chain;
-  tokenOriginNetwork: number;
-  destinationAddress: string;
   depositCount: number;
   depositTxHash: string;
+  destinationAddress: string;
+  fiatAmount: BigNumber | undefined;
+  from: Chain;
+  id: string;
+  to: Chain;
+  token: Token;
+  tokenOriginNetwork: number;
 }
 
 export type PendingBridge = Pick<
   BridgeCommonFields,
   "depositTxHash" | "destinationAddress" | "from" | "to" | "token" | "amount" | "fiatAmount"
 > & {
-  status: "pending";
   claimTxHash?: string;
+  status: "pending";
 };
 
 export type InitiatedBridge = BridgeCommonFields & {
@@ -144,22 +144,14 @@ export type OnHoldBridge = BridgeCommonFields & {
 };
 
 export type CompletedBridge = BridgeCommonFields & {
-  status: "completed";
   claimTxHash: NonNullable<PendingBridge["claimTxHash"]>;
+  status: "completed";
 };
 
 export type Bridge = PendingBridge | InitiatedBridge | OnHoldBridge | CompletedBridge;
 
 export interface Deposit {
-  token: Token;
   amount: BigNumber;
-  fiatAmount: BigNumber | undefined;
-  from: Chain;
-  to: Chain;
-  tokenOriginNetwork: number;
-  destinationAddress: string;
-  depositCount: number;
-  depositTxHash: string;
   claim:
     | {
         status: "pending";
@@ -171,21 +163,29 @@ export interface Deposit {
         status: "claimed";
         txHash: string;
       };
+  depositCount: number;
+  depositTxHash: string;
+  destinationAddress: string;
+  fiatAmount: BigNumber | undefined;
+  from: Chain;
+  to: Chain;
+  token: Token;
+  tokenOriginNetwork: number;
 }
 
 export interface MerkleProof {
-  merkleProof: string[];
   exitRootNumber: number;
   l2ExitRootNumber: number;
   mainExitRoot: string;
+  merkleProof: string[];
   rollupExitRoot: string;
 }
 
 export interface FormData {
+  amount: BigNumber;
   from: Chain;
   to: Chain;
   token: Token;
-  amount: BigNumber;
 }
 
 export enum PolicyCheck {
@@ -195,18 +195,18 @@ export enum PolicyCheck {
 
 export type Gas =
   | {
-      type: "eip-1559";
       data: {
         gasLimit: BigNumber;
         maxFeePerGas: BigNumber;
       };
+      type: "eip-1559";
     }
   | {
-      type: "legacy";
       data: {
         gasLimit: BigNumber;
         gasPrice: BigNumber;
       };
+      type: "legacy";
     };
 
 export type TokenSpendPermission =
@@ -217,8 +217,8 @@ export type TokenSpendPermission =
       type: "approval";
     }
   | {
-      type: "permit";
       permit: Permit;
+      type: "permit";
     };
 
 export enum Permit {

@@ -1,61 +1,61 @@
 import axios from "axios";
 import { z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
-import * as domain from "src/domain";
 import { PAGE_SIZE } from "src/constants";
+import * as domain from "src/domain";
+import { StrictSchema } from "src/utils/type-safety";
 
 interface DepositInput {
-  token_addr: string;
   amount: string;
+  claim_tx_hash: string;
+  deposit_cnt: string;
+  dest_addr: string;
+  dest_net: number;
   network_id: number;
   orig_net: number;
-  dest_net: number;
-  dest_addr: string;
-  deposit_cnt: string;
-  tx_hash: string;
-  claim_tx_hash: string;
   ready_for_claim: boolean;
+  token_addr: string;
+  tx_hash: string;
 }
 
 interface DepositOutput {
-  token_addr: string;
   amount: string;
+  claim_tx_hash: string | null;
+  deposit_cnt: number;
+  dest_addr: string;
+  dest_net: number;
   network_id: number;
   orig_net: number;
-  dest_net: number;
-  dest_addr: string;
-  deposit_cnt: number;
-  tx_hash: string;
-  claim_tx_hash: string | null;
   ready_for_claim: boolean;
+  token_addr: string;
+  tx_hash: string;
 }
 
 interface MerkleProof {
-  merkle_proof: string[];
   exit_root_num: string;
   l2_exit_root_num: string;
   main_exit_root: string;
+  merkle_proof: string[];
   rollup_exit_root: string;
 }
 
 const depositParser = StrictSchema<DepositInput, DepositOutput>()(
   z.object({
-    token_addr: z.string(),
     amount: z.string(),
-    network_id: z.number(),
-    orig_net: z.number(),
-    dest_net: z.number(),
-    dest_addr: z.string(),
-    deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
-    tx_hash: z.string(),
     claim_tx_hash: z
       .string()
       .transform((v) => (v.length === 0 ? null : v))
       .refine((val) => val === null || val.length === 66, {
         message: "The length of claim_tx_hash must be 66 characters",
       }),
+    deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
+    dest_addr: z.string(),
+    dest_net: z.number(),
+    network_id: z.number(),
+    orig_net: z.number(),
     ready_for_claim: z.boolean(),
+    token_addr: z.string(),
+    tx_hash: z.string(),
   })
 );
 
@@ -89,26 +89,26 @@ const getDepositsResponseParser = StrictSchema<
 );
 
 const apiMerkleProofToDomain = ({
-  merkle_proof,
   exit_root_num,
   l2_exit_root_num,
   main_exit_root,
+  merkle_proof,
   rollup_exit_root,
 }: MerkleProof): domain.MerkleProof => ({
-  merkleProof: merkle_proof,
-  l2ExitRootNumber: z.number().nonnegative().parse(Number(l2_exit_root_num)),
   exitRootNumber: z.number().nonnegative().parse(Number(exit_root_num)),
+  l2ExitRootNumber: z.number().nonnegative().parse(Number(l2_exit_root_num)),
   mainExitRoot: main_exit_root,
+  merkleProof: merkle_proof,
   rollupExitRoot: rollup_exit_root,
 });
 
 const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
   z
     .object({
-      merkle_proof: z.array(z.string().length(66)),
       exit_root_num: z.string(),
       l2_exit_root_num: z.string(),
       main_exit_root: z.string().length(66),
+      merkle_proof: z.array(z.string().length(66)),
       rollup_exit_root: z.string().length(66),
     })
     .transform(apiMerkleProofToDomain)
@@ -128,11 +128,11 @@ const getMerkleProofResponseParser = StrictSchema<
 );
 
 interface GetDepositsParams {
+  abortSignal?: AbortSignal;
   apiUrl: string;
   ethereumAddress: string;
   limit?: number;
   offset?: number;
-  abortSignal?: AbortSignal;
 }
 
 export const getDeposits = ({
@@ -148,13 +148,13 @@ export const getDeposits = ({
   return axios
     .request({
       baseURL: apiUrl,
-      url: `/bridges/${ethereumAddress}`,
       method: "GET",
       params: {
         limit,
         offset,
       },
       signal: abortSignal,
+      url: `/bridges/${ethereumAddress}`,
     })
     .then((res) => {
       const parsedData = getDepositsResponseParser.safeParse(res.data);
@@ -171,28 +171,28 @@ export const getDeposits = ({
 };
 
 interface GetDepositParams {
-  apiUrl: string;
-  networkId: number;
-  depositCount: number;
   abortSignal?: AbortSignal;
+  apiUrl: string;
+  depositCount: number;
+  networkId: number;
 }
 
 export const getDeposit = ({
-  apiUrl,
-  networkId,
-  depositCount,
   abortSignal,
+  apiUrl,
+  depositCount,
+  networkId,
 }: GetDepositParams): Promise<DepositOutput> => {
   return axios
     .request({
       baseURL: apiUrl,
-      url: "/bridge",
       method: "GET",
       params: {
-        net_id: networkId,
         deposit_cnt: depositCount,
+        net_id: networkId,
       },
       signal: abortSignal,
+      url: "/bridge",
     })
     .then((res) => {
       const parsedData = getDepositResponseParser.safeParse(res.data);
@@ -207,24 +207,24 @@ export const getDeposit = ({
 
 interface GetMerkleProofParams {
   apiUrl: string;
-  networkId: number;
   depositCount: number;
+  networkId: number;
 }
 
 export const getMerkleProof = ({
   apiUrl,
-  networkId,
   depositCount,
+  networkId,
 }: GetMerkleProofParams): Promise<domain.MerkleProof> => {
   return axios
     .request({
       baseURL: apiUrl,
-      url: "/merkle-proof",
       method: "GET",
       params: {
-        net_id: networkId,
         deposit_cnt: depositCount,
+        net_id: networkId,
       },
+      url: "/merkle-proof",
     })
     .then((res) => {
       const parsedData = getMerkleProofResponseParser.safeParse(res.data);

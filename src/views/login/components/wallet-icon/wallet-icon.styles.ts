@@ -8,21 +8,21 @@ interface WalletIconStylesProps {
 }
 
 const useWalletIconStyles = createUseStyles((theme: Theme) => ({
-  walletIcon: ({ size }: WalletIconStylesProps) => ({
-    borderRadius: "50%",
-    height: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
-    width: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: theme.spacing(1),
-  }),
   metaMaskIcon: {
     background: "#fbe6df",
   },
   walletConnectIcon: {
     background: "#e2f0ff",
   },
+  walletIcon: ({ size }: WalletIconStylesProps) => ({
+    alignItems: "center",
+    borderRadius: "50%",
+    display: "flex",
+    height: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
+    justifyContent: "center",
+    padding: theme.spacing(1),
+    width: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
+  }),
 }));
 
 export default useWalletIconStyles;

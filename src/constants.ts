@@ -1,11 +1,11 @@
-import { ethers } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
+import { ethers } from "ethers";
 
+import { ProviderError } from "src/adapters/error";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
-import { ProviderError } from "src/adapters/error";
 import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
+import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 
 export const DAI_PERMIT_TYPEHASH =
   "0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb";
@@ -55,10 +55,10 @@ export const BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE = 50000;
 export const GAS_PRICE_INCREASE_PERCENTAGE = 50; // 50%
 
 export const REPORT_ERROR_FORM_ENTRIES = {
-  url: "entry.2056392454",
+  error: "entry.1383309652",
   network: "entry.1632331664",
   platform: "entry.259085709",
-  error: "entry.1383309652",
+  url: "entry.2056392454",
 };
 
 export const REPORT_ERROR_FORM_URL =
@@ -74,16 +74,16 @@ export const getChains = ({
   polygonZkEVM,
 }: {
   ethereum: {
-    rpcUrl: string;
-    explorerUrl: string;
     bridgeContractAddress: string;
+    explorerUrl: string;
     poeContractAddress: string;
+    rpcUrl: string;
   };
   polygonZkEVM: {
-    rpcUrl: string;
-    explorerUrl: string;
     bridgeContractAddress: string;
+    explorerUrl: string;
     networkId: number;
+    rpcUrl: string;
   };
 }): Promise<[EthereumChain, ZkEVMChain]> => {
   const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
@@ -99,47 +99,47 @@ export const getChains = ({
     poeContract.networkName().catch(() => Promise.reject(ProviderError.Ethereum)),
   ]).then(([ethereumNetwork, polygonZkEVMNetwork, polygonZkEVMNetworkName]) => [
     {
+      bridgeContractAddress: ethereum.bridgeContractAddress,
+      chainId: ethereumNetwork.chainId,
+      explorerUrl: ethereum.explorerUrl,
+      Icon: EthChainIcon,
       key: "ethereum",
       name: EthereumChainId.GOERLI === ethereumNetwork.chainId ? "Ethereum Goerli" : "Ethereum",
-      networkId: 0,
-      Icon: EthChainIcon,
-      provider: ethereumProvider,
-      chainId: ethereumNetwork.chainId,
-      bridgeContractAddress: ethereum.bridgeContractAddress,
-      explorerUrl: ethereum.explorerUrl,
       nativeCurrency: {
+        decimals: 18,
         name: "Ether",
         symbol: "ETH",
-        decimals: 18,
       },
+      networkId: 0,
       poeContractAddress: ethereum.poeContractAddress,
+      provider: ethereumProvider,
     },
     {
+      bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
+      chainId: polygonZkEVMNetwork.chainId,
+      explorerUrl: polygonZkEVM.explorerUrl,
+      Icon: PolygonZkEVMChainIcon,
       key: "polygon-zkevm",
       name: polygonZkEVMNetworkName,
-      networkId: polygonZkEVM.networkId,
-      Icon: PolygonZkEVMChainIcon,
-      provider: polygonZkEVMProvider,
-      chainId: polygonZkEVMNetwork.chainId,
-      bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
-      explorerUrl: polygonZkEVM.explorerUrl,
       nativeCurrency: {
+        decimals: 18,
         name: "Ether",
         symbol: "ETH",
-        decimals: 18,
       },
+      networkId: polygonZkEVM.networkId,
+      provider: polygonZkEVMProvider,
     },
   ]);
 };
 
 export const getEtherToken = (chain: Chain): Token => {
   return {
-    name: "Ether",
     address: ethers.constants.AddressZero,
     chainId: chain.chainId,
-    symbol: "ETH",
     decimals: 18,
     logoURI: ETH_TOKEN_LOGO_URI,
+    name: "Ether",
+    symbol: "ETH",
   };
 };
 
@@ -150,11 +150,11 @@ export const getUsdcToken = ({
   address: string;
   chainId: number;
 }): Token => ({
-  name: "USD Coin",
   address,
   chainId,
-  symbol: "USDC",
   decimals: 6,
   logoURI:
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
+  name: "USD Coin",
+  symbol: "USDC",
 });

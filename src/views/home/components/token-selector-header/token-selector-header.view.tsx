@@ -1,17 +1,17 @@
 import { FC } from "react";
 
-import useTokenSelectorHeaderStyles from "src/views/home/components/token-selector-header/token-selector-header.styles";
 import { ReactComponent as ArrowLeftIcon } from "src/assets/icons/arrow-left.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
+import useTokenSelectorHeaderStyles from "src/views/home/components/token-selector-header/token-selector-header.styles";
 import Typography from "src/views/shared/typography/typography.view";
 
 interface TokenSelectorHeaderProps {
-  title: string;
   onClose?: () => void;
   onGoBack?: () => void;
+  title: string;
 }
 
-const TokenSelectorHeader: FC<TokenSelectorHeaderProps> = ({ title, onClose, onGoBack }) => {
+const TokenSelectorHeader: FC<TokenSelectorHeaderProps> = ({ onClose, onGoBack, title }) => {
   const classes = useTokenSelectorHeaderStyles();
 
   return (

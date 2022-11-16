@@ -4,12 +4,12 @@ const SIZE = 44;
 const THICKNESS = 3;
 
 interface SpinnerProps {
-  size?: number;
   color?: string;
+  size?: number;
 }
 
-function Spinner({ size, color }: SpinnerProps): JSX.Element {
-  const classes = useSpinnerStyles({ size: size !== undefined ? size : 48, color });
+function Spinner({ color, size }: SpinnerProps): JSX.Element {
+  const classes = useSpinnerStyles({ color, size: size !== undefined ? size : 48 });
 
   return (
     <div className={classes.root}>
@@ -18,16 +18,16 @@ function Spinner({ size, color }: SpinnerProps): JSX.Element {
           className={classes.bottomCircle}
           cx={SIZE}
           cy={SIZE}
-          r={(SIZE - THICKNESS) / 2}
           fill="none"
+          r={(SIZE - THICKNESS) / 2}
           strokeWidth={THICKNESS}
         />
         <circle
           className={classes.topCircle}
           cx={SIZE}
           cy={SIZE}
-          r={(SIZE - THICKNESS) / 2}
           fill="none"
+          r={(SIZE - THICKNESS) / 2}
           strokeWidth={THICKNESS}
         />
       </svg>

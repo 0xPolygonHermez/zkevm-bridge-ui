@@ -1,34 +1,34 @@
-import { useState, FC, useEffect, useCallback, useRef } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
-import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
-import Card from "src/views/shared/card/card.view";
-import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
-import useActivityStyles from "src/views/activity/activity.styles";
-import Typography from "src/views/shared/typography/typography.view";
-import Header from "src/views/shared/header/header.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import { isCancelRequestError } from "src/adapters/bridge-api";
+import { parseError } from "src/adapters/error";
+import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
 import { useBridgeContext } from "src/contexts/bridge.context";
-import { useProvidersContext } from "src/contexts/providers.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { useUIContext } from "src/contexts/ui.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { parseError } from "src/adapters/error";
-import { isCancelRequestError } from "src/adapters/bridge-api";
+import { useUIContext } from "src/contexts/ui.context";
+import { Bridge, PendingBridge } from "src/domain";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import useIntersection from "src/hooks/use-intersection";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
   isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
-import { AUTO_REFRESH_RATE, PAGE_SIZE } from "src/constants";
-import { Bridge, PendingBridge } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import useIntersection from "src/hooks/use-intersection";
+import useActivityStyles from "src/views/activity/activity.styles";
+import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
+import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
+import Card from "src/views/shared/card/card.view";
+import Header from "src/views/shared/header/header.view";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
-  const { fetchBridges, getPendingBridges, claim } = useBridgeContext();
+  const { claim, fetchBridges, getPendingBridges } = useBridgeContext();
   const { connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
@@ -52,9 +52,9 @@ const Activity: FC = () => {
   const headerBorderTarget = useRef<HTMLDivElement>(null);
 
   useIntersection({
+    className: classes.stickyContentBorder,
     observed: headerBorderObserved,
     target: headerBorderTarget,
-    className: classes.stickyContentBorder,
   });
 
   const onDisplayAll = () => setDisplayAll(true);
@@ -68,8 +68,8 @@ const Activity: FC = () => {
       })
         .then(() => {
           openSnackbar({
-            type: "success-msg",
             text: "Transaction successfully submitted.",
+            type: "success-msg",
           });
         })
         .catch((error) => {
@@ -90,7 +90,7 @@ const Activity: FC = () => {
             getPendingBridges(apiBridges.data)
               .then((data) => {
                 callIfMounted(() => {
-                  setPendingBridges({ status: "successful", data });
+                  setPendingBridges({ data, status: "successful" });
                 });
               })
               .catch((error) => {
@@ -107,11 +107,11 @@ const Activity: FC = () => {
   const processFetchBridgesSuccess = useCallback(
     (bridges: Bridge[]) => {
       setLastLoadedItem(bridges.length);
-      setApiBridges({ status: "successful", data: bridges });
+      setApiBridges({ data: bridges, status: "successful" });
       getPendingBridges(bridges)
         .then((data) => {
           callIfMounted(() => {
-            setPendingBridges({ status: "successful", data });
+            setPendingBridges({ data, status: "successful" });
           });
         })
         .catch((error) => {
@@ -128,8 +128,8 @@ const Activity: FC = () => {
       callIfMounted(() => {
         if (!isCancelRequestError(error)) {
           setApiBridges({
-            status: "failed",
             error: undefined,
+            status: "failed",
           });
           notifyError(error);
         }
@@ -145,16 +145,16 @@ const Activity: FC = () => {
       apiBridges.status === "successful" &&
       apiBridges.data.length < total
     ) {
-      setApiBridges({ status: "loading-more-items", data: apiBridges.data });
+      setApiBridges({ data: apiBridges.data, status: "loading-more-items" });
 
       // A new page requested by the user cancels any other fetch in progress
       fetchBridgesAbortController.current.abort();
 
       fetchBridges({
-        type: "reload",
         env,
         ethereumAddress: connectedProvider.data.account,
         quantity: lastLoadedItem + PAGE_SIZE,
+        type: "reload",
       })
         .then(({ bridges, total }) => {
           callIfMounted(() => {
@@ -171,12 +171,12 @@ const Activity: FC = () => {
     if (env && connectedProvider.status === "successful" && tokens) {
       fetchBridgesAbortController.current = new AbortController();
       fetchBridges({
-        type: "load",
+        abortSignal: fetchBridgesAbortController.current.signal,
         env,
         ethereumAddress: connectedProvider.data.account,
         limit: PAGE_SIZE,
         offset: 0,
-        abortSignal: fetchBridgesAbortController.current.signal,
+        type: "load",
       })
         .then(({ bridges, total }) => {
           callIfMounted(() => {
@@ -209,16 +209,16 @@ const Activity: FC = () => {
       const refreshBridges = () => {
         setApiBridges(
           apiBridges.status === "successful"
-            ? { status: "reloading", data: apiBridges.data }
+            ? { data: apiBridges.data, status: "reloading" }
             : { status: "loading" }
         );
         fetchBridgesAbortController.current = new AbortController();
         fetchBridges({
-          type: "reload",
+          abortSignal: fetchBridgesAbortController.current.signal,
           env,
           ethereumAddress: connectedProvider.data.account,
           quantity: lastLoadedItem,
-          abortSignal: fetchBridgesAbortController.current.signal,
+          type: "reload",
         })
           .then(({ bridges, total }) => {
             callIfMounted(() => {
@@ -280,18 +280,18 @@ const Activity: FC = () => {
   const Tabs = ({ all, pending }: { all: number; pending: number }) => (
     <div className={classes.selectorBoxes}>
       <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-        <Typography type="body1" className={classes.status}>
+        <Typography className={classes.status} type="body1">
           All
         </Typography>
-        <Typography type="body2" className={classes.numberAllBox}>
+        <Typography className={classes.numberAllBox} type="body2">
           {all}
         </Typography>
       </div>
       <div className={`${classes.selectorBox} ${classes.pendingBox}`} onClick={onDisplayPending}>
-        <Typography type="body1" className={classes.status}>
+        <Typography className={classes.status} type="body1">
           Pending
         </Typography>
-        <Typography type="body2" className={classes.numberPendingBox}>
+        <Typography className={classes.numberPendingBox} type="body2">
           {pending}
         </Typography>
       </div>
@@ -300,7 +300,7 @@ const Activity: FC = () => {
 
   const loader = (
     <div className={classes.contentWrapper}>
-      <Header title="Activity" backTo={{ routeKey: "home" }} />
+      <Header backTo={{ routeKey: "home" }} title="Activity" />
       <Tabs all={0} pending={0} />
       <PageLoader />
     </div>
@@ -318,7 +318,7 @@ const Activity: FC = () => {
     case "failed": {
       return (
         <div className={classes.contentWrapper}>
-          <Header title="Activity" backTo={{ routeKey: "home" }} />
+          <Header backTo={{ routeKey: "home" }} title="Activity" />
           <Tabs all={0} pending={0} />
           <EmptyMessage />
         </div>
@@ -335,7 +335,7 @@ const Activity: FC = () => {
           <div ref={headerBorderObserved}></div>
           <div className={classes.stickyContent} ref={headerBorderTarget}>
             <div className={classes.contentWrapper}>
-              <Header title="Activity" backTo={{ routeKey: "home" }} />
+              <Header backTo={{ routeKey: "home" }} title="Activity" />
               <Tabs all={allBridges.length} pending={pendingBridges.data.length} />
             </div>
           </div>
@@ -353,8 +353,8 @@ const Activity: FC = () => {
                     >
                       <BridgeCard
                         bridge={bridge}
-                        networkError={false}
                         isFinaliseDisabled={true}
+                        networkError={false}
                         showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                       />
                     </div>
@@ -362,10 +362,10 @@ const Activity: FC = () => {
                     <div className={classes.bridgeCardwrapper} key={bridge.id}>
                       <BridgeCard
                         bridge={bridge}
-                        networkError={wrongNetworkBridges.includes(bridge.id)}
                         isFinaliseDisabled={areBridgesDisabled}
-                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
+                        networkError={wrongNetworkBridges.includes(bridge.id)}
                         onClaim={() => onClaim(bridge)}
+                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                       />
                     </div>
                   )

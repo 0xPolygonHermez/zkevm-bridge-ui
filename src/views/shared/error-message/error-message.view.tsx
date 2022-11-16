@@ -4,16 +4,16 @@ import useErrorMessageStyles from "src/views/shared/error-message/error-message.
 import Typography from "src/views/shared/typography/typography.view";
 
 interface ErrorMessageProps {
+  className?: string;
   error: string;
   type?: "body1" | "body2";
-  className?: string;
 }
 
-const ErrorMessage: FC<ErrorMessageProps> = ({ error, className, type = "body1" }) => {
+const ErrorMessage: FC<ErrorMessageProps> = ({ className, error, type = "body1" }) => {
   const classes = useErrorMessageStyles();
 
   return (
-    <Typography type={type} className={`${classes.error} ${className || ""}`}>
+    <Typography className={`${classes.error} ${className || ""}`} type={type}>
       {error}
     </Typography>
   );

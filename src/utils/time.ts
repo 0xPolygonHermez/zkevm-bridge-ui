@@ -32,11 +32,11 @@ interface FormatDateParams {
 export const formatDate = ({ timestamp }: FormatDateParams): string => {
   const date = new Date(timestamp);
   return date.toLocaleDateString(undefined, {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "numeric",
+    month: "short",
+    weekday: "short",
+    year: "numeric",
   });
 };

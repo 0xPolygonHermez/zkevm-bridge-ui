@@ -7,45 +7,6 @@ interface StylesProps {
 }
 
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  stickyContent: {
-    zIndex: 1,
-    top: 0,
-    position: "sticky",
-    background: theme.palette.grey.light,
-  },
-  stickyContentBorder: {
-    borderBottom: `${theme.palette.grey.main} 1px solid`,
-  },
-  numberAllBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    padding: [0, theme.spacing(1)],
-    borderRadius: 6,
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  numberPendingBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      !displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    padding: [0, theme.spacing(1)],
-    borderRadius: 6,
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  selectorBoxes: {
-    width: "100%",
-    maxWidth: theme.maxWidth,
-    display: "flex",
-    margin: [theme.spacing(5), "auto", theme.spacing(2)],
-  },
-  selectorBox: {
-    display: "flex",
-    padding: [[theme.spacing(0.75), theme.spacing(1)]],
-    marginRight: theme.spacing(2),
-    borderRadius: 8,
-  },
   allBox: ({ displayAll }: StylesProps) =>
     displayAll
       ? {
@@ -56,6 +17,45 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
           color: theme.palette.grey.dark,
           cursor: "pointer",
         },
+  bridgeCardwrapper: {
+    "&:not(:last-child)": {
+      marginBottom: theme.spacing(2),
+    },
+  },
+  contentWrapper: {
+    display: "flex",
+    flex: 1,
+    flexDirection: "column",
+    padding: [0, theme.spacing(2)],
+  },
+  emptyMessage: {
+    alignSelf: "center",
+    maxWidth: theme.maxWidth,
+    padding: [50, theme.spacing(2)],
+    textAlign: "center",
+    width: "100%",
+    [theme.breakpoints.upSm]: {
+      padding: 100,
+    },
+  },
+  numberAllBox: {
+    alignItems: "center",
+    backgroundColor: ({ displayAll }: StylesProps) =>
+      displayAll ? theme.palette.grey.light : theme.palette.grey.main,
+    borderRadius: 6,
+    display: "flex",
+    lineHeight: `${theme.spacing(1.75)}px`,
+    padding: [0, theme.spacing(1)],
+  },
+  numberPendingBox: {
+    alignItems: "center",
+    backgroundColor: ({ displayAll }: StylesProps) =>
+      !displayAll ? theme.palette.grey.light : theme.palette.grey.main,
+    borderRadius: 6,
+    display: "flex",
+    lineHeight: `${theme.spacing(1.75)}px`,
+    padding: [0, theme.spacing(1)],
+  },
   pendingBox: ({ displayAll }: StylesProps) =>
     !displayAll
       ? {
@@ -66,30 +66,30 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
           color: theme.palette.grey.dark,
           cursor: "pointer",
         },
-  status: {
-    padding: [theme.spacing(0.5), theme.spacing(1)],
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  contentWrapper: {
-    padding: [0, theme.spacing(2)],
+  selectorBox: {
+    borderRadius: 8,
     display: "flex",
-    flexDirection: "column",
-    flex: 1,
+    marginRight: theme.spacing(2),
+    padding: [[theme.spacing(0.75), theme.spacing(1)]],
   },
-  emptyMessage: {
-    width: "100%",
+  selectorBoxes: {
+    display: "flex",
+    margin: [theme.spacing(5), "auto", theme.spacing(2)],
     maxWidth: theme.maxWidth,
-    alignSelf: "center",
-    textAlign: "center",
-    padding: [50, theme.spacing(2)],
-    [theme.breakpoints.upSm]: {
-      padding: 100,
-    },
+    width: "100%",
   },
-  bridgeCardwrapper: {
-    "&:not(:last-child)": {
-      marginBottom: theme.spacing(2),
-    },
+  status: {
+    lineHeight: `${theme.spacing(1.75)}px`,
+    padding: [theme.spacing(0.5), theme.spacing(1)],
+  },
+  stickyContent: {
+    background: theme.palette.grey.light,
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+  },
+  stickyContentBorder: {
+    borderBottom: `${theme.palette.grey.main} 1px solid`,
   },
 }));
 

@@ -5,17 +5,17 @@ import useInfoBannerStyles from "src/views/shared/info-banner/info-banner.styles
 import Typography from "src/views/shared/typography/typography.view";
 
 interface InfoBannerProps {
-  message: string;
   className?: string;
+  message: string;
 }
 
-const InfoBanner: FC<InfoBannerProps> = ({ message, className }) => {
+const InfoBanner: FC<InfoBannerProps> = ({ className, message }) => {
   const classes = useInfoBannerStyles();
 
   return (
     <div className={`${classes.infoBanner} ${className ?? ""}`}>
       <InfoIcon />
-      <Typography type="body2" className={classes.message}>
+      <Typography className={classes.message} type="body2">
         {message}
       </Typography>
     </div>

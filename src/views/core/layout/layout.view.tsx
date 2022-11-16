@@ -1,13 +1,13 @@
 import { FC, PropsWithChildren } from "react";
 
+import { reportError } from "src/adapters/error";
+import { useUIContext } from "src/contexts/ui.context";
 import useLayoutStyles from "src/views/core/layout/layout.styles";
 import Snackbar from "src/views/shared/snackbar/snackbar.view";
-import { useUIContext } from "src/contexts/ui.context";
-import { reportError } from "src/adapters/error";
 
 const Layout: FC<PropsWithChildren> = ({ children }) => {
   const classes = useLayoutStyles();
-  const { snackbar, closeSnackbar } = useUIContext();
+  const { closeSnackbar, snackbar } = useUIContext();
 
   const onCloseSnackbar = closeSnackbar;
   const onReportFromSnackbar = reportError;

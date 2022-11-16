@@ -1,20 +1,20 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
+import { useEnvContext } from "src/contexts/env.context";
+import { useErrorContext } from "src/contexts/error.context";
+import { useProvidersContext } from "src/contexts/providers.context";
+import { Chain } from "src/domain";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
+import ChainList from "src/views/shared/chain-list/chain-list.view";
 import useNetworkSelectorStyles from "src/views/shared/network-selector/network-selector.styles";
 import Typography from "src/views/shared/typography/typography.view";
-import ChainList from "src/views/shared/chain-list/chain-list.view";
-import { useEnvContext } from "src/contexts/env.context";
-import { useProvidersContext } from "src/contexts/providers.context";
-import { useErrorContext } from "src/contexts/error.context";
-import { Chain } from "src/domain";
-import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
 
 const NetworkSelector: FC = () => {
   const classes = useNetworkSelectorStyles();
   const env = useEnvContext();
-  const { connectedProvider, changeNetwork } = useProvidersContext();
+  const { changeNetwork, connectedProvider } = useProvidersContext();
   const { notifyError } = useErrorContext();
   const callIfMounted = useCallIfMounted();
 
@@ -39,13 +39,13 @@ const NetworkSelector: FC = () => {
   return (
     <>
       <button
-        title={selectedChain.name}
         className={classes.networkButton}
         onClick={() => setIsOpen(true)}
+        title={selectedChain.name}
         type="button"
       >
         <selectedChain.Icon />
-        <Typography type="body1" className={classes.networkButtonText}>
+        <Typography className={classes.networkButtonText} type="body1">
           {selectedChain.name}
         </Typography>
         <CaretDown />

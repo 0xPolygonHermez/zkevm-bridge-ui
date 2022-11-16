@@ -4,8 +4,8 @@ import { Theme } from "src/styles/theme";
 
 const useApprovalInfoStyles = createUseStyles((theme: Theme) => ({
   approvalInfo: {
-    display: "flex",
     alignItems: "center",
+    display: "flex",
     gap: theme.spacing(1),
   },
 }));

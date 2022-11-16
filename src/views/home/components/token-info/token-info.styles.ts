@@ -3,31 +3,31 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useTokenInfoStyles = createUseStyles((theme: Theme) => ({
-  tokenInfo: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  tokenInfoTable: {
-    marginTop: theme.spacing(2),
-    flex: 1,
-  },
   removeTokenButton: {
-    display: "flex",
-    justifyContent: "center",
-    padding: theme.spacing(1.5),
-    gap: theme.spacing(2),
-    backgroundColor: theme.palette.grey.light,
-    color: theme.palette.black,
-    fontSize: "20px",
-    lineHeight: "24px",
-    borderRadius: 9,
-    border: "none",
-    cursor: "pointer",
-    transition: theme.hoverTransition,
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
+    backgroundColor: theme.palette.grey.light,
+    border: "none",
+    borderRadius: 9,
+    color: theme.palette.black,
+    cursor: "pointer",
+    display: "flex",
+    fontSize: "20px",
+    gap: theme.spacing(2),
+    justifyContent: "center",
+    lineHeight: "24px",
+    padding: theme.spacing(1.5),
+    transition: theme.hoverTransition,
+  },
+  tokenInfo: {
+    display: "flex",
+    flex: 1,
+    flexDirection: "column",
+  },
+  tokenInfoTable: {
+    flex: 1,
+    marginTop: theme.spacing(2),
   },
 }));
 

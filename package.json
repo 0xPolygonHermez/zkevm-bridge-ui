@@ -28,7 +28,7 @@
     "zod": "^3.19.1"
   },
   "devDependencies": {
-    "@hermeznetwork/eslint-config-hermez": "^1.1.0",
+    "@hermeznetwork/eslint-config-hermez": "file:../eslint-config-hermez/hermeznetwork-eslint-config-hermez-2.0.0.tgz",
     "@typechain/ethers-v5": "^10.1.0",
     "@types/node": "^18.6.2",
     "@types/platform": "^1.3.4",
