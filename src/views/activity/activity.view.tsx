@@ -44,7 +44,7 @@ const Activity: FC = () => {
   const [total, setTotal] = useState(0);
   const [wrongNetworkBridges, setWrongNetworkBridges] = useState<string[]>([]);
   const [areBridgesDisabled, setAreBridgesDisabled] = useState<boolean>(false);
-  const classes = useActivityStyles({ displayAll });
+  const classes = useActivityStyles();
 
   const fetchBridgesAbortController = useRef<AbortController>(new AbortController());
 
@@ -278,20 +278,36 @@ const Activity: FC = () => {
   );
 
   const Tabs = ({ all, pending }: { all: number; pending: number }) => (
-    <div className={classes.selectorBoxes}>
-      <div className={`${classes.selectorBox} ${classes.allBox}`} onClick={onDisplayAll}>
-        <Typography className={classes.status} type="body1">
+    <div className={classes.filterBoxes}>
+      <div
+        className={`${classes.filterBox} ${displayAll ? classes.filterBoxSelected : ""}`}
+        onClick={onDisplayAll}
+      >
+        <Typography className={classes.filterBoxLabel} type="body1">
           All
         </Typography>
-        <Typography className={classes.numberAllBox} type="body2">
+        <Typography
+          className={`${classes.filterNumberBox} ${
+            displayAll ? classes.filterNumberBoxSelected : ""
+          }`}
+          type="body2"
+        >
           {all}
         </Typography>
       </div>
-      <div className={`${classes.selectorBox} ${classes.pendingBox}`} onClick={onDisplayPending}>
-        <Typography className={classes.status} type="body1">
+      <div
+        className={`${classes.filterBox} ${!displayAll ? classes.filterBoxSelected : ""}`}
+        onClick={onDisplayPending}
+      >
+        <Typography className={classes.filterBoxLabel} type="body1">
           Pending
         </Typography>
-        <Typography className={classes.numberPendingBox} type="body2">
+        <Typography
+          className={`${classes.filterNumberBox} ${
+            !displayAll ? classes.filterNumberBoxSelected : ""
+          }`}
+          type="body2"
+        >
           {pending}
         </Typography>
       </div>
