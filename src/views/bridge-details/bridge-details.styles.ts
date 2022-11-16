@@ -27,12 +27,6 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     padding: [0, theme.spacing(2)],
   },
-  dotProcessing: {
-    backgroundColor: theme.palette.warning.main,
-    borderRadius: "50%",
-    height: 6,
-    width: 6,
-  },
   dotCompleted: {
     backgroundColor: theme.palette.success.main,
     borderRadius: "50%",
@@ -41,6 +35,12 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   },
   dotOnHold: {
     backgroundColor: theme.palette.error.main,
+    borderRadius: "50%",
+    height: 6,
+    width: 6,
+  },
+  dotProcessing: {
+    backgroundColor: theme.palette.warning.main,
     borderRadius: "50%",
     height: 6,
     width: 6,
