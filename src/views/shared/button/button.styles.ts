@@ -2,10 +2,6 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-interface StyleProps {
-  addSpinnerSpacing: boolean;
-}
-
 const useButtonStyles = createUseStyles((theme: Theme) => ({
   button: {
     "&:disabled": {
@@ -30,9 +26,8 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(2), theme.spacing(10)],
     transition: theme.hoverTransition,
   },
-  spinner: {
-    paddingLeft: ({ addSpinnerSpacing }: StyleProps) =>
-      addSpinnerSpacing ? theme.spacing(1.5) : 0,
+  paddedSpinner: {
+    paddingLeft: theme.spacing(1.5),
   },
 }));
 
