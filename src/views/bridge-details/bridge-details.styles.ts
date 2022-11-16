@@ -1,11 +1,6 @@
 import { createUseStyles } from "react-jss";
 
-import { Bridge } from "src/domain";
 import { Theme } from "src/styles/theme";
-
-interface StylesProps {
-  status?: Bridge["status"];
-}
 
 const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   alignRow: {
@@ -32,17 +27,20 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     padding: [0, theme.spacing(2)],
   },
-  dot: {
-    backgroundColor: ({ status }: StylesProps) => {
-      switch (status) {
-        case "completed":
-          return theme.palette.success.main;
-        case "on-hold":
-          return theme.palette.error.main;
-        default:
-          return theme.palette.warning.main;
-      }
-    },
+  dotProcessing: {
+    backgroundColor: theme.palette.warning.main,
+    borderRadius: "50%",
+    height: 6,
+    width: 6,
+  },
+  dotCompleted: {
+    backgroundColor: theme.palette.success.main,
+    borderRadius: "50%",
+    height: 6,
+    width: 6,
+  },
+  dotOnHold: {
+    backgroundColor: theme.palette.error.main,
     borderRadius: "50%",
     height: 6,
     width: 6,

@@ -88,9 +88,7 @@ const BridgeDetails: FC = () => {
   const [isFinaliseButtonDisabled, setIsFinaliseButtonDisabled] = useState<boolean>(false);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
-  const classes = useBridgeDetailsStyles({
-    status: bridge.status === "successful" ? bridge.data.status : undefined,
-  });
+  const classes = useBridgeDetailsStyles();
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
@@ -318,6 +316,15 @@ const BridgeDetails: FC = () => {
         ? `${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`
         : undefined;
 
+      const dotClass =
+        bridge.status === "successful"
+          ? bridge.data.status === "completed"
+            ? classes.dotCompleted
+            : bridge.data.status === "on-hold"
+            ? classes.dotOnHold
+            : classes.dotProcessing
+          : "";
+
       return (
         <div className={classes.contentWrapper}>
           <Header backTo={{ routeKey: "activity" }} title="Bridge Details" />
@@ -334,7 +341,7 @@ const BridgeDetails: FC = () => {
                 Status
               </Typography>
               <Typography className={classes.alignRow} type="body1">
-                <span className={classes.dot} />
+                <span className={dotClass} />
                 {getBridgeStatus(status)}
               </Typography>
             </div>
