@@ -97,7 +97,7 @@ export enum Currency {
   EUR = "EUR",
   GBP = "GBP",
   JPY = "JPY",
-  USD = "USD"
+  USD = "USD",
 }
 
 export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;

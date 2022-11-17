@@ -1,7 +1,6 @@
 import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
-
 import { isChainCustomToken } from "src/adapters/storage";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";

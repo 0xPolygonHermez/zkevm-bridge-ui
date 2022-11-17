@@ -24,7 +24,7 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { Chain, FiatExchangeRates , Token } from "src/domain";
+import { Chain, FiatExchangeRates, Token } from "src/domain";
 import { UniswapV2Pair__factory } from "src/types/contracts/uniswap-v2-pair";
 import {
   UniswapV2Router02,
