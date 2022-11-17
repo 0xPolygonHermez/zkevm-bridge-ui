@@ -11,7 +11,8 @@ type ButtonProps = PropsWithChildren<{
 }>;
 
 const Button: FC<ButtonProps> = ({ children, disabled, isLoading, onClick, type }) => {
-  const classes = useButtonStyles({ addSpinnerSpacing: children !== undefined });
+  const addSpinnerSpacing = children !== undefined;
+  const classes = useButtonStyles();
 
   return (
     <button
@@ -22,7 +23,7 @@ const Button: FC<ButtonProps> = ({ children, disabled, isLoading, onClick, type 
     >
       {children}
       {isLoading && (
-        <span className={classes.spinner}>
+        <span className={addSpinnerSpacing ? classes.paddedSpinner : ""}>
           <Spinner color="#fff" size={24} />
         </span>
       )}

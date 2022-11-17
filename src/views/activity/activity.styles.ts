@@ -2,21 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-interface StylesProps {
-  displayAll: boolean;
-}
-
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  allBox: ({ displayAll }: StylesProps) =>
-    displayAll
-      ? {
-          backgroundColor: theme.palette.white,
-        }
-      : {
-          backgroundColor: "inherit",
-          color: theme.palette.grey.dark,
-          cursor: "pointer",
-        },
   bridgeCardwrapper: {
     "&:not(:last-child)": {
       marginBottom: theme.spacing(2),
@@ -38,49 +24,40 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
       padding: 100,
     },
   },
-  numberAllBox: {
+  filterBox: {
+    "&:not(:first-of-type)": {
+      marginLeft: theme.spacing(2),
+    },
     alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    borderRadius: 6,
-    display: "flex",
-    lineHeight: `${theme.spacing(1.75)}px`,
-    padding: [0, theme.spacing(1)],
-  },
-  numberPendingBox: {
-    alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      !displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    borderRadius: 6,
-    display: "flex",
-    lineHeight: `${theme.spacing(1.75)}px`,
-    padding: [0, theme.spacing(1)],
-  },
-  pendingBox: ({ displayAll }: StylesProps) =>
-    !displayAll
-      ? {
-          backgroundColor: theme.palette.white,
-        }
-      : {
-          backgroundColor: "inherit",
-          color: theme.palette.grey.dark,
-          cursor: "pointer",
-        },
-  selectorBox: {
+    backgroundColor: "transparent",
     borderRadius: 8,
+    cursor: "pointer",
     display: "flex",
-    marginRight: theme.spacing(2),
     padding: [[theme.spacing(0.75), theme.spacing(1)]],
+    transition: theme.hoverTransition,
   },
-  selectorBoxes: {
+  filterBoxes: {
     display: "flex",
     margin: [theme.spacing(5), "auto", theme.spacing(2)],
     maxWidth: theme.maxWidth,
     width: "100%",
   },
-  status: {
-    lineHeight: `${theme.spacing(1.75)}px`,
-    padding: [theme.spacing(0.5), theme.spacing(1)],
+  filterBoxLabel: {
+    padding: [theme.spacing(0), theme.spacing(1)],
+  },
+  filterBoxSelected: {
+    backgroundColor: theme.palette.white,
+    color: theme.palette.grey.dark,
+  },
+  filterNumberBox: {
+    alignItems: "center",
+    backgroundColor: theme.palette.grey.main,
+    borderRadius: 6,
+    display: "flex",
+    padding: [theme.spacing(0.25), theme.spacing(1)],
+  },
+  filterNumberBoxSelected: {
+    backgroundColor: theme.palette.grey.light,
   },
   stickyContent: {
     background: theme.palette.grey.light,

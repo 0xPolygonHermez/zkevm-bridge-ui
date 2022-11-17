@@ -9,6 +9,7 @@
     "postinstall": "npm run generate-contract-types",
     "format": "prettier --write .",
     "lint": "eslint './src/**/*.{ts,tsx}'",
+    "lint:fix": "npm run lint -- --fix",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -44,7 +45,10 @@
     "vite-plugin-svgr": "^2.2.1"
   },
   "eslintConfig": {
-    "extends": "@hermeznetwork/eslint-config-hermez"
+    "extends": "@hermeznetwork/eslint-config-hermez",
+    "ignorePatterns": [
+      "dist"
+    ]
   },
   "browserslist": {
     "production": [
@@ -59,11 +63,11 @@
     ]
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,ts,json}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{ts,tsx,html,json,md}": [
+    "*.{html,md}": [
       "prettier --write"
     ]
   },
