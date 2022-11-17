@@ -63,11 +63,11 @@
     ]
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,ts,json}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{html,json,md}": [
+    "*.{html,md}": [
       "prettier --write"
     ]
   },
