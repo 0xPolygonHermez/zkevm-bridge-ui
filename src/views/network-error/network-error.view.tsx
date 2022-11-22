@@ -1,11 +1,11 @@
 import { FC } from "react";
-import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
-import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
-import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { ProviderError, providerError } from "src/adapters/error";
-import Typography from "src/views/shared/typography/typography.view";
+import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import routes from "src/routes";
+import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
+import Typography from "src/views/shared/typography/typography.view";
 
 const NetworkError: FC = () => {
   const classes = useNetworkErrorStyles();
@@ -26,7 +26,7 @@ const NetworkError: FC = () => {
         </Typography>
         <Typography type="body2">It will be operative again soon</Typography>
       </div>
-      <button type="button" onClick={() => navigate(routes.home.path)} className={classes.button}>
+      <button className={classes.button} onClick={() => navigate(routes.home.path)} type="button">
         Try again
       </button>
     </div>

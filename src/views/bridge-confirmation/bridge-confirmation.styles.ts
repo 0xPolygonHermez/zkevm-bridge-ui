@@ -3,96 +3,96 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
-  card: {
-    width: "100%",
-    maxWidth: theme.maxWidth,
-    padding: theme.spacing(2),
+  arrowIcon: {
+    transform: "rotate(90deg)",
+    [theme.breakpoints.upSm]: {
+      margin: [0, theme.spacing(1)],
+      transform: "none",
+    },
+  },
+  button: {
+    alignItems: "center",
     display: "flex",
     flexDirection: "column",
+    gap: theme.spacing(2),
+    justifyContent: "center",
+    marginTop: theme.spacing(3),
+    [theme.breakpoints.upSm]: {
+      marginTop: theme.spacing(6),
+    },
+  },
+  card: {
     alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
     margin: [theme.spacing(3), "auto", 0],
+    maxWidth: theme.maxWidth,
+    padding: theme.spacing(2),
+    width: "100%",
     [theme.breakpoints.upSm]: {
       margin: [theme.spacing(6), "auto", 0],
       padding: theme.spacing(3),
     },
   },
-  tokenIcon: {
-    marginTop: theme.spacing(0),
-    marginBottom: theme.spacing(1),
-    [theme.breakpoints.upSm]: {
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(3),
-    },
-  },
-  fiat: {
-    marginTop: theme.spacing(1),
+  chainBox: {
+    alignItems: "center",
+    backgroundColor: theme.palette.grey.light,
+    borderRadius: 56,
+    display: "flex",
+    flex: 1,
+    gap: theme.spacing(1),
+    justifyContent: "center",
+    maxWidth: 240,
+    padding: [theme.spacing(1), theme.spacing(2)],
   },
   chainsRow: {
-    width: "100%",
-    display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
-    flexDirection: "column",
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
     borderBottom: `1px solid ${theme.palette.grey.light}`,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
     marginBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    width: "100%",
     [theme.breakpoints.upSm]: {
       flexDirection: "row",
-      paddingTop: theme.spacing(3),
       paddingBottom: theme.spacing(4),
-    },
-  },
-  chainBox: {
-    flex: 1,
-    maxWidth: 240,
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-    backgroundColor: theme.palette.grey.light,
-    justifyContent: "center",
-    padding: [theme.spacing(1), theme.spacing(2)],
-    borderRadius: 56,
-  },
-  arrowIcon: {
-    transform: "rotate(90deg)",
-    [theme.breakpoints.upSm]: {
-      transform: "none",
-      margin: [0, theme.spacing(1)],
-    },
-  },
-  feeBlock: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: theme.spacing(1),
-  },
-  fee: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-  },
-  button: {
-    marginTop: theme.spacing(3),
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: theme.spacing(2),
-    [theme.breakpoints.upSm]: {
-      marginTop: theme.spacing(6),
+      paddingTop: theme.spacing(3),
     },
   },
   contentWrapper: {
     padding: [0, theme.spacing(2)],
   },
-  infoMessage: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-  },
   error: {
     marginTop: theme.spacing(2),
+  },
+  fee: {
+    alignItems: "center",
+    display: "flex",
+    gap: theme.spacing(1),
+  },
+  feeBlock: {
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(1),
+  },
+  fiat: {
+    marginTop: theme.spacing(1),
+  },
+  infoMessage: {
+    alignItems: "center",
+    display: "flex",
+    gap: theme.spacing(1),
+  },
+  tokenIcon: {
+    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(0),
+    [theme.breakpoints.upSm]: {
+      marginBottom: theme.spacing(3),
+      marginTop: theme.spacing(1),
+    },
   },
 }));
 

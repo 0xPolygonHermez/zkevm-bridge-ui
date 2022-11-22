@@ -1,8 +1,8 @@
 import { BigNumber, ethers } from "ethers";
-import { parseUnits, formatUnits } from "ethers/lib/utils";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 
+import { FIAT_DISPLAY_PRECISION, TOKEN_DISPLAY_PRECISION } from "src/constants";
 import { Token } from "src/domain";
-import { TOKEN_DISPLAY_PRECISION, FIAT_DISPLAY_PRECISION } from "src/constants";
 
 export const formatTokenAmount = (value: BigNumber, token: Token): string => {
   const amount = ethers.utils.formatUnits(value, token.decimals);
@@ -22,8 +22,8 @@ export const formatFiatAmount = (value: BigNumber): string => {
 };
 
 interface Amount {
-  value: BigNumber;
   precision: number;
+  value: BigNumber;
 }
 
 export const multiplyAmounts = (a: Amount, b: Amount, outputPrecision: number): BigNumber => {

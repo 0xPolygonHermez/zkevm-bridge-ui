@@ -1,28 +1,28 @@
 import { FC } from "react";
 
+import { Token } from "src/domain";
 import { AsyncTask } from "src/utils/types";
 import Button from "src/views/shared/button/button.view";
-import { Token } from "src/domain";
 
 interface BridgeButtonProps {
+  approvalTask: AsyncTask<null, string>;
   isDisabled?: boolean;
   isTxApprovalRequired: boolean;
-  approvalTask: AsyncTask<null, string>;
-  token: Token;
   onApprove: () => void;
   onBridge: () => void;
+  token: Token;
 }
 
 const BridgeButton: FC<BridgeButtonProps> = ({
-  isDisabled = false,
-  token,
-  isTxApprovalRequired,
   approvalTask,
+  isDisabled = false,
+  isTxApprovalRequired,
   onApprove,
   onBridge,
+  token,
 }) => {
   const bridgeButton = (
-    <Button onClick={onBridge} disabled={isDisabled}>
+    <Button disabled={isDisabled} onClick={onBridge}>
       Bridge
     </Button>
   );

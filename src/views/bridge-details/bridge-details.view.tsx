@@ -1,39 +1,39 @@
+import { BigNumber } from "ethers";
 import { FC, useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { BigNumber } from "ethers";
 
-import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
-import Chain from "src/views/bridge-details/components/chain/chain";
-import Card from "src/views/shared/card/card.view";
-import Header from "src/views/shared/header/header.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Typography from "src/views/shared/typography/typography.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Button from "src/views/shared/button/button.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
-import { useBridgeContext } from "src/contexts/bridge.context";
-import { useProvidersContext } from "src/contexts/providers.context";
-import { useErrorContext } from "src/contexts/error.context";
-import { useEnvContext } from "src/contexts/env.context";
-import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { isCancelRequestError } from "src/adapters/bridge-api";
 import { parseError } from "src/adapters/error";
 import { getCurrency } from "src/adapters/storage";
+import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
+import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
+import { useBridgeContext } from "src/contexts/bridge.context";
+import { useEnvContext } from "src/contexts/env.context";
+import { useErrorContext } from "src/contexts/error.context";
+import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useProvidersContext } from "src/contexts/providers.context";
+import { useTokensContext } from "src/contexts/tokens.context";
+import { Bridge } from "src/domain";
+import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import routes from "src/routes";
+import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
+import { calculateTransactionResponseFee } from "src/utils/fees";
+import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { deserializeBridgeId } from "src/utils/serializers";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
   isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
-import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
-import { calculateTransactionResponseFee } from "src/utils/fees";
-import { deserializeBridgeId } from "src/utils/serializers";
-import routes from "src/routes";
-import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { useTokensContext } from "src/contexts/tokens.context";
-import { isCancelRequestError } from "src/adapters/bridge-api";
-import { Bridge } from "src/domain";
+import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
+import Chain from "src/views/bridge-details/components/chain/chain";
+import Button from "src/views/shared/button/button.view";
+import Card from "src/views/shared/card/card.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
+import Header from "src/views/shared/header/header.view";
+import Icon from "src/views/shared/icon/icon.view";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface Fees {
   step1?: BigNumber;
@@ -88,9 +88,7 @@ const BridgeDetails: FC = () => {
   const [isFinaliseButtonDisabled, setIsFinaliseButtonDisabled] = useState<boolean>(false);
   const currencySymbol = getCurrencySymbol(getCurrency());
 
-  const classes = useBridgeDetailsStyles({
-    status: bridge.status === "successful" ? bridge.data.status : undefined,
-  });
+  const classes = useBridgeDetailsStyles();
 
   const onClaim = () => {
     if (bridge.status === "successful" && bridge.data.status === "on-hold") {
@@ -131,10 +129,10 @@ const BridgeDetails: FC = () => {
       if (parsedBridgeId.success) {
         const { depositCount, networkId } = parsedBridgeId.data;
         void fetchBridge({
-          env,
-          depositCount,
-          networkId,
           abortSignal: abortController.signal,
+          depositCount,
+          env,
+          networkId,
         })
           .then((bridge) => {
             callIfMounted(() => {
@@ -143,8 +141,8 @@ const BridgeDetails: FC = () => {
               }
 
               setBridge({
-                status: "successful",
                 data: bridge,
+                status: "successful",
               });
             });
           })
@@ -153,8 +151,8 @@ const BridgeDetails: FC = () => {
               if (!isCancelRequestError(error)) {
                 notifyError(error);
                 setBridge({
-                  status: "failed",
                   error: "Bridge not found",
+                  status: "failed",
                 });
               }
             });
@@ -163,8 +161,8 @@ const BridgeDetails: FC = () => {
         callIfMounted(() => {
           notifyError(parsedBridgeId.error);
           setBridge({
-            status: "failed",
             error: "Bridge not found",
+            status: "failed",
           });
         });
       }
@@ -195,18 +193,18 @@ const BridgeDetails: FC = () => {
       const { amount, from, token } = bridge.data;
 
       // fiat amount
-      getTokenPrice({ token, chain: from })
+      getTokenPrice({ chain: from, token })
         .then((tokenPrice) => {
           callIfMounted(() => {
             setFiatAmount(
               multiplyAmounts(
                 {
-                  value: tokenPrice,
                   precision: FIAT_DISPLAY_PRECISION,
+                  value: tokenPrice,
                 },
                 {
-                  value: amount,
                   precision: token.decimals,
+                  value: amount,
                 },
                 FIAT_DISPLAY_PRECISION
               )
@@ -228,19 +226,19 @@ const BridgeDetails: FC = () => {
       // fiat fees
       const token = tokens.find((t) => t.symbol === "WETH");
       if (token) {
-        getTokenPrice({ token, chain: from })
+        getTokenPrice({ chain: from, token })
           .then((tokenPrice) => {
             callIfMounted(() => {
               setFiatFees({
                 step1: ethFees.step1
                   ? multiplyAmounts(
                       {
-                        value: tokenPrice,
                         precision: FIAT_DISPLAY_PRECISION,
+                        value: tokenPrice,
                       },
                       {
-                        value: ethFees.step1,
                         precision: token.decimals,
+                        value: ethFees.step1,
                       },
                       FIAT_DISPLAY_PRECISION
                     )
@@ -248,12 +246,12 @@ const BridgeDetails: FC = () => {
                 step2: ethFees.step2
                   ? multiplyAmounts(
                       {
-                        value: tokenPrice,
                         precision: FIAT_DISPLAY_PRECISION,
+                        value: tokenPrice,
                       },
                       {
-                        value: ethFees.step2,
                         precision: token.decimals,
+                        value: ethFees.step2,
                       },
                       FIAT_DISPLAY_PRECISION
                     )
@@ -276,16 +274,16 @@ const BridgeDetails: FC = () => {
     case "reloading": {
       return (
         <>
-          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
+          <Header backTo={{ routeKey: "activity" }} title="Bridge Details" />
           <PageLoader />
         </>
       );
     }
     case "failed": {
-      return <Navigate to={routes.activity.path} replace />;
+      return <Navigate replace to={routes.activity.path} />;
     }
     case "successful": {
-      const { status, amount, from, to, token } = bridge.data;
+      const { amount, from, status, to, token } = bridge.data;
 
       const bridgeTxUrl = `${from.explorerUrl}/tx/${bridge.data.depositTxHash}`;
       const claimTxUrl =
@@ -318,81 +316,90 @@ const BridgeDetails: FC = () => {
         ? `${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`
         : undefined;
 
+      const dotClass =
+        bridge.status === "successful"
+          ? bridge.data.status === "completed"
+            ? classes.dotCompleted
+            : bridge.data.status === "on-hold"
+            ? classes.dotOnHold
+            : classes.dotProcessing
+          : "";
+
       return (
         <div className={classes.contentWrapper}>
-          <Header title="Bridge Details" backTo={{ routeKey: "activity" }} />
+          <Header backTo={{ routeKey: "activity" }} title="Bridge Details" />
           <Card className={classes.card}>
             <div className={classes.balance}>
-              <Icon url={token.logoURI} className={classes.tokenIcon} size={48} />
+              <Icon className={classes.tokenIcon} size={48} url={token.logoURI} />
               <Typography type="h1">{tokenAmountString}</Typography>
-              <Typography type="h2" className={classes.fiat}>
+              <Typography className={classes.fiat} type="h2">
                 {fiatAmountString}
               </Typography>
             </div>
             <div className={classes.row}>
-              <Typography type="body2" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body2">
                 Status
               </Typography>
-              <Typography type="body1" className={classes.alignRow}>
-                <span className={classes.dot} />
+              <Typography className={classes.alignRow} type="body1">
+                <span className={dotClass} />
                 {getBridgeStatus(status)}
               </Typography>
             </div>
             <div className={classes.row}>
-              <Typography type="body2" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body2">
                 From
               </Typography>
               <Chain chain={from} className={classes.alignRow} />
             </div>
             <div className={classes.row}>
-              <Typography type="body2" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body2">
                 To
               </Typography>
               <Chain chain={to} className={classes.alignRow} />
             </div>
             <div className={classes.row}>
-              <Typography type="body2" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body2">
                 Step 1 Fee ({bridge.data.from.name})
               </Typography>
-              <Typography type="body1" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body1">
                 {step1FeeString}
                 {step1FiatFeeString ? ` ~ ${step1FiatFeeString}` : ""}
               </Typography>
             </div>
             {bridge.data.status === "completed" && (
               <div className={classes.row}>
-                <Typography type="body2" className={classes.alignRow}>
+                <Typography className={classes.alignRow} type="body2">
                   Step 2 Fee ({bridge.data.to.name})
                 </Typography>
-                <Typography type="body1" className={classes.alignRow}>
+                <Typography className={classes.alignRow} type="body1">
                   {step2FeeString}
                   {step2FiatFeeString ? ` ~ ${step2FiatFeeString}` : ""}
                 </Typography>
               </div>
             )}
             <div className={classes.row}>
-              <Typography type="body2" className={classes.alignRow}>
+              <Typography className={classes.alignRow} type="body2">
                 Track step 1 transaction
               </Typography>
               <a
-                href={bridgeTxUrl}
-                target="_blank"
                 className={classes.explorerButton}
+                href={bridgeTxUrl}
                 rel="noreferrer"
+                target="_blank"
               >
                 <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
               </a>
             </div>
             {claimTxUrl && (
               <div className={`${classes.row} ${classes.lastRow}`}>
-                <Typography type="body2" className={classes.alignRow}>
+                <Typography className={classes.alignRow} type="body2">
                   Track step 2 transaction
                 </Typography>
                 <a
-                  href={claimTxUrl}
-                  target="_blank"
                   className={classes.explorerButton}
+                  href={claimTxUrl}
                   rel="noreferrer"
+                  target="_blank"
                 >
                   <NewWindowIcon /> <Typography type="body1">View on explorer</Typography>
                 </a>
@@ -402,8 +409,8 @@ const BridgeDetails: FC = () => {
           {(status === "initiated" || status === "on-hold") && (
             <div className={classes.finaliseRow}>
               <Button
-                onClick={onClaim}
                 disabled={status === "initiated" || isFinaliseButtonDisabled}
+                onClick={onClaim}
               >
                 Finalise
               </Button>

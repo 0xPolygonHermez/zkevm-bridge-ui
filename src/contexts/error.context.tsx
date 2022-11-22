@@ -1,7 +1,7 @@
-import { createContext, FC, PropsWithChildren, useCallback, useContext, useMemo } from "react";
+import { FC, PropsWithChildren, createContext, useCallback, useContext, useMemo } from "react";
 
-import { useUIContext } from "src/contexts/ui.context";
 import { parseError } from "src/adapters/error";
+import { useUIContext } from "src/contexts/ui.context";
 
 interface ErrorContext {
   notifyError: (error: unknown) => void;
@@ -23,7 +23,7 @@ const ErrorProvider: FC<PropsWithChildren> = (props) => {
   const notifyError = useCallback(
     (error: unknown): void => {
       void parseError(error)
-        .then((parsed) => openSnackbar({ type: "error", parsed }))
+        .then((parsed) => openSnackbar({ parsed, type: "error" }))
         .catch(console.error);
     },
     [openSnackbar]

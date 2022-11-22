@@ -1,19 +1,19 @@
-import { z } from "zod";
-import { TransactionResponse, TransactionReceipt } from "@ethersproject/abstract-provider";
+import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber, constants as ethersConstants } from "ethers";
-import { splitSignature, defaultAbiCoder } from "ethers/lib/utils";
+import { defaultAbiCoder, splitSignature } from "ethers/lib/utils";
+import { z } from "zod";
 
-import { Erc20__factory } from "src/types/contracts/erc-20";
-import { StrictSchema } from "src/utils/type-safety";
-import { selectTokenAddress } from "src/utils/tokens";
-import { Token, Chain, TxStatus, Permit } from "src/domain";
 import {
   DAI_PERMIT_TYPEHASH,
-  EIP_2612_PERMIT_TYPEHASH,
   EIP_2612_DOMAIN_TYPEHASH,
+  EIP_2612_PERMIT_TYPEHASH,
   UNISWAP_DOMAIN_TYPEHASH,
 } from "src/constants";
+import { Chain, Permit, Token, TxStatus } from "src/domain";
+import { Erc20__factory } from "src/types/contracts/erc-20";
+import { selectTokenAddress } from "src/utils/tokens";
+import { StrictSchema } from "src/utils/type-safety";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
 
@@ -72,19 +72,19 @@ const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
 };
 
 interface ApproveParams {
-  token: Token;
   amount: BigNumber;
-  provider: Web3Provider;
   owner: string;
+  provider: Web3Provider;
   spender: string;
+  token: Token;
 }
 
 const approve = async ({
-  token,
   amount,
-  provider,
   owner,
+  provider,
   spender,
+  token,
 }: ApproveParams): Promise<void> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot perform an approve on ETH");
@@ -92,11 +92,11 @@ const approve = async ({
 
   const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
   const hasAllowance = await isContractAllowedToSpendToken({
-    token,
     amount,
-    provider,
     owner,
+    provider,
     spender,
+    token,
   });
 
   if (!hasAllowance) {
@@ -107,19 +107,19 @@ const approve = async ({
 };
 
 interface IsContractAllowedToSpendTokenParams {
-  token: Token;
   amount: BigNumber;
-  provider: JsonRpcProvider;
   owner: string;
+  provider: JsonRpcProvider;
   spender: string;
+  token: Token;
 }
 
 const isContractAllowedToSpendToken = async ({
-  token,
   amount,
-  provider,
   owner,
+  provider,
   spender,
+  token,
 }: IsContractAllowedToSpendTokenParams): Promise<boolean> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot check the allowance of ETH");
@@ -132,21 +132,21 @@ const isContractAllowedToSpendToken = async ({
 };
 
 interface PermitParams {
-  token: Token;
-  provider: Web3Provider;
   account: string;
-  spender: string;
-  value: BigNumber;
   permit: Permit;
+  provider: Web3Provider;
+  spender: string;
+  token: Token;
+  value: BigNumber;
 }
 
 const permit = async ({
-  token,
-  provider,
   account,
-  spender,
-  value,
   permit,
+  provider,
+  spender,
+  token,
+  value,
 }: PermitParams): Promise<string> => {
   if (token.address === ethersConstants.AddressZero) {
     throw new Error("Cannot perform a permit on ETH");
@@ -162,10 +162,10 @@ const permit = async ({
   switch (permit) {
     case Permit.DAI: {
       const domain = {
-        name,
-        version: "1",
         chainId,
+        name,
         verifyingContract: token.address,
+        version: "1",
       };
 
       const types = {
@@ -179,15 +179,15 @@ const permit = async ({
       };
 
       const values = {
-        holder: account,
-        spender,
-        nonce,
-        expiry: MaxUint256,
         allowed: true,
+        expiry: MaxUint256,
+        holder: account,
+        nonce,
+        spender,
       };
 
       const signature = await signer._signTypedData(domain, types, values);
-      const { v, r, s } = splitSignature(signature);
+      const { r, s, v } = splitSignature(signature);
 
       return erc20Contract.interface.encodeFunctionData("permit", [
         account,
@@ -202,15 +202,15 @@ const permit = async ({
     case Permit.EIP_2612:
     case Permit.UNISWAP: {
       const eip2612StandardDomain = {
-        name,
-        version: "1",
         chainId,
+        name,
         verifyingContract: token.address,
+        version: "1",
       };
 
       const eip2612UniswapDomain = {
-        name,
         chainId,
+        name,
         verifyingContract: token.address,
       };
 
@@ -227,15 +227,15 @@ const permit = async ({
       };
 
       const values = {
+        deadline: MaxUint256,
+        nonce,
         owner: account,
         spender,
         value,
-        nonce,
-        deadline: MaxUint256,
       };
 
       const signature = await signer._signTypedData(domain, types, values);
-      const { v, r, s } = splitSignature(signature);
+      const { r, s, v } = splitSignature(signature);
 
       return erc20Contract.interface.encodeFunctionData("permit", [
         account,
@@ -251,17 +251,17 @@ const permit = async ({
 };
 
 interface GetErc20TokenMetadataParams {
-  token: Token;
   chain: Chain;
+  token: Token;
 }
 
 const getErc20TokenMetadata = async ({
-  token,
   chain,
+  token,
 }: GetErc20TokenMetadataParams): Promise<{
+  decimals: number;
   name: string;
   symbol: string;
-  decimals: number;
 }> => {
   const erc20Contract = Erc20__factory.connect(selectTokenAddress(token, chain), chain.provider);
   const [name, symbol, decimals] = await Promise.all([
@@ -270,24 +270,24 @@ const getErc20TokenMetadata = async ({
     erc20Contract.decimals(),
   ]);
   return {
+    decimals,
     name,
     symbol,
-    decimals,
   };
 };
 
 interface GetErc20TokenEncodedMetadataParams {
-  token: Token;
   chain: Chain;
+  token: Token;
 }
 
 const getErc20TokenEncodedMetadata = async ({
-  token,
   chain,
+  token,
 }: GetErc20TokenEncodedMetadataParams): Promise<string> => {
-  const { name, symbol, decimals } = await getErc20TokenMetadata({
-    token,
+  const { decimals, name, symbol } = await getErc20TokenMetadata({
     chain,
+    token,
   });
   return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
 };

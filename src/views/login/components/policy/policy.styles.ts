@@ -4,30 +4,12 @@ import { Theme } from "src/styles/theme";
 
 const usePolicyStyles = createUseStyles((theme: Theme) => ({
   background: {
+    alignItems: "center",
     background: theme.palette.transparency,
-    width: "100%",
+    display: "flex",
     height: "100vh",
-    display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-  },
-  card: {
     width: "100%",
-    maxWidth: 500,
-    display: "flex",
-    flexDirection: "column",
-    padding: theme.spacing(3),
-    gap: theme.spacing(3),
-  },
-  text: {
-    display: "flex",
-    gap: theme.spacing(2),
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  buttonsBox: {
-    display: "flex",
-    justifyContent: "space-around",
   },
   button: {
     border: "none",
@@ -35,19 +17,37 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
     cursor: "pointer",
     padding: [theme.spacing(1), theme.spacing(5)],
   },
+  buttonsBox: {
+    display: "flex",
+    justifyContent: "space-around",
+  },
   cancelButton: {
-    color: theme.palette.grey.dark,
-    backgroundColor: theme.palette.grey.main,
     "&:hover": {
       background: theme.palette.grey.light,
     },
+    backgroundColor: theme.palette.grey.main,
+    color: theme.palette.grey.dark,
+  },
+  card: {
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(3),
+    maxWidth: 500,
+    padding: theme.spacing(3),
+    width: "100%",
   },
   connectButton: {
-    color: theme.palette.white,
-    backgroundColor: theme.palette.primary.main,
     "&:hover": {
       background: theme.palette.primary.dark,
     },
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.white,
+  },
+  text: {
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(2),
   },
 }));
 

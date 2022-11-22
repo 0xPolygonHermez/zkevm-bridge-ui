@@ -3,39 +3,12 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useLoginStyles = createUseStyles((theme: Theme) => ({
-  login: {
-    padding: [0, theme.spacing(2)],
-    display: "flex",
-    flexDirection: "column",
-  },
-  contentWrapper: {
-    margin: "auto",
-    maxWidth: theme.maxWidth,
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  logo: {
-    height: 120,
-    marginTop: theme.spacing(8),
-    marginBottom: theme.spacing(3),
-  },
   appName: {
-    margin: "0px auto",
-    padding: [theme.spacing(1.25), theme.spacing(4)],
     background: theme.palette.grey.main,
     borderRadius: 56,
+    margin: "0px auto",
     marginBottom: theme.spacing(5),
-  },
-  networkBoxWrapper: {
-    maxWidth: theme.maxWidth,
-    width: "100%",
-    margin: [0, "auto", theme.spacing(3)],
-  },
-  cardWrap: {
-    margin: [theme.spacing(3), 0],
-    width: "100%",
+    padding: [theme.spacing(1.25), theme.spacing(4)],
   },
   card: {
     display: "flex",
@@ -47,6 +20,33 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
   },
   cardHeaderCentered: {
     textAlign: "center",
+  },
+  cardWrap: {
+    margin: [theme.spacing(3), 0],
+    width: "100%",
+  },
+  contentWrapper: {
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    margin: "auto",
+    maxWidth: theme.maxWidth,
+    width: "100%",
+  },
+  login: {
+    display: "flex",
+    flexDirection: "column",
+    padding: [0, theme.spacing(2)],
+  },
+  logo: {
+    height: 120,
+    marginBottom: theme.spacing(3),
+    marginTop: theme.spacing(8),
+  },
+  networkBoxWrapper: {
+    margin: [0, "auto", theme.spacing(3)],
+    maxWidth: theme.maxWidth,
+    width: "100%",
   },
 }));
 

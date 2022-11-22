@@ -3,53 +3,50 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useTokenListStyles = createUseStyles((theme: Theme) => ({
-  tokenList: {
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
+  addTokenButton: {
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+    background: theme.palette.white,
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    minWidth: 120,
+    padding: 8,
+    position: "absolute",
+    right: 10,
+    top: 10,
   },
-  searchInputContainer: {
-    width: "100%",
-    display: "flex",
+  centeredElement: {
     alignItems: "center",
-    marginBottom: theme.spacing(2),
-    borderBottom: `1px solid ${theme.palette.grey.light}`,
-  },
-  searchInput: {
-    width: "100%",
-    border: 0,
-    outline: 0,
-    padding: [theme.spacing(2), 0],
-  },
-  searchIcon: {
-    marginRight: theme.spacing(1.25),
+    display: "flex",
+    height: "100%",
+    justifyContent: "center",
   },
   clearSearchButton: {
-    border: 0,
-    padding: theme.spacing(0.5),
-    borderRadius: "50%",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 16,
-    height: 16,
-    transition: theme.hoverTransition,
-    background: theme.palette.grey.dark,
     "&:hover": {
       background: theme.palette.black,
     },
+    alignItems: "center",
+    background: theme.palette.grey.dark,
+    border: 0,
+    borderRadius: "50%",
+    cursor: "pointer",
+    display: "flex",
+    height: 16,
+    justifyContent: "center",
+    padding: theme.spacing(0.5),
+    transition: theme.hoverTransition,
+    width: 16,
   },
   clearSearchButtonIcon: {
     "& rect": {
       fill: theme.palette.white,
-      strokeWidth: 2,
       stroke: theme.palette.white,
+      strokeWidth: 2,
     },
   },
   list: {
-    height: "100%",
-    overflowY: "auto",
     "&::-webkit-scrollbar": {
       width: "4px",
     },
@@ -59,86 +56,89 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
     "&::-webkit-scrollbar-thumb:hover": {
       backgroundColor: theme.palette.grey.dark,
     },
-  },
-  centeredElement: {
     height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    overflowY: "auto",
   },
-  tokenButtonWrapper: {
-    position: "relative",
-    "&:not(:first-of-type)": {
-      marginTop: theme.spacing(1),
-    },
+  searchIcon: {
+    marginRight: theme.spacing(1.25),
   },
-  tokenButton: {
+  searchInput: {
+    border: 0,
+    outline: 0,
+    padding: [theme.spacing(2), 0],
     width: "100%",
-    justifyContent: "space-between",
-    alignItems: "center",
-    background: theme.palette.grey.light,
-    borderRadius: 8,
-    overflow: "hidden",
-    border: "none",
-    cursor: "pointer",
-    padding: theme.spacing(2),
-    transition: theme.hoverTransition,
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
   },
-  tokenInfo: {
+  searchInputContainer: {
+    alignItems: "center",
+    borderBottom: `1px solid ${theme.palette.grey.light}`,
     display: "flex",
-    alignItems: "center",
-  },
-  tokenInfoWithBalance: {
-    display: "flex",
-    alignItems: "center",
-    marginRight: 48,
-  },
-  tokenIcon: {
-    marginRight: theme.spacing(1),
-  },
-  addTokenButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    border: "none",
-    minWidth: 120,
-    cursor: "pointer",
-    borderRadius: 8,
-    background: theme.palette.white,
-    padding: 8,
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-  },
-  tokenBalanceWrapper: {
-    marginLeft: "auto",
+    marginBottom: theme.spacing(2),
+    width: "100%",
   },
   tokenBalance: {
     color: theme.palette.black,
   },
+  tokenBalanceWrapper: {
+    marginLeft: "auto",
+  },
+  tokenButton: {
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+    alignItems: "center",
+    background: theme.palette.grey.light,
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    justifyContent: "space-between",
+    overflow: "hidden",
+    padding: theme.spacing(2),
+    transition: theme.hoverTransition,
+    width: "100%",
+  },
+  tokenButtonWrapper: {
+    "&:not(:first-of-type)": {
+      marginTop: theme.spacing(1),
+    },
+    position: "relative",
+  },
+  tokenIcon: {
+    marginRight: theme.spacing(1),
+  },
+  tokenInfo: {
+    alignItems: "center",
+    display: "flex",
+  },
   tokenInfoButton: {
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+    background: "transparent",
+    border: "none",
+    borderRadius: "50%",
+    cursor: "pointer",
+    height: 32,
+    padding: 8,
     position: "absolute",
     right: theme.spacing(2),
     top: "50%",
     transform: "translateY(-50%)",
-    border: "none",
-    height: 32,
     width: 32,
-    padding: 8,
-    background: "transparent",
-    cursor: "pointer",
-    borderRadius: "50%",
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
   },
   tokenInfoButtonIcon: {
     "& path": {
       fill: theme.palette.grey.dark,
     },
+  },
+  tokenInfoWithBalance: {
+    alignItems: "center",
+    display: "flex",
+    marginRight: 48,
+  },
+  tokenList: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
   },
 }));
 

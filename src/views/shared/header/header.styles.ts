@@ -3,64 +3,64 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useHeaderStyles = createUseStyles((theme: Theme) => ({
-  header: {
-    position: "relative",
-    width: "100%",
+  block: {
     display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: [theme.spacing(1.5), "auto", 0],
-    [theme.breakpoints.upSm]: {
-      margin: [theme.spacing(3), "auto", 0],
-    },
-  },
-  topRow: {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    flex: 1,
+    gap: theme.spacing(0.75),
   },
   bottomRow: {
     marginTop: theme.spacing(1.25),
   },
-  block: {
-    flex: 1,
+  centerBlock: {
+    justifyContent: "center",
+  },
+  header: {
+    alignItems: "center",
     display: "flex",
-    gap: theme.spacing(0.75),
+    flexDirection: "column",
+    justifyContent: "center",
+    margin: [theme.spacing(1.5), "auto", 0],
+    position: "relative",
+    width: "100%",
+    [theme.breakpoints.upSm]: {
+      margin: [theme.spacing(3), "auto", 0],
+    },
+  },
+  icon: {
+    height: theme.spacing(2),
+    width: theme.spacing(2),
+    [theme.breakpoints.upSm]: {
+      height: theme.spacing(2.5),
+      width: theme.spacing(2.5),
+    },
   },
   leftBlock: {
     justifyContent: "left",
-  },
-  centerBlock: {
-    justifyContent: "center",
   },
   rightBlock: {
     justifyContent: "end",
   },
   sideButton: {
-    cursor: "pointer ",
-    transition: theme.hoverTransition,
-    backgroundColor: theme.palette.white,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 50,
-    padding: theme.spacing(1),
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
     },
+    alignItems: "center",
+    backgroundColor: theme.palette.white,
+    borderRadius: 50,
+    cursor: "pointer ",
+    display: "flex",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+    transition: theme.hoverTransition,
     [theme.breakpoints.upSm]: {
       padding: theme.spacing(1.25),
     },
   },
-  icon: {
-    width: theme.spacing(2),
-    height: theme.spacing(2),
-    [theme.breakpoints.upSm]: {
-      width: theme.spacing(2.5),
-      height: theme.spacing(2.5),
-    },
+  topRow: {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
   },
 }));
 

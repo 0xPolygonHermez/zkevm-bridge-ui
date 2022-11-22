@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useLayoutEffect } from "react";
-import ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
 
 import usePortalStyles from "src/views/shared/portal/portal.styles";
 
@@ -20,7 +20,7 @@ const Portal: FC<PropsWithChildren> = ({ children }) => {
     }
   }, [portalRoot, divElement]);
 
-  return ReactDOM.createPortal(children, divElement);
+  return createPortal(children, divElement);
 };
 
 export default Portal;

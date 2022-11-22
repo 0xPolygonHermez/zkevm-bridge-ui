@@ -15,7 +15,7 @@ const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
     }
     case "failed": {
       return (
-        <Navigate to={routes.login.path} replace state={{ redirectUrl: `${pathname}${search}` }} />
+        <Navigate replace state={{ redirectUrl: `${pathname}${search}` }} to={routes.login.path} />
       );
     }
     case "reloading":

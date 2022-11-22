@@ -1,5 +1,5 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "react-jss";
 import { BrowserRouter } from "react-router-dom";
 import "normalize.css/normalize.css";
@@ -13,12 +13,12 @@ if (container === null) {
   throw new Error("Root container doesn't exist");
 }
 
-ReactDOM.createRoot(container).render(
-  <React.StrictMode>
+createRoot(container).render(
+  <StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
         <App />
       </ThemeProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </StrictMode>
 );

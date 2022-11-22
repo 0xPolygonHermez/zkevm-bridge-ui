@@ -1,7 +1,7 @@
 import {
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useCallback,
   useContext,
   useMemo,
@@ -15,26 +15,26 @@ type SnackbarState =
       status: "closed";
     }
   | {
-      status: "open";
       message: Message;
+      status: "open";
     };
 
 interface UIContext {
-  snackbar: SnackbarState;
-  openSnackbar: (message: Message) => void;
   closeSnackbar: () => void;
+  openSnackbar: (message: Message) => void;
+  snackbar: SnackbarState;
 }
 
 const uiContextNotReadyErrorMsg = "The ui context is not yet ready";
 
 const uiContextDefaultValue: UIContext = {
-  snackbar: { status: "closed" },
-  openSnackbar: () => {
-    console.error(uiContextNotReadyErrorMsg);
-  },
   closeSnackbar: () => {
     console.error(uiContextNotReadyErrorMsg);
   },
+  openSnackbar: () => {
+    console.error(uiContextNotReadyErrorMsg);
+  },
+  snackbar: { status: "closed" },
 };
 
 const uiContext = createContext<UIContext>(uiContextDefaultValue);
@@ -47,8 +47,8 @@ const UIProvider: FC<PropsWithChildren> = (props) => {
   const openSnackbar = useCallback(
     (message: Message): void =>
       setSnackbar({
-        status: "open",
         message,
+        status: "open",
       }),
     []
   );
@@ -62,7 +62,7 @@ const UIProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const value = useMemo(
-    () => ({ snackbar, openSnackbar, closeSnackbar }),
+    () => ({ closeSnackbar, openSnackbar, snackbar }),
     [openSnackbar, closeSnackbar, snackbar]
   );
 

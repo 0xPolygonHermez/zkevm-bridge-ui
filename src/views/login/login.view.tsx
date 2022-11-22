@@ -1,22 +1,22 @@
 import { FC, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { routerStateParser } from "src/adapters/browser";
+import { getPolicyCheck, setPolicyCheck } from "src/adapters/storage";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
-import useLoginStyles from "src/views/login/login.styles";
+import { useEnvContext } from "src/contexts/env.context";
+import { useProvidersContext } from "src/contexts/providers.context";
+import { EthereumChainId, PolicyCheck, WalletName } from "src/domain";
+import routes from "src/routes";
+import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import Policy from "src/views/login/components/policy/policy.view";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
+import useLoginStyles from "src/views/login/login.styles";
 import Card from "src/views/shared/card/card.view";
-import Typography from "src/views/shared/typography/typography.view";
 import ErrorMessage from "src/views/shared/error-message/error-message.view";
 import InfoBanner from "src/views/shared/info-banner/info-banner.view";
 import NetworkBox from "src/views/shared/network-box/network-box.view";
-import { useProvidersContext } from "src/contexts/providers.context";
-import { useEnvContext } from "src/contexts/env.context";
-import { getDeploymentName, getNetworkName } from "src/utils/labels";
-import routes from "src/routes";
-import { routerStateParser } from "src/adapters/browser";
-import { getPolicyCheck, setPolicyCheck } from "src/adapters/storage";
-import { WalletName, EthereumChainId, PolicyCheck } from "src/domain";
+import Typography from "src/views/shared/typography/typography.view";
 
 const Login: FC = () => {
   const classes = useLoginStyles();
@@ -24,7 +24,7 @@ const Login: FC = () => {
   const [showPolicy, setShowPolicy] = useState<boolean>(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { connectProvider, connectedProvider } = useProvidersContext();
+  const { connectedProvider, connectProvider } = useProvidersContext();
   const env = useEnvContext();
 
   const onConnectProvider = () => {
@@ -72,7 +72,7 @@ const Login: FC = () => {
     <div className={classes.login}>
       <div className={classes.contentWrapper}>
         <PolygonZkEVMLogo className={classes.logo} />
-        <Typography type="body1" className={classes.appName}>
+        <Typography className={classes.appName} type="body1">
           {appName}
         </Typography>
         <div className={classes.networkBoxWrapper}>
@@ -82,7 +82,7 @@ const Login: FC = () => {
         <div className={classes.cardWrap}>
           <Card className={classes.card}>
             <>
-              <Typography type="h1" className={classes.cardHeader}>
+              <Typography className={classes.cardHeader} type="h1">
                 Connect a wallet
               </Typography>
               <WalletList onSelectWallet={onCheckAndConnectProvider} />

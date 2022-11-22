@@ -1,7 +1,7 @@
 import {
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useContext,
   useEffect,
   useMemo,
@@ -12,8 +12,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { loadEnv } from "src/adapters/env";
 import { providerError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
-import routes from "src/routes";
 import { Env } from "src/domain";
+import routes from "src/routes";
 
 const envContext = createContext<Env | undefined>(undefined);
 

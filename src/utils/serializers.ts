@@ -1,35 +1,35 @@
+import { BigNumber, utils as ethersUtils } from "ethers";
 import { z } from "zod";
 
-import { StrictSchema } from "src/utils/type-safety";
-import { Chain, ChainKey, Env, Token } from "src/domain";
-import { BigNumber, utils as ethersUtils } from "ethers";
 import { tokenParser } from "src/adapters/tokens";
+import { Chain, ChainKey, Env, Token } from "src/domain";
+import { StrictSchema } from "src/utils/type-safety";
 
 type SerializedBridgeId = string;
 
 interface BridgeId {
-  networkId: number;
   depositCount: number;
+  networkId: number;
 }
 
 interface CommonPendingTx {
-  from: Chain;
-  to: Chain;
-  timestamp: number;
-  token: Token;
   amount: BigNumber;
   destinationAddress: string;
+  from: Chain;
+  timestamp: number;
+  to: Chain;
+  token: Token;
 }
 
 type PendingDepositTxData = {
-  type: "deposit";
   depositTxHash: string;
+  type: "deposit";
 };
 
 type PendingClaimTxData = {
-  type: "claim";
-  depositTxHash: string;
   claimTxHash: string;
+  depositTxHash: string;
+  type: "claim";
 };
 
 type PendingDepositTx = CommonPendingTx & PendingDepositTxData;
@@ -39,12 +39,12 @@ type PendingClaimTx = CommonPendingTx & PendingClaimTxData;
 export type PendingTx = PendingDepositTx | PendingClaimTx;
 
 interface CommonSerializedPendingTx {
-  from: ChainKey;
-  to: ChainKey;
-  destinationAddress: string;
-  timestamp: number;
-  token: Token;
   amount: string;
+  destinationAddress: string;
+  from: ChainKey;
+  timestamp: number;
+  to: ChainKey;
+  token: Token;
 }
 
 type SerializedPendingDepositTx = CommonSerializedPendingTx & PendingDepositTxData;
@@ -60,8 +60,8 @@ const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
     const depositCount = z.number().parse(Number(depositCountString));
 
     return {
-      networkId,
       depositCount,
+      networkId,
     };
   })
 );
@@ -72,14 +72,14 @@ const pendingTxDepositParser = (env: Env) =>
   StrictSchema<SerializedPendingDepositTx, PendingDepositTx>()(
     z
       .object({
-        type: z.literal("deposit"),
+        amount: z.string(),
         depositTxHash: z.string(),
         destinationAddress: z.string(),
         from: chainKeyParser,
-        to: chainKeyParser,
         timestamp: z.number(),
+        to: chainKeyParser,
         token: tokenParser,
-        amount: z.string(),
+        type: z.literal("deposit"),
       })
       .transform(
         ({ amount, depositTxHash, destinationAddress, from, timestamp, to, token, type }, ctx) => {
@@ -88,28 +88,28 @@ const pendingTxDepositParser = (env: Env) =>
           if (!fromChain) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: ["from"],
               message: "We couldn't find the 'from' chain when parsing the PendingDepositTx",
+              path: ["from"],
             });
             return z.NEVER;
           }
           if (!toChain) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: ["to"],
               message: "We couldn't find the 'to' chain when parsing the PendingDepositTx",
+              path: ["to"],
             });
             return z.NEVER;
           }
           return {
+            amount: ethersUtils.parseUnits(amount, token.decimals),
+            depositTxHash,
             destinationAddress,
             from: fromChain,
-            to: toChain,
             timestamp,
+            to: toChain,
             token,
-            amount: ethersUtils.parseUnits(amount, token.decimals),
             type,
-            depositTxHash,
           };
         }
       )
@@ -119,15 +119,15 @@ const pendingTxClaimParser = (env: Env) =>
   StrictSchema<SerializedPendingClaimTx, PendingClaimTx>()(
     z
       .object({
-        type: z.literal("claim"),
+        amount: z.string(),
+        claimTxHash: z.string(),
         depositTxHash: z.string(),
         destinationAddress: z.string(),
-        claimTxHash: z.string(),
         from: chainKeyParser,
-        to: chainKeyParser,
         timestamp: z.number(),
+        to: chainKeyParser,
         token: tokenParser,
-        amount: z.string(),
+        type: z.literal("claim"),
       })
       .transform(
         (
@@ -149,29 +149,29 @@ const pendingTxClaimParser = (env: Env) =>
           if (!fromChain) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: ["from"],
               message: "We couldn't find the 'from' chain when parsing the PendingClaimTx",
+              path: ["from"],
             });
             return z.NEVER;
           }
           if (!toChain) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              path: ["to"],
               message: "We couldn't find the 'to' chain when parsing the PendingClaimTx",
+              path: ["to"],
             });
             return z.NEVER;
           }
           return {
+            amount: ethersUtils.parseUnits(amount, token.decimals),
+            claimTxHash: claimTxHash,
+            depositTxHash: depositTxHash,
             destinationAddress,
             from: fromChain,
-            to: toChain,
             timestamp: timestamp,
+            to: toChain,
             token: token,
-            amount: ethersUtils.parseUnits(amount, token.decimals),
             type: type,
-            depositTxHash: depositTxHash,
-            claimTxHash: claimTxHash,
           };
         }
       )
@@ -189,32 +189,32 @@ const deserializeBridgeId = (
 };
 
 const serializeBridgeId = (parsedBridgeId: BridgeId): SerializedBridgeId => {
-  const { networkId, depositCount } = parsedBridgeId;
+  const { depositCount, networkId } = parsedBridgeId;
   return `${networkId}-${depositCount}`;
 };
 
 const serializePendingTx = (pendingTx: PendingTx): SerializedPendingTx => {
   const commonSerializedPendingTx: CommonSerializedPendingTx = {
-    from: pendingTx.from.key,
-    to: pendingTx.to.key,
-    destinationAddress: pendingTx.destinationAddress,
-    timestamp: pendingTx.timestamp,
-    token: pendingTx.token,
     amount: ethersUtils.formatUnits(pendingTx.amount, pendingTx.token.decimals),
+    destinationAddress: pendingTx.destinationAddress,
+    from: pendingTx.from.key,
+    timestamp: pendingTx.timestamp,
+    to: pendingTx.to.key,
+    token: pendingTx.token,
   };
 
   if (pendingTx.type === "deposit") {
     return {
       ...commonSerializedPendingTx,
-      type: pendingTx.type,
       depositTxHash: pendingTx.depositTxHash,
+      type: pendingTx.type,
     };
   } else {
     return {
       ...commonSerializedPendingTx,
-      type: pendingTx.type,
-      depositTxHash: pendingTx.depositTxHash,
       claimTxHash: pendingTx.claimTxHash,
+      depositTxHash: pendingTx.depositTxHash,
+      type: pendingTx.type,
     };
   }
 };

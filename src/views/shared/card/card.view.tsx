@@ -7,7 +7,7 @@ type CardProps = PropsWithChildren<{
   onClick?: () => void;
 }>;
 
-const Card: FC<CardProps> = ({ className, children, onClick }) => {
+const Card: FC<CardProps> = ({ children, className, onClick }) => {
   const classes = useCardStyles();
 
   return (

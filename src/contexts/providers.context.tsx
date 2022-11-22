@@ -1,25 +1,18 @@
+import { Web3Provider } from "@ethersproject/providers";
+import WalletConnectProvider from "@walletconnect/ethereum-provider";
+import { hexValue } from "ethers/lib/utils";
 import {
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { Web3Provider } from "@ethersproject/providers";
-import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { useNavigate } from "react-router-dom";
-import { hexValue } from "ethers/lib/utils";
 
-import {
-  AsyncTask,
-  isMetaMaskResourceUnavailableError,
-  isMetaMaskUnknownChainError,
-  isMetaMaskUserRejectedRequestError,
-  isAsyncTaskDataAvailable,
-} from "src/utils/types";
 import {
   ethereumAccountsParser,
   getConnectedAccounts,
@@ -28,28 +21,35 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import {
-  Env,
   Chain,
+  ConnectedProvider,
+  Env,
   EthereumChainId,
   EthereumEvent,
   WalletName,
-  ConnectedProvider,
 } from "src/domain";
 import { getChecksumAddress } from "src/utils/addresses";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isMetaMaskResourceUnavailableError,
+  isMetaMaskUnknownChainError,
+  isMetaMaskUserRejectedRequestError,
+} from "src/utils/types";
 
 interface ProvidersContext {
-  connectedProvider: AsyncTask<ConnectedProvider, string>;
   addNetwork: (chain: Chain) => Promise<void>;
   changeNetwork: (chain: Chain) => Promise<void>;
   connectProvider: (walletName: WalletName) => Promise<void>;
+  connectedProvider: AsyncTask<ConnectedProvider, string>;
 }
 
 const providersContextNotReadyErrorMsg = "The providers context is not yet ready";
 
 const providersContext = createContext<ProvidersContext>({
-  connectedProvider: { status: "pending" },
   addNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
   changeNetwork: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
+  connectedProvider: { status: "pending" },
   connectProvider: () => Promise.reject(new Error(providersContextNotReadyErrorMsg)),
 });
 
@@ -72,18 +72,18 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
   };
 
   interface ConnectMetamaskProviderParams {
+    account: string;
     env: Env;
     web3Provider: Web3Provider;
-    account: string;
   }
 
   const connectMetamaskProvider = useCallback(
-    async ({ env, web3Provider, account }: ConnectMetamaskProviderParams): Promise<void> => {
+    async ({ account, env, web3Provider }: ConnectMetamaskProviderParams): Promise<void> => {
       try {
         const checkMetamaskHeartbeat = setTimeout(() => {
           setConnectedProvider({
-            status: "failed",
             error: `It seems that ${WalletName.METAMASK} is not responding to our requests\nPlease reload the page and try again`,
+            status: "failed",
           });
         }, 3000);
 
@@ -94,19 +94,19 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         const supportedChainIds = env.chains.map((chain) => chain.chainId);
         if (!supportedChainIds.includes(currentNetworkChainId)) {
           setConnectedProvider({
-            status: "failed",
             error: supportedChainIds.includes(EthereumChainId.GOERLI)
               ? `Switch your network to Ethereum Goerli testnet or ${env.chains[1].name} to continue`
               : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
+            status: "failed",
           });
         } else {
           setConnectedProvider({
-            status: "successful",
             data: {
-              provider: web3Provider,
-              chainId: currentNetworkChainId,
               account: getChecksumAddress(account),
+              chainId: currentNetworkChainId,
+              provider: web3Provider,
             },
+            status: "successful",
           });
         }
       } catch (error) {
@@ -114,8 +114,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           notifyError(error);
         }
         setConnectedProvider({
-          status: "failed",
           error: "An error occurred connecting the provider",
+          status: "failed",
         });
       }
     },
@@ -126,8 +126,8 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
     async (walletName: WalletName): Promise<void> => {
       if (env === undefined) {
         return setConnectedProvider({
-          status: "failed",
           error: "The env has not been initialized correctly",
+          status: "failed",
         });
       }
       switch (walletName) {
@@ -138,24 +138,24 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
               const accounts = await getConnectedAccounts(web3Provider);
               const account: string | undefined = accounts[0];
               if (account) {
-                return connectMetamaskProvider({ env, web3Provider, account });
+                return connectMetamaskProvider({ account, env, web3Provider });
               } else {
                 return setConnectedProvider({
-                  status: "failed",
                   error: `We can't obtain any valid Ethereum account`,
+                  status: "failed",
                 });
               }
             } else {
               return setConnectedProvider({
-                status: "failed",
                 error: `We can't detect your wallet.\nPlease make sure that the ${WalletName.METAMASK} extension is installed and active in your browser`,
+                status: "failed",
               });
             }
           } catch (error) {
             if (isMetaMaskResourceUnavailableError(error)) {
               return setConnectedProvider({
-                status: "failed",
                 error: `Please unlock or connect to ${WalletName.METAMASK} to continue`,
+                status: "failed",
               });
             } else if (!isMetaMaskUserRejectedRequestError(error)) {
               notifyError(error);
@@ -179,12 +179,12 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
             .enable()
             .then((accounts) => {
               setConnectedProvider({
-                status: "successful",
                 data: {
-                  provider: web3Provider,
-                  chainId,
                   account: getChecksumAddress(accounts[0]),
+                  chainId,
+                  provider: web3Provider,
                 },
+                status: "successful",
               });
             })
             .catch((error) => {
@@ -248,11 +248,11 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
           method: "wallet_addEthereumChain",
           params: [
             {
+              blockExplorerUrls: [chain.explorerUrl],
               chainId: hexValue(chain.chainId),
               chainName: chain.name,
-              rpcUrls: [chain.provider.connection.url],
-              blockExplorerUrls: [chain.explorerUrl],
               nativeCurrency: chain.nativeCurrency,
+              rpcUrls: [chain.provider.connection.url],
             },
           ],
         })
@@ -305,18 +305,18 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
       if (!web3Provider) {
         setConnectedProvider({
-          status: "failed",
           error: "",
+          status: "failed",
         });
       } else if (env) {
         void silentlyGetConnectedAccounts(web3Provider).then((accounts) => {
           const account: string | undefined = accounts[0];
           if (account) {
-            void connectMetamaskProvider({ env, web3Provider, account });
+            void connectMetamaskProvider({ account, env, web3Provider });
           } else {
             setConnectedProvider({
-              status: "failed",
               error: "",
+              status: "failed",
             });
           }
         });
@@ -338,16 +338,16 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         if (account) {
           try {
             setConnectedProvider({
-              status: "successful",
               data: {
                 ...connectedProvider.data,
                 account: getChecksumAddress(account),
               },
+              status: "successful",
             });
           } catch (error) {
             setConnectedProvider({
-              status: "failed",
               error: "An error occurred connecting the provider",
+              status: "failed",
             });
             notifyError(error);
           }
@@ -393,9 +393,9 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
   const value = useMemo(
     () => ({
-      connectedProvider,
       addNetwork,
       changeNetwork,
+      connectedProvider,
       connectProvider,
     }),
     [connectedProvider, addNetwork, changeNetwork, connectProvider]

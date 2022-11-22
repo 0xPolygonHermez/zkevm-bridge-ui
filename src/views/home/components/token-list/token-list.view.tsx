@@ -1,22 +1,21 @@
+import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { BigNumber, utils as ethersUtils, constants as ethersConstants } from "ethers";
 
-import Typography from "src/views/shared/typography/typography.view";
-import Icon from "src/views/shared/icon/icon.view";
-
-import Spinner from "src/views/shared/spinner/spinner.view";
 import { isChainCustomToken } from "src/adapters/storage";
-import { AsyncTask } from "src/utils/types";
-import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
-import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
-import useTokenListStyles from "src/views/home/components/token-list/token-list.styles";
-import { Chain, Token } from "src/domain";
+import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
+import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { selectTokenAddress } from "src/utils/tokens";
+import { Chain, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import TokenBalance from "src/views/shared/token-balance/token-balance.view";
+import { selectTokenAddress } from "src/utils/tokens";
+import { AsyncTask } from "src/utils/types";
+import useTokenListStyles from "src/views/home/components/token-list/token-list.styles";
 import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
+import Icon from "src/views/shared/icon/icon.view";
+import Spinner from "src/views/shared/spinner/spinner.view";
+import TokenBalance from "src/views/shared/token-balance/token-balance.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface SelectedChains {
   from: Chain;
@@ -26,21 +25,21 @@ interface SelectedChains {
 interface TokenListProps {
   account: string;
   chains: SelectedChains;
-  tokens: Token[];
   onClose: () => void;
-  onNavigateToTokenInfo: (token: Token) => void;
   onNavigateToTokenAdder: (token: Token) => void;
+  onNavigateToTokenInfo: (token: Token) => void;
   onSelectToken: (token: Token) => void;
+  tokens: Token[];
 }
 
 const TokenList: FC<TokenListProps> = ({
   account,
   chains,
-  tokens,
   onClose,
   onNavigateToTokenAdder,
   onNavigateToTokenInfo,
   onSelectToken,
+  tokens,
 }) => {
   const classes = useTokenListStyles();
   const callIfMounted = useCallIfMounted();
@@ -58,9 +57,9 @@ const TokenList: FC<TokenListProps> = ({
         return chain.provider.getBalance(account);
       } else {
         return getErc20TokenBalance({
+          accountAddress: account,
           chain: chain,
           tokenAddress: selectTokenAddress(token, chain),
-          accountAddress: account,
         });
       }
     },
@@ -91,8 +90,8 @@ const TokenList: FC<TokenListProps> = ({
                 currentCustomToken.status === "pending"
                   ? currentCustomToken
                   : {
+                      data: { ...token, balance: { data: balance, status: "successful" } },
                       status: "successful",
-                      data: { ...token, balance: { status: "successful", data: balance } },
                     }
               );
             });
@@ -103,11 +102,11 @@ const TokenList: FC<TokenListProps> = ({
                 currentCustomToken.status === "pending"
                   ? currentCustomToken
                   : {
-                      status: "successful",
                       data: {
                         ...token,
-                        balance: { status: "failed", error: "Couldn't retrieve token balance" },
+                        balance: { error: "Couldn't retrieve token balance", status: "failed" },
                       },
+                      status: "successful",
                     }
               );
             });
@@ -128,8 +127,8 @@ const TokenList: FC<TokenListProps> = ({
             .catch(() =>
               callIfMounted(() => {
                 setCustomToken({
-                  status: "failed",
                   error: "The token couldn't be found on any network.",
+                  status: "failed",
                 });
               })
             )
@@ -170,18 +169,18 @@ const TokenList: FC<TokenListProps> = ({
 
   return (
     <div className={classes.tokenList}>
-      <TokenSelectorHeader title="Select token" onClose={onClose} />
+      <TokenSelectorHeader onClose={onClose} title="Select token" />
       <div className={classes.searchInputContainer}>
         <MagnifyingGlassIcon className={classes.searchIcon} />
         <input
-          ref={inputRef}
-          placeholder="Enter token name or address"
-          type="search"
           className={classes.searchInput}
-          value={searchInputValue}
           onChange={(event) => {
             onSearchInputchange(event.target.value);
           }}
+          placeholder="Enter token name or address"
+          ref={inputRef}
+          type="search"
+          value={searchInputValue}
         />
         {searchInputValue !== "" && (
           <button className={classes.clearSearchButton} onClick={() => onSearchInputchange("")}>
@@ -195,7 +194,7 @@ const TokenList: FC<TokenListProps> = ({
             <Spinner />
           </div>
         ) : error ? (
-          <Typography type="body2" className={classes.centeredElement}>
+          <Typography className={classes.centeredElement} type="body2">
             {error}
           </Typography>
         ) : (
@@ -208,14 +207,14 @@ const TokenList: FC<TokenListProps> = ({
 
             if (isNonImportedCustomToken) {
               return (
-                <div key={token.address} className={classes.tokenButtonWrapper}>
+                <div className={classes.tokenButtonWrapper} key={token.address}>
                   <button
-                    role="button"
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}
+                    role="button"
                   >
                     <div className={classes.tokenInfo}>
-                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                      <Icon className={classes.tokenIcon} size={24} url={token.logoURI} />
                       <Typography type="body1">{token.name}</Typography>
                     </div>
                   </button>
@@ -229,20 +228,20 @@ const TokenList: FC<TokenListProps> = ({
               );
             } else {
               return (
-                <div key={token.address} className={classes.tokenButtonWrapper}>
+                <div className={classes.tokenButtonWrapper} key={token.address}>
                   <button
-                    role="button"
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}
+                    role="button"
                   >
                     <div className={classes.tokenInfoWithBalance}>
-                      <Icon url={token.logoURI} size={24} className={classes.tokenIcon} />
+                      <Icon className={classes.tokenIcon} size={24} url={token.logoURI} />
                       <Typography type="body1">{token.name}</Typography>
                       <div className={classes.tokenBalanceWrapper}>
                         <TokenBalance
-                          token={token}
                           spinnerSize={16}
-                          typographyProps={{ type: "body2", className: classes.tokenBalance }}
+                          token={token}
+                          typographyProps={{ className: classes.tokenBalance, type: "body2" }}
                         />
                       </div>
                     </div>

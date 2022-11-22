@@ -1,28 +1,28 @@
-import { FC, useEffect, useState, useCallback } from "react";
 import { BigNumber, constants as ethersConstants } from "ethers";
+import { FC, useCallback, useEffect, useState } from "react";
 
+import { addCustomToken, getChainCustomTokens, removeCustomToken } from "src/adapters/storage";
 import { ReactComponent as ArrowDown } from "src/assets/icons/arrow-down.svg";
 import { ReactComponent as CaretDown } from "src/assets/icons/caret-down.svg";
-import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
-import ChainList from "src/views/shared/chain-list/chain-list.view";
-import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import Typography from "src/views/shared/typography/typography.view";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Button from "src/views/shared/button/button.view";
+import { getEtherToken } from "src/constants";
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
-import { selectTokenAddress } from "src/utils/tokens";
+import { Chain, FormData, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { getChainCustomTokens, addCustomToken, removeCustomToken } from "src/adapters/storage";
-import { Chain, Token, FormData } from "src/domain";
-import { getEtherToken } from "src/constants";
-import Spinner from "src/views/shared/spinner/spinner.view";
+import { selectTokenAddress } from "src/utils/tokens";
+import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
+import AmountInput from "src/views/home/components/amount-input/amount-input.view";
+import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
 import TokenSelector from "src/views/home/components/token-selector/token-selector.view";
+import Button from "src/views/shared/button/button.view";
+import Card from "src/views/shared/card/card.view";
+import ChainList from "src/views/shared/chain-list/chain-list.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
+import Icon from "src/views/shared/icon/icon.view";
+import Spinner from "src/views/shared/spinner/spinner.view";
 import TokenBalance from "src/views/shared/token-balance/token-balance.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface BridgeFormProps {
   account: string;
@@ -95,9 +95,9 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const onAddToken = (token: Token) => {
     if (tokens) {
       // We don't want to store the balance of the user in the local storage
-      const { name, symbol, address, decimals, chainId, logoURI, wrappedToken } = token;
+      const { address, chainId, decimals, logoURI, name, symbol, wrappedToken } = token;
 
-      addCustomToken({ name, symbol, address, decimals, chainId, logoURI, wrappedToken });
+      addCustomToken({ address, chainId, decimals, logoURI, name, symbol, wrappedToken });
       setTokens([token, ...tokens]);
     }
   };
@@ -116,10 +116,10 @@ const BridgeForm: FC<BridgeFormProps> = ({
     e.preventDefault();
     if (selectedChains && token && amount) {
       onSubmit({
-        token: token,
+        amount: amount,
         from: selectedChains.from,
         to: selectedChains.to,
-        amount: amount,
+        token: token,
       });
     }
   };
@@ -130,9 +130,9 @@ const BridgeForm: FC<BridgeFormProps> = ({
         return chain.provider.getBalance(account);
       } else {
         return getErc20TokenBalance({
+          accountAddress: account,
           chain: chain,
           tokenAddress: selectTokenAddress(token, chain),
-          accountAddress: account,
         });
       }
     },
@@ -174,8 +174,8 @@ const BridgeForm: FC<BridgeFormProps> = ({
                 const updatedToken: Token = {
                   ...token,
                   balance: {
-                    status: "successful",
                     data: balance,
+                    status: "successful",
                   },
                 };
 
@@ -187,8 +187,8 @@ const BridgeForm: FC<BridgeFormProps> = ({
                 const updatedToken: Token = {
                   ...token,
                   balance: {
-                    status: "failed",
                     error: "Couldn't retrieve token balance",
+                    status: "failed",
                   },
                 };
 
@@ -211,23 +211,23 @@ const BridgeForm: FC<BridgeFormProps> = ({
       getTokenBalance(token, selectedChains.from)
         .then((balance) =>
           callIfMounted(() => {
-            setBalanceFrom({ status: "successful", data: balance });
+            setBalanceFrom({ data: balance, status: "successful" });
           })
         )
         .catch(() => {
           callIfMounted(() => {
-            setBalanceFrom({ status: "failed", error: "Couldn't retrieve token balance" });
+            setBalanceFrom({ error: "Couldn't retrieve token balance", status: "failed" });
           });
         });
       getTokenBalance(token, selectedChains.to)
         .then((balance) =>
           callIfMounted(() => {
-            setBalanceTo({ status: "successful", data: balance });
+            setBalanceTo({ data: balance, status: "successful" });
           })
         )
         .catch(() => {
           callIfMounted(() => {
-            setBalanceTo({ status: "failed", error: "Couldn't retrieve token balance" });
+            setBalanceTo({ error: "Couldn't retrieve token balance", status: "failed" });
           });
         });
     }
@@ -286,21 +286,19 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <TokenBalance
-              token={{ ...token, balance: balanceFrom }}
               spinnerSize={14}
+              token={{ ...token, balance: balanceFrom }}
               typographyProps={{ type: "body1" }}
             />
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button className={classes.tokenSelector} onClick={onTokenDropdownClick} type="button">
-            <Icon url={token.logoURI} size={24} />
+            <Icon size={24} url={token.logoURI} />
             <Typography type="h2">{token.symbol}</Typography>
             <CaretDown />
           </button>
           <AmountInput
-            value={amount}
-            token={token}
             balance={
               balanceFrom && isAsyncTaskDataAvailable(balanceFrom)
                 ? balanceFrom.data
@@ -309,6 +307,8 @@ const BridgeForm: FC<BridgeFormProps> = ({
             from={selectedChains.from}
             maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
+            token={token}
+            value={amount}
           />
         </div>
       </Card>
@@ -327,15 +327,15 @@ const BridgeForm: FC<BridgeFormProps> = ({
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
             <TokenBalance
-              token={{ ...token, balance: balanceTo }}
               spinnerSize={14}
+              token={{ ...token, balance: balanceTo }}
               typographyProps={{ type: "body1" }}
             />
           </div>
         </div>
       </Card>
       <div className={classes.button}>
-        <Button type="submit" disabled={!amount || amount.isZero() || inputError !== undefined}>
+        <Button disabled={!amount || amount.isZero() || inputError !== undefined} type="submit">
           Continue
         </Button>
         {amount && inputError && <ErrorMessage error={inputError} />}
@@ -351,11 +351,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
         <TokenSelector
           account={account}
           chains={selectedChains}
-          tokens={tokens}
-          onClose={onCloseTokenSelector}
           onAddToken={onAddToken}
+          onClose={onCloseTokenSelector}
           onRemoveToken={onRemoveToken}
           onSelectToken={onSelectToken}
+          tokens={tokens}
         />
       )}
     </form>

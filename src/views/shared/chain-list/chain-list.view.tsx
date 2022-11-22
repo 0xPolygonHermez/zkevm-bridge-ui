@@ -1,11 +1,11 @@
 import React, { FC } from "react";
 
-import useListStyles from "src/views/shared/chain-list/chain-list.styles";
-import Card from "src/views/shared/card/card.view";
-import Typography from "src/views/shared/typography/typography.view";
-import Portal from "src/views/shared/portal/portal.view";
-import { Chain } from "src/domain";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
+import { Chain } from "src/domain";
+import Card from "src/views/shared/card/card.view";
+import useListStyles from "src/views/shared/chain-list/chain-list.styles";
+import Portal from "src/views/shared/portal/portal.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 interface ChainListProps {
   chains: Chain[];
@@ -17,7 +17,9 @@ const ChainList: FC<ChainListProps> = ({ chains, onClick, onClose }) => {
   const classes = useListStyles();
 
   const onOutsideClick = (event: React.MouseEvent) => {
-    if (event.target !== event.currentTarget) return;
+    if (event.target !== event.currentTarget) {
+      return;
+    }
     onClose();
   };
 

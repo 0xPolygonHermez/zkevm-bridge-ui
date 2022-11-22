@@ -1,7 +1,7 @@
-import React, { PropsWithChildren } from "react";
+import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
 
-import Spinner from "src/views/shared/spinner/spinner.view";
 import useInfiniteScrollStyles from "src/views/activity/components/infinite-scroll/infinite-scroll.styles";
+import Spinner from "src/views/shared/spinner/spinner.view";
 
 const TRESHOLD = 0.9;
 
@@ -10,12 +10,12 @@ type InfiniteScrollProps = PropsWithChildren<{
   onLoadNextPage: () => void;
 }>;
 
-const InfiniteScroll: React.FC<InfiniteScrollProps> = ({ children, isLoading, onLoadNextPage }) => {
+const InfiniteScroll: FC<InfiniteScrollProps> = ({ children, isLoading, onLoadNextPage }) => {
   const classes = useInfiniteScrollStyles();
-  const [scrollReachedEnd, setScrollReachedEnd] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [scrollReachedEnd, setScrollReachedEnd] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const onScroll = () => {
       if (
         ref.current &&
@@ -32,14 +32,14 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({ children, isLoading, on
     }
   }, [ref]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (scrollReachedEnd && !isLoading) {
       onLoadNextPage();
     }
     setScrollReachedEnd(false);
   }, [isLoading, scrollReachedEnd, onLoadNextPage]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ref.current) {
       const isScrollVisible = ref.current.getBoundingClientRect().height > window.innerHeight;
       if (isScrollVisible === false) {

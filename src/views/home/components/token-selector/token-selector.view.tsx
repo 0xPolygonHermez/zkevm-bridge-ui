@@ -1,24 +1,24 @@
 import { FC, MouseEvent, useEffect, useState } from "react";
 
+import { Chain, Token } from "src/domain";
+import TokenAdder from "src/views/home/components/token-adder/token-adder.view";
+import TokenInfo from "src/views/home/components/token-info/token-info.view";
+import TokenList from "src/views/home/components/token-list/token-list.view";
+import useTokenSelectorStyles from "src/views/home/components/token-selector/token-selector.styles";
 import Card from "src/views/shared/card/card.view";
 import Portal from "src/views/shared/portal/portal.view";
-import { Token, Chain } from "src/domain";
-import TokenAdder from "src/views/home/components/token-adder/token-adder.view";
-import useTokenSelectorStyles from "src/views/home/components/token-selector/token-selector.styles";
-import TokenList from "src/views/home/components/token-list/token-list.view";
-import TokenInfo from "src/views/home/components/token-info/token-info.view";
 
 type Screen =
   | {
       type: "token-list";
     }
   | {
-      type: "token-adder";
       token: Token;
+      type: "token-adder";
     }
   | {
-      type: "token-info";
       token: Token;
+      type: "token-info";
     };
 
 interface SelectedChains {
@@ -29,21 +29,21 @@ interface SelectedChains {
 interface TokenSelectorProps {
   account: string;
   chains: SelectedChains;
-  tokens: Token[];
   onAddToken: (token: Token) => void;
   onClose: () => void;
   onRemoveToken: (token: Token) => void;
   onSelectToken: (token: Token) => void;
+  tokens: Token[];
 }
 
 const TokenSelector: FC<TokenSelectorProps> = ({
   account,
   chains,
-  tokens,
   onAddToken,
   onClose,
   onRemoveToken,
   onSelectToken,
+  tokens,
 }) => {
   const classes = useTokenSelectorStyles();
 
@@ -59,15 +59,15 @@ const TokenSelector: FC<TokenSelectorProps> = ({
 
   const onNavigateToTokenAdder = (token: Token) => {
     setScreen({
-      type: "token-adder",
       token,
+      type: "token-adder",
     });
   };
 
   const onNavigateToTokenInfo = (token: Token) => {
     setScreen({
-      type: "token-info",
       token,
+      type: "token-info",
     });
   };
 
@@ -116,21 +116,21 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                   <TokenList
                     account={account}
                     chains={chains}
-                    tokens={tokens}
                     onClose={onClose}
                     onNavigateToTokenAdder={onNavigateToTokenAdder}
                     onNavigateToTokenInfo={onNavigateToTokenInfo}
                     onSelectToken={onSelectToken}
+                    tokens={tokens}
                   />
                 );
               }
               case "token-adder": {
                 return (
                   <TokenAdder
-                    token={screen.token}
                     onAddToken={onAddTokenToList}
-                    onNavigateToTokenList={onNavigateToTokenList}
                     onClose={onClose}
+                    onNavigateToTokenList={onNavigateToTokenList}
+                    token={screen.token}
                   />
                 );
               }
@@ -138,10 +138,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                 return (
                   <TokenInfo
                     chain={chains.from}
-                    token={screen.token}
                     onClose={onClose}
                     onNavigateToTokenList={onNavigateToTokenList}
                     onRemoveToken={onRemoveTokenFromList}
+                    token={screen.token}
                   />
                 );
               }

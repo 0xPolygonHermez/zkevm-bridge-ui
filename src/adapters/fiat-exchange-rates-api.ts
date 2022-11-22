@@ -1,5 +1,5 @@
-import { z } from "zod";
 import axios from "axios";
+import { z } from "zod";
 
 import { Currency, FiatExchangeRates } from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
@@ -11,8 +11,8 @@ interface GetFiatExchangeRatesSuccessResponse {
 interface GetFiatExchangeRatesUnsuccessResponse {
   error: {
     code: number;
-    type: string;
     info: string;
+    type: string;
   };
 }
 
@@ -43,8 +43,8 @@ const getFiatExchangeRatesUnsuccessResponseParser =
     z.object({
       error: z.object({
         code: z.number(),
-        type: z.string(),
         info: z.string(),
+        type: z.string(),
       }),
     })
   );
@@ -59,13 +59,13 @@ const getFiatExchangeRatesErrorParser = StrictSchema<GetFiatExchangeRatesError>(
 );
 
 interface GetFiatExchangeRatesParams {
-  apiUrl: string;
   apiKey: string;
+  apiUrl: string;
 }
 
 const getFiatExchangeRates = ({
-  apiUrl,
   apiKey,
+  apiUrl,
 }: GetFiatExchangeRatesParams): Promise<FiatExchangeRates> => {
   const params = {
     access_key: apiKey,
@@ -76,8 +76,8 @@ const getFiatExchangeRates = ({
   return axios
     .request({
       baseURL: apiUrl,
-      params,
       method: "GET",
+      params,
     })
     .then((res) => {
       const parsedSuccessResponse = getFiatExchangeRatesSuccessResponseParser.safeParse(res.data);

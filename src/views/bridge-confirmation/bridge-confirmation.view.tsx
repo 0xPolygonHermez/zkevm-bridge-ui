@@ -1,42 +1,42 @@
+import { BigNumber, constants as ethersConstants } from "ethers";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BigNumber, constants as ethersConstants } from "ethers";
 
-import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
-import Header from "src/views/shared/header/header.view";
-import Card from "src/views/shared/card/card.view";
-import Typography from "src/views/shared/typography/typography.view";
-import routes from "src/routes";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Icon from "src/views/shared/icon/icon.view";
-import { getCurrencySymbol } from "src/utils/labels";
-import { formatTokenAmount, formatFiatAmount, multiplyAmounts } from "src/utils/amounts";
-import { selectTokenAddress } from "src/utils/tokens";
-import { calculateFee } from "src/utils/fees";
-import {
-  AsyncTask,
-  isMetaMaskUserRejectedRequestError,
-  isAsyncTaskDataAvailable,
-  isEthersInsufficientFundsError,
-} from "src/utils/types";
 import { parseError } from "src/adapters/error";
-import { getCurrency } from "src/adapters/storage";
 import { getPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
+import { getCurrency } from "src/adapters/storage";
+import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
+import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { useUIContext } from "src/contexts/ui.context";
 import { useFormContext } from "src/contexts/form.context";
-import { useProvidersContext } from "src/contexts/providers.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
+import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
+import { useUIContext } from "src/contexts/ui.context";
+import { Gas, Permit, TokenSpendPermission } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
+import routes from "src/routes";
+import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
+import { calculateFee } from "src/utils/fees";
+import { getCurrencySymbol } from "src/utils/labels";
+import { selectTokenAddress } from "src/utils/tokens";
+import {
+  AsyncTask,
+  isAsyncTaskDataAvailable,
+  isEthersInsufficientFundsError,
+  isMetaMaskUserRejectedRequestError,
+} from "src/utils/types";
 import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
 import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import { Gas, TokenSpendPermission, Permit } from "src/domain";
+import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
+import Card from "src/views/shared/card/card.view";
+import ErrorMessage from "src/views/shared/error-message/error-message.view";
+import Header from "src/views/shared/header/header.view";
+import Icon from "src/views/shared/icon/icon.view";
+import PageLoader from "src/views/shared/page-loader/page-loader.view";
+import Typography from "src/views/shared/typography/typography.view";
 
 const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
@@ -73,23 +73,23 @@ const BridgeConfirmation: FC = () => {
       tokenBalance &&
       tokenSpendPermission
     ) {
-      const { from, to, token, amount } = formData;
+      const { amount, from, to, token } = formData;
       const destinationAddress = connectedProvider.data.account;
 
       setEstimatedGas({ status: "loading" });
 
       void estimateBridgeGas({
+        destinationAddress,
         from,
         to,
         token,
-        destinationAddress,
         tokenSpendPermission,
       })
         .then((gas: Gas) => {
           const newFee = calculateFee(gas);
 
           if (!newFee) {
-            setEstimatedGas({ status: "failed", error: "Gas data is not available" });
+            setEstimatedGas({ error: "Gas data is not available", status: "failed" });
           }
 
           const isTokenEther = token.address === ethersConstants.AddressZero;
@@ -109,14 +109,14 @@ const BridgeConfirmation: FC = () => {
           })();
 
           setMaxAmountConsideringFee(newMaxAmountConsideringFee);
-          setEstimatedGas({ status: "successful", data: gas });
+          setEstimatedGas({ data: gas, status: "successful" });
         })
         .catch((error) => {
           if (isEthersInsufficientFundsError(error)) {
             callIfMounted(() => {
               setEstimatedGas({
-                status: "failed",
                 error: "You don't have enough ETH to pay for the fees",
+                status: "failed",
               });
             });
           } else {
@@ -161,9 +161,9 @@ const BridgeConfirmation: FC = () => {
           });
       } else {
         getErc20TokenBalance({
+          accountAddress: connectedProvider.data.account,
           chain: from,
           tokenAddress: selectTokenAddress(token, from),
-          accountAddress: connectedProvider.data.account,
         })
           .then((balance) =>
             callIfMounted(() => {
@@ -181,18 +181,18 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (connectedProvider.status === "successful" && formData) {
-      const { from, token, amount } = formData;
+      const { amount, from, token } = formData;
       const isTokenEther = token.address === ethersConstants.AddressZero;
 
       if (isTokenEther) {
         setTokenSpendPermission({ type: "none" });
       } else {
         isContractAllowedToSpendToken({
-          provider: from.provider,
-          token: token,
           amount: amount,
           owner: connectedProvider.data.account,
+          provider: from.provider,
           spender: from.bridgeContractAddress,
+          token: token,
         })
           .then((isAllowed) => {
             callIfMounted(() => {
@@ -210,7 +210,7 @@ const BridgeConfirmation: FC = () => {
                       if (permit === Permit.DAI) {
                         setTokenSpendPermission({ type: "approval" });
                       } else {
-                        setTokenSpendPermission({ type: "permit", permit });
+                        setTokenSpendPermission({ permit, type: "permit" });
                       }
                     });
                   })
@@ -243,12 +243,12 @@ const BridgeConfirmation: FC = () => {
 
   useEffect(() => {
     if (formData) {
-      const { token, from } = formData;
+      const { from, token } = formData;
       const etherToken = getEtherToken(from);
       const isTokenEther = token.address === ethersConstants.AddressZero;
 
       // Get the fiat price of Ether
-      getTokenPrice({ token: etherToken, chain: from })
+      getTokenPrice({ chain: from, token: etherToken })
         .then((etherPrice) => {
           callIfMounted(() => {
             setEtherTokenFiatPrice(etherPrice);
@@ -268,7 +268,7 @@ const BridgeConfirmation: FC = () => {
 
       // Get the fiat price of the bridged token when it's not Ether
       if (!isTokenEther) {
-        getTokenPrice({ token, chain: from })
+        getTokenPrice({ chain: from, token })
           .then((tokenPrice) => {
             callIfMounted(() => {
               setBridgedTokenFiatPrice(tokenPrice);
@@ -286,18 +286,18 @@ const BridgeConfirmation: FC = () => {
   const onApprove = () => {
     if (isAsyncTaskDataAvailable(connectedProvider) && formData) {
       setApprovalTask({ status: "loading" });
-      const { token, amount, from } = formData;
+      const { amount, from, token } = formData;
       void approve({
-        from,
-        token,
-        owner: connectedProvider.data.account,
-        spender: from.bridgeContractAddress,
-        provider: connectedProvider.data.provider,
         amount,
+        from,
+        owner: connectedProvider.data.account,
+        provider: connectedProvider.data.provider,
+        spender: from.bridgeContractAddress,
+        token,
       })
         .then(() => {
           callIfMounted(() => {
-            setApprovalTask({ status: "successful", data: null });
+            setApprovalTask({ data: null, status: "successful" });
             setTokenSpendPermission({ type: "none" });
           });
         })
@@ -311,7 +311,7 @@ const BridgeConfirmation: FC = () => {
                   setError(`Switch to ${from.name} to continue`);
                   setApprovalTask({ status: "pending" });
                 } else {
-                  setApprovalTask({ status: "failed", error: parsed });
+                  setApprovalTask({ error: parsed, status: "failed" });
                   notifyError(parsed);
                 }
               });
@@ -329,23 +329,23 @@ const BridgeConfirmation: FC = () => {
       maxAmountConsideringFee &&
       tokenSpendPermission
     ) {
-      const { token, from, to } = formData;
+      const { from, to, token } = formData;
 
       setIsBridgeInProgress(true);
 
       bridge({
-        from,
-        token,
         amount: maxAmountConsideringFee,
-        to,
         destinationAddress: connectedProvider.data.account,
-        tokenSpendPermission,
+        from,
         gas: estimatedGas.data,
+        to,
+        token,
+        tokenSpendPermission,
       })
         .then(() => {
           openSnackbar({
-            type: "success-msg",
             text: "Transaction successfully submitted",
+            type: "success-msg",
           });
           navigate(routes.activity.path);
           setFormData(undefined);
@@ -378,19 +378,19 @@ const BridgeConfirmation: FC = () => {
     return <PageLoader />;
   }
 
-  const { token, from, to } = formData;
+  const { from, to, token } = formData;
   const etherToken = getEtherToken(from);
 
   const fiatAmount =
     bridgedTokenFiatPrice &&
     multiplyAmounts(
       {
-        value: bridgedTokenFiatPrice,
         precision: FIAT_DISPLAY_PRECISION,
+        value: bridgedTokenFiatPrice,
       },
       {
-        value: maxAmountConsideringFee,
         precision: token.decimals,
+        value: maxAmountConsideringFee,
       },
       FIAT_DISPLAY_PRECISION
     );
@@ -401,12 +401,12 @@ const BridgeConfirmation: FC = () => {
     etherTokenFiatPrice &&
     multiplyAmounts(
       {
-        value: etherTokenFiatPrice,
         precision: FIAT_DISPLAY_PRECISION,
+        value: etherTokenFiatPrice,
       },
       {
-        value: fee,
         precision: etherToken.decimals,
+        value: fee,
       },
       FIAT_DISPLAY_PRECISION
     );
@@ -437,9 +437,9 @@ const BridgeConfirmation: FC = () => {
 
   return (
     <div className={classes.contentWrapper}>
-      <Header title="Confirm Bridge" backTo={{ routeKey: "home" }} />
+      <Header backTo={{ routeKey: "home" }} title="Confirm Bridge" />
       <Card className={classes.card}>
-        <Icon url={token.logoURI} size={46} className={classes.tokenIcon} />
+        <Icon className={classes.tokenIcon} size={46} url={token.logoURI} />
         <Typography type="h1">{tokenAmountString}</Typography>
         {fiatAmountString && (
           <Typography className={classes.fiat} type="body2">
@@ -460,19 +460,19 @@ const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon url={ETH_TOKEN_LOGO_URI} size={20} />
+            <Icon size={20} url={ETH_TOKEN_LOGO_URI} />
             <Typography type="body1">{feeString}</Typography>
           </div>
         </div>
       </Card>
       <div className={classes.button}>
         <BridgeButton
-          isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
-          token={token}
-          isTxApprovalRequired={tokenSpendPermission.type === "approval"}
           approvalTask={approvalTask}
+          isDisabled={maxAmountConsideringFee.lte(0) || isBridgeInProgress}
+          isTxApprovalRequired={tokenSpendPermission.type === "approval"}
           onApprove={onApprove}
           onBridge={onBridge}
+          token={token}
         />
         {tokenSpendPermission.type === "approval" && <ApprovalInfo />}
         {error && <ErrorMessage error={error} />}

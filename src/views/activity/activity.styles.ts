@@ -2,94 +2,71 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-interface StylesProps {
-  displayAll: boolean;
-}
-
 const useActivityStyles = createUseStyles((theme: Theme) => ({
-  stickyContent: {
-    zIndex: 1,
-    top: 0,
-    position: "sticky",
-    background: theme.palette.grey.light,
-  },
-  stickyContentBorder: {
-    borderBottom: `${theme.palette.grey.main} 1px solid`,
-  },
-  numberAllBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    padding: [0, theme.spacing(1)],
-    borderRadius: 6,
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  numberPendingBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: ({ displayAll }: StylesProps) =>
-      !displayAll ? theme.palette.grey.light : theme.palette.grey.main,
-    padding: [0, theme.spacing(1)],
-    borderRadius: 6,
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  selectorBoxes: {
-    width: "100%",
-    maxWidth: theme.maxWidth,
-    display: "flex",
-    margin: [theme.spacing(5), "auto", theme.spacing(2)],
-  },
-  selectorBox: {
-    display: "flex",
-    padding: [[theme.spacing(0.75), theme.spacing(1)]],
-    marginRight: theme.spacing(2),
-    borderRadius: 8,
-  },
-  allBox: ({ displayAll }: StylesProps) =>
-    displayAll
-      ? {
-          backgroundColor: theme.palette.white,
-        }
-      : {
-          backgroundColor: "inherit",
-          color: theme.palette.grey.dark,
-          cursor: "pointer",
-        },
-  pendingBox: ({ displayAll }: StylesProps) =>
-    !displayAll
-      ? {
-          backgroundColor: theme.palette.white,
-        }
-      : {
-          backgroundColor: "inherit",
-          color: theme.palette.grey.dark,
-          cursor: "pointer",
-        },
-  status: {
-    padding: [theme.spacing(0.5), theme.spacing(1)],
-    lineHeight: `${theme.spacing(1.75)}px`,
-  },
-  contentWrapper: {
-    padding: [0, theme.spacing(2)],
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-  },
-  emptyMessage: {
-    width: "100%",
-    maxWidth: theme.maxWidth,
-    alignSelf: "center",
-    textAlign: "center",
-    padding: [50, theme.spacing(2)],
-    [theme.breakpoints.upSm]: {
-      padding: 100,
-    },
-  },
   bridgeCardwrapper: {
     "&:not(:last-child)": {
       marginBottom: theme.spacing(2),
     },
+  },
+  contentWrapper: {
+    display: "flex",
+    flex: 1,
+    flexDirection: "column",
+    padding: [0, theme.spacing(2)],
+  },
+  emptyMessage: {
+    alignSelf: "center",
+    maxWidth: theme.maxWidth,
+    padding: [50, theme.spacing(2)],
+    textAlign: "center",
+    width: "100%",
+    [theme.breakpoints.upSm]: {
+      padding: 100,
+    },
+  },
+  filterBox: {
+    "&:not(:first-of-type)": {
+      marginLeft: theme.spacing(2),
+    },
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: 8,
+    cursor: "pointer",
+    display: "flex",
+    padding: [[theme.spacing(0.75), theme.spacing(1)]],
+    transition: theme.hoverTransition,
+  },
+  filterBoxes: {
+    display: "flex",
+    margin: [theme.spacing(5), "auto", theme.spacing(2)],
+    maxWidth: theme.maxWidth,
+    width: "100%",
+  },
+  filterBoxLabel: {
+    padding: [theme.spacing(0), theme.spacing(1)],
+  },
+  filterBoxSelected: {
+    backgroundColor: theme.palette.white,
+    color: theme.palette.grey.dark,
+  },
+  filterNumberBox: {
+    alignItems: "center",
+    backgroundColor: theme.palette.grey.main,
+    borderRadius: 6,
+    display: "flex",
+    padding: [theme.spacing(0.25), theme.spacing(1)],
+  },
+  filterNumberBoxSelected: {
+    backgroundColor: theme.palette.grey.light,
+  },
+  stickyContent: {
+    background: theme.palette.grey.light,
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+  },
+  stickyContentBorder: {
+    borderBottom: `${theme.palette.grey.main} 1px solid`,
   },
 }));
 

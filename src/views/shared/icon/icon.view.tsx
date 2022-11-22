@@ -3,15 +3,15 @@ import { FC } from "react";
 import useIconStyles from "src/views/shared/icon/icon.styles";
 
 interface IconProps {
-  url: string;
   className?: string;
   size?: number;
+  url: string;
 }
 
-const Icon: FC<IconProps> = ({ url, className, size }) => {
+const Icon: FC<IconProps> = ({ className, size, url }) => {
   const classes = useIconStyles(size || 16);
 
-  return <img src={url} className={`${classes.icon} ${className ? className : ""}`} />;
+  return <img className={`${classes.icon} ${className ? className : ""}`} src={url} />;
 };
 
 export default Icon;

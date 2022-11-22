@@ -1,15 +1,15 @@
 import { z } from "zod";
 
-import * as constants from "src/constants";
 import { tokenParser } from "src/adapters/tokens";
+import * as constants from "src/constants";
+import { Chain, Currency, Env, PolicyCheck, Token } from "src/domain";
 import { PendingTx, pendingTxParser, serializePendingTx } from "src/utils/serializers";
-import { Currency, Token, Chain, Env, PolicyCheck } from "src/domain";
 
 // Currency
 export function getCurrency(): Currency {
   return getStorageByKey({
-    key: constants.PREFERRED_CURRENCY_KEY,
     defaultValue: constants.PREFERRED_CURRENCY,
+    key: constants.PREFERRED_CURRENCY_KEY,
     parser: z.nativeEnum(Currency),
   });
 }
@@ -33,8 +33,8 @@ export function cleanupCustomTokens(envTokens: Token[]): Token[] {
 
 export function getCustomTokens(): Token[] {
   return getStorageByKey({
-    key: constants.CUSTOM_TOKENS_KEY,
     defaultValue: [],
+    key: constants.CUSTOM_TOKENS_KEY,
     parser: z.array(tokenParser),
   });
 }
@@ -81,8 +81,8 @@ export function getAccountPendingTxs(account: string, env: Env): PendingTx[] {
 
 function getPendingTxs(env: Env): Record<string, PendingTx[]> {
   return getStorageByKey({
-    key: constants.PENDING_TXS_KEY,
     defaultValue: {},
+    key: constants.PENDING_TXS_KEY,
     parser: z.record(z.array(z.unknown())).transform((unknownRecord) =>
       Object.entries(unknownRecord).reduce(
         (
@@ -159,8 +159,8 @@ export function removeAccountPendingTx(
 // PolicyCheck
 export function getPolicyCheck(): PolicyCheck {
   return getStorageByKey({
-    key: constants.POLICY_CHECK_KEY,
     defaultValue: PolicyCheck.Unchecked,
+    key: constants.POLICY_CHECK_KEY,
     parser: z.nativeEnum(PolicyCheck),
   });
 }
@@ -171,12 +171,12 @@ export function setPolicyCheck(): PolicyCheck {
 
 // Helpers
 export function getStorageByKey<I, O>({
-  key,
   defaultValue,
+  key,
   parser,
 }: {
-  key: string;
   defaultValue: O;
+  key: string;
   parser: z.ZodSchema<O, z.ZodTypeDef, I>;
 }): O {
   const value = localStorage.getItem(key);

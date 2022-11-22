@@ -3,68 +3,68 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
-  wrapper: {
-    background: theme.palette.white,
-  },
-  row: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    flexDirection: "column",
-    padding: [theme.spacing(1), 0],
-    gap: theme.spacing(1),
-    [theme.breakpoints.upSm]: {
-      height: 48,
-      alignItems: "center",
-      flexDirection: "row",
-      padding: 0,
-    },
-  },
   alignRow: {
-    display: "flex",
     alignItems: "center",
+    display: "flex",
     gap: theme.spacing(1),
   },
-  rowRightBlock: {
+  button: {
+    "&:hover": {
+      background: theme.palette.grey.main,
+    },
+    background: "transparent",
+    border: "none",
+    borderRadius: "50%",
+    cursor: "pointer",
     display: "flex",
-    alignItems: "center",
+    padding: theme.spacing(1),
   },
   chainIcon: {
     height: 20,
     width: 20,
   },
-  tokenAddress: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
-  button: {
-    display: "flex",
-    border: "none",
-    padding: theme.spacing(1),
-    background: "transparent",
-    cursor: "pointer",
-    borderRadius: "50%",
-    "&:hover": {
-      background: theme.palette.grey.main,
-    },
-  },
   copyIcon: {
-    width: 16,
-    height: 16,
     "& path": {
       fill: theme.palette.grey.dark,
     },
+    height: 16,
+    width: 16,
   },
   newWindowIcon: {
-    width: 16,
-    height: 16,
     "& path": {
       fill: theme.palette.grey.dark,
       stroke: theme.palette.grey.dark,
       strokeWidth: 1,
     },
+    height: 16,
+    width: 16,
+  },
+  row: {
+    alignItems: "flex-start",
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing(1),
+    justifyContent: "space-between",
+    padding: [theme.spacing(1), 0],
+    [theme.breakpoints.upSm]: {
+      alignItems: "center",
+      flexDirection: "row",
+      height: 48,
+      padding: 0,
+    },
+  },
+  rowRightBlock: {
+    alignItems: "center",
+    display: "flex",
+  },
+  tokenAddress: {
+    alignItems: "center",
+    display: "flex",
+    gap: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+  },
+  wrapper: {
+    background: theme.palette.white,
   },
 }));
 
