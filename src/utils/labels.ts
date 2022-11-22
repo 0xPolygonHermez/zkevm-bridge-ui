@@ -2,36 +2,46 @@ import { Bridge, Chain, Currency, EthereumChainId } from "src/domain";
 
 export function getBridgeStatus(status: Bridge["status"]): string {
   switch (status) {
-    case "pending":
+    case "pending": {
       return "Processing";
-    case "initiated":
+    }
+    case "initiated": {
       return "Initiated";
-    case "on-hold":
+    }
+    case "on-hold": {
       return "On Hold";
-    case "completed":
+    }
+    case "completed": {
       return "Completed";
+    }
   }
 }
 
 export function getNetworkName(chain: Chain): string | undefined {
   switch (chain.chainId) {
-    case EthereumChainId.MAINNET:
+    case EthereumChainId.MAINNET: {
       return "Ethereum";
-    case EthereumChainId.GOERLI:
+    }
+    case EthereumChainId.GOERLI: {
       return "Ethereum Goerli";
-    default:
+    }
+    default: {
       return undefined;
+    }
   }
 }
 
 export function getDeploymentName(chain: Chain): string | undefined {
   switch (chain.chainId) {
-    case EthereumChainId.MAINNET:
+    case EthereumChainId.MAINNET: {
       return "Mainnet";
-    case EthereumChainId.GOERLI:
+    }
+    case EthereumChainId.GOERLI: {
       return "Testnet";
-    default:
+    }
+    default: {
       return undefined;
+    }
   }
 }
 
@@ -39,14 +49,18 @@ type CurrencySymbol = "€" | "$" | "¥" | "£";
 
 export function getCurrencySymbol(currency: Currency): CurrencySymbol {
   switch (currency) {
-    case Currency.EUR:
+    case Currency.EUR: {
       return "€";
-    case Currency.USD:
+    }
+    case Currency.USD: {
       return "$";
-    case Currency.GBP:
+    }
+    case Currency.GBP: {
       return "£";
+    }
     case Currency.JPY:
-    case Currency.CNY:
+    case Currency.CNY: {
       return "¥";
+    }
   }
 }

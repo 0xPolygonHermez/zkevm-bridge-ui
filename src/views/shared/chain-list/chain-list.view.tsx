@@ -17,7 +17,9 @@ const ChainList: FC<ChainListProps> = ({ chains, onClick, onClose }) => {
   const classes = useListStyles();
 
   const onOutsideClick = (event: React.MouseEvent) => {
-    if (event.target !== event.currentTarget) return;
+    if (event.target !== event.currentTarget) {
+      return;
+    }
     onClose();
   };
 

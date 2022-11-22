@@ -19,10 +19,12 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
   const Icon = ({ message }: { message: Message }): JSX.Element => {
     switch (message.type) {
       case "error":
-      case "error-msg":
+      case "error-msg": {
         return <ErrorIcon className={classes.messageIcon} />;
-      case "success-msg":
+      }
+      case "success-msg": {
         return <SuccessIcon className={classes.messageIcon} />;
+      }
     }
   };
 
