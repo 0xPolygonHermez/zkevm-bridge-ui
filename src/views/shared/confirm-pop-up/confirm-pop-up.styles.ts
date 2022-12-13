@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const usePolicyStyles = createUseStyles((theme: Theme) => ({
+const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "center",
     background: theme.palette.transparency,
@@ -36,7 +36,7 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     width: "100%",
   },
-  connectButton: {
+  confirmButton: {
     "&:hover": {
       background: theme.palette.primary.dark,
     },
@@ -51,4 +51,4 @@ const usePolicyStyles = createUseStyles((theme: Theme) => ({
   },
 }));
 
-export default usePolicyStyles;
+export default useConfirmPopUpStyles;

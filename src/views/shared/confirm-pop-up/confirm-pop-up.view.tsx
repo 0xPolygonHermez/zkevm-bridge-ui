@@ -1,17 +1,19 @@
-import { FC, MouseEvent } from "react";
+import { FC, MouseEvent, ReactNode } from "react";
 
-import usePolicyStyles from "src/views/login/components/policy/policy.styles";
 import Card from "src/views/shared/card/card.view";
+import useConfirmPopUpStyles from "src/views/shared/confirm-pop-up/confirm-pop-up.styles";
 import Portal from "src/views/shared/portal/portal.view";
 import Typography from "src/views/shared/typography/typography.view";
 
-interface PolicyProps {
+interface ConfirmPopUpProps {
+  message: ReactNode;
   onClose: () => void;
-  onConnect: () => void;
+  onConfirm: () => void;
+  title: string;
 }
 
-const Policy: FC<PolicyProps> = ({ onClose, onConnect }) => {
-  const classes = usePolicyStyles();
+const ConfirmPopUp: FC<ConfirmPopUpProps> = ({ message, onClose, onConfirm, title }) => {
+  const classes = useConfirmPopUpStyles();
 
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
@@ -24,18 +26,15 @@ const Policy: FC<PolicyProps> = ({ onClose, onConnect }) => {
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.text}>
-            <Typography type="body1">Welcome to the Polygon zkEVM testnet</Typography>
-            <Typography type="body2">
-              DISCLAIMER: This early version of the public testnet will require frequent maintenance
-              and may be restarted if upgrades are needed.
-            </Typography>
+            <Typography type="body1">{title}</Typography>
+            {message}
           </div>
           <div className={classes.buttonsBox}>
             <button className={`${classes.button} ${classes.cancelButton}`} onClick={onClose}>
               Cancel
             </button>
-            <button className={`${classes.button} ${classes.connectButton}`} onClick={onConnect}>
-              Connect
+            <button className={`${classes.button} ${classes.confirmButton}`} onClick={onConfirm}>
+              Confirm
             </button>
           </div>
         </Card>
@@ -44,4 +43,4 @@ const Policy: FC<PolicyProps> = ({ onClose, onConnect }) => {
   );
 };
 
-export default Policy;
+export default ConfirmPopUp;
