@@ -174,8 +174,6 @@ export interface Deposit {
 }
 
 export interface MerkleProof {
-  exitRootNumber: number;
-  l2ExitRootNumber: number;
   mainExitRoot: string;
   merkleProof: string[];
   rollupExitRoot: string;

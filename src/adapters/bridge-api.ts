@@ -32,8 +32,6 @@ interface DepositOutput {
 }
 
 interface MerkleProof {
-  exit_root_num: string;
-  l2_exit_root_num: string;
   main_exit_root: string;
   merkle_proof: string[];
   rollup_exit_root: string;
@@ -89,14 +87,10 @@ const getDepositsResponseParser = StrictSchema<
 );
 
 const apiMerkleProofToDomain = ({
-  exit_root_num,
-  l2_exit_root_num,
   main_exit_root,
   merkle_proof,
   rollup_exit_root,
 }: MerkleProof): domain.MerkleProof => ({
-  exitRootNumber: z.number().nonnegative().parse(Number(exit_root_num)),
-  l2ExitRootNumber: z.number().nonnegative().parse(Number(l2_exit_root_num)),
   mainExitRoot: main_exit_root,
   merkleProof: merkle_proof,
   rollupExitRoot: rollup_exit_root,
@@ -105,8 +99,6 @@ const apiMerkleProofToDomain = ({
 const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
   z
     .object({
-      exit_root_num: z.string(),
-      l2_exit_root_num: z.string(),
       main_exit_root: z.string().length(66),
       merkle_proof: z.array(z.string().length(66)),
       rollup_exit_root: z.string().length(66),

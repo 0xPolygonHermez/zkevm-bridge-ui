@@ -9,7 +9,7 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
       cursor: "default",
       opacity: 0.4,
     },
-    "&:hover": {
+    "&:hover&:not(:disabled)": {
       backgroundColor: theme.palette.primary.dark,
     },
     alignItems: "center",
