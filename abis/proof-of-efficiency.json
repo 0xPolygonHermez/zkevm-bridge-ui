@@ -1,6 +1,18 @@
 [
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "EmergencyStateActivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "EmergencyStateDeactivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": true,
@@ -66,6 +78,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "storedStateRoot",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "provedStateRoot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ProveNonDeterministicState",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint64",
         "name": "numBatch",
@@ -99,6 +130,19 @@
       }
     ],
     "name": "SetForceBatchAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newSecurityCouncil",
+        "type": "address"
+      }
+    ],
+    "name": "SetSecurityCouncil",
     "type": "event"
   },
   {
@@ -192,6 +236,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "activateEmergencyState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint64",
@@ -205,6 +256,19 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bridgeAddress",
+    "outputs": [
+      {
+        "internalType": "contract IBridge",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -289,6 +353,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "deactivateEmergencyState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes",
@@ -342,12 +413,12 @@
     "inputs": [
       {
         "internalType": "uint64",
-        "name": "_lastVerifiedBatch",
+        "name": "initNumBatch",
         "type": "uint64"
       },
       {
         "internalType": "uint64",
-        "name": "newVerifiedBatch",
+        "name": "finalNewBatch",
         "type": "uint64"
       },
       {
@@ -465,11 +536,34 @@
         "internalType": "string",
         "name": "_networkName",
         "type": "string"
+      },
+      {
+        "internalType": "contract IBridge",
+        "name": "_bridgeAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_securityCouncil",
+        "type": "address"
       }
     ],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isEmergencyState",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -577,6 +671,49 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "initNumBatch",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "finalNewBatch",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "newLocalExitRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "newStateRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "proofA",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "proofB",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "proofC",
+        "type": "uint256[2]"
+      }
+    ],
+    "name": "proveNonDeterministicState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -589,6 +726,19 @@
     "outputs": [
       {
         "internalType": "contract IVerifierRollup",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "securityCouncil",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -702,6 +852,19 @@
       }
     ],
     "name": "setNetworkName",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newSecurityCouncil",
+        "type": "address"
+      }
+    ],
+    "name": "setSecurityCouncil",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -850,12 +1013,12 @@
     "inputs": [
       {
         "internalType": "uint64",
-        "name": "_lastVerifiedBatch",
+        "name": "initNumBatch",
         "type": "uint64"
       },
       {
         "internalType": "uint64",
-        "name": "newVerifiedBatch",
+        "name": "finalNewBatch",
         "type": "uint64"
       },
       {
