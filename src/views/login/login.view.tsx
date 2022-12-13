@@ -21,7 +21,8 @@ import Typography from "src/views/shared/typography/typography.view";
 const Login: FC = () => {
   const classes = useLoginStyles();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
-  const [showPolicy, setShowPolicy] = useState<boolean>(false);
+  const [showPolicyPopUp, setShowPolicyPopUp] = useState(false);
+  const [showNetworkOutdatedPopUp, setShowNetworkOutdatedPopUp] = useState(false);
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectedProvider, connectProvider } = useProvidersContext();
@@ -30,7 +31,7 @@ const Login: FC = () => {
   const onConnectProvider = () => {
     setPolicyCheck();
     selectedWallet && connectProvider(selectedWallet);
-    setShowPolicy(false);
+    setShowPolicyPopUp(false);
   };
 
   const onCheckAndConnectProvider = (walletName: WalletName) => {
@@ -39,7 +40,7 @@ const Login: FC = () => {
     if (checked === PolicyCheck.Checked) {
       void connectProvider(walletName);
     } else {
-      setShowPolicy(true);
+      setShowPolicyPopUp(true);
     }
   };
 
@@ -54,6 +55,12 @@ const Login: FC = () => {
       }
     }
   }, [connectedProvider, state, navigate]);
+
+  useEffect(() => {
+    if (env) {
+      setShowNetworkOutdatedPopUp(env.isNetworkOutdated);
+    }
+  }, [env]);
 
   if (!env) {
     return null;
@@ -93,7 +100,22 @@ const Login: FC = () => {
           )}
         </div>
       </div>
-      {showPolicy && (
+      {showNetworkOutdatedPopUp && (
+        <ConfirmPopUp
+          message={
+            <Typography type="body2">
+              In the coming days, a new zkEVM Testnet (Grapefruit) will be released to the public,
+              and this version (Litchi) will be outdated. We will update this message with the link
+              to the newest version when it&apos;s up and running.
+            </Typography>
+          }
+          onClose={() => setShowNetworkOutdatedPopUp(false)}
+          onConfirm={() => setShowNetworkOutdatedPopUp(false)}
+          showCancelButton={false}
+          title="A new zkEVM Testnet is on its way!"
+        />
+      )}
+      {showPolicyPopUp && (
         <ConfirmPopUp
           message={
             <Typography type="body2">
@@ -101,7 +123,7 @@ const Login: FC = () => {
               and may be restarted if upgrades are needed.
             </Typography>
           }
-          onClose={() => setShowPolicy(false)}
+          onClose={() => setShowPolicyPopUp(false)}
           onConfirm={onConnectProvider}
           title="Welcome to the Polygon zkEVM testnet"
         />

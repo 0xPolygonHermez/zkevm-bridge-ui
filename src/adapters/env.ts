@@ -13,6 +13,7 @@ interface Env {
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
+  VITE_IS_NETWORK_OUTDATED: string;
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
   VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
@@ -29,6 +30,7 @@ const envToDomain = ({
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+  VITE_IS_NETWORK_OUTDATED,
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
   VITE_POLYGON_ZK_EVM_EXPLORER_URL,
   VITE_POLYGON_ZK_EVM_NETWORK_ID,
@@ -37,6 +39,7 @@ const envToDomain = ({
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
   const useFiatExchangeRates = z.boolean().parse(VITE_USE_FIAT_EXCHANGE_RATES === "true");
+  const isNetworkOutdated = z.boolean().parse(VITE_IS_NETWORK_OUTDATED === "true");
 
   return getChains({
     ethereum: {
@@ -65,6 +68,7 @@ const envToDomain = ({
         fiatExchangeRates: {
           areEnabled: false,
         },
+        isNetworkOutdated,
       };
     }
 
@@ -92,6 +96,7 @@ const envToDomain = ({
           chainId: ethereumChain.chainId,
         }),
       },
+      isNetworkOutdated,
     };
   });
 };
@@ -107,6 +112,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
+      VITE_IS_NETWORK_OUTDATED: z.string(),
       VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),

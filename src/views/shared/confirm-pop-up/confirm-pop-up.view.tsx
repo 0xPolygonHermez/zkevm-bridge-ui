@@ -9,10 +9,17 @@ interface ConfirmPopUpProps {
   message: ReactNode;
   onClose: () => void;
   onConfirm: () => void;
+  showCancelButton?: boolean;
   title: string;
 }
 
-const ConfirmPopUp: FC<ConfirmPopUpProps> = ({ message, onClose, onConfirm, title }) => {
+const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
+  message,
+  onClose,
+  onConfirm,
+  showCancelButton = true,
+  title,
+}) => {
   const classes = useConfirmPopUpStyles();
 
   const onOutsideClick = (event: MouseEvent) => {
@@ -30,9 +37,11 @@ const ConfirmPopUp: FC<ConfirmPopUpProps> = ({ message, onClose, onConfirm, titl
             {message}
           </div>
           <div className={classes.buttonsBox}>
-            <button className={`${classes.button} ${classes.cancelButton}`} onClick={onClose}>
-              Cancel
-            </button>
+            {showCancelButton && (
+              <button className={`${classes.button} ${classes.cancelButton}`} onClick={onClose}>
+                Cancel
+              </button>
+            )}
             <button className={`${classes.button} ${classes.confirmButton}`} onClick={onConfirm}>
               Confirm
             </button>

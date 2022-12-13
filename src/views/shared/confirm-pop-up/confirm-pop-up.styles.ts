@@ -48,6 +48,7 @@ const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing(2),
+    textAlign: "center",
   },
 }));
 
