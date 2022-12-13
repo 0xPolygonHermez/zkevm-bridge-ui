@@ -12,9 +12,9 @@ interface DepositInput {
   dest_addr: string;
   dest_net: number;
   network_id: number;
+  orig_addr: string;
   orig_net: number;
   ready_for_claim: boolean;
-  token_addr: string;
   tx_hash: string;
 }
 
@@ -25,9 +25,9 @@ interface DepositOutput {
   dest_addr: string;
   dest_net: number;
   network_id: number;
+  orig_addr: string;
   orig_net: number;
   ready_for_claim: boolean;
-  token_addr: string;
   tx_hash: string;
 }
 
@@ -52,9 +52,9 @@ const depositParser = StrictSchema<DepositInput, DepositOutput>()(
     dest_addr: z.string(),
     dest_net: z.number(),
     network_id: z.number(),
+    orig_addr: z.string(),
     orig_net: z.number(),
     ready_for_claim: z.boolean(),
-    token_addr: z.string(),
     tx_hash: z.string(),
   })
 );

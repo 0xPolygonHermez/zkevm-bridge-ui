@@ -179,9 +179,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         dest_addr,
         dest_net,
         network_id,
+        orig_addr,
         orig_net,
         ready_for_claim,
-        token_addr,
         tx_hash,
       } = apiDeposit;
 
@@ -203,7 +203,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         chain: from,
         env,
         originNetwork: orig_net,
-        tokenAddress: token_addr,
+        tokenAddress: orig_addr,
       });
 
       const claim: Deposit["claim"] =
@@ -320,9 +320,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             dest_addr,
             dest_net,
             network_id,
+            orig_addr,
             orig_net,
             ready_for_claim,
-            token_addr,
             tx_hash,
           } = apiDeposit;
 
@@ -344,7 +344,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             chain: from,
             env,
             originNetwork: orig_net,
-            tokenAddress: token_addr,
+            tokenAddress: orig_addr,
           });
 
           return {
