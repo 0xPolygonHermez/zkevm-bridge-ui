@@ -691,7 +691,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const gasLimit =
         from.key === "ethereum"
           ? await contract.estimateGas
-              .bridge(
+              .bridgeAsset(
                 selectTokenAddress(token, from),
                 to.networkId,
                 destinationAddress,
@@ -776,7 +776,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             : "0x";
 
         return contract
-          .bridge(token.address, to.networkId, destinationAddress, amount, permitData, overrides)
+          .bridgeAsset(
+            token.address,
+            to.networkId,
+            destinationAddress,
+            amount,
+            permitData,
+            overrides
+          )
           .then((txData) => {
             storage.addAccountPendingTx(account, env, {
               amount,
@@ -847,7 +854,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       const executeClaim = () =>
         contract
-          .claim(
+          .claimAsset(
             merkleProof,
             depositCount,
             mainExitRoot,

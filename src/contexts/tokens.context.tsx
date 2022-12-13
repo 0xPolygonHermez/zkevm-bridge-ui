@@ -106,7 +106,13 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         otherChain.provider
       );
 
-      return bridgeContract.precalculatedWrapperAddress(nativeChain.networkId, token.address);
+      return bridgeContract.precalculatedWrapperAddress(
+        nativeChain.networkId,
+        token.address,
+        token.name,
+        token.symbol,
+        token.decimals
+      );
     },
     []
   );
