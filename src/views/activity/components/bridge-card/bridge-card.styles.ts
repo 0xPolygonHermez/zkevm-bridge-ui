@@ -45,7 +45,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
       cursor: "initial",
       opacity: 0.4,
     },
-    "&:hover": {
+    "&:hover&:not(:disabled)": {
       backgroundColor: theme.palette.primary.dark,
     },
     backgroundColor: theme.palette.primary.main,
@@ -87,9 +87,7 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "space-between",
   },
   statusBox: {
-    backgroundColor: theme.palette.warning.light,
     borderRadius: 8,
-    color: theme.palette.warning.main,
     fontSize: 14,
     marginRight: "auto",
     padding: [theme.spacing(0.5), theme.spacing(1)],

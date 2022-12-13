@@ -83,11 +83,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.row}>
               <span
                 className={`${classes.statusBox} ${
-                  bridge.status === "pending"
-                    ? classes.pendingStatus
-                    : bridge.status === "completed"
-                    ? classes.greenStatus
-                    : ""
+                  bridge.status === "completed" ? classes.greenStatus : classes.pendingStatus
                 }`}
               >
                 {getBridgeStatus(status)}
