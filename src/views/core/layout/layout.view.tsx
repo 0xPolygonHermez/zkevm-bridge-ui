@@ -39,7 +39,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
         <ConfirmPopUp
           message={
             <Typography type="body2">
-              In the coming days, a new zkEVM Testnet (Grapefruit) will be released to the public,
+              In the coming days, a new zkEVM Testnet (Pomegranate) will be released to the public,
               and this version (Litchi) will be outdated. We will update this message with the link
               to the newest version when it&apos;s deployed.
             </Typography>
