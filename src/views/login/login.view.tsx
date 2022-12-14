@@ -22,7 +22,6 @@ const Login: FC = () => {
   const classes = useLoginStyles();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [showPolicyPopUp, setShowPolicyPopUp] = useState(false);
-  const [showNetworkOutdatedPopUp, setShowNetworkOutdatedPopUp] = useState(false);
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectedProvider, connectProvider } = useProvidersContext();
@@ -55,12 +54,6 @@ const Login: FC = () => {
       }
     }
   }, [connectedProvider, state, navigate]);
-
-  useEffect(() => {
-    if (env) {
-      setShowNetworkOutdatedPopUp(env.isNetworkOutdated);
-    }
-  }, [env]);
 
   if (!env) {
     return null;
@@ -100,21 +93,6 @@ const Login: FC = () => {
           )}
         </div>
       </div>
-      {showNetworkOutdatedPopUp && (
-        <ConfirmPopUp
-          message={
-            <Typography type="body2">
-              In the coming days, a new zkEVM Testnet (Grapefruit) will be released to the public,
-              and this version (Litchi) will be outdated. We will update this message with the link
-              to the newest version when it&apos;s deployed.
-            </Typography>
-          }
-          onClose={() => setShowNetworkOutdatedPopUp(false)}
-          onConfirm={() => setShowNetworkOutdatedPopUp(false)}
-          showCancelButton={false}
-          title="A new zkEVM Testnet is on its way!"
-        />
-      )}
       {showPolicyPopUp && (
         <ConfirmPopUp
           message={
