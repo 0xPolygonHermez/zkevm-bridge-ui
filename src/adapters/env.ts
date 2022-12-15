@@ -13,7 +13,9 @@ interface Env {
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
-  VITE_IS_NETWORK_OUTDATED: string;
+  VITE_OUTDATED_NETWORK_MESSAGE?: string;
+  VITE_OUTDATED_NETWORK_TITLE?: string;
+  VITE_OUTDATED_NETWORK_URL?: string;
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
   VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
@@ -30,7 +32,9 @@ const envToDomain = ({
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
-  VITE_IS_NETWORK_OUTDATED,
+  VITE_OUTDATED_NETWORK_MESSAGE,
+  VITE_OUTDATED_NETWORK_TITLE,
+  VITE_OUTDATED_NETWORK_URL,
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
   VITE_POLYGON_ZK_EVM_EXPLORER_URL,
   VITE_POLYGON_ZK_EVM_NETWORK_ID,
@@ -39,7 +43,12 @@ const envToDomain = ({
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
   const useFiatExchangeRates = z.boolean().parse(VITE_USE_FIAT_EXCHANGE_RATES === "true");
-  const isNetworkOutdated = z.boolean().parse(VITE_IS_NETWORK_OUTDATED === "true");
+  const bridgeApiUrl = VITE_BRIDGE_API_URL;
+  const outdatedNetwork: domain.Env["outdatedNetwork"] = {
+    message: VITE_OUTDATED_NETWORK_MESSAGE || undefined,
+    title: VITE_OUTDATED_NETWORK_TITLE || undefined,
+    url: VITE_OUTDATED_NETWORK_URL || undefined,
+  };
 
   return getChains({
     ethereum: {
@@ -63,12 +72,12 @@ const envToDomain = ({
 
     if (!useFiatExchangeRates) {
       return {
-        bridgeApiUrl: VITE_BRIDGE_API_URL,
+        bridgeApiUrl,
         chains,
         fiatExchangeRates: {
           areEnabled: false,
         },
-        isNetworkOutdated,
+        outdatedNetwork,
       };
     }
 
@@ -85,7 +94,7 @@ const envToDomain = ({
     }
 
     return {
-      bridgeApiUrl: VITE_BRIDGE_API_URL,
+      bridgeApiUrl,
       chains,
       fiatExchangeRates: {
         apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
@@ -96,7 +105,7 @@ const envToDomain = ({
           chainId: ethereumChain.chainId,
         }),
       },
-      isNetworkOutdated,
+      outdatedNetwork,
     };
   });
 };
@@ -112,7 +121,9 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
-      VITE_IS_NETWORK_OUTDATED: z.string(),
+      VITE_OUTDATED_NETWORK_MESSAGE: z.string().optional(),
+      VITE_OUTDATED_NETWORK_TITLE: z.string().optional(),
+      VITE_OUTDATED_NETWORK_URL: z.string().optional(),
       VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),

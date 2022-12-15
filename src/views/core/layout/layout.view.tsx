@@ -19,7 +19,9 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (env) {
-      setShowNetworkOutdatedPopUp(env.isNetworkOutdated);
+      setShowNetworkOutdatedPopUp(
+        env.outdatedNetwork.title !== undefined && env.outdatedNetwork.message !== undefined
+      );
     }
   }, [env]);
 
@@ -35,19 +37,24 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
           onReport={onReportFromSnackbar}
         />
       )}
-      {showNetworkOutdatedPopUp && (
+      {showNetworkOutdatedPopUp && env && env.outdatedNetwork.title && env.outdatedNetwork.message && (
         <ConfirmPopUp
           message={
-            <Typography type="body2">
-              In the coming days, a new zkEVM Testnet (Pomegranate) will be released to the public,
-              and this version (Litchi) will be outdated. We will update this message with the link
-              to the newest version when it&apos;s deployed.
-            </Typography>
+            <div>
+              <Typography type="body2">{env.outdatedNetwork.message}</Typography>
+              {env.outdatedNetwork.url && (
+                <Typography className={classes.linkContainer} type="body2">
+                  <a className={classes.link} href={env.outdatedNetwork.url}>
+                    {env.outdatedNetwork.url}
+                  </a>
+                </Typography>
+              )}
+            </div>
           }
           onClose={() => setShowNetworkOutdatedPopUp(false)}
           onConfirm={() => setShowNetworkOutdatedPopUp(false)}
           showCancelButton={false}
-          title="A new zkEVM Testnet is on its way!"
+          title={env.outdatedNetwork.title}
         />
       )}
     </>
