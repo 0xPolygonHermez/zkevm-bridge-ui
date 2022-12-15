@@ -23,6 +23,27 @@ interface Env {
   VITE_USE_FIAT_EXCHANGE_RATES: string;
 }
 
+const stringBooleanParser = StrictSchema<string, boolean>()(
+  z.string().transform((value, context) => {
+    switch (value) {
+      case "true": {
+        return true;
+      }
+      case "false": {
+        return false;
+      }
+      default: {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          fatal: true,
+          message: "The provided string input can't be parsed as a boolean",
+        });
+        return z.NEVER;
+      }
+    }
+  })
+);
+
 const envToDomain = ({
   VITE_BRIDGE_API_URL,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
@@ -42,7 +63,7 @@ const envToDomain = ({
   VITE_USE_FIAT_EXCHANGE_RATES,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
-  const useFiatExchangeRates = z.boolean().parse(VITE_USE_FIAT_EXCHANGE_RATES === "true");
+  const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
   const outdatedNetwork: domain.Env["outdatedNetwork"] = {
     message: VITE_OUTDATED_NETWORK_MESSAGE || undefined,
