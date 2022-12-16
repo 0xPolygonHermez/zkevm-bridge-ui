@@ -18,6 +18,12 @@ const useLayoutStyles = createUseStyles((theme: Theme) => ({
     minHeight: "100vh",
     width: "100%",
   },
+  link: {
+    color: theme.palette.primary.dark,
+  },
+  linkContainer: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 export default useLayoutStyles;

@@ -65,6 +65,11 @@ export interface Env {
         areEnabled: true;
         usdcToken: Token;
       };
+  outdatedNetwork: {
+    message?: string;
+    title?: string;
+    url?: string;
+  };
 }
 
 export interface RouterState {
