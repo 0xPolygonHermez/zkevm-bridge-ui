@@ -66,9 +66,9 @@ const envToDomain = ({
   const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
   const outdatedNetwork: domain.Env["outdatedNetwork"] = {
-    message: VITE_OUTDATED_NETWORK_MESSAGE || undefined,
-    title: VITE_OUTDATED_NETWORK_TITLE || undefined,
-    url: VITE_OUTDATED_NETWORK_URL || undefined,
+    message: VITE_OUTDATED_NETWORK_MESSAGE,
+    title: VITE_OUTDATED_NETWORK_TITLE,
+    url: VITE_OUTDATED_NETWORK_URL,
   };
 
   return getChains({
