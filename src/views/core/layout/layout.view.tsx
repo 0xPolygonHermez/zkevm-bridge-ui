@@ -19,9 +19,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (env) {
-      setShowNetworkOutdatedPopUp(
-        env.outdatedNetwork.title !== undefined && env.outdatedNetwork.message !== undefined
-      );
+      setShowNetworkOutdatedPopUp(env.outdatedNetwork.message !== undefined);
     }
   }, [env]);
 
@@ -37,7 +35,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
           onReport={onReportFromSnackbar}
         />
       )}
-      {showNetworkOutdatedPopUp && env && env.outdatedNetwork.title && env.outdatedNetwork.message && (
+      {showNetworkOutdatedPopUp && env && env.outdatedNetwork.message && (
         <ConfirmPopUp
           message={
             <div>

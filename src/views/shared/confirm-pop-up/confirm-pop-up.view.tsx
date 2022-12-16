@@ -10,7 +10,7 @@ interface ConfirmPopUpProps {
   onClose: () => void;
   onConfirm: () => void;
   showCancelButton?: boolean;
-  title: string;
+  title?: string;
 }
 
 const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
@@ -33,7 +33,7 @@ const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
           <div className={classes.text}>
-            <Typography type="body1">{title}</Typography>
+            {title && <Typography type="body1">{title}</Typography>}
             {message}
           </div>
           <div className={classes.buttonsBox}>
