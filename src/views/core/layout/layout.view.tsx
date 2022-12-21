@@ -39,9 +39,15 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
         <ConfirmPopUp
           message={
             <div>
-              <Typography type="body2">{env.outdatedNetworkModal.messageParagraph1}</Typography>
-              <br />
-              <Typography type="body2">{env.outdatedNetworkModal.messageParagraph2}</Typography>
+              {env.outdatedNetworkModal.messageParagraph1 && (
+                <Typography type="body2">{env.outdatedNetworkModal.messageParagraph1}</Typography>
+              )}
+              {env.outdatedNetworkModal.messageParagraph2 && (
+                <>
+                  <br />
+                  <Typography type="body2">{env.outdatedNetworkModal.messageParagraph2}</Typography>
+                </>
+              )}
               {env.outdatedNetworkModal.url && (
                 <Typography className={classes.linkContainer} type="body2">
                   <a className={classes.link} href={env.outdatedNetworkModal.url}>
