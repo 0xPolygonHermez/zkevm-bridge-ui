@@ -19,7 +19,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (env) {
-      setShowNetworkOutdatedPopUp(env.outdatedNetwork.message !== undefined);
+      setShowNetworkOutdatedPopUp(env.outdatedNetworkModal.isEnabled);
     }
   }, [env]);
 
@@ -35,15 +35,23 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
           onReport={onReportFromSnackbar}
         />
       )}
-      {showNetworkOutdatedPopUp && env && env.outdatedNetwork.message && (
+      {env && showNetworkOutdatedPopUp && env.outdatedNetworkModal.isEnabled && (
         <ConfirmPopUp
           message={
             <div>
-              <Typography type="body2">{env.outdatedNetwork.message}</Typography>
-              {env.outdatedNetwork.url && (
+              {env.outdatedNetworkModal.messageParagraph1 && (
+                <Typography type="body2">{env.outdatedNetworkModal.messageParagraph1}</Typography>
+              )}
+              {env.outdatedNetworkModal.messageParagraph2 && (
+                <>
+                  <br />
+                  <Typography type="body2">{env.outdatedNetworkModal.messageParagraph2}</Typography>
+                </>
+              )}
+              {env.outdatedNetworkModal.url && (
                 <Typography className={classes.linkContainer} type="body2">
-                  <a className={classes.link} href={env.outdatedNetwork.url}>
-                    {env.outdatedNetwork.url}
+                  <a className={classes.link} href={env.outdatedNetworkModal.url}>
+                    {env.outdatedNetworkModal.url}
                   </a>
                 </Typography>
               )}
@@ -52,7 +60,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
           onClose={() => setShowNetworkOutdatedPopUp(false)}
           onConfirm={() => setShowNetworkOutdatedPopUp(false)}
           showCancelButton={false}
-          title={env.outdatedNetwork.title}
+          title={env.outdatedNetworkModal.title}
         />
       )}
     </>
