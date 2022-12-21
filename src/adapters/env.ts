@@ -13,13 +13,15 @@ interface Env {
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
-  VITE_OUTDATED_NETWORK_MESSAGE?: string;
-  VITE_OUTDATED_NETWORK_TITLE?: string;
-  VITE_OUTDATED_NETWORK_URL?: string;
+  VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1?: string;
+  VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2?: string;
+  VITE_OUTDATED_NETWORK_MODAL_TITLE?: string;
+  VITE_OUTDATED_NETWORK_MODAL_URL?: string;
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
   VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
   VITE_POLYGON_ZK_EVM_RPC_URL: string;
+  VITE_SHOW_OUTDATED_NETWORK_MODAL?: string;
   VITE_USE_FIAT_EXCHANGE_RATES: string;
 }
 
@@ -53,23 +55,32 @@ const envToDomain = ({
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
-  VITE_OUTDATED_NETWORK_MESSAGE,
-  VITE_OUTDATED_NETWORK_TITLE,
-  VITE_OUTDATED_NETWORK_URL,
+  VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1,
+  VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2,
+  VITE_OUTDATED_NETWORK_MODAL_TITLE,
+  VITE_OUTDATED_NETWORK_MODAL_URL,
   VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
   VITE_POLYGON_ZK_EVM_EXPLORER_URL,
   VITE_POLYGON_ZK_EVM_NETWORK_ID,
   VITE_POLYGON_ZK_EVM_RPC_URL,
+  VITE_SHOW_OUTDATED_NETWORK_MODAL,
   VITE_USE_FIAT_EXCHANGE_RATES,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
   const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
+  const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(VITE_SHOW_OUTDATED_NETWORK_MODAL);
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
-  const outdatedNetwork: domain.Env["outdatedNetwork"] = {
-    message: VITE_OUTDATED_NETWORK_MESSAGE,
-    title: VITE_OUTDATED_NETWORK_TITLE,
-    url: VITE_OUTDATED_NETWORK_URL,
-  };
+  const outdatedNetworkModal: domain.Env["outdatedNetworkModal"] = isOutdatedNetworkModalEnabled
+    ? {
+        isEnabled: true,
+        messageParagraph1: VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1,
+        messageParagraph2: VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2,
+        title: VITE_OUTDATED_NETWORK_MODAL_TITLE,
+        url: VITE_OUTDATED_NETWORK_MODAL_URL,
+      }
+    : {
+        isEnabled: false,
+      };
 
   return getChains({
     ethereum: {
@@ -98,7 +109,7 @@ const envToDomain = ({
         fiatExchangeRates: {
           areEnabled: false,
         },
-        outdatedNetwork,
+        outdatedNetworkModal,
       };
     }
 
@@ -126,7 +137,7 @@ const envToDomain = ({
           chainId: ethereumChain.chainId,
         }),
       },
-      outdatedNetwork,
+      outdatedNetworkModal,
     };
   });
 };
@@ -142,13 +153,15 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
-      VITE_OUTDATED_NETWORK_MESSAGE: z.string().optional(),
-      VITE_OUTDATED_NETWORK_TITLE: z.string().optional(),
-      VITE_OUTDATED_NETWORK_URL: z.string().optional(),
+      VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1: z.string().optional(),
+      VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2: z.string().optional(),
+      VITE_OUTDATED_NETWORK_MODAL_TITLE: z.string().optional(),
+      VITE_OUTDATED_NETWORK_MODAL_URL: z.string().optional(),
       VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),
       VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
+      VITE_SHOW_OUTDATED_NETWORK_MODAL: z.string().optional(),
       VITE_USE_FIAT_EXCHANGE_RATES: z.string(),
     })
     .transform(envToDomain)
