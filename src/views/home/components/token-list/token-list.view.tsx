@@ -82,56 +82,46 @@ const TokenList: FC<TokenListProps> = ({
     if (ethersUtils.isAddress(searchTerm) && newFilteredTokens.length === 0) {
       setCustomToken({ status: "loading" });
 
-      const setBalanceAndListCustomToken = (token: Token) => {
-        getTokenBalance(token, chains.from)
-          .then((balance) => {
-            callIfMounted(() => {
-              setCustomToken((currentCustomToken) =>
-                currentCustomToken.status === "pending"
-                  ? currentCustomToken
-                  : {
-                      data: { ...token, balance: { data: balance, status: "successful" } },
-                      status: "successful",
-                    }
-              );
-            });
-          })
-          .catch(() => {
-            callIfMounted(() => {
-              setCustomToken((currentCustomToken) =>
-                currentCustomToken.status === "pending"
-                  ? currentCustomToken
-                  : {
-                      data: {
-                        ...token,
-                        balance: { error: "Couldn't retrieve token balance", status: "failed" },
-                      },
-                      status: "successful",
-                    }
-              );
-            });
-          });
-      };
-
       void getTokenFromAddress({
         address: searchTerm,
-        chain: chains.from,
       })
-        .then(setBalanceAndListCustomToken)
-        .catch(() =>
-          getTokenFromAddress({
-            address: searchTerm,
-            chain: chains.to,
-          })
-            .then(setBalanceAndListCustomToken)
-            .catch(() =>
+        .then((token: Token) => {
+          getTokenBalance(token, chains.from)
+            .then((balance) => {
               callIfMounted(() => {
-                setCustomToken({
-                  error: "The token couldn't be found on any network.",
-                  status: "failed",
-                });
-              })
-            )
+                setCustomToken((currentCustomToken) =>
+                  currentCustomToken.status === "pending"
+                    ? currentCustomToken
+                    : {
+                        data: { ...token, balance: { data: balance, status: "successful" } },
+                        status: "successful",
+                      }
+                );
+              });
+            })
+            .catch(() => {
+              callIfMounted(() => {
+                setCustomToken((currentCustomToken) =>
+                  currentCustomToken.status === "pending"
+                    ? currentCustomToken
+                    : {
+                        data: {
+                          ...token,
+                          balance: { error: "Couldn't retrieve token balance", status: "failed" },
+                        },
+                        status: "successful",
+                      }
+                );
+              });
+            });
+        })
+        .catch(() =>
+          callIfMounted(() => {
+            setCustomToken({
+              error: "The token couldn't be found on the selected network.",
+              status: "failed",
+            });
+          })
         );
     }
   };

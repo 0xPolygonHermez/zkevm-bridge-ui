@@ -32,8 +32,8 @@ interface ComputeWrappedTokenAddressParams {
 }
 
 interface GetNativeTokenInfoParams {
+  address: string;
   chain: Chain;
-  token: Token;
 }
 
 interface AddWrappedTokenParams {
@@ -42,7 +42,6 @@ interface AddWrappedTokenParams {
 
 interface GetTokenFromAddressParams {
   address: string;
-  chain: Chain;
 }
 
 interface GetTokenParams {
@@ -118,21 +117,21 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   /**
-   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
+   * Provided an address, when it belongs to a wrapped token, returns the native token's networkId and address and throws otherwise
    */
   const getNativeTokenInfo = useCallback(
     ({
+      address,
       chain,
-      token,
     }: GetNativeTokenInfoParams): Promise<{
       originNetwork: number;
       originTokenAddress: string;
     }> => {
       const bridgeContract = Bridge__factory.connect(chain.bridgeContractAddress, chain.provider);
 
-      return bridgeContract.wrappedTokenToTokenInfo(token.address).then((tokenInfo) => {
+      return bridgeContract.wrappedTokenToTokenInfo(address).then((tokenInfo) => {
         if (tokenInfo.originTokenAddress === ethersConstants.AddressZero) {
-          throw new Error(`Can not find a native token for ${token.name}`);
+          throw new Error(`Can not find a native token for the address "${address}"`);
         }
         return tokenInfo;
       });
@@ -142,6 +141,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
 
   /**
    * Provided a token, if its property wrappedToken is missing, adds it and returns the new token
+   * Important: It's assumed that the token is native to the chain declared in token.chainId
    */
   const addWrappedToken = useCallback(
     ({ token }: AddWrappedTokenParams): Promise<Token> => {
@@ -158,78 +158,90 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         const wrappedChain =
           nativeChain.chainId === ethereumChain.chainId ? polygonZkEVMChain : ethereumChain;
 
-        // first we check if the provided address belongs to a wrapped token
-        return getNativeTokenInfo({ chain: nativeChain, token })
-          .then(({ originNetwork, originTokenAddress }) => {
-            // if this is the case we use originTokenAddress as native and token.address as wrapped
-            const originalTokenChain = env?.chains.find(
-              (chain) => chain.networkId === originNetwork
-            );
-            if (originalTokenChain === undefined) {
-              throw Error(`Could not find a chain that matched the originNetwork ${originNetwork}`);
-            } else {
-              const newToken: Token = {
-                ...token,
-                address: originTokenAddress,
-                chainId: originalTokenChain.chainId,
-                wrappedToken: {
-                  address: token.address,
-                  chainId: nativeChain.chainId,
-                },
-              };
-              return newToken;
-            }
+        return computeWrappedTokenAddress({
+          nativeChain,
+          otherChain: wrappedChain,
+          token,
+        })
+          .then((wrappedAddress) => {
+            const newToken: Token = {
+              ...token,
+              wrappedToken: {
+                address: wrappedAddress,
+                chainId: wrappedChain.chainId,
+              },
+            };
+            return newToken;
           })
-          .catch(() => {
-            // if the provided address is native we compute the wrapped address
-            return computeWrappedTokenAddress({
-              nativeChain,
-              otherChain: wrappedChain,
-              token,
-            })
-              .then((wrappedAddress) => {
-                const newToken: Token = {
-                  ...token,
-                  wrappedToken: {
-                    address: wrappedAddress,
-                    chainId: wrappedChain.chainId,
-                  },
-                };
-                return newToken;
-              })
-              .catch((e) => {
-                notifyError(e);
-                return Promise.resolve(token);
-              });
+          .catch((e) => {
+            notifyError(e);
+            return Promise.resolve(token);
           });
       }
     },
-    [env, getNativeTokenInfo, computeWrappedTokenAddress, notifyError]
+    [env, computeWrappedTokenAddress, notifyError]
   );
 
   const getTokenFromAddress = useCallback(
-    async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
-      const erc20Contract = Erc20__factory.connect(address, chain.provider);
+    async ({ address }: GetTokenFromAddressParams): Promise<Token> => {
+      if (!env) {
+        throw Error("The env is not ready");
+      }
+
+      if (!isAsyncTaskDataAvailable(connectedProvider)) {
+        throw Error("The connectedProvider is not ready");
+      }
+
+      const chain = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
+      if (!chain) {
+        throw Error("No chain has been found for the selected network");
+      }
+
+      const erc20Contract = Erc20__factory.connect(address, connectedProvider.data.provider);
       const name = await erc20Contract.name();
       const decimals = await erc20Contract.decimals();
       const symbol = await erc20Contract.symbol();
-      const chainId = chain.chainId;
       const trustWalletLogoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
       const logoURI = await axios
         .head(trustWalletLogoUrl)
         .then(() => trustWalletLogoUrl)
         .catch(() => tokenIconDefaultUrl);
-      const token: Token = {
-        address,
-        chainId,
-        decimals,
-        logoURI,
-        name,
-        symbol,
-      };
-      return addWrappedToken({ token });
+
+      return getNativeTokenInfo({ address, chain })
+        .then(({ originNetwork, originTokenAddress }) => {
+          // the provided address belongs to a wrapped token
+          const originalTokenChain = env.chains.find((chain) => chain.networkId === originNetwork);
+          if (!originalTokenChain) {
+            throw Error(`Could not find a chain that matched the originNetwork ${originNetwork}`);
+          }
+          return {
+            address: originTokenAddress,
+            chainId: originalTokenChain.chainId,
+            decimals,
+            logoURI,
+            name,
+            symbol,
+            wrappedToken: {
+              address,
+              chainId: chain.chainId,
+            },
+          };
+        })
+        .catch(() => {
+          // the provided address belongs to a native token
+          return addWrappedToken({
+            token: {
+              address,
+              chainId: chain.chainId,
+              decimals,
+              logoURI,
+              name,
+              symbol,
+            },
+          });
+        });
     },
-    [addWrappedToken]
+    [addWrappedToken, connectedProvider, env, getNativeTokenInfo]
   );
 
   const getToken = useCallback(
@@ -246,7 +258,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         const chain = env.chains.find((chain) => chain.networkId === originNetwork);
 
         if (chain) {
-          return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
+          return await getTokenFromAddress({ address: tokenAddress }).catch(() => {
             throw new Error(
               `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
             );
