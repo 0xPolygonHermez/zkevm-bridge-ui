@@ -23,7 +23,9 @@ export function cleanupCustomTokens(envTokens: Token[]): Token[] {
   return setCustomTokens(
     getCustomTokens().reduce(
       (acc: Token[], curr: Token) =>
-        envTokens.find((token) => token.address === curr.address) === undefined
+        envTokens.find(
+          (token) => token.address === curr.address && token.chainId === curr.chainId
+        ) === undefined
           ? [...acc, curr]
           : acc,
       []
@@ -37,6 +39,16 @@ export function getCustomTokens(): Token[] {
     key: constants.CUSTOM_TOKENS_KEY,
     parser: z.array(tokenParser),
   });
+}
+
+export function getChainNativeCustomTokens(chain: Chain): Token[] {
+  return getCustomTokens().filter((token) => token.chainId === chain.chainId);
+}
+
+export function isChainNativeCustomToken(token: Token, chain: Chain): boolean {
+  return (
+    getChainNativeCustomTokens(chain).find((tkn) => tkn.address === token.address) !== undefined
+  );
 }
 
 export function getChainCustomTokens(chain: Chain): Token[] {
@@ -60,7 +72,9 @@ export function setCustomTokens(tokens: Token[]): Token[] {
 
 export function addCustomToken(token: Token): Token[] {
   const customTokens = getCustomTokens();
-  const isAlreadyAdded = customTokens.find((tkn) => tkn.address === token.address);
+  const isAlreadyAdded = customTokens.find(
+    (tkn) => tkn.address === token.address && tkn.chainId === token.chainId
+  );
 
   if (isAlreadyAdded) {
     return customTokens;
@@ -70,7 +84,11 @@ export function addCustomToken(token: Token): Token[] {
 }
 
 export function removeCustomToken(token: Token): Token[] {
-  return setCustomTokens(getCustomTokens().filter((tkn) => tkn.address !== token.address));
+  return setCustomTokens(
+    getCustomTokens().filter(
+      (tkn) => !(tkn.address === token.address && tkn.chainId === token.chainId)
+    )
+  );
 }
 
 // Pending txs

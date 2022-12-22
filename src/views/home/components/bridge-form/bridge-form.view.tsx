@@ -105,7 +105,12 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const onRemoveToken = (tokenToRemove: Token) => {
     if (tokens) {
       removeCustomToken(tokenToRemove);
-      setTokens(tokens.filter((token) => token.address !== tokenToRemove.address));
+      setTokens(
+        tokens.filter(
+          (token) =>
+            !(token.address === tokenToRemove.address && token.chainId === tokenToRemove.chainId)
+        )
+      );
       if (selectedChains && tokenToRemove.address === token?.address) {
         setToken(getEtherToken(selectedChains.from));
       }
@@ -163,7 +168,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
     if (selectedChains && tokens && areTokensPending) {
       const getUpdatedTokens = (tokens: Token[] | undefined, updatedToken: Token) =>
         tokens
-          ? tokens.map((tkn) => (tkn.address === updatedToken.address ? updatedToken : tkn))
+          ? tokens.map((tkn) =>
+              tkn.address === updatedToken.address && tkn.chainId === updatedToken.chainId
+                ? updatedToken
+                : tkn
+            )
           : undefined;
 
       setTokens(() =>
@@ -259,7 +268,14 @@ const BridgeForm: FC<BridgeFormProps> = ({
     }
   }, [formData, onResetForm]);
 
-  if (!env || !selectedChains || !tokens || !token || !maxEtherBridge) {
+  if (
+    !env ||
+    !selectedChains ||
+    !tokens ||
+    !token ||
+    !maxEtherBridge ||
+    !isAsyncTaskDataAvailable(connectedProvider)
+  ) {
     return (
       <div className={classes.spinner}>
         <Spinner />
@@ -351,6 +367,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
         <TokenSelector
           account={account}
           chains={selectedChains}
+          connectedProvider={connectedProvider.data}
           onAddToken={onAddToken}
           onClose={onCloseTokenSelector}
           onRemoveToken={onRemoveToken}

@@ -1,12 +1,13 @@
 import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
-import { isChainCustomToken } from "src/adapters/storage";
+import { isChainNativeCustomToken } from "src/adapters/storage";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
+import { useEnvContext } from "src/contexts/env.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { Chain, Token } from "src/domain";
+import { Chain, ConnectedProvider, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask } from "src/utils/types";
@@ -25,6 +26,7 @@ interface SelectedChains {
 interface TokenListProps {
   account: string;
   chains: SelectedChains;
+  connectedProvider: ConnectedProvider;
   onClose: () => void;
   onNavigateToTokenAdder: (token: Token) => void;
   onNavigateToTokenInfo: (token: Token) => void;
@@ -35,6 +37,7 @@ interface TokenListProps {
 const TokenList: FC<TokenListProps> = ({
   account,
   chains,
+  connectedProvider,
   onClose,
   onNavigateToTokenAdder,
   onNavigateToTokenInfo,
@@ -44,6 +47,7 @@ const TokenList: FC<TokenListProps> = ({
   const classes = useTokenListStyles();
   const callIfMounted = useCallIfMounted();
   const { getErc20TokenBalance, getTokenFromAddress } = useTokensContext();
+  const env = useEnvContext();
   const [searchInputValue, setSearchInputValue] = useState<string>("");
   const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
   const [customToken, setCustomToken] = useState<AsyncTask<Token, string>>({
@@ -66,24 +70,43 @@ const TokenList: FC<TokenListProps> = ({
     [account, getErc20TokenBalance]
   );
 
-  const getTokenFilterByTerm = (term: string) => (token: Token) =>
+  const getTokenFilterByTerm = (selectedChainId: number, term: string) => (token: Token) =>
     term.length === 0 ||
-    token.address.toLowerCase().includes(term.toLowerCase()) ||
-    (token.wrappedToken && token.wrappedToken.address.toLowerCase().includes(term.toLowerCase())) ||
+    (token.address.toLowerCase().includes(term.toLowerCase()) &&
+      token.chainId === selectedChainId) ||
+    (token.wrappedToken &&
+      token.wrappedToken.address.toLowerCase().includes(term.toLowerCase()) &&
+      token.wrappedToken.chainId === selectedChainId) ||
     token.name.toLowerCase().includes(term.toLowerCase()) ||
     token.symbol.toLowerCase().includes(term.toLowerCase());
 
   const updateTokenList = (tokensWithBalance: Token[], searchTerm: string) => {
-    const newFilteredTokens = tokensWithBalance.filter(getTokenFilterByTerm(searchTerm));
+    const newFilteredTokens = tokensWithBalance.filter(
+      getTokenFilterByTerm(connectedProvider.chainId, searchTerm)
+    );
 
     setFilteredTokens(newFilteredTokens);
     setCustomToken({ status: "pending" });
 
     if (ethersUtils.isAddress(searchTerm) && newFilteredTokens.length === 0) {
+      const notFoundTokenFailedAsyncTask: AsyncTask<Token, string> = {
+        error: "The token couldn't be found on the selected network.",
+        status: "failed",
+      };
+
       setCustomToken({ status: "loading" });
+
+      const chain: Chain | undefined = env?.chains.find(
+        (chain: Chain) => chain.chainId === connectedProvider.chainId
+      );
+
+      if (!chain) {
+        return setCustomToken(notFoundTokenFailedAsyncTask);
+      }
 
       void getTokenFromAddress({
         address: searchTerm,
+        chain,
       })
         .then((token: Token) => {
           getTokenBalance(token, chains.from)
@@ -117,10 +140,7 @@ const TokenList: FC<TokenListProps> = ({
         })
         .catch(() =>
           callIfMounted(() => {
-            setCustomToken({
-              error: "The token couldn't be found on the selected network.",
-              status: "failed",
-            });
+            setCustomToken(notFoundTokenFailedAsyncTask);
           })
         );
     }
@@ -189,7 +209,7 @@ const TokenList: FC<TokenListProps> = ({
           </Typography>
         ) : (
           filteredTokens.map((token) => {
-            const isImportedCustomToken = isChainCustomToken(token, chains.from);
+            const isImportedCustomToken = isChainNativeCustomToken(token, chains.from);
             const isNonImportedCustomToken =
               !isImportedCustomToken &&
               customToken.status === "successful" &&
@@ -197,7 +217,10 @@ const TokenList: FC<TokenListProps> = ({
 
             if (isNonImportedCustomToken) {
               return (
-                <div className={classes.tokenButtonWrapper} key={token.address}>
+                <div
+                  className={classes.tokenButtonWrapper}
+                  key={`${token.chainId}-${token.address}`}
+                >
                   <button
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}
@@ -218,7 +241,10 @@ const TokenList: FC<TokenListProps> = ({
               );
             } else {
               return (
-                <div className={classes.tokenButtonWrapper} key={token.address}>
+                <div
+                  className={classes.tokenButtonWrapper}
+                  key={`${token.chainId}-${token.address}`}
+                >
                   <button
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}

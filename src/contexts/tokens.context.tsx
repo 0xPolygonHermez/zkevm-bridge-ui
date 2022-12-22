@@ -42,6 +42,7 @@ interface AddWrappedTokenParams {
 
 interface GetTokenFromAddressParams {
   address: string;
+  chain: Chain;
 }
 
 interface GetTokenParams {
@@ -97,12 +98,11 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const computeWrappedTokenAddress = useCallback(
     async ({
       nativeChain,
-      otherChain,
       token,
     }: ComputeWrappedTokenAddressParams): Promise<string> => {
       const bridgeContract = Bridge__factory.connect(
-        otherChain.bridgeContractAddress,
-        otherChain.provider
+        nativeChain.bridgeContractAddress,
+        nativeChain.provider
       );
 
       return bridgeContract.precalculatedWrapperAddress(
@@ -183,21 +183,12 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const getTokenFromAddress = useCallback(
-    async ({ address }: GetTokenFromAddressParams): Promise<Token> => {
+    async ({ address, chain }: GetTokenFromAddressParams): Promise<Token> => {
       if (!env) {
         throw Error("The env is not ready");
       }
 
-      if (!isAsyncTaskDataAvailable(connectedProvider)) {
-        throw Error("The connectedProvider is not ready");
-      }
-
-      const chain = env.chains.find((chain) => chain.chainId === connectedProvider.data.chainId);
-      if (!chain) {
-        throw Error("No chain has been found for the selected network");
-      }
-
-      const erc20Contract = Erc20__factory.connect(address, connectedProvider.data.provider);
+      const erc20Contract = Erc20__factory.connect(address, chain.provider);
       const name = await erc20Contract.name();
       const decimals = await erc20Contract.decimals();
       const symbol = await erc20Contract.symbol();
@@ -241,7 +232,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
           });
         });
     },
-    [addWrappedToken, connectedProvider, env, getNativeTokenInfo]
+    [addWrappedToken, env, getNativeTokenInfo]
   );
 
   const getToken = useCallback(
@@ -258,7 +249,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
         const chain = env.chains.find((chain) => chain.networkId === originNetwork);
 
         if (chain) {
-          return await getTokenFromAddress({ address: tokenAddress }).catch(() => {
+          return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
             throw new Error(
               `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
             );
