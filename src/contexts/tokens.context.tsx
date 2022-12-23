@@ -113,7 +113,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   /**
-   * Provided an address, when it belongs to a wrapped token, returns the native token's networkId and address and throws otherwise
+   * Provided a token and a chain, when the token is wrapped, returns the native token's networkId and address and throws otherwise
    */
   const getNativeTokenInfo = useCallback(
     ({
