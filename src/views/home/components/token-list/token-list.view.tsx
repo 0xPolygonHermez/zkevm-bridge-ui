@@ -1,4 +1,4 @@
-import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
+import { BigNumber, utils as ethersUtils } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { isChainNativeCustomToken } from "src/adapters/storage";
@@ -9,7 +9,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Chain, ConnectedProvider, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask } from "src/utils/types";
 import useTokenListStyles from "src/views/home/components/token-list/token-list.styles";
 import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
@@ -57,7 +57,7 @@ const TokenList: FC<TokenListProps> = ({
 
   const getTokenBalance = useCallback(
     (token: Token, chain: Chain): Promise<BigNumber> => {
-      if (token.address === ethersConstants.AddressZero) {
+      if (isTokenEther(token)) {
         return chain.provider.getBalance(account);
       } else {
         return getErc20TokenBalance({

@@ -1,4 +1,4 @@
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber } from "ethers";
 import { FC, useCallback, useEffect, useState } from "react";
 
 import { addCustomToken, getChainCustomTokens, removeCustomToken } from "src/adapters/storage";
@@ -10,7 +10,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Chain, FormData, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
@@ -131,9 +131,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
 
   const getTokenBalance = useCallback(
     (token: Token, chain: Chain): Promise<BigNumber> => {
-      if (token.address === ethersConstants.AddressZero) {
+      if (isTokenEther(token)) {
         return chain.provider.getBalance(account);
       } else {
+        // eslint-disable-next-line no-console
+        console.log(selectTokenAddress(token, chain));
         return getErc20TokenBalance({
           accountAddress: account,
           chain: chain,

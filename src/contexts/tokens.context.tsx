@@ -46,10 +46,9 @@ interface GetTokenFromAddressParams {
 }
 
 interface GetTokenParams {
-  chain: Chain;
   env: Env;
   originNetwork: number;
-  tokenAddress: string;
+  tokenOriginAddress: string;
 }
 
 interface GetErc20TokenBalanceParams {
@@ -233,29 +232,29 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   );
 
   const getToken = useCallback(
-    async ({ chain, env, originNetwork, tokenAddress }: GetTokenParams): Promise<Token> => {
+    async ({ env, originNetwork, tokenOriginAddress }: GetTokenParams): Promise<Token> => {
+      const chain = env.chains.find((chain) => chain.networkId === originNetwork);
+      if (!chain) {
+        throw new Error(
+          `The chain with the originNetwork "${originNetwork}" could not be found in the list of supported Chains`
+        );
+      }
       const token = [...getCustomTokens(), ...(tokens || [getEtherToken(chain)])].find(
         (token) =>
-          token.address === tokenAddress ||
-          (token.wrappedToken && token.wrappedToken.address === tokenAddress)
+          (token.address === tokenOriginAddress && token.chainId === chain.chainId) ||
+          (token.wrappedToken &&
+            token.wrappedToken.address === tokenOriginAddress &&
+            token.wrappedToken.chainId === chain.chainId)
       );
 
       if (token) {
         return token;
       } else {
-        const chain = env.chains.find((chain) => chain.networkId === originNetwork);
-
-        if (chain) {
-          return await getTokenFromAddress({ address: tokenAddress, chain }).catch(() => {
-            throw new Error(
-              `The token with the address "${tokenAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
-            );
-          });
-        } else {
+        return getTokenFromAddress({ address: tokenOriginAddress, chain }).catch(() => {
           throw new Error(
-            `The token with the address "${tokenAddress}" could not be found in the list of supported Tokens and the provided network id "${originNetwork}" is not supported`
+            `The token with the address "${tokenOriginAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
           );
-        }
+        });
       }
     },
     [tokens, getTokenFromAddress]
@@ -280,7 +279,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       }
 
       const executeApprove = async () =>
-        ethereum.approve({ amount, owner, provider, spender, token });
+        ethereum.approve({ amount, from, owner, provider, spender, token });
 
       if (from.chainId === connectedProvider.data.chainId) {
         return executeApprove();

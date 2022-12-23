@@ -1,9 +1,4 @@
-import {
-  BigNumber,
-  CallOverrides,
-  ContractTransaction,
-  constants as ethersConstants,
-} from "ethers";
+import { BigNumber, CallOverrides, ContractTransaction } from "ethers";
 import { FC, PropsWithChildren, createContext, useCallback, useContext, useMemo } from "react";
 
 import { getDeposit, getDeposits, getMerkleProof } from "src/adapters/bridge-api";
@@ -40,7 +35,7 @@ import {
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { multiplyAmounts } from "src/utils/amounts";
 import { serializeBridgeId } from "src/utils/serializers";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface GetMaxEtherBridgeParams {
@@ -200,10 +195,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       }
 
       const token = await getToken({
-        chain: from,
         env,
         originNetwork: orig_net,
-        tokenAddress: orig_addr,
+        tokenOriginAddress: orig_addr,
       });
 
       const claim: Deposit["claim"] =
@@ -341,10 +335,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           }
 
           const token = await getToken({
-            chain: from,
             env,
             originNetwork: orig_net,
-            tokenAddress: orig_addr,
+            tokenOriginAddress: orig_addr,
           });
 
           return {
@@ -683,22 +676,16 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
     }: EstimateBridgeGasParams): Promise<Gas> => {
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
       const amount = BigNumber.from(0);
-      const overrides: CallOverrides =
-        token.address === ethersConstants.AddressZero
-          ? { from: destinationAddress, value: amount }
-          : { from: destinationAddress };
+      const overrides: CallOverrides = isTokenEther(token)
+        ? { from: destinationAddress, value: amount }
+        : { from: destinationAddress };
+
+      const tokenAddress = selectTokenAddress(token, from);
 
       const gasLimit =
         from.key === "ethereum"
           ? await contract.estimateGas
-              .bridgeAsset(
-                selectTokenAddress(token, from),
-                to.networkId,
-                destinationAddress,
-                amount,
-                "0x",
-                overrides
-              )
+              .bridgeAsset(tokenAddress, to.networkId, destinationAddress, amount, "0x", overrides)
               .then((gasLimit) => {
                 const gasLimitIncrease = gasLimit
                   .div(BigNumber.from(100))
@@ -755,7 +742,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const { account, chainId, provider } = connectedProvider.data;
       const contract = Bridge__factory.connect(from.bridgeContractAddress, provider.getSigner());
       const overrides: CallOverrides = {
-        value: token.address === ethersConstants.AddressZero ? amount : undefined,
+        value: isTokenEther(token) ? amount : undefined,
         ...(gas
           ? gas.data
           : (await estimateBridgeGas({ destinationAddress, from, to, token, tokenSpendPermission }))
@@ -767,6 +754,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           tokenSpendPermission.type === "permit"
             ? await permit({
                 account: account,
+                from: from,
                 permit: tokenSpendPermission.permit,
                 provider: provider,
                 spender: from.bridgeContractAddress,
@@ -777,7 +765,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
         return contract
           .bridgeAsset(
-            token.address,
+            selectTokenAddress(token, from),
             to.networkId,
             destinationAddress,
             amount,
@@ -845,9 +833,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         networkId,
       });
 
-      const isEtherToken = token.address === ethersConstants.AddressZero;
       const isTokenNativeOfToChain = token.chainId === to.chainId;
-      const isMetadataRequired = !isEtherToken && !isTokenNativeOfToChain;
+      const isMetadataRequired = !isTokenEther(token) && !isTokenNativeOfToChain;
       const metadata = isMetadataRequired
         ? await getErc20TokenEncodedMetadata({ chain: from, token })
         : "0x";
