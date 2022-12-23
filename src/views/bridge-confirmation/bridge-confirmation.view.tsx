@@ -15,7 +15,7 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { Gas, TokenSpendPermission } from "src/domain";
+import { Gas, Permit, TokenSpendPermission } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import routes from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
@@ -203,7 +203,13 @@ const BridgeConfirmation: FC = () => {
                 })
                   .then((permit) => {
                     callIfMounted(() => {
-                      setTokenSpendPermission({ permit, type: "permit" });
+                      // ToDo: DAI permit is not supported by the contract until this PR is merged and deployed:
+                      // https://github.com/0xPolygonHermez/zkevm-contracts/pull/68
+                      if (permit === Permit.DAI) {
+                        setTokenSpendPermission({ type: "approval" });
+                      } else {
+                        setTokenSpendPermission({ permit, type: "permit" });
+                      }
                     });
                   })
                   .catch(() => {

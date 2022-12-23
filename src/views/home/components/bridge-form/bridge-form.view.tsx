@@ -134,6 +134,8 @@ const BridgeForm: FC<BridgeFormProps> = ({
       if (isTokenEther(token)) {
         return chain.provider.getBalance(account);
       } else {
+        // eslint-disable-next-line no-console
+        console.log(selectTokenAddress(token, chain));
         return getErc20TokenBalance({
           accountAddress: account,
           chain: chain,
