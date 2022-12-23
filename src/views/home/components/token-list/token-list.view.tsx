@@ -66,19 +66,18 @@ const TokenList: FC<TokenListProps> = ({
     [account, getErc20TokenBalance]
   );
 
-  const getTokenFilterByTerm = (selectedChainId: number, term: string) => (token: Token) =>
+  const getTokenFilterByTerm = (chain: Chain, term: string) => (token: Token) =>
     term.length === 0 ||
-    (token.address.toLowerCase().includes(term.toLowerCase()) &&
-      token.chainId === selectedChainId) ||
+    (token.address.toLowerCase().includes(term.toLowerCase()) && token.chainId === chain.chainId) ||
     (token.wrappedToken &&
       token.wrappedToken.address.toLowerCase().includes(term.toLowerCase()) &&
-      token.wrappedToken.chainId === selectedChainId) ||
+      token.wrappedToken.chainId === chain.chainId) ||
     token.name.toLowerCase().includes(term.toLowerCase()) ||
     token.symbol.toLowerCase().includes(term.toLowerCase());
 
   const updateTokenList = (tokensWithBalance: Token[], searchTerm: string) => {
     const newFilteredTokens = tokensWithBalance.filter(
-      getTokenFilterByTerm(chains.from.chainId, searchTerm)
+      getTokenFilterByTerm(chains.from, searchTerm)
     );
 
     setFilteredTokens(newFilteredTokens);
