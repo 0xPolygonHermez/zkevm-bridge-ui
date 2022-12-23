@@ -24,7 +24,7 @@
     "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
   },
   {
-    "name": "Polygon",
+    "name": "Matic Token",
     "address": "0x4701Aa9471d7bfAc765D87dcb1Ea6BB23AD32733",
     "chainId": 5,
     "symbol": "MATIC",
