@@ -1,6 +1,6 @@
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { defaultAbiCoder, splitSignature } from "ethers/lib/utils";
 import { z } from "zod";
 
@@ -200,11 +200,16 @@ const permit = async ({
       const signature = await signer._signTypedData(domain, types, values);
       const { r, s, v } = splitSignature(signature);
 
-      return erc20Contract.interface.encodeFunctionData("permit", [
+      const ifacePermitDAI = new ethersUtils.Interface([
+        "function permit(address,address,uint256,uint256,bool,uint8,bytes32,bytes32)",
+      ]);
+
+      return ifacePermitDAI.encodeFunctionData("permit", [
         account,
         spender,
+        nonce,
         MaxUint256,
-        1,
+        true,
         v,
         r,
         s,
