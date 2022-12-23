@@ -852,7 +852,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress,
             amount,
             metadata,
-            isL2Claim ? { gasLimit: 500000, gasPrice: 0 } : {}
+            isL2Claim ? { gasLimit: 1500000, gasPrice: 0 } : {}
           )
           .then((txData) => {
             storage.addAccountPendingTx(account, env, {
