@@ -96,13 +96,10 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
    * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
    */
   const computeWrappedTokenAddress = useCallback(
-    async ({
-      nativeChain,
-      token,
-    }: ComputeWrappedTokenAddressParams): Promise<string> => {
+    ({ nativeChain, otherChain, token }: ComputeWrappedTokenAddressParams): Promise<string> => {
       const bridgeContract = Bridge__factory.connect(
-        nativeChain.bridgeContractAddress,
-        nativeChain.provider
+        otherChain.bridgeContractAddress,
+        otherChain.provider
       );
 
       return bridgeContract.precalculatedWrapperAddress(
