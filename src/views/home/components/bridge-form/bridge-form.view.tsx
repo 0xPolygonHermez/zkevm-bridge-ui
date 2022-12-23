@@ -367,7 +367,6 @@ const BridgeForm: FC<BridgeFormProps> = ({
         <TokenSelector
           account={account}
           chains={selectedChains}
-          connectedProvider={connectedProvider.data}
           onAddToken={onAddToken}
           onClose={onCloseTokenSelector}
           onRemoveToken={onRemoveToken}

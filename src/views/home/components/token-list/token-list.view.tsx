@@ -6,7 +6,7 @@ import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { Chain, ConnectedProvider, Token } from "src/domain";
+import { Chain, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask } from "src/utils/types";
@@ -25,7 +25,6 @@ interface SelectedChains {
 interface TokenListProps {
   account: string;
   chains: SelectedChains;
-  connectedProvider: ConnectedProvider;
   onClose: () => void;
   onNavigateToTokenAdder: (token: Token) => void;
   onNavigateToTokenInfo: (token: Token) => void;
@@ -36,7 +35,6 @@ interface TokenListProps {
 const TokenList: FC<TokenListProps> = ({
   account,
   chains,
-  connectedProvider,
   onClose,
   onNavigateToTokenAdder,
   onNavigateToTokenInfo,
@@ -80,7 +78,7 @@ const TokenList: FC<TokenListProps> = ({
 
   const updateTokenList = (tokensWithBalance: Token[], searchTerm: string) => {
     const newFilteredTokens = tokensWithBalance.filter(
-      getTokenFilterByTerm(connectedProvider.chainId, searchTerm)
+      getTokenFilterByTerm(chains.from.chainId, searchTerm)
     );
 
     setFilteredTokens(newFilteredTokens);
