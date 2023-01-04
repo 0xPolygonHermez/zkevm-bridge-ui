@@ -839,8 +839,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         ? await getErc20TokenEncodedMetadata({ chain: from, token })
         : "0x";
 
-      const originTokenAddress = selectTokenAddress(token, from);
-
       const executeClaim = () =>
         contract
           .claimAsset(
@@ -849,7 +847,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             mainExitRoot,
             rollupExitRoot,
             tokenOriginNetwork,
-            originTokenAddress,
+            token.address,
             to.networkId,
             destinationAddress,
             amount,
