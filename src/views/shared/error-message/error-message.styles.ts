@@ -9,6 +9,9 @@ const useErrorMessageStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
     whiteSpace: "break-spaces",
   },
+  errorWrapper: {
+    textAlign: "center",
+  },
 }));
 
 export default useErrorMessageStyles;
