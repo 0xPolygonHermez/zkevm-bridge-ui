@@ -65,6 +65,24 @@ The Docker image won't build the UI until you run it, in order to be able to use
 variables and facilitate the deployment process. The env vars that you need to pass to the
 `docker run` cmd are the same as those in the `.env.example` file but without the `VITE` prefix.
 
+Example:
+
+```sh
+docker run \
+-e ETHEREUM_RPC_URL=http://localhost:8545 \
+-e ETHEREUM_EXPLORER_URL=https://goerli.etherscan.io \
+-e ETHEREUM_BRIDGE_CONTRACT_ADDRESS=0x0165878A594ca255338adfa4d48449f69242Eb8F \
+-e ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS=0x8dA3b8020401851438eEe8bB434c57b54999935c \
+-e POLYGON_ZK_EVM_RPC_URL=http://localhost:8123 \
+-e POLYGON_ZK_EVM_EXPLORER_URL=http://localhost:4000 \
+-e POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS=0x9d98deabc42dd696deb9e40b4f1cab7ddbf55988 \
+-e POLYGON_ZK_EVM_NETWORK_ID=1 \
+-e BRIDGE_API_URL=http://localhost:8080 \
+-e USE_FIAT_EXCHANGE_RATES=false \
+-e SHOW_OUTDATED_NETWORK_MODAL=false \
+-p 127.0.0.1:8080:80/tcp --name zkevm-bridge-ui -t zkevm-bridge-ui:local
+```
+
 ## Disclaimer
 
-This code has not yet been audited, and should not be used in any production environment.
+This code has not yet been audited and should not be used in any production environment.
