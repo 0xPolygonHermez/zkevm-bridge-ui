@@ -23,6 +23,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { Chain, Env, Token } from "src/domain";
 import { Bridge__factory } from "src/types/contracts/bridge";
 import { Erc20__factory } from "src/types/contracts/erc-20";
+import { isTokenEther } from "src/utils/tokens";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 interface ComputeWrappedTokenAddressParams {
@@ -96,6 +97,9 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
    */
   const computeWrappedTokenAddress = useCallback(
     ({ nativeChain, otherChain, token }: ComputeWrappedTokenAddressParams): Promise<string> => {
+      if (isTokenEther(token)) {
+        throw Error("Can't precalculate the wrapper address of Ether");
+      }
       const bridgeContract = Bridge__factory.connect(
         otherChain.bridgeContractAddress,
         otherChain.provider
@@ -141,7 +145,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
    */
   const addWrappedToken = useCallback(
     ({ token }: AddWrappedTokenParams): Promise<Token> => {
-      if (token.wrappedToken) {
+      if (token.wrappedToken || isTokenEther(token)) {
         return Promise.resolve(token);
       } else {
         if (!env) {
