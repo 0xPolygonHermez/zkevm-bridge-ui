@@ -103,7 +103,9 @@ const BridgeCard: FC<BridgeCardProps> = ({
           {bridge.from.key === "ethereum" ? (
             <Typography type="body2">Step 2 will require signature</Typography>
           ) : (
-            <Typography type="body2">Waiting for validity proof</Typography>
+            <Typography type="body2">
+              Waiting for validity proof. It can take between 15 min and 1 hour.
+            </Typography>
           )}
           <button className={classes.finaliseButton} disabled>
             Finalise
