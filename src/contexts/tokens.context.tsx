@@ -252,7 +252,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       } else {
         return getTokenFromAddress({ address: tokenOriginAddress, chain }).catch(() => {
           throw new Error(
-            `The token with the address "${tokenOriginAddress}" could not be found either in the list of supported Tokens or in the blockchain with network id "${originNetwork}"`
+            `The token with the address "${tokenOriginAddress}" could not be found either in the list of supported Tokens or in the blockchain "${chain.name}" with chain id "${chain.chainId}"`
           );
         });
       }
