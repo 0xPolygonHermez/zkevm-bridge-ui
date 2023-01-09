@@ -1,6 +1,6 @@
 import { getCreate2Address } from "@ethersproject/address";
 import { keccak256, pack } from "@ethersproject/solidity";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import {
   FC,
@@ -31,6 +31,7 @@ import {
   UniswapV2Router02__factory,
 } from "src/types/contracts/uniswap-v2-router-02";
 import { multiplyAmounts } from "src/utils/amounts";
+import { isTokenEther } from "src/utils/tokens";
 
 const computePairAddress = ({ tokenA, tokenB }: { tokenA: Token; tokenB: Token }): string => {
   const [token0, token1] = tokenA.address < tokenB.address ? [tokenA, tokenB] : [tokenB, tokenA];
@@ -87,10 +88,7 @@ const PriceOracleProvider: FC<PropsWithChildren> = (props) => {
         throw new Error("Fiat exchange rates are not available");
       }
 
-      const erc20Token =
-        token.address === ethers.constants.AddressZero
-          ? tokens?.find((t) => t.symbol === "WETH")
-          : token;
+      const erc20Token = isTokenEther(token) ? tokens?.find((t) => t.symbol === "WETH") : token;
 
       if (!erc20Token) {
         throw new Error(

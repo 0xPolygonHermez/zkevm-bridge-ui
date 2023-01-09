@@ -13,8 +13,8 @@ const ErrorMessage: FC<ErrorMessageProps> = ({ className, error, type = "body1" 
   const classes = useErrorMessageStyles();
 
   return (
-    <Typography className={`${classes.error} ${className || ""}`} type={type}>
-      {error}
+    <Typography className={`${className || ""} ${classes.errorWrapper}`} type={type}>
+      <span className={classes.error}>{error}</span>
     </Typography>
   );
 };

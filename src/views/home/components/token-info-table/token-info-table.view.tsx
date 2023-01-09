@@ -7,6 +7,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { Token } from "src/domain";
 import { getShortenedEthereumAddress } from "src/utils/addresses";
 import { copyToClipboard } from "src/utils/browser";
+import { isTokenEther } from "src/utils/tokens";
 import useTokenInfoTableStyles from "src/views/home/components/token-info-table/token-info-table.styles";
 import Typography from "src/views/shared/typography/typography.view";
 
@@ -56,7 +57,7 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ className, token }) => {
     </div>
   );
 
-  if (token.address === ethersConstants.AddressZero) {
+  if (isTokenEther(token)) {
     const ethereum = env.chains[0];
     const polygonZkEVM = env.chains[1];
 

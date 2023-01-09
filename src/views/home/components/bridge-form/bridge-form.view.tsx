@@ -1,4 +1,4 @@
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber } from "ethers";
 import { FC, useCallback, useEffect, useState } from "react";
 
 import { addCustomToken, getChainCustomTokens, removeCustomToken } from "src/adapters/storage";
@@ -10,7 +10,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Chain, FormData, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
 import AmountInput from "src/views/home/components/amount-input/amount-input.view";
 import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
@@ -105,7 +105,12 @@ const BridgeForm: FC<BridgeFormProps> = ({
   const onRemoveToken = (tokenToRemove: Token) => {
     if (tokens) {
       removeCustomToken(tokenToRemove);
-      setTokens(tokens.filter((token) => token.address !== tokenToRemove.address));
+      setTokens(
+        tokens.filter(
+          (token) =>
+            !(token.address === tokenToRemove.address && token.chainId === tokenToRemove.chainId)
+        )
+      );
       if (selectedChains && tokenToRemove.address === token?.address) {
         setToken(getEtherToken(selectedChains.from));
       }
@@ -126,7 +131,7 @@ const BridgeForm: FC<BridgeFormProps> = ({
 
   const getTokenBalance = useCallback(
     (token: Token, chain: Chain): Promise<BigNumber> => {
-      if (token.address === ethersConstants.AddressZero) {
+      if (isTokenEther(token)) {
         return chain.provider.getBalance(account);
       } else {
         return getErc20TokenBalance({
@@ -163,7 +168,11 @@ const BridgeForm: FC<BridgeFormProps> = ({
     if (selectedChains && tokens && areTokensPending) {
       const getUpdatedTokens = (tokens: Token[] | undefined, updatedToken: Token) =>
         tokens
-          ? tokens.map((tkn) => (tkn.address === updatedToken.address ? updatedToken : tkn))
+          ? tokens.map((tkn) =>
+              tkn.address === updatedToken.address && tkn.chainId === updatedToken.chainId
+                ? updatedToken
+                : tkn
+            )
           : undefined;
 
       setTokens(() =>

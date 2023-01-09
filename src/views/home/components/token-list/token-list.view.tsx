@@ -1,14 +1,14 @@
-import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
+import { BigNumber, utils as ethersUtils } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
-import { isChainCustomToken } from "src/adapters/storage";
+import { isChainNativeCustomToken } from "src/adapters/storage";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { Chain, Token } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { AsyncTask } from "src/utils/types";
 import useTokenListStyles from "src/views/home/components/token-list/token-list.styles";
 import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
@@ -53,7 +53,7 @@ const TokenList: FC<TokenListProps> = ({
 
   const getTokenBalance = useCallback(
     (token: Token, chain: Chain): Promise<BigNumber> => {
-      if (token.address === ethersConstants.AddressZero) {
+      if (isTokenEther(token)) {
         return chain.provider.getBalance(account);
       } else {
         return getErc20TokenBalance({
@@ -66,15 +66,19 @@ const TokenList: FC<TokenListProps> = ({
     [account, getErc20TokenBalance]
   );
 
-  const getTokenFilterByTerm = (term: string) => (token: Token) =>
+  const getTokenFilterByTerm = (chain: Chain, term: string) => (token: Token) =>
     term.length === 0 ||
-    token.address.toLowerCase().includes(term.toLowerCase()) ||
-    (token.wrappedToken && token.wrappedToken.address.toLowerCase().includes(term.toLowerCase())) ||
+    (token.address.toLowerCase().includes(term.toLowerCase()) && token.chainId === chain.chainId) ||
+    (token.wrappedToken &&
+      token.wrappedToken.address.toLowerCase().includes(term.toLowerCase()) &&
+      token.wrappedToken.chainId === chain.chainId) ||
     token.name.toLowerCase().includes(term.toLowerCase()) ||
     token.symbol.toLowerCase().includes(term.toLowerCase());
 
   const updateTokenList = (tokensWithBalance: Token[], searchTerm: string) => {
-    const newFilteredTokens = tokensWithBalance.filter(getTokenFilterByTerm(searchTerm));
+    const newFilteredTokens = tokensWithBalance.filter(
+      getTokenFilterByTerm(chains.from, searchTerm)
+    );
 
     setFilteredTokens(newFilteredTokens);
     setCustomToken({ status: "pending" });
@@ -82,56 +86,47 @@ const TokenList: FC<TokenListProps> = ({
     if (ethersUtils.isAddress(searchTerm) && newFilteredTokens.length === 0) {
       setCustomToken({ status: "loading" });
 
-      const setBalanceAndListCustomToken = (token: Token) => {
-        getTokenBalance(token, chains.from)
-          .then((balance) => {
-            callIfMounted(() => {
-              setCustomToken((currentCustomToken) =>
-                currentCustomToken.status === "pending"
-                  ? currentCustomToken
-                  : {
-                      data: { ...token, balance: { data: balance, status: "successful" } },
-                      status: "successful",
-                    }
-              );
-            });
-          })
-          .catch(() => {
-            callIfMounted(() => {
-              setCustomToken((currentCustomToken) =>
-                currentCustomToken.status === "pending"
-                  ? currentCustomToken
-                  : {
-                      data: {
-                        ...token,
-                        balance: { error: "Couldn't retrieve token balance", status: "failed" },
-                      },
-                      status: "successful",
-                    }
-              );
-            });
-          });
-      };
-
       void getTokenFromAddress({
         address: searchTerm,
         chain: chains.from,
       })
-        .then(setBalanceAndListCustomToken)
-        .catch(() =>
-          getTokenFromAddress({
-            address: searchTerm,
-            chain: chains.to,
-          })
-            .then(setBalanceAndListCustomToken)
-            .catch(() =>
+        .then((token: Token) => {
+          getTokenBalance(token, chains.from)
+            .then((balance) => {
               callIfMounted(() => {
-                setCustomToken({
-                  error: "The token couldn't be found on any network.",
-                  status: "failed",
-                });
-              })
-            )
+                setCustomToken((currentCustomToken) =>
+                  currentCustomToken.status === "pending"
+                    ? currentCustomToken
+                    : {
+                        data: { ...token, balance: { data: balance, status: "successful" } },
+                        status: "successful",
+                      }
+                );
+              });
+            })
+            .catch(() => {
+              callIfMounted(() => {
+                setCustomToken((currentCustomToken) =>
+                  currentCustomToken.status === "pending"
+                    ? currentCustomToken
+                    : {
+                        data: {
+                          ...token,
+                          balance: { error: "Couldn't retrieve token balance", status: "failed" },
+                        },
+                        status: "successful",
+                      }
+                );
+              });
+            });
+        })
+        .catch(() =>
+          callIfMounted(() => {
+            setCustomToken({
+              error: "The token couldn't be found on the selected network.",
+              status: "failed",
+            });
+          })
         );
     }
   };
@@ -199,7 +194,7 @@ const TokenList: FC<TokenListProps> = ({
           </Typography>
         ) : (
           filteredTokens.map((token) => {
-            const isImportedCustomToken = isChainCustomToken(token, chains.from);
+            const isImportedCustomToken = isChainNativeCustomToken(token, chains.from);
             const isNonImportedCustomToken =
               !isImportedCustomToken &&
               customToken.status === "successful" &&
@@ -207,7 +202,10 @@ const TokenList: FC<TokenListProps> = ({
 
             if (isNonImportedCustomToken) {
               return (
-                <div className={classes.tokenButtonWrapper} key={token.address}>
+                <div
+                  className={classes.tokenButtonWrapper}
+                  key={`${token.chainId}-${token.address}`}
+                >
                   <button
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}
@@ -228,7 +226,10 @@ const TokenList: FC<TokenListProps> = ({
               );
             } else {
               return (
-                <div className={classes.tokenButtonWrapper} key={token.address}>
+                <div
+                  className={classes.tokenButtonWrapper}
+                  key={`${token.chainId}-${token.address}`}
+                >
                   <button
                     className={classes.tokenButton}
                     onClick={() => onSelectToken(token)}

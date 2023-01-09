@@ -1,6 +1,6 @@
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { defaultAbiCoder, splitSignature } from "ethers/lib/utils";
 import { z } from "zod";
 
@@ -12,7 +12,7 @@ import {
 } from "src/constants";
 import { Chain, Permit, Token, TxStatus } from "src/domain";
 import { Erc20__factory } from "src/types/contracts/erc-20";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { StrictSchema } from "src/utils/type-safety";
 
 const ethereumAccountsParser = StrictSchema<string[]>()(z.array(z.string()));
@@ -38,10 +38,10 @@ interface GetPermitParams {
 }
 
 const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
-  if (token.address === ethersConstants.AddressZero) {
+  if (isTokenEther(token)) {
     return Promise.reject(new Error("Native currency does't require permit"));
   }
-  const contract = Erc20__factory.connect(token.address, chain.provider);
+  const contract = Erc20__factory.connect(selectTokenAddress(token, chain), chain.provider);
   return contract.PERMIT_TYPEHASH().then((permitTypehash) => {
     switch (permitTypehash) {
       case DAI_PERMIT_TYPEHASH: {
@@ -73,6 +73,7 @@ const getPermit = ({ chain, token }: GetPermitParams): Promise<Permit> => {
 
 interface ApproveParams {
   amount: BigNumber;
+  from: Chain;
   owner: string;
   provider: Web3Provider;
   spender: string;
@@ -81,18 +82,23 @@ interface ApproveParams {
 
 const approve = async ({
   amount,
+  from,
   owner,
   provider,
   spender,
   token,
 }: ApproveParams): Promise<void> => {
-  if (token.address === ethersConstants.AddressZero) {
+  if (isTokenEther(token)) {
     throw new Error("Cannot perform an approve on ETH");
   }
 
-  const erc20Contract = Erc20__factory.connect(token.address, provider.getSigner());
+  const erc20Contract = Erc20__factory.connect(
+    selectTokenAddress(token, from),
+    provider.getSigner()
+  );
   const hasAllowance = await isContractAllowedToSpendToken({
     amount,
+    from,
     owner,
     provider,
     spender,
@@ -108,6 +114,7 @@ const approve = async ({
 
 interface IsContractAllowedToSpendTokenParams {
   amount: BigNumber;
+  from: Chain;
   owner: string;
   provider: JsonRpcProvider;
   spender: string;
@@ -116,16 +123,17 @@ interface IsContractAllowedToSpendTokenParams {
 
 const isContractAllowedToSpendToken = async ({
   amount,
+  from,
   owner,
   provider,
   spender,
   token,
 }: IsContractAllowedToSpendTokenParams): Promise<boolean> => {
-  if (token.address === ethersConstants.AddressZero) {
+  if (isTokenEther(token)) {
     throw new Error("Cannot check the allowance of ETH");
   }
 
-  const erc20Contract = Erc20__factory.connect(token.address, provider);
+  const erc20Contract = Erc20__factory.connect(selectTokenAddress(token, from), provider);
   const allowance = await erc20Contract.allowance(owner, spender);
 
   return allowance.gte(amount);
@@ -133,6 +141,7 @@ const isContractAllowedToSpendToken = async ({
 
 interface PermitParams {
   account: string;
+  from: Chain;
   permit: Permit;
   provider: Web3Provider;
   spender: string;
@@ -142,18 +151,20 @@ interface PermitParams {
 
 const permit = async ({
   account,
+  from,
   permit,
   provider,
   spender,
   token,
   value,
 }: PermitParams): Promise<string> => {
-  if (token.address === ethersConstants.AddressZero) {
+  if (isTokenEther(token)) {
     throw new Error("Cannot perform a permit on ETH");
   }
 
   const signer = provider.getSigner();
-  const erc20Contract = Erc20__factory.connect(token.address, signer);
+  const tokenAddress = selectTokenAddress(token, from);
+  const erc20Contract = Erc20__factory.connect(tokenAddress, signer);
   const nonce = await erc20Contract.nonces(account);
   const name = await erc20Contract.name();
   const { MaxUint256 } = ethersConstants;
@@ -164,7 +175,7 @@ const permit = async ({
       const domain = {
         chainId,
         name,
-        verifyingContract: token.address,
+        verifyingContract: tokenAddress,
         version: "1",
       };
 
@@ -189,11 +200,16 @@ const permit = async ({
       const signature = await signer._signTypedData(domain, types, values);
       const { r, s, v } = splitSignature(signature);
 
-      return erc20Contract.interface.encodeFunctionData("permit", [
+      const ifacePermitDAI = new ethersUtils.Interface([
+        "function permit(address,address,uint256,uint256,bool,uint8,bytes32,bytes32)",
+      ]);
+
+      return ifacePermitDAI.encodeFunctionData("permit", [
         account,
         spender,
+        nonce,
         MaxUint256,
-        1,
+        true,
         v,
         r,
         s,
@@ -204,14 +220,14 @@ const permit = async ({
       const eip2612StandardDomain = {
         chainId,
         name,
-        verifyingContract: token.address,
+        verifyingContract: tokenAddress,
         version: "1",
       };
 
       const eip2612UniswapDomain = {
         chainId,
         name,
-        verifyingContract: token.address,
+        verifyingContract: tokenAddress,
       };
 
       const domain = permit === Permit.EIP_2612 ? eip2612StandardDomain : eip2612UniswapDomain;

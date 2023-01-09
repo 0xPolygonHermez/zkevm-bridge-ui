@@ -1,9 +1,10 @@
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
 import { Chain, Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
+import { isTokenEther } from "src/utils/tokens";
 import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
 import Typography from "src/views/shared/typography/typography.view";
 
@@ -27,8 +28,7 @@ const AmountInput: FC<AmountInputProps> = ({
   const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
-  const shouldApplyMaxEtherBridgeLimit =
-    token.address === ethers.constants.AddressZero && from.key === "ethereum";
+  const shouldApplyMaxEtherBridgeLimit = isTokenEther(token) && from.key === "ethereum";
 
   const processOnChangeCallback = (amount?: BigNumber) => {
     if (amount) {

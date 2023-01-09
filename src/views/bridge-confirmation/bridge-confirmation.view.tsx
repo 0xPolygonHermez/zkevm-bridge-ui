@@ -1,4 +1,4 @@
-import { BigNumber, constants as ethersConstants } from "ethers";
+import { BigNumber } from "ethers";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,13 +15,13 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { Gas, Permit, TokenSpendPermission } from "src/domain";
+import { Gas, TokenSpendPermission } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import routes from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateFee } from "src/utils/fees";
 import { getCurrencySymbol } from "src/utils/labels";
-import { selectTokenAddress } from "src/utils/tokens";
+import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import {
   AsyncTask,
   isAsyncTaskDataAvailable,
@@ -92,9 +92,8 @@ const BridgeConfirmation: FC = () => {
             setEstimatedGas({ error: "Gas data is not available", status: "failed" });
           }
 
-          const isTokenEther = token.address === ethersConstants.AddressZero;
           const newMaxAmountConsideringFee = (() => {
-            if (isTokenEther) {
+            if (isTokenEther(token)) {
               const amountConsideringFee = amount.add(newFee);
               const tokenBalanceRemainder = amountConsideringFee.sub(tokenBalance);
               const doesAmountExceedsTokenBalance = tokenBalanceRemainder.isNegative();
@@ -143,9 +142,8 @@ const BridgeConfirmation: FC = () => {
       setTokenBalance(formData.token.balance.data);
     } else if (formData && connectedProvider.status === "successful") {
       const { from, token } = formData;
-      const isTokenEther = token.address === ethersConstants.AddressZero;
 
-      if (isTokenEther) {
+      if (isTokenEther(token)) {
         void from.provider
           .getBalance(connectedProvider.data.account)
           .then((balance) =>
@@ -182,13 +180,13 @@ const BridgeConfirmation: FC = () => {
   useEffect(() => {
     if (connectedProvider.status === "successful" && formData) {
       const { amount, from, token } = formData;
-      const isTokenEther = token.address === ethersConstants.AddressZero;
 
-      if (isTokenEther) {
+      if (isTokenEther(token)) {
         setTokenSpendPermission({ type: "none" });
       } else {
         isContractAllowedToSpendToken({
           amount: amount,
+          from: from,
           owner: connectedProvider.data.account,
           provider: from.provider,
           spender: from.bridgeContractAddress,
@@ -205,13 +203,7 @@ const BridgeConfirmation: FC = () => {
                 })
                   .then((permit) => {
                     callIfMounted(() => {
-                      // ToDo: DAI permit is not supported by the contract until this PR is merged and deployed:
-                      // https://github.com/0xPolygonHermez/zkevm-contracts/pull/68
-                      if (permit === Permit.DAI) {
-                        setTokenSpendPermission({ type: "approval" });
-                      } else {
-                        setTokenSpendPermission({ permit, type: "permit" });
-                      }
+                      setTokenSpendPermission({ permit, type: "permit" });
                     });
                   })
                   .catch(() => {
@@ -245,14 +237,13 @@ const BridgeConfirmation: FC = () => {
     if (formData) {
       const { from, token } = formData;
       const etherToken = getEtherToken(from);
-      const isTokenEther = token.address === ethersConstants.AddressZero;
 
       // Get the fiat price of Ether
       getTokenPrice({ chain: from, token: etherToken })
         .then((etherPrice) => {
           callIfMounted(() => {
             setEtherTokenFiatPrice(etherPrice);
-            if (isTokenEther) {
+            if (isTokenEther(token)) {
               setBridgedTokenFiatPrice(etherPrice);
             }
           });
@@ -260,14 +251,14 @@ const BridgeConfirmation: FC = () => {
         .catch(() =>
           callIfMounted(() => {
             setEtherTokenFiatPrice(undefined);
-            if (isTokenEther) {
+            if (isTokenEther(token)) {
               setBridgedTokenFiatPrice(undefined);
             }
           })
         );
 
       // Get the fiat price of the bridged token when it's not Ether
-      if (!isTokenEther) {
+      if (!isTokenEther(token)) {
         getTokenPrice({ chain: from, token })
           .then((tokenPrice) => {
             callIfMounted(() => {
