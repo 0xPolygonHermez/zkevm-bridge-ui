@@ -80,7 +80,7 @@ docker run \
 -e BRIDGE_API_URL=http://localhost:8080 \
 -e USE_FIAT_EXCHANGE_RATES=false \
 -e SHOW_OUTDATED_NETWORK_MODAL=false \
--p 127.0.0.1:8080:80/tcp --name zkevm-bridge-ui -t zkevm-bridge-ui:local
+-p 8080:80 zkevm-bridge-ui:local
 ```
 
 ## Disclaimer
