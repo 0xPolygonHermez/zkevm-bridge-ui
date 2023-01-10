@@ -1,0 +1,23 @@
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+vite.config.ts.timestamp*
+
+# Editors
+.vscode/*
+
+# Dependencies
+node_modules
+
+# Environment
+.env
+
+# Artifacts
+dist
+
+# System files
+**/.DS_Store
+
+# Generated types
+src/types
