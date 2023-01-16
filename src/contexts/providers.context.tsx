@@ -21,6 +21,7 @@ import {
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import {
+  AsyncTask,
   Chain,
   ConnectedProvider,
   Env,
@@ -30,7 +31,6 @@ import {
 } from "src/domain";
 import { getChecksumAddress } from "src/utils/addresses";
 import {
-  AsyncTask,
   isAsyncTaskDataAvailable,
   isMetaMaskResourceUnavailableError,
   isMetaMaskUnknownChainError,

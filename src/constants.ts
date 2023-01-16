@@ -1,10 +1,9 @@
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { ethers } from "ethers";
 
-import { ProviderError } from "src/adapters/error";
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { Chain, Currency, EthereumChain, EthereumChainId, Token, ZkEVMChain } from "src/domain";
+import { Chain, Currency, EthereumChain, EthereumChainId, ProviderError, Token, ZkEVMChain } from "src/domain";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 
 export const DAI_PERMIT_TYPEHASH =

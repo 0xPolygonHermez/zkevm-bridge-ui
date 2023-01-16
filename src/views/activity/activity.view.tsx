@@ -9,11 +9,10 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { Bridge, PendingBridge } from "src/domain";
+import { AsyncTask, Bridge, PendingBridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import useIntersection from "src/hooks/use-intersection";
 import {
-  AsyncTask,
   isAsyncTaskDataAvailable,
   isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
