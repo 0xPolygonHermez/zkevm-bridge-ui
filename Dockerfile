@@ -12,4 +12,6 @@ RUN npm install
 
 COPY . .
 
+WORKDIR /
+
 ENTRYPOINT ["/bin/sh", "/app/scripts/deploy.sh"]
