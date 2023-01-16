@@ -5,11 +5,9 @@ import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconn
 import { WalletName } from "src/domain";
 import useWalletIconStyles from "src/views/login/components/wallet-icon/wallet-icon.styles";
 
-export type WalletIconSize = "sm" | "lg";
-
 interface WalletIconProps {
   className?: string;
-  size: WalletIconSize;
+  size: "sm" | "lg";
   walletName: WalletName;
 }
 

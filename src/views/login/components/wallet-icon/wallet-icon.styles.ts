@@ -1,10 +1,9 @@
 import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
-import { WalletIconSize } from "src/views/login/components/wallet-icon/wallet-icon.view";
 
 interface WalletIconStylesProps {
-  size: WalletIconSize;
+  size: "sm" | "lg";
 }
 
 const useWalletIconStyles = createUseStyles((theme: Theme) => ({
