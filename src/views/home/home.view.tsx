@@ -8,7 +8,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, FormData } from "src/domain";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
 import Header from "src/views/home/components/header/header.view";

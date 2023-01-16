@@ -1,47 +1,39 @@
-import Activity from "src/views/activity/activity.view";
-import BridgeConfirmation from "src/views/bridge-confirmation/bridge-confirmation.view";
-import BridgeDetails from "src/views/bridge-details/bridge-details.view";
-import Home from "src/views/home/home.view";
-import Login from "src/views/login/login.view";
-import NetworkError from "src/views/network-error/network-error.view";
-import Settings from "src/views/settings/settings.view";
+export type RouteId = keyof typeof routes;
 
-const routes = {
+export const routes = {
   activity: {
-    Component: Activity,
+    id: "activity",
     isPrivate: true,
     path: "/activity",
   },
   bridgeConfirmation: {
-    Component: BridgeConfirmation,
+    id: "bridgeConfirmation",
     isPrivate: true,
     path: "/bridge-confirmation",
   },
   bridgeDetails: {
-    Component: BridgeDetails,
+    id: "bridgeDetails",
     isPrivate: true,
     path: "/bridge-details/:bridgeId",
   },
   home: {
-    Component: Home,
+    id: "home",
     isPrivate: true,
     path: "/",
   },
   login: {
-    Component: Login,
+    id: "login",
     isPrivate: false,
     path: "/login",
   },
   networkError: {
-    Component: NetworkError,
+    id: "networkError",
     isPrivate: false,
     path: "/network-error",
   },
   settings: {
-    Component: Settings,
+    id: "settings",
     isPrivate: true,
     path: "/settings",
   },
-};
-
-export default routes;
+} as const;

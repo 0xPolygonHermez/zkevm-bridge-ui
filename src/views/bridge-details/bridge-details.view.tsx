@@ -15,7 +15,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";

@@ -17,7 +17,7 @@ import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Gas, TokenSpendPermission } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateFee } from "src/utils/fees";
 import { getCurrencySymbol } from "src/utils/labels";

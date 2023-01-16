@@ -7,7 +7,7 @@ import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-log
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, PolicyCheck, WalletName } from "src/domain";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
 import useLoginStyles from "src/views/login/login.styles";
