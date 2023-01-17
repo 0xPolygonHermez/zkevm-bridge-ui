@@ -1,7 +1,6 @@
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber } from "ethers";
 import { ComponentType } from "react";
-import { AsyncTask } from "src/utils/types";
 
 export type ChainKey = "ethereum" | "polygon-zkevm";
 
@@ -235,3 +234,79 @@ export enum Permit {
   EIP_2612 = "EIP_2612",
   UNISWAP = "UNISWAP",
 }
+
+// Error
+
+export enum ProviderError {
+  Ethereum = "ethereum",
+  PolygonZkEVM = "polygon-zkevm",
+}
+
+export interface MetaMaskUserRejectedRequestError {
+  code: 4001;
+  message: string;
+}
+
+export interface MetaMaskResourceUnavailableError {
+  code: -32002;
+  message: string;
+}
+
+export interface EthersInsufficientFundsError {
+  code: "INSUFFICIENT_FUNDS";
+  reason: string;
+}
+
+export interface MetaMaskUnknownChainError {
+  code: 4902;
+  message: string;
+}
+
+// AsyncTask
+
+export interface PendingAsyncTask {
+  status: "pending";
+}
+
+export interface LoadingAsyncTask {
+  status: "loading";
+}
+
+export interface FailedAsyncTask<E> {
+  error: E;
+  status: "failed";
+}
+
+export interface SuccessfulAsyncTask<D> {
+  data: D;
+  status: "successful";
+}
+
+export interface ReloadingAsyncTask<D> {
+  data: D;
+  status: "reloading";
+}
+
+export interface LoadingMoreItemsAsyncTask<D> {
+  data: D;
+  status: "loading-more-items";
+}
+
+export type AsyncTask<D, E, P = false> = P extends true
+  ?
+      | PendingAsyncTask
+      | LoadingAsyncTask
+      | SuccessfulAsyncTask<D>
+      | ReloadingAsyncTask<D>
+      | LoadingMoreItemsAsyncTask<D>
+      | FailedAsyncTask<E>
+  :
+      | PendingAsyncTask
+      | LoadingAsyncTask
+      | SuccessfulAsyncTask<D>
+      | ReloadingAsyncTask<D>
+      | FailedAsyncTask<E>;
+
+// Utility
+
+export type Exact<T, U> = [T, U] extends [U, T] ? true : false;

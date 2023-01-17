@@ -1,7 +1,6 @@
 import { FC } from "react";
 
-import { Token } from "src/domain";
-import { AsyncTask } from "src/utils/types";
+import { AsyncTask, Token } from "src/domain";
 import Button from "src/views/shared/button/button.view";
 
 interface BridgeButtonProps {

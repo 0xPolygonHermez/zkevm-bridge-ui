@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { ConnectedProvider } from "src/domain";
+import { AsyncTask, ConnectedProvider } from "src/domain";
 import { useDebounce } from "src/hooks/use-debounce";
-import { AsyncTask, isAsyncTaskDataAvailable } from "src/utils/types";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 const DEBOUNCE_TIME_IN_MS = 750;
 

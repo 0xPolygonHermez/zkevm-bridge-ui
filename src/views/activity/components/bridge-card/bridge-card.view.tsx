@@ -5,7 +5,7 @@ import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
 import { Bridge } from "src/domain";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";

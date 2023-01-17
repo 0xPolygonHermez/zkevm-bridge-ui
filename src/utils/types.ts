@@ -1,47 +1,14 @@
 import * as errorAdapter from "src/adapters/error";
-
-interface PendingAsyncTask {
-  status: "pending";
-}
-
-interface LoadingAsyncTask {
-  status: "loading";
-}
-
-interface FailedAsyncTask<E> {
-  error: E;
-  status: "failed";
-}
-
-interface SuccessfulAsyncTask<D> {
-  data: D;
-  status: "successful";
-}
-
-interface ReloadingAsyncTask<D> {
-  data: D;
-  status: "reloading";
-}
-
-interface LoadingMoreItemsAsyncTask<D> {
-  data: D;
-  status: "loading-more-items";
-}
-
-export type AsyncTask<D, E, P = false> = P extends true
-  ?
-      | PendingAsyncTask
-      | LoadingAsyncTask
-      | SuccessfulAsyncTask<D>
-      | ReloadingAsyncTask<D>
-      | LoadingMoreItemsAsyncTask<D>
-      | FailedAsyncTask<E>
-  :
-      | PendingAsyncTask
-      | LoadingAsyncTask
-      | SuccessfulAsyncTask<D>
-      | ReloadingAsyncTask<D>
-      | FailedAsyncTask<E>;
+import {
+  AsyncTask,
+  EthersInsufficientFundsError,
+  LoadingMoreItemsAsyncTask,
+  MetaMaskResourceUnavailableError,
+  MetaMaskUnknownChainError,
+  MetaMaskUserRejectedRequestError,
+  ReloadingAsyncTask,
+  SuccessfulAsyncTask,
+} from "src/domain";
 
 export function isAsyncTaskDataAvailable<D, E, P = false>(
   task: AsyncTask<D, E, P>
@@ -55,28 +22,24 @@ export function isAsyncTaskDataAvailable<D, E, P = false>(
   );
 }
 
-export type Exact<T, U> = [T, U] extends [U, T] ? true : false;
-
 export function isMetaMaskUserRejectedRequestError(
   error: unknown
-): error is errorAdapter.MetaMaskUserRejectedRequestError {
+): error is MetaMaskUserRejectedRequestError {
   return errorAdapter.metaMaskUserRejectedRequestError.safeParse(error).success;
 }
 
 export function isMetaMaskResourceUnavailableError(
   error: unknown
-): error is errorAdapter.MetaMaskResourceUnavailableError {
+): error is MetaMaskResourceUnavailableError {
   return errorAdapter.metaMaskResourceUnavailableError.safeParse(error).success;
 }
 
-export function isMetaMaskUnknownChainError(
-  error: unknown
-): error is errorAdapter.MetaMaskUnknownChainError {
+export function isMetaMaskUnknownChainError(error: unknown): error is MetaMaskUnknownChainError {
   return errorAdapter.metaMaskUnknownChainError.safeParse(error).success;
 }
 
 export function isEthersInsufficientFundsError(
   error: unknown
-): error is errorAdapter.EthersInsufficientFundsError {
+): error is EthersInsufficientFundsError {
   return errorAdapter.ethersInsufficientFundsError.safeParse(error).success;
 }

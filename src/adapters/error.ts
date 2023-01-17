@@ -3,6 +3,13 @@ import * as StackTrace from "stacktrace-js";
 import { ZodError, z } from "zod";
 
 import { REPORT_ERROR_FORM_ENTRIES, REPORT_ERROR_FORM_URL } from "src/constants";
+import {
+  EthersInsufficientFundsError,
+  MetaMaskResourceUnavailableError,
+  MetaMaskUnknownChainError,
+  MetaMaskUserRejectedRequestError,
+  ProviderError,
+} from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
 
 interface MessageKeyError {
@@ -35,22 +42,12 @@ export const jsonRpcError = StrictSchema<JsonRpcError>()(
   })
 );
 
-export interface MetaMaskUserRejectedRequestError {
-  code: 4001;
-  message: string;
-}
-
 export const metaMaskUserRejectedRequestError = StrictSchema<MetaMaskUserRejectedRequestError>()(
   z.object({
     code: z.literal(4001),
     message: z.string(),
   })
 );
-
-export interface MetaMaskResourceUnavailableError {
-  code: -32002;
-  message: string;
-}
 
 export const metaMaskResourceUnavailableError = StrictSchema<MetaMaskResourceUnavailableError>()(
   z.object({
@@ -59,11 +56,6 @@ export const metaMaskResourceUnavailableError = StrictSchema<MetaMaskResourceUna
   })
 );
 
-export interface EthersInsufficientFundsError {
-  code: "INSUFFICIENT_FUNDS";
-  reason: string;
-}
-
 export const ethersInsufficientFundsError = StrictSchema<EthersInsufficientFundsError>()(
   z.object({
     code: z.literal("INSUFFICIENT_FUNDS"),
@@ -71,22 +63,12 @@ export const ethersInsufficientFundsError = StrictSchema<EthersInsufficientFunds
   })
 );
 
-export interface MetaMaskUnknownChainError {
-  code: 4902;
-  message: string;
-}
-
 export const metaMaskUnknownChainError = StrictSchema<MetaMaskUnknownChainError>()(
   z.object({
     code: z.literal(4902),
     message: z.string(),
   })
 );
-
-export enum ProviderError {
-  Ethereum = "ethereum",
-  PolygonZkEVM = "polygon-zkevm",
-}
 
 export const providerError = StrictSchema<ProviderError>()(z.nativeEnum(ProviderError));
 

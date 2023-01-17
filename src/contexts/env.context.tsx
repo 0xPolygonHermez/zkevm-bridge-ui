@@ -13,7 +13,7 @@ import { loadEnv } from "src/adapters/env";
 import { providerError } from "src/adapters/error";
 import { useErrorContext } from "src/contexts/error.context";
 import { Env } from "src/domain";
-import routes from "src/routes";
+import { routes } from "src/routes";
 
 const envContext = createContext<Env | undefined>(undefined);
 

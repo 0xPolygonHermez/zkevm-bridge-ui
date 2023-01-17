@@ -1,9 +1,10 @@
 import { FC } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
-import { ProviderError, providerError } from "src/adapters/error";
+import { providerError } from "src/adapters/error";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
-import routes from "src/routes";
+import { ProviderError } from "src/domain";
+import { routes } from "src/routes";
 import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
 import Typography from "src/views/shared/typography/typography.view";
 

@@ -15,15 +15,14 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
-import { Gas, TokenSpendPermission } from "src/domain";
+import { AsyncTask, Gas, TokenSpendPermission } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateFee } from "src/utils/fees";
 import { getCurrencySymbol } from "src/utils/labels";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import {
-  AsyncTask,
   isAsyncTaskDataAvailable,
   isEthersInsufficientFundsError,
   isMetaMaskUserRejectedRequestError,

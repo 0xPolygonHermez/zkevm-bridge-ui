@@ -13,18 +13,14 @@ import { useErrorContext } from "src/contexts/error.context";
 import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
-import { Bridge } from "src/domain";
+import { AsyncTask, Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionResponseFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
-import {
-  AsyncTask,
-  isAsyncTaskDataAvailable,
-  isMetaMaskUserRejectedRequestError,
-} from "src/utils/types";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
 import Chain from "src/views/bridge-details/components/chain/chain";
 import Button from "src/views/shared/button/button.view";

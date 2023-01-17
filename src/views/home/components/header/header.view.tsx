@@ -5,7 +5,7 @@ import { ReactComponent as ClockIcon } from "src/assets/icons/clock.svg";
 import { ReactComponent as SettingIcon } from "src/assets/icons/setting.svg";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { useEnvContext } from "src/contexts/env.context";
-import routes from "src/routes";
+import { routes } from "src/routes";
 import { areSettingsVisible } from "src/utils/feature-toggles";
 import useHeaderStyles from "src/views/home/components/header/header.styles";
 import NetworkSelector from "src/views/shared/network-selector/network-selector.view";
