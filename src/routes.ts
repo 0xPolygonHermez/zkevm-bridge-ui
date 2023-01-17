@@ -1,6 +1,19 @@
-export type RouteId = keyof typeof routes;
+export type RouteId =
+  | "activity"
+  | "bridgeConfirmation"
+  | "bridgeDetails"
+  | "home"
+  | "login"
+  | "networkError"
+  | "settings";
 
-export const routes = {
+export const routes: {
+  [P in RouteId]: {
+    id: P;
+    isPrivate: boolean;
+    path: string;
+  };
+} = {
   activity: {
     id: "activity",
     isPrivate: true,
@@ -36,4 +49,4 @@ export const routes = {
     isPrivate: true,
     path: "/settings",
   },
-} as const;
+};
