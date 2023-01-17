@@ -13,28 +13,14 @@ import NetworkError from "src/views/network-error/network-error.view";
 import Settings from "src/views/settings/settings.view";
 import PrivateRoute from "src/views/shared/private-route/private-route.view";
 
-const components: Record<RouteId, { component: ComponentType }> = {
-  activity: {
-    component: Activity,
-  },
-  bridgeConfirmation: {
-    component: BridgeConfirmation,
-  },
-  bridgeDetails: {
-    component: BridgeDetails,
-  },
-  home: {
-    component: Home,
-  },
-  login: {
-    component: Login,
-  },
-  networkError: {
-    component: NetworkError,
-  },
-  settings: {
-    component: Settings,
-  },
+const components: Record<RouteId, ComponentType> = {
+  activity: Activity,
+  bridgeConfirmation: BridgeConfirmation,
+  bridgeDetails: BridgeDetails,
+  home: Home,
+  login: Login,
+  networkError: NetworkError,
+  settings: Settings,
 };
 
 const Router: FC = () => {
@@ -48,7 +34,7 @@ const Router: FC = () => {
   return (
     <Routes>
       {Object.values(filteredRoutes).map(({ id, isPrivate, path }) => {
-        const Component = components[id].component;
+        const Component = components[id];
         return (
           <Route
             element={
