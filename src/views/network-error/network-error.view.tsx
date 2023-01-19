@@ -1,8 +1,9 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { providerError } from "src/adapters/error";
 import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
+import { useEnvContext } from "src/contexts/env.context";
 import { ProviderError } from "src/domain";
 import { routes } from "src/routes";
 import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
@@ -12,6 +13,13 @@ const NetworkError: FC = () => {
   const classes = useNetworkErrorStyles();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const env = useEnvContext();
+
+  useEffect(() => {
+    if (env) {
+      navigate(routes.home.path);
+    }
+  }, [env, navigate]);
 
   const parsedProviderError = providerError.safeParse(state);
 
