@@ -1,4 +1,7 @@
-import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
+import {
+  TypeSafeTransactionReceipt,
+  TypeSafeTransactionResponse,
+} from "@ethersproject/abstract-provider";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { BigNumber, constants as ethersConstants, utils as ethersUtils } from "ethers";
 import { defaultAbiCoder, splitSignature } from "ethers/lib/utils";
@@ -24,6 +27,21 @@ const silentlyGetConnectedAccounts = (provider: Web3Provider): Promise<string[]>
   return provider.provider
     .request({ method: "eth_accounts" })
     .then((accounts) => ethereumAccountsParser.parse(accounts));
+};
+
+const getBatchNumberOfL2Block = async (
+  provider: JsonRpcProvider,
+  depositTxHash: string
+): Promise<number> => {
+  const txReceipt = await provider.getTransactionReceipt(depositTxHash);
+  if (txReceipt && txReceipt.blockNumber !== null) {
+    const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberOfL2Block", [
+      txReceipt.blockNumber,
+    ]);
+    return z.number().parse(batchNumberOfL2Block);
+  } else {
+    throw new Error("Either the TransactionReceipt or its blockNumber are not available");
+  }
 };
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
@@ -308,20 +326,21 @@ const getErc20TokenEncodedMetadata = async ({
   return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
 };
 
-function isTxMined(tx: TransactionResponse | null): boolean {
+function isTxMined(tx: TypeSafeTransactionResponse | null): boolean {
   return tx !== null && tx.blockNumber !== null;
 }
 
-function isTxCanceled(tx: TransactionResponse | null): boolean {
+function isTxCanceled(tx: TypeSafeTransactionResponse | null): boolean {
   return tx === null;
 }
 
-function hasTxBeenReverted(txReceipt: TransactionReceipt): boolean {
+function hasTxBeenReverted(txReceipt: TypeSafeTransactionReceipt): boolean {
   return txReceipt.status === TxStatus.REVERTED;
 }
 
 export {
   ethereumAccountsParser,
+  getBatchNumberOfL2Block,
   silentlyGetConnectedAccounts,
   getConnectedAccounts,
   getPermit,
