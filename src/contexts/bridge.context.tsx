@@ -599,7 +599,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           if (isTxMined(tx)) {
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
-            if (hasTxBeenReverted(txReceipt)) {
+            if (txReceipt && hasTxBeenReverted(txReceipt)) {
               return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
             }
           }
