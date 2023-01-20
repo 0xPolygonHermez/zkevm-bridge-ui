@@ -1,13 +1,18 @@
-import { FC } from "react";
+import { BigNumber } from "ethers";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { getBatchNumberOfL2Block } from "src/adapters/ethereum";
 import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
-import { Bridge } from "src/domain";
+import { AUTO_REFRESH_RATE } from "src/constants";
+import { AsyncTask, Bridge, Env } from "src/domain";
 import { routes } from "src/routes";
+import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { isAsyncTaskDataAvailable } from "src/utils/types";
 import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
 import Card from "src/views/shared/card/card.view";
 import ErrorMessage from "src/views/shared/error-message/error-message.view";
@@ -16,6 +21,7 @@ import Typography from "src/views/shared/typography/typography.view";
 
 export interface BridgeCardProps {
   bridge: Bridge;
+  env: Env;
   isFinaliseDisabled: boolean;
   networkError: boolean;
   onClaim?: () => void;
@@ -24,14 +30,78 @@ export interface BridgeCardProps {
 
 const BridgeCard: FC<BridgeCardProps> = ({
   bridge,
+  env,
   isFinaliseDisabled,
   networkError,
   onClaim,
   showFiatAmount,
 }) => {
-  const { amount, fiatAmount, status, to, token } = bridge;
+  const { amount, depositTxHash, fiatAmount, from, status, to, token } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
+  const [lastVerifiedBatch, setLastVerifiedBatch] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
+  const [batchNumberOfL2Block, setBatchNumberOfL2Block] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
+
+  useEffect(() => {
+    if (status === "initiated" && from.key === "polygon-zkevm") {
+      setBatchNumberOfL2Block({ status: "loading" });
+      getBatchNumberOfL2Block(env.chains[1].provider, depositTxHash)
+        .then((newBatchNumberOfL2Block) => {
+          setBatchNumberOfL2Block({
+            data: BigNumber.from(newBatchNumberOfL2Block),
+            status: "successful",
+          });
+        })
+        .catch(() => {
+          setBatchNumberOfL2Block({
+            error: "An error occurred getting the batch number of the L2 block",
+            status: "failed",
+          });
+        });
+    }
+  }, [depositTxHash, env, from, status]);
+
+  useEffect(() => {
+    // Polling
+    if (status === "initiated" && from.key === "polygon-zkevm") {
+      const ethereum = env.chains[0];
+      const poeContract = ProofOfEfficiency__factory.connect(
+        ethereum.poeContractAddress,
+        ethereum.provider
+      );
+      const refreshLastVerifiedBatch = () => {
+        setLastVerifiedBatch((currentLastVerifiedBatch) =>
+          isAsyncTaskDataAvailable(currentLastVerifiedBatch)
+            ? { data: currentLastVerifiedBatch.data, status: "reloading" }
+            : { status: "loading" }
+        );
+        poeContract
+          .lastVerifiedBatch()
+          .then((newLastVerifiedBatch) => {
+            setLastVerifiedBatch({
+              data: newLastVerifiedBatch,
+              status: "successful",
+            });
+          })
+          .catch(() => {
+            setLastVerifiedBatch({
+              error: "An error occurred getting the last verified batch",
+              status: "failed",
+            });
+          });
+      };
+      refreshLastVerifiedBatch();
+      const intervalId = setInterval(refreshLastVerifiedBatch, AUTO_REFRESH_RATE);
+
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [env, from, status]);
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
@@ -55,11 +125,27 @@ const BridgeCard: FC<BridgeCardProps> = ({
     </div>
   );
 
+  const remainingBatchesMsg: string = (() => {
+    if (
+      isAsyncTaskDataAvailable(lastVerifiedBatch) &&
+      isAsyncTaskDataAvailable(batchNumberOfL2Block)
+    ) {
+      return `Waiting for validity proof. Tx will be confirmed in ${Math.max(
+        batchNumberOfL2Block.data.sub(lastVerifiedBatch.data).toNumber(),
+        0
+      )} batches`;
+    } else if (lastVerifiedBatch.status === "failed" || batchNumberOfL2Block.status === "failed") {
+      return "Waiting for validity proof. It can take between 15 min and 1 hour";
+    } else {
+      return "Waiting for validity proof";
+    }
+  })();
+
   return (
     <Card
       className={classes.card}
       onClick={() => {
-        if (bridge.status !== "pending") {
+        if (status !== "pending") {
           navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
         }
       }}
@@ -83,7 +169,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.row}>
               <span
                 className={`${classes.statusBox} ${
-                  bridge.status === "completed" ? classes.greenStatus : classes.pendingStatus
+                  status === "completed" ? classes.greenStatus : classes.pendingStatus
                 }`}
               >
                 {getBridgeStatus(status)}
@@ -100,12 +186,10 @@ const BridgeCard: FC<BridgeCardProps> = ({
       </div>
       {status === "initiated" && (
         <div className={classes.bottom}>
-          {bridge.from.key === "ethereum" ? (
+          {from.key === "ethereum" ? (
             <Typography type="body2">Step 2 will require signature</Typography>
           ) : (
-            <Typography type="body2">
-              Waiting for validity proof. It can take between 15 min and 1 hour.
-            </Typography>
+            <Typography type="body2">{remainingBatchesMsg}</Typography>
           )}
           <button className={classes.finaliseButton} disabled>
             Finalise

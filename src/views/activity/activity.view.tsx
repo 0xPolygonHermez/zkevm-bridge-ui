@@ -12,10 +12,7 @@ import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Bridge, PendingBridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import useIntersection from "src/hooks/use-intersection";
-import {
-  isAsyncTaskDataAvailable,
-  isMetaMaskUserRejectedRequestError,
-} from "src/utils/types";
+import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import useActivityStyles from "src/views/activity/activity.styles";
 import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
 import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
@@ -321,7 +318,7 @@ const Activity: FC = () => {
     </div>
   );
 
-  if (!tokens || !isAsyncTaskDataAvailable(pendingBridges)) {
+  if (!env || !tokens || !isAsyncTaskDataAvailable(pendingBridges)) {
     return loader;
   }
 
@@ -368,6 +365,7 @@ const Activity: FC = () => {
                     >
                       <BridgeCard
                         bridge={bridge}
+                        env={env}
                         isFinaliseDisabled={true}
                         networkError={false}
                         showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
@@ -377,6 +375,7 @@ const Activity: FC = () => {
                     <div className={classes.bridgeCardwrapper} key={bridge.id}>
                       <BridgeCard
                         bridge={bridge}
+                        env={env}
                         isFinaliseDisabled={areBridgesDisabled}
                         networkError={wrongNetworkBridges.includes(bridge.id)}
                         onClaim={() => onClaim(bridge)}
