@@ -135,7 +135,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
         0
       )} batches`;
     } else if (lastVerifiedBatch.status === "failed" || batchNumberOfL2Block.status === "failed") {
-      return "Waiting for validity proof. It can take between 15 min and 1 hour";
+      return "Waiting for validity proof. This may take between 15 min and 1 hour";
     } else {
       return "Waiting for validity proof";
     }
