@@ -7,8 +7,9 @@ import { StrictSchema } from "src/utils/type-safety";
 
 interface DepositInput {
   amount: string;
+  block_num: number;
   claim_tx_hash: string;
-  deposit_cnt: string;
+  deposit_cnt: number;
   dest_addr: string;
   dest_net: number;
   network_id: number;
@@ -20,6 +21,7 @@ interface DepositInput {
 
 interface DepositOutput {
   amount: string;
+  block_num: number;
   claim_tx_hash: string | null;
   deposit_cnt: number;
   dest_addr: string;
@@ -40,13 +42,14 @@ interface MerkleProof {
 const depositParser = StrictSchema<DepositInput, DepositOutput>()(
   z.object({
     amount: z.string(),
+    block_num: z.coerce.number().int().nonnegative(),
     claim_tx_hash: z
       .string()
       .transform((v) => (v.length === 0 ? null : v))
       .refine((val) => val === null || val.length === 66, {
         message: "The length of claim_tx_hash must be 66 characters",
       }),
-    deposit_cnt: z.string().transform((v) => z.number().nonnegative().parse(Number(v))),
+    deposit_cnt: z.coerce.number().int().nonnegative(),
     dest_addr: z.string(),
     dest_net: z.number(),
     network_id: z.number(),
@@ -73,7 +76,7 @@ const getDepositResponseParser = StrictSchema<
 const getDepositsResponseParser = StrictSchema<
   {
     deposits?: DepositInput[];
-    total_cnt?: string;
+    total_cnt?: number;
   },
   {
     deposits?: DepositOutput[];
@@ -81,8 +84,8 @@ const getDepositsResponseParser = StrictSchema<
   }
 >()(
   z.object({
-    deposits: z.optional(z.array(depositParser)),
-    total_cnt: z.optional(z.string().transform((v) => z.number().parse(Number(v)))),
+    deposits: z.array(depositParser).optional(),
+    total_cnt: z.coerce.number().int().nonnegative().optional(),
   })
 );
 

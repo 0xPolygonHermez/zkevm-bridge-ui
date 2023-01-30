@@ -126,6 +126,7 @@ export type Message =
 
 interface BridgeCommonFields {
   amount: BigNumber;
+  blockNumber: number;
   depositCount: number;
   depositTxHash: string;
   destinationAddress: string;
@@ -162,6 +163,7 @@ export type Bridge = PendingBridge | InitiatedBridge | OnHoldBridge | CompletedB
 
 export interface Deposit {
   amount: BigNumber;
+  blockNumber: number;
   claim:
     | {
         status: "pending";

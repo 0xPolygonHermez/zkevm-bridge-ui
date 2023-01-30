@@ -36,7 +36,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
   onClaim,
   showFiatAmount,
 }) => {
-  const { amount, depositTxHash, fiatAmount, from, status, to, token } = bridge;
+  const { amount, fiatAmount, from, status, to, token } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
   const [lastVerifiedBatch, setLastVerifiedBatch] = useState<AsyncTask<BigNumber, string>>({
@@ -47,9 +47,9 @@ const BridgeCard: FC<BridgeCardProps> = ({
   });
 
   useEffect(() => {
-    if (status === "initiated" && from.key === "polygon-zkevm") {
+    if (status !== "pending" && bridge.from.key === "polygon-zkevm") {
       setBatchNumberOfL2Block({ status: "loading" });
-      getBatchNumberOfL2Block(env.chains[1].provider, depositTxHash)
+      getBatchNumberOfL2Block(env.chains[1].provider, bridge.blockNumber)
         .then((newBatchNumberOfL2Block) => {
           setBatchNumberOfL2Block({
             data: BigNumber.from(newBatchNumberOfL2Block),
@@ -63,7 +63,7 @@ const BridgeCard: FC<BridgeCardProps> = ({
           });
         });
     }
-  }, [depositTxHash, env, from, status]);
+  }, [bridge, env, status]);
 
   useEffect(() => {
     // Polling

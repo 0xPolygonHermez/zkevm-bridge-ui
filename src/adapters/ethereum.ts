@@ -31,17 +31,12 @@ const silentlyGetConnectedAccounts = (provider: Web3Provider): Promise<string[]>
 
 const getBatchNumberOfL2Block = async (
   provider: JsonRpcProvider,
-  depositTxHash: string
+  blockNumber: number
 ): Promise<number> => {
-  const txReceipt = await provider.getTransactionReceipt(depositTxHash);
-  if (txReceipt && txReceipt.blockNumber !== null) {
-    const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberOfL2Block", [
-      txReceipt.blockNumber,
-    ]);
-    return z.number().parse(batchNumberOfL2Block);
-  } else {
-    throw new Error("Either the TransactionReceipt or its blockNumber are not available");
-  }
+  const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberOfL2Block", [
+    blockNumber,
+  ]);
+  return z.number().parse(batchNumberOfL2Block);
 };
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
