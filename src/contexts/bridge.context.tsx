@@ -169,6 +169,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
       const {
         amount,
+        block_num,
         claim_tx_hash,
         deposit_cnt,
         dest_addr,
@@ -237,6 +238,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         case "pending": {
           return {
             amount: BigNumber.from(amount),
+            blockNumber: block_num,
             depositCount: deposit_cnt,
             depositTxHash: tx_hash,
             destinationAddress: dest_addr,
@@ -252,6 +254,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         case "ready": {
           return {
             amount: BigNumber.from(amount),
+            blockNumber: block_num,
             depositCount: deposit_cnt,
             depositTxHash: tx_hash,
             destinationAddress: dest_addr,
@@ -267,6 +270,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         case "claimed": {
           return {
             amount: BigNumber.from(amount),
+            blockNumber: block_num,
             claimTxHash: claim.txHash,
             depositCount: deposit_cnt,
             depositTxHash: tx_hash,
@@ -309,6 +313,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         apiDeposits.map(async (apiDeposit): Promise<Deposit> => {
           const {
             amount,
+            block_num,
             claim_tx_hash,
             deposit_cnt,
             dest_addr,
@@ -342,6 +347,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
           return {
             amount: BigNumber.from(amount),
+            blockNumber: block_num,
             claim:
               claim_tx_hash !== null
                 ? { status: "claimed", txHash: claim_tx_hash }
@@ -387,6 +393,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const bridges = deposits.map((partialDeposit): Bridge => {
         const {
           amount,
+          blockNumber,
           claim,
           depositCount,
           depositTxHash,
@@ -423,6 +430,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           case "pending": {
             return {
               amount,
+              blockNumber,
               depositCount,
               depositTxHash,
               destinationAddress,
@@ -438,6 +446,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           case "ready": {
             return {
               amount,
+              blockNumber,
               depositCount,
               depositTxHash,
               destinationAddress,
@@ -453,6 +462,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           case "claimed": {
             return {
               amount,
+              blockNumber,
               claimTxHash: claim.txHash,
               depositCount,
               depositTxHash,
@@ -599,7 +609,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           if (isTxMined(tx)) {
             const txReceipt = await provider.getTransactionReceipt(txHash);
 
-            if (hasTxBeenReverted(txReceipt)) {
+            if (txReceipt && hasTxBeenReverted(txReceipt)) {
               return storage.removeAccountPendingTx(account, env, pendingTx.depositTxHash);
             }
           }

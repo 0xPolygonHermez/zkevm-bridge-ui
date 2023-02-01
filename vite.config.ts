@@ -1,12 +1,15 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import svgr from "vite-plugin-svgr";
-import checker from "vite-plugin-checker";
 import path from "path";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import checker from "vite-plugin-checker";
+import svgr from "vite-plugin-svgr";
 
 export default defineConfig({
   build: {
     sourcemap: true,
+  },
+  define: {
+    bridgeVersion: JSON.stringify(process.env.npm_package_version),
   },
   plugins: [
     react({
@@ -14,17 +17,15 @@ export default defineConfig({
     }),
     svgr(),
     checker({
-      typescript: true,
       eslint: { lintCommand: 'eslint "./src/**/*.{ts,tsx}"' },
+      overlay: false,
+      typescript: true,
     }),
   ],
-  server: {
-    open: true,
-  },
   resolve: {
     alias: [{ find: "src", replacement: path.resolve(__dirname, "src") }],
   },
-  define: {
-    bridgeVersion: JSON.stringify(process.env.npm_package_version),
+  server: {
+    open: true,
   },
 });

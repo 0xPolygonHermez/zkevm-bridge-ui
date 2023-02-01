@@ -56,8 +56,8 @@ export type SerializedPendingTx = SerializedPendingDepositTx | SerializedPending
 const bridgeIdParser = StrictSchema<SerializedBridgeId, BridgeId>()(
   z.string().transform((bridgeId): BridgeId => {
     const [networkIdString, depositCountString] = bridgeId.split("-");
-    const networkId = z.number().parse(Number(networkIdString));
-    const depositCount = z.number().parse(Number(depositCountString));
+    const networkId = z.coerce.number().parse(networkIdString);
+    const depositCount = z.coerce.number().parse(depositCountString);
 
     return {
       depositCount,

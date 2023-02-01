@@ -66,7 +66,7 @@ const envToDomain = ({
   VITE_SHOW_OUTDATED_NETWORK_MODAL,
   VITE_USE_FIAT_EXCHANGE_RATES,
 }: Env): Promise<domain.Env> => {
-  const polygonZkEVMNetworkId = z.number().positive().parse(Number(VITE_POLYGON_ZK_EVM_NETWORK_ID));
+  const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
   const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
   const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(VITE_SHOW_OUTDATED_NETWORK_MODAL);
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
