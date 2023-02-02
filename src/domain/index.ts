@@ -203,20 +203,24 @@ export enum PolicyCheck {
   Unchecked = "unchecked",
 }
 
+export type EIP1559GasType = "eip-1559";
+
+export type LegacyGasType = "legacy";
+
 export type Gas =
   | {
       data: {
         gasLimit: BigNumber;
         maxFeePerGas: BigNumber;
       };
-      type: "eip-1559";
+      type: EIP1559GasType;
     }
   | {
       data: {
         gasLimit: BigNumber;
         gasPrice: BigNumber;
       };
-      type: "legacy";
+      type: LegacyGasType;
     };
 
 export type TokenSpendPermission =

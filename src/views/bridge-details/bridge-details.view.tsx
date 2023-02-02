@@ -17,7 +17,7 @@ import { AsyncTask, Bridge } from "src/domain";
 import useCallIfMounted from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
-import { calculateTransactionResponseFee } from "src/utils/fees";
+import { calculateTransactionReceiptFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
@@ -38,23 +38,27 @@ interface Fees {
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
   const step1Promise = bridge.from.provider
-    .getTransaction(
+    .getTransactionReceipt(
       bridge.status === "pending"
         ? bridge.claimTxHash || bridge.depositTxHash
         : bridge.depositTxHash
     )
-    .then((txResponse) => {
-      return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
-    })
+    .then((txReceipt) =>
+      txReceipt ? calculateTransactionReceiptFee({ txReceipt, type: "eip-1559" }) : undefined
+    )
     .catch(() => undefined);
 
   const step2Promise =
     bridge.status === "completed"
-      ? bridge.to.provider
-          .getTransaction(bridge.claimTxHash)
-          .then((txResponse) => {
-            return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
-          })
+      ? Promise.all([
+          bridge.to.provider.getTransactionReceipt(bridge.claimTxHash),
+          bridge.to.provider.getTransaction(bridge.claimTxHash),
+        ])
+          .then(([txReceipt, txResponse]) =>
+            txReceipt && txResponse
+              ? calculateTransactionReceiptFee({ txReceipt, txResponse, type: "legacy" })
+              : undefined
+          )
           .catch(() => undefined)
       : Promise.resolve(undefined);
 
