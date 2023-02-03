@@ -91,6 +91,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const { notifyError } = useErrorContext();
   const { changeNetwork, connectedProvider } = useProvidersContext();
   const [tokens, setTokens] = useState<Token[]>();
+  const [fetchedTokens, setFetchedTokens] = useState<Token[]>([]);
 
   /**
    * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
@@ -243,7 +244,11 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
           `The chain with the originNetwork "${originNetwork}" could not be found in the list of supported Chains`
         );
       }
-      const token = [...getCustomTokens(), ...(tokens || [getEtherToken(chain)])].find(
+      const token = [
+        ...getCustomTokens(),
+        ...(tokens || [getEtherToken(chain)]),
+        ...fetchedTokens,
+      ].find(
         (token) =>
           (token.address === tokenOriginAddress && token.chainId === chain.chainId) ||
           (token.wrappedToken &&
@@ -254,14 +259,19 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       if (token) {
         return token;
       } else {
-        return getTokenFromAddress({ address: tokenOriginAddress, chain }).catch(() => {
-          throw new Error(
-            `The token with the address "${tokenOriginAddress}" could not be found either in the list of supported Tokens or in the blockchain "${chain.name}" with chain id "${chain.chainId}"`
-          );
-        });
+        return getTokenFromAddress({ address: tokenOriginAddress, chain })
+          .then((token) => {
+            setFetchedTokens((currentFetchedTokens) => [...currentFetchedTokens, token]);
+            return token;
+          })
+          .catch(() => {
+            throw new Error(
+              `The token with the address "${tokenOriginAddress}" could not be found either in the list of supported Tokens or in the blockchain "${chain.name}" with chain id "${chain.chainId}"`
+            );
+          });
       }
     },
-    [tokens, getTokenFromAddress]
+    [tokens, fetchedTokens, getTokenFromAddress]
   );
 
   const getErc20TokenBalance = useCallback(
