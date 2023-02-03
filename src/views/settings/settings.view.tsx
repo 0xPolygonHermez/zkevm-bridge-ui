@@ -11,12 +11,12 @@ import { ReactComponent as UsdIcon } from "src/assets/icons/currencies/usd.svg";
 import { ReactComponent as ConversionIcon } from "src/assets/icons/currency-conversion.svg";
 import { useEnvContext } from "src/contexts/env.context";
 import { Currency } from "src/domain";
-import useSettingsStyles from "src/views/settings/settings.styles";
-import Card from "src/views/shared/card/card.view";
-import Header from "src/views/shared/header/header.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useSettingsStyles } from "src/views/settings/settings.styles";
+import { Card } from "src/views/shared/card/card.view";
+import { Header } from "src/views/shared/header/header.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Settings: FC = () => {
+export const Settings: FC = () => {
   const classes = useSettingsStyles();
   const env = useEnvContext();
   const [preferredCurrency, setPreferredCurrency] = useState<Currency>(getCurrency());
@@ -79,5 +79,3 @@ const Settings: FC = () => {
     </div>
   );
 };
-
-export default Settings;

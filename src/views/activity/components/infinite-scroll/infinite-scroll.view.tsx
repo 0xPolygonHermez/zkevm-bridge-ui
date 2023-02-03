@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
 
-import useInfiniteScrollStyles from "src/views/activity/components/infinite-scroll/infinite-scroll.styles";
-import Spinner from "src/views/shared/spinner/spinner.view";
+import { useInfiniteScrollStyles } from "src/views/activity/components/infinite-scroll/infinite-scroll.styles";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
 
 const TRESHOLD = 0.9;
 
@@ -10,7 +10,11 @@ type InfiniteScrollProps = PropsWithChildren<{
   onLoadNextPage: () => void;
 }>;
 
-const InfiniteScroll: FC<InfiniteScrollProps> = ({ children, isLoading, onLoadNextPage }) => {
+export const InfiniteScroll: FC<InfiniteScrollProps> = ({
+  children,
+  isLoading,
+  onLoadNextPage,
+}) => {
   const classes = useInfiniteScrollStyles();
   const [scrollReachedEnd, setScrollReachedEnd] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -59,5 +63,3 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({ children, isLoading, onLoadNe
     </div>
   );
 };
-
-export default InfiniteScroll;

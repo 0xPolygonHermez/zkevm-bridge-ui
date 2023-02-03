@@ -14,22 +14,22 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Bridge } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateTransactionReceiptFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
-import Chain from "src/views/bridge-details/components/chain/chain";
-import Button from "src/views/shared/button/button.view";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Header from "src/views/shared/header/header.view";
-import Icon from "src/views/shared/icon/icon.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useBridgeDetailsStyles } from "src/views/bridge-details/bridge-details.styles";
+import { Chain } from "src/views/bridge-details/components/chain/chain";
+import { Button } from "src/views/shared/button/button.view";
+import { Card } from "src/views/shared/card/card.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Header } from "src/views/shared/header/header.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { PageLoader } from "src/views/shared/page-loader/page-loader.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface Fees {
   step1?: BigNumber;
@@ -68,7 +68,7 @@ const calculateFees = (bridge: Bridge): Promise<Fees> => {
   }));
 };
 
-const BridgeDetails: FC = () => {
+export const BridgeDetails: FC = () => {
   const callIfMounted = useCallIfMounted();
   const { bridgeId } = useParams();
   const navigate = useNavigate();
@@ -422,5 +422,3 @@ const BridgeDetails: FC = () => {
     }
   }
 };
-
-export default BridgeDetails;

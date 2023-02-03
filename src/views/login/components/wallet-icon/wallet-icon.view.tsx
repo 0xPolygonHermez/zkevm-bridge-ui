@@ -3,7 +3,7 @@ import { FC } from "react";
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "src/assets/icons/walletconnect.svg";
 import { WalletName } from "src/domain";
-import useWalletIconStyles from "src/views/login/components/wallet-icon/wallet-icon.styles";
+import { useWalletIconStyles } from "src/views/login/components/wallet-icon/wallet-icon.styles";
 
 interface WalletIconProps {
   className?: string;
@@ -11,7 +11,7 @@ interface WalletIconProps {
   walletName: WalletName;
 }
 
-const WalletIcon: FC<WalletIconProps> = ({ className, size, walletName }) => {
+export const WalletIcon: FC<WalletIconProps> = ({ className, size, walletName }) => {
   const classes = useWalletIconStyles({ size });
 
   switch (walletName) {
@@ -31,5 +31,3 @@ const WalletIcon: FC<WalletIconProps> = ({ className, size, walletName }) => {
     }
   }
 };
-
-export default WalletIcon;

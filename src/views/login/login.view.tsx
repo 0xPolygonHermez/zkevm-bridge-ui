@@ -9,16 +9,16 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, PolicyCheck, WalletName } from "src/domain";
 import { routes } from "src/routes";
 import { getDeploymentName, getNetworkName } from "src/utils/labels";
-import WalletList from "src/views/login/components/wallet-list/wallet-list.view";
-import useLoginStyles from "src/views/login/login.styles";
-import Card from "src/views/shared/card/card.view";
-import ConfirmPopUp from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import InfoBanner from "src/views/shared/info-banner/info-banner.view";
-import NetworkBox from "src/views/shared/network-box/network-box.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { WalletList } from "src/views/login/components/wallet-list/wallet-list.view";
+import { useLoginStyles } from "src/views/login/login.styles";
+import { Card } from "src/views/shared/card/card.view";
+import { ConfirmPopUp } from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { InfoBanner } from "src/views/shared/info-banner/info-banner.view";
+import { NetworkBox } from "src/views/shared/network-box/network-box.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Login: FC = () => {
+export const Login: FC = () => {
   const classes = useLoginStyles();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
   const [showPolicyPopUp, setShowPolicyPopUp] = useState(false);
@@ -109,5 +109,3 @@ const Login: FC = () => {
     </div>
   );
 };
-
-export default Login;

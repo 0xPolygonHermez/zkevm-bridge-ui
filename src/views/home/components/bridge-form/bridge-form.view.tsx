@@ -9,20 +9,20 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Chain, FormData, Token } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
-import AmountInput from "src/views/home/components/amount-input/amount-input.view";
-import useBridgeFormStyles from "src/views/home/components/bridge-form/bridge-form.styles";
-import TokenSelector from "src/views/home/components/token-selector/token-selector.view";
-import Button from "src/views/shared/button/button.view";
-import Card from "src/views/shared/card/card.view";
-import ChainList from "src/views/shared/chain-list/chain-list.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Spinner from "src/views/shared/spinner/spinner.view";
-import TokenBalance from "src/views/shared/token-balance/token-balance.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { AmountInput } from "src/views/home/components/amount-input/amount-input.view";
+import { useBridgeFormStyles } from "src/views/home/components/bridge-form/bridge-form.styles";
+import { TokenSelector } from "src/views/home/components/token-selector/token-selector.view";
+import { Button } from "src/views/shared/button/button.view";
+import { Card } from "src/views/shared/card/card.view";
+import { ChainList } from "src/views/shared/chain-list/chain-list.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
+import { TokenBalance } from "src/views/shared/token-balance/token-balance.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface BridgeFormProps {
   account: string;
@@ -37,7 +37,7 @@ interface SelectedChains {
   to: Chain;
 }
 
-const BridgeForm: FC<BridgeFormProps> = ({
+export const BridgeForm: FC<BridgeFormProps> = ({
   account,
   formData,
   maxEtherBridge,
@@ -370,5 +370,3 @@ const BridgeForm: FC<BridgeFormProps> = ({
     </form>
   );
 };
-
-export default BridgeForm;

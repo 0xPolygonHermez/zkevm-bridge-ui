@@ -13,4 +13,5 @@ export const StrictSchema: <I, O = I>() => <UO, UI = UO>(
 ) => ZodSchema<O, ZodTypeDef, I> =
   () =>
   <O, I = O>(u: unknown) =>
+    // eslint-disable-next-line no-type-assertion/no-type-assertion
     u as ZodSchema<O, ZodTypeDef, I>;

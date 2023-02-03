@@ -11,11 +11,11 @@ import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
-import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useBridgeCardStyles } from "src/views/activity/components/bridge-card/bridge-card.styles";
+import { Card } from "src/views/shared/card/card.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 export interface BridgeCardProps {
   bridge: Bridge;
@@ -27,7 +27,7 @@ export interface BridgeCardProps {
   showFiatAmount: boolean;
 }
 
-const BridgeCard: FC<BridgeCardProps> = ({
+export const BridgeCard: FC<BridgeCardProps> = ({
   bridge,
   env,
   isFinaliseDisabled,
@@ -178,5 +178,3 @@ const BridgeCard: FC<BridgeCardProps> = ({
     </Card>
   );
 };
-
-export default BridgeCard;

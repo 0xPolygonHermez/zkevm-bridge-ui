@@ -3,10 +3,10 @@ import { FC } from "react";
 import { isChainCustomToken } from "src/adapters/storage";
 import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
 import { Chain, Token } from "src/domain";
-import TokenInfoTable from "src/views/home/components/token-info-table/token-info-table.view";
-import useTokenInfoStyles from "src/views/home/components/token-info/token-info.styles";
-import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { TokenInfoTable } from "src/views/home/components/token-info-table/token-info-table.view";
+import { useTokenInfoStyles } from "src/views/home/components/token-info/token-info.styles";
+import { TokenSelectorHeader } from "src/views/home/components/token-selector-header/token-selector-header.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface TokenInfoProps {
   chain: Chain;
@@ -16,7 +16,7 @@ interface TokenInfoProps {
   token: Token;
 }
 
-const TokenInfo: FC<TokenInfoProps> = ({
+export const TokenInfo: FC<TokenInfoProps> = ({
   chain,
   onClose,
   onNavigateToTokenList,
@@ -39,5 +39,3 @@ const TokenInfo: FC<TokenInfoProps> = ({
     </div>
   );
 };
-
-export default TokenInfo;

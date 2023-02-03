@@ -1,7 +1,8 @@
-import usePageLoaderStyles from "src/views/shared/page-loader/page-loader.styles";
-import Spinner from "src/views/shared/spinner/spinner.view";
+import { FC } from "react";
+import { usePageLoaderStyles } from "src/views/shared/page-loader/page-loader.styles";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
 
-function PageLoader(): JSX.Element {
+export const PageLoader: FC = () => {
   const classes = usePageLoaderStyles();
 
   return (
@@ -9,6 +10,4 @@ function PageLoader(): JSX.Element {
       <Spinner />
     </div>
   );
-}
-
-export default PageLoader;
+};

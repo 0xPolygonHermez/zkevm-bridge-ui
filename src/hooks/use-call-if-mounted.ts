@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
-import useIsMounted from "src/hooks/use-is-mounted";
+import { useIsMounted } from "src/hooks/use-is-mounted";
 
-function useCallIfMounted(): (callback: () => void) => void {
+export function useCallIfMounted(): (callback: () => void) => void {
   const isMounted = useIsMounted();
   return useCallback(
     (callback: () => void) => {
@@ -13,5 +13,3 @@ function useCallIfMounted(): (callback: () => void) => void {
     [isMounted]
   );
 }
-
-export default useCallIfMounted;

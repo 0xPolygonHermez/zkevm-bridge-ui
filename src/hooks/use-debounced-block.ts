@@ -6,7 +6,7 @@ import { isAsyncTaskDataAvailable } from "src/utils/types";
 
 const DEBOUNCE_TIME_IN_MS = 750;
 
-const useDebouncedBlock = (connectedProvider: AsyncTask<ConnectedProvider, string>) => {
+export const useDebouncedBlock = (connectedProvider: AsyncTask<ConnectedProvider, string>) => {
   const [blockNumber, setBlockNumber] = useState<number>();
 
   useEffect(() => {
@@ -26,5 +26,3 @@ const useDebouncedBlock = (connectedProvider: AsyncTask<ConnectedProvider, strin
 
   return useDebounce(blockNumber, DEBOUNCE_TIME_IN_MS);
 };
-
-export default useDebouncedBlock;

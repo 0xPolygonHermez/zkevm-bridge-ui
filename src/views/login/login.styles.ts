@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useLoginStyles = createUseStyles((theme: Theme) => ({
+export const useLoginStyles = createUseStyles((theme: Theme) => ({
   appName: {
     background: theme.palette.grey.main,
     borderRadius: 56,
@@ -49,5 +49,3 @@ const useLoginStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
 }));
-
-export default useLoginStyles;

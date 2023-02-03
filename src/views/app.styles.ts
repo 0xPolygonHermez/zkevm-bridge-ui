@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useAppStyles = createUseStyles((theme: Theme) => ({
+export const useAppStyles = createUseStyles((theme: Theme) => ({
   "@font-face": [
     {
       fallbacks: [
@@ -77,5 +77,3 @@ const useAppStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useAppStyles;

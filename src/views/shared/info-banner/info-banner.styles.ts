@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useInfoBannerStyles = createUseStyles((theme: Theme) => ({
+export const useInfoBannerStyles = createUseStyles((theme: Theme) => ({
   infoBanner: {
     background: theme.palette.grey.main,
     borderRadius: "8px",
@@ -16,5 +16,3 @@ const useInfoBannerStyles = createUseStyles((theme: Theme) => ({
     color: theme.palette.black,
   },
 }));
-
-export default useInfoBannerStyles;

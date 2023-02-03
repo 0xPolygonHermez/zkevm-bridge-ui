@@ -2,15 +2,15 @@ import { FC } from "react";
 
 import { ReactComponent as CaretRightIcon } from "src/assets/icons/caret-right.svg";
 import { WalletName } from "src/domain";
-import WalletIcon from "src/views/login/components/wallet-icon/wallet-icon.view";
-import useWalletListStyles from "src/views/login/components/wallet-list/wallet-list.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { WalletIcon } from "src/views/login/components/wallet-icon/wallet-icon.view";
+import { useWalletListStyles } from "src/views/login/components/wallet-list/wallet-list.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface WalletListProps {
   onSelectWallet: (walletName: WalletName) => void;
 }
 
-const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
+export const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
   const classes = useWalletListStyles();
 
   return (
@@ -32,5 +32,3 @@ const WalletList: FC<WalletListProps> = ({ onSelectWallet }) => {
     </ul>
   );
 };
-
-export default WalletList;

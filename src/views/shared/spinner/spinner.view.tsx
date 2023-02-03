@@ -1,4 +1,4 @@
-import useSpinnerStyles from "src/views/shared/spinner/spinner.styles";
+import { useSpinnerStyles } from "src/views/shared/spinner/spinner.styles";
 
 const SIZE = 44;
 const THICKNESS = 3;
@@ -8,7 +8,7 @@ interface SpinnerProps {
   size?: number;
 }
 
-function Spinner({ color, size }: SpinnerProps): JSX.Element {
+export const Spinner = ({ color, size }: SpinnerProps): JSX.Element => {
   const classes = useSpinnerStyles({ color, size: size !== undefined ? size : 48 });
 
   return (
@@ -33,6 +33,4 @@ function Spinner({ color, size }: SpinnerProps): JSX.Element {
       </svg>
     </div>
   );
-}
-
-export default Spinner;
+};

@@ -1,13 +1,13 @@
 import { FC, PropsWithChildren } from "react";
 
-import useCardStyles from "src/views/shared/card/card.styles";
+import { useCardStyles } from "src/views/shared/card/card.styles";
 
 type CardProps = PropsWithChildren<{
   className?: string;
   onClick?: () => void;
 }>;
 
-const Card: FC<CardProps> = ({ children, className, onClick }) => {
+export const Card: FC<CardProps> = ({ children, className, onClick }) => {
   const classes = useCardStyles();
 
   return (
@@ -16,5 +16,3 @@ const Card: FC<CardProps> = ({ children, className, onClick }) => {
     </div>
   );
 };
-
-export default Card;

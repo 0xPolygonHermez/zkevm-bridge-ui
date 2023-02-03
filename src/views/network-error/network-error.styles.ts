@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
+export const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
   button: {
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
@@ -38,5 +38,3 @@ const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(10),
   },
 }));
-
-export default useNetworkErrorStyles;

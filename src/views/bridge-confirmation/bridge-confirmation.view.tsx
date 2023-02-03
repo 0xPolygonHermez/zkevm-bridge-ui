@@ -16,7 +16,7 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Gas, TokenSpendPermission } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
 import { calculateFee } from "src/utils/fees";
@@ -27,17 +27,17 @@ import {
   isEthersInsufficientFundsError,
   isMetaMaskUserRejectedRequestError,
 } from "src/utils/types";
-import useBridgeConfirmationStyles from "src/views/bridge-confirmation/bridge-confirmation.styles";
-import ApprovalInfo from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
-import BridgeButton from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Header from "src/views/shared/header/header.view";
-import Icon from "src/views/shared/icon/icon.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useBridgeConfirmationStyles } from "src/views/bridge-confirmation/bridge-confirmation.styles";
+import { ApprovalInfo } from "src/views/bridge-confirmation/components/approval-info/approval-info.view";
+import { BridgeButton } from "src/views/bridge-confirmation/components/bridge-button/bridge-button.view";
+import { Card } from "src/views/shared/card/card.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Header } from "src/views/shared/header/header.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { PageLoader } from "src/views/shared/page-loader/page-loader.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const BridgeConfirmation: FC = () => {
+export const BridgeConfirmation: FC = () => {
   const callIfMounted = useCallIfMounted();
   const classes = useBridgeConfirmationStyles();
   const navigate = useNavigate();
@@ -471,5 +471,3 @@ const BridgeConfirmation: FC = () => {
     </div>
   );
 };
-
-export default BridgeConfirmation;

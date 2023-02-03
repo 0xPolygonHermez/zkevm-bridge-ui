@@ -4,7 +4,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { routes } from "src/routes";
 
-const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
+export const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
   const { connectedProvider } = useProvidersContext();
   const { pathname, search } = useLocation();
 
@@ -24,5 +24,3 @@ const PrivateRoute: FC<PropsWithChildren> = ({ children }) => {
     }
   }
 };
-
-export default PrivateRoute;

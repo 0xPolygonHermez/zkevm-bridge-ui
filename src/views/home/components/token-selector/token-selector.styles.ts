@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
+export const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "center",
     background: theme.palette.transparency,
@@ -21,5 +21,3 @@ const useTokenSelectorStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
 }));
-
-export default useTokenSelectorStyles;

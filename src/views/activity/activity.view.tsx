@@ -11,19 +11,19 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Bridge, PendingBridge } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import useIntersection from "src/hooks/use-intersection";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
+import { useIntersection } from "src/hooks/use-intersection";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useActivityStyles from "src/views/activity/activity.styles";
-import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
-import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
-import Card from "src/views/shared/card/card.view";
-import Header from "src/views/shared/header/header.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useActivityStyles } from "src/views/activity/activity.styles";
+import { BridgeCard } from "src/views/activity/components/bridge-card/bridge-card.view";
+import { InfiniteScroll } from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
+import { Card } from "src/views/shared/card/card.view";
+import { Header } from "src/views/shared/header/header.view";
+import { PageLoader } from "src/views/shared/page-loader/page-loader.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Activity: FC = () => {
+export const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
   const { claim, fetchBridges, getPendingBridges } = useBridgeContext();
@@ -439,5 +439,3 @@ const Activity: FC = () => {
     }
   }
 };
-
-export default Activity;

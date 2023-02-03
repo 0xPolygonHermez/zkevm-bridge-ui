@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenInfoStyles = createUseStyles((theme: Theme) => ({
+export const useTokenInfoStyles = createUseStyles((theme: Theme) => ({
   removeTokenButton: {
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
@@ -30,5 +30,3 @@ const useTokenInfoStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
 }));
-
-export default useTokenInfoStyles;

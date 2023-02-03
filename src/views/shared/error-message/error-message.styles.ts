@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useErrorMessageStyles = createUseStyles((theme: Theme) => ({
+export const useErrorMessageStyles = createUseStyles((theme: Theme) => ({
   error: {
     color: theme.palette.error.main,
     lineHeight: "26px",
@@ -13,5 +13,3 @@ const useErrorMessageStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
   },
 }));
-
-export default useErrorMessageStyles;

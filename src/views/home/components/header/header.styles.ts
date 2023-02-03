@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useHeaderStyles = createUseStyles((theme: Theme) => ({
+export const useHeaderStyles = createUseStyles((theme: Theme) => ({
   activityLabel: {
     display: "none",
     [theme.breakpoints.upSm]: {
@@ -44,5 +44,3 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "end",
   },
 }));
-
-export default useHeaderStyles;

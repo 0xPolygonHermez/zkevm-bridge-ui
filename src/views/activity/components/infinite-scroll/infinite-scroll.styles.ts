@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useInfiniteScrollStyles = createUseStyles((theme: Theme) => ({
+export const useInfiniteScrollStyles = createUseStyles((theme: Theme) => ({
   root: {
     width: "100%",
   },
@@ -14,5 +14,3 @@ const useInfiniteScrollStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
 }));
-
-export default useInfiniteScrollStyles;
