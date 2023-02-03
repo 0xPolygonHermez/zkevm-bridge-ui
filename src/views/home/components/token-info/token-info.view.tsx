@@ -3,8 +3,8 @@ import { FC } from "react";
 import { isChainCustomToken } from "src/adapters/storage";
 import { ReactComponent as DeleteIcon } from "src/assets/icons/delete.svg";
 import { Chain, Token } from "src/domain";
-import { TokenInfoTable } from "src/views/home/components/token-info-table/token-info-table.view";
 import { useTokenInfoStyles } from "src/views/home/components/token-info/token-info.styles";
+import { TokenInfoTable } from "src/views/home/components/token-info-table/token-info-table.view";
 import { TokenSelectorHeader } from "src/views/home/components/token-selector-header/token-selector-header.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
