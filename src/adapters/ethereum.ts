@@ -322,12 +322,12 @@ const getErc20TokenEncodedMetadata = async ({
   return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
 };
 
-interface GetTxFeeParams {
+interface GetTxFeePaidParams {
   chain: Chain;
   txHash: string;
 }
 
-function getTxFeePaid({ chain, txHash }: GetTxFeeParams): Promise<BigNumber | undefined> {
+function getTxFeePaid({ chain, txHash }: GetTxFeePaidParams): Promise<BigNumber | undefined> {
   return chain.provider.getTransactionReceipt(txHash).then((txReceipt) => {
     if (txReceipt) {
       if (txReceipt.effectiveGasPrice) {
