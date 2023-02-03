@@ -16,7 +16,7 @@ type CalculateTransactionReceiptFeeParams =
       type: LegacyGasType;
     };
 
-export const calculateMaxFee = (gas: Gas): BigNumber => {
+export const calculateMaxTxFee = (gas: Gas): BigNumber => {
   switch (gas.type) {
     case "eip-1559": {
       return gas.data.gasLimit.mul(gas.data.maxFeePerGas);
