@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { isCancelRequestError } from "src/adapters/bridge-api";
 import { parseError } from "src/adapters/error";
+import { getTxFeePaid } from "src/adapters/ethereum";
 import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
@@ -17,7 +18,6 @@ import { AsyncTask, Bridge } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
-import { calculateTransactionReceiptFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
@@ -37,29 +37,11 @@ interface Fees {
 }
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
-  const step1Promise = bridge.from.provider
-    .getTransactionReceipt(
-      bridge.status === "pending"
-        ? bridge.claimTxHash || bridge.depositTxHash
-        : bridge.depositTxHash
-    )
-    .then((txReceipt) =>
-      txReceipt ? calculateTransactionReceiptFee({ txReceipt, type: "eip-1559" }) : undefined
-    )
-    .catch(() => undefined);
+  const step1Promise = getTxFeePaid({ chain: bridge.from, txHash: bridge.depositTxHash });
 
   const step2Promise =
     bridge.status === "completed"
-      ? Promise.all([
-          bridge.to.provider.getTransactionReceipt(bridge.claimTxHash),
-          bridge.to.provider.getTransaction(bridge.claimTxHash),
-        ])
-          .then(([txReceipt, txResponse]) =>
-            txReceipt && txResponse
-              ? calculateTransactionReceiptFee({ txReceipt, txResponse, type: "legacy" })
-              : undefined
-          )
-          .catch(() => undefined)
+      ? getTxFeePaid({ chain: bridge.to, txHash: bridge.claimTxHash })
       : Promise.resolve(undefined);
 
   return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({

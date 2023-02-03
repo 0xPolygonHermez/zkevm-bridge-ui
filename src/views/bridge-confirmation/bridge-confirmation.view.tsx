@@ -19,7 +19,7 @@ import { AsyncTask, Gas, TokenSpendPermission } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
-import { calculateFee } from "src/utils/fees";
+import { calculateMaxFee } from "src/utils/fees";
 import { getCurrencySymbol } from "src/utils/labels";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import {
@@ -85,7 +85,7 @@ export const BridgeConfirmation: FC = () => {
         tokenSpendPermission,
       })
         .then((gas: Gas) => {
-          const newFee = calculateFee(gas);
+          const newFee = calculateMaxFee(gas);
 
           if (!newFee) {
             setEstimatedGas({ error: "Gas data is not available", status: "failed" });
@@ -385,7 +385,7 @@ export const BridgeConfirmation: FC = () => {
       FIAT_DISPLAY_PRECISION
     );
 
-  const fee = calculateFee(estimatedGas.data);
+  const fee = calculateMaxFee(estimatedGas.data);
   const fiatFee =
     env.fiatExchangeRates.areEnabled &&
     etherTokenFiatPrice &&
