@@ -6,7 +6,7 @@ interface WalletIconStylesProps {
   size: "sm" | "lg";
 }
 
-const useWalletIconStyles = createUseStyles((theme: Theme) => ({
+export const useWalletIconStyles = createUseStyles((theme: Theme) => ({
   metaMaskIcon: {
     background: "#fbe6df",
   },
@@ -23,5 +23,3 @@ const useWalletIconStyles = createUseStyles((theme: Theme) => ({
     width: size === "sm" ? theme.spacing(6) : theme.spacing(7.5),
   }),
 }));
-
-export default useWalletIconStyles;

@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useHeaderStyles = createUseStyles((theme: Theme) => ({
+export const useHeaderStyles = createUseStyles((theme: Theme) => ({
   block: {
     display: "flex",
     flex: 1,
@@ -63,5 +63,3 @@ const useHeaderStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
 }));
-
-export default useHeaderStyles;

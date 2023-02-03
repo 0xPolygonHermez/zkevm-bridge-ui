@@ -7,14 +7,14 @@ import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifyi
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Chain, Token } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
-import useTokenListStyles from "src/views/home/components/token-list/token-list.styles";
-import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Spinner from "src/views/shared/spinner/spinner.view";
-import TokenBalance from "src/views/shared/token-balance/token-balance.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useTokenListStyles } from "src/views/home/components/token-list/token-list.styles";
+import { TokenSelectorHeader } from "src/views/home/components/token-selector-header/token-selector-header.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
+import { TokenBalance } from "src/views/shared/token-balance/token-balance.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface SelectedChains {
   from: Chain;
@@ -31,7 +31,7 @@ interface TokenListProps {
   tokens: Token[];
 }
 
-const TokenList: FC<TokenListProps> = ({
+export const TokenList: FC<TokenListProps> = ({
   account,
   chains,
   onClose,
@@ -261,5 +261,3 @@ const TokenList: FC<TokenListProps> = ({
     </div>
   );
 };
-
-export default TokenList;

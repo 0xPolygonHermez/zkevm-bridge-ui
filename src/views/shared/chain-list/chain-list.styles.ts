@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useListStyles = createUseStyles((theme: Theme) => ({
+export const useListStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "center",
     background: theme.palette.transparency,
@@ -84,5 +84,3 @@ const useListStyles = createUseStyles((theme: Theme) => ({
     overflowY: "auto",
   },
 }));
-
-export default useListStyles;

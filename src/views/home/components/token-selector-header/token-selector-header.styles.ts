@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenSelectorHeaderStyles = createUseStyles((theme: Theme) => ({
+export const useTokenSelectorHeaderStyles = createUseStyles((theme: Theme) => ({
   backButton: {
     "&:hover": {
       background: theme.palette.grey.main,
@@ -56,5 +56,3 @@ const useTokenSelectorHeaderStyles = createUseStyles((theme: Theme) => ({
     position: "relative",
   },
 }));
-
-export default useTokenSelectorHeaderStyles;

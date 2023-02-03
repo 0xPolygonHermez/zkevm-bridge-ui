@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
+export const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
   addTokenButton: {
     "&:hover": {
       backgroundColor: theme.palette.primary.dark,
@@ -41,5 +41,3 @@ const useTokenAdderStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(3),
   },
 }));
-
-export default useTokenAdderStyles;

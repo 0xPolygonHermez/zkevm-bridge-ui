@@ -6,10 +6,10 @@ import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-log
 import { useEnvContext } from "src/contexts/env.context";
 import { ProviderError } from "src/domain";
 import { routes } from "src/routes";
-import useNetworkErrorStyles from "src/views/network-error/network-error.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { useNetworkErrorStyles } from "src/views/network-error/network-error.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const NetworkError: FC = () => {
+export const NetworkError: FC = () => {
   const classes = useNetworkErrorStyles();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -43,5 +43,3 @@ const NetworkError: FC = () => {
     <Navigate to={routes.home.path} />
   );
 };
-
-export default NetworkError;

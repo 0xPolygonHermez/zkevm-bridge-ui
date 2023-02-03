@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
+export const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
   alignRow: {
     alignItems: "center",
     display: "flex",
@@ -67,5 +67,3 @@ const useTokenInfoTableStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.white,
   },
 }));
-
-export default useTokenInfoTableStyles;

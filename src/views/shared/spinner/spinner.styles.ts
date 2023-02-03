@@ -7,7 +7,7 @@ interface StyleProps {
   size: number;
 }
 
-const useSpinnerStyles = createUseStyles((theme: Theme) => ({
+export const useSpinnerStyles = createUseStyles((theme: Theme) => ({
   "@keyframes spin": {
     from: { transform: "rotate(0deg)" },
     to: { transform: "rotate(360deg)" },
@@ -31,5 +31,3 @@ const useSpinnerStyles = createUseStyles((theme: Theme) => ({
     strokeLinecap: "round",
   }),
 }));
-
-export default useSpinnerStyles;

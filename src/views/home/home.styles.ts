@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useHomeStyles = createUseStyles((theme: Theme) => ({
+export const useHomeStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     display: "flex",
     flexDirection: "column",
@@ -32,5 +32,3 @@ const useHomeStyles = createUseStyles((theme: Theme) => ({
     width: "100%",
   },
 }));
-
-export default useHomeStyles;

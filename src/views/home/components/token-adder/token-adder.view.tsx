@@ -1,11 +1,11 @@
 import { FC } from "react";
 import { ReactComponent as WarningIcon } from "src/assets/icons/warning.svg";
 import { Token } from "src/domain";
-import useTokenAdderStyles from "src/views/home/components/token-adder/token-adder.styles";
+import { useTokenAdderStyles } from "src/views/home/components/token-adder/token-adder.styles";
 
-import TokenInfoTable from "src/views/home/components/token-info-table/token-info-table.view";
-import TokenSelectorHeader from "src/views/home/components/token-selector-header/token-selector-header.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { TokenInfoTable } from "src/views/home/components/token-info-table/token-info-table.view";
+import { TokenSelectorHeader } from "src/views/home/components/token-selector-header/token-selector-header.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface TokenAdderProps {
   onAddToken: (token: Token) => void;
@@ -14,7 +14,12 @@ interface TokenAdderProps {
   token: Token;
 }
 
-const TokenAdder: FC<TokenAdderProps> = ({ onAddToken, onClose, onNavigateToTokenList, token }) => {
+export const TokenAdder: FC<TokenAdderProps> = ({
+  onAddToken,
+  onClose,
+  onNavigateToTokenList,
+  token,
+}) => {
   const classes = useTokenAdderStyles();
 
   return (
@@ -33,5 +38,3 @@ const TokenAdder: FC<TokenAdderProps> = ({ onAddToken, onClose, onNavigateToToke
     </div>
   );
 };
-
-export default TokenAdder;

@@ -5,13 +5,13 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { Chain } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import ChainList from "src/views/shared/chain-list/chain-list.view";
-import useNetworkSelectorStyles from "src/views/shared/network-selector/network-selector.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { ChainList } from "src/views/shared/chain-list/chain-list.view";
+import { useNetworkSelectorStyles } from "src/views/shared/network-selector/network-selector.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const NetworkSelector: FC = () => {
+export const NetworkSelector: FC = () => {
   const classes = useNetworkSelectorStyles();
   const env = useEnvContext();
   const { changeNetwork, connectedProvider } = useProvidersContext();
@@ -71,5 +71,3 @@ const NetworkSelector: FC = () => {
     </>
   );
 };
-
-export default NetworkSelector;

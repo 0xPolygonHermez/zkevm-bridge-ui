@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
+export const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
   amount: {
     alignItems: "center",
     display: "flex",
@@ -110,5 +110,3 @@ const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     flexDirection: "column",
   },
 }));
-
-export default useBridgeCardStyles;

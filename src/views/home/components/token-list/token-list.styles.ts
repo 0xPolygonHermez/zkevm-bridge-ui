@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTokenListStyles = createUseStyles((theme: Theme) => ({
+export const useTokenListStyles = createUseStyles((theme: Theme) => ({
   addTokenButton: {
     "&:hover": {
       background: theme.palette.grey.main,
@@ -141,5 +141,3 @@ const useTokenListStyles = createUseStyles((theme: Theme) => ({
     height: "100%",
   },
 }));
-
-export default useTokenListStyles;

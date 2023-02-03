@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
+export const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
   alignRow: {
     alignItems: "center",
     display: "flex",
@@ -100,5 +100,3 @@ const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
     width: 48,
   },
 }));
-
-export default useBridgeDetailsStyles;

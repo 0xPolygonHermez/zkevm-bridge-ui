@@ -4,9 +4,9 @@ import { FC } from "react";
 import { Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
-import Spinner from "src/views/shared/spinner/spinner.view";
-import useTokenBalanceStyles from "src/views/shared/token-balance/token-balance.styles";
-import Typography, { TypographyProps } from "src/views/shared/typography/typography.view";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
+import { useTokenBalanceStyles } from "src/views/shared/token-balance/token-balance.styles";
+import { Typography, TypographyProps } from "src/views/shared/typography/typography.view";
 
 interface TokenBalanceProps {
   spinnerSize: number;
@@ -14,7 +14,7 @@ interface TokenBalanceProps {
   typographyProps: TypographyProps;
 }
 
-const TokenBalance: FC<TokenBalanceProps> = ({ spinnerSize, token, typographyProps }) => {
+export const TokenBalance: FC<TokenBalanceProps> = ({ spinnerSize, token, typographyProps }) => {
   const classes = useTokenBalanceStyles();
   const loader = (
     <div className={classes.loader}>
@@ -46,5 +46,3 @@ const TokenBalance: FC<TokenBalanceProps> = ({ spinnerSize, token, typographyPro
     }
   }
 };
-
-export default TokenBalance;

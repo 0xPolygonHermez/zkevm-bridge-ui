@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useSnackbarStyles = createUseStyles((theme: Theme) => ({
+export const useSnackbarStyles = createUseStyles((theme: Theme) => ({
   closeButton: {
     "&:hover": {
       background: theme.palette.grey.veryDark,
@@ -67,5 +67,3 @@ const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     width: "90%",
   },
 }));
-
-export default useSnackbarStyles;

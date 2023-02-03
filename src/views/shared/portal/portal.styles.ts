@@ -1,6 +1,6 @@
 import { createUseStyles } from "react-jss";
 
-const usePortalStyles = createUseStyles({
+export const usePortalStyles = createUseStyles({
   fullScreenModal: {
     bottom: 0,
     left: 0,
@@ -9,5 +9,3 @@ const usePortalStyles = createUseStyles({
     top: 0,
   },
 });
-
-export default usePortalStyles;

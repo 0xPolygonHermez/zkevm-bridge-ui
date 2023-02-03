@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 
-import useButtonStyles from "src/views/shared/button/button.styles";
-import Spinner from "src/views/shared/spinner/spinner.view";
+import { useButtonStyles } from "src/views/shared/button/button.styles";
+import { Spinner } from "src/views/shared/spinner/spinner.view";
 
 type ButtonProps = PropsWithChildren<{
   disabled?: boolean;
@@ -10,7 +10,7 @@ type ButtonProps = PropsWithChildren<{
   type?: "submit";
 }>;
 
-const Button: FC<ButtonProps> = ({ children, disabled, isLoading, onClick, type }) => {
+export const Button: FC<ButtonProps> = ({ children, disabled, isLoading, onClick, type }) => {
   const addSpinnerSpacing = children !== undefined;
   const classes = useButtonStyles();
 
@@ -30,5 +30,3 @@ const Button: FC<ButtonProps> = ({ children, disabled, isLoading, onClick, type 
     </button>
   );
 };
-
-export default Button;

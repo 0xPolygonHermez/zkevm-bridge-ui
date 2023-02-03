@@ -1,9 +1,9 @@
 import { FC, MouseEvent, ReactNode } from "react";
 
-import Card from "src/views/shared/card/card.view";
-import useConfirmPopUpStyles from "src/views/shared/confirm-pop-up/confirm-pop-up.styles";
-import Portal from "src/views/shared/portal/portal.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { Card } from "src/views/shared/card/card.view";
+import { useConfirmPopUpStyles } from "src/views/shared/confirm-pop-up/confirm-pop-up.styles";
+import { Portal } from "src/views/shared/portal/portal.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface ConfirmPopUpProps {
   message: ReactNode;
@@ -13,7 +13,7 @@ interface ConfirmPopUpProps {
   title?: string;
 }
 
-const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
+export const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
   message,
   onClose,
   onConfirm,
@@ -51,5 +51,3 @@ const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
     </Portal>
   );
 };
-
-export default ConfirmPopUp;

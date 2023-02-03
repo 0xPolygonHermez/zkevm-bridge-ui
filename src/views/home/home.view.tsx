@@ -10,14 +10,14 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, FormData } from "src/domain";
 import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
-import BridgeForm from "src/views/home/components/bridge-form/bridge-form.view";
-import Header from "src/views/home/components/header/header.view";
-import useHomeStyles from "src/views/home/home.styles";
-import InfoBanner from "src/views/shared/info-banner/info-banner.view";
-import NetworkBox from "src/views/shared/network-box/network-box.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.view";
+import { Header } from "src/views/home/components/header/header.view";
+import { useHomeStyles } from "src/views/home/home.styles";
+import { InfoBanner } from "src/views/shared/info-banner/info-banner.view";
+import { NetworkBox } from "src/views/shared/network-box/network-box.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Home = (): JSX.Element => {
+export const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
   const { formData, setFormData } = useFormContext();
@@ -79,5 +79,3 @@ const Home = (): JSX.Element => {
     </div>
   );
 };
-
-export default Home;

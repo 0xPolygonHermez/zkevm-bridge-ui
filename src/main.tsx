@@ -4,8 +4,8 @@ import { ThemeProvider } from "react-jss";
 import { BrowserRouter } from "react-router-dom";
 import "normalize.css/normalize.css";
 
-import theme from "src/styles/theme";
-import App from "src/views/app.view";
+import { theme } from "src/styles/theme";
+import { App } from "src/views/app.view";
 
 const container = document.getElementById("root");
 

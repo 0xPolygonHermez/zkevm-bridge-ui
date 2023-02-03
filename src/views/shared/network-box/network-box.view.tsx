@@ -9,13 +9,13 @@ import { useErrorContext } from "src/contexts/error.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { Message } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import Card from "src/views/shared/card/card.view";
-import useNetworkBoxStyles from "src/views/shared/network-box/network-box.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { Card } from "src/views/shared/card/card.view";
+import { useNetworkBoxStyles } from "src/views/shared/network-box/network-box.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const NetworkBox: FC = () => {
+export const NetworkBox: FC = () => {
   const classes = useNetworkBoxStyles();
   const env = useEnvContext();
   const { addNetwork, connectedProvider } = useProvidersContext();
@@ -134,5 +134,3 @@ const NetworkBox: FC = () => {
     </Card>
   );
 };
-
-export default NetworkBox;
