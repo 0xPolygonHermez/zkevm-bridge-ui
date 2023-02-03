@@ -1,3 +1,4 @@
+import { BigNumber } from "ethers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { isCancelRequestError } from "src/adapters/bridge-api";
@@ -10,18 +11,19 @@ import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Bridge, PendingBridge } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
-import useIntersection from "src/hooks/use-intersection";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
+import { useIntersection } from "src/hooks/use-intersection";
+import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useActivityStyles from "src/views/activity/activity.styles";
-import BridgeCard from "src/views/activity/components/bridge-card/bridge-card.view";
-import InfiniteScroll from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
-import Card from "src/views/shared/card/card.view";
-import Header from "src/views/shared/header/header.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useActivityStyles } from "src/views/activity/activity.styles";
+import { BridgeCard } from "src/views/activity/components/bridge-card/bridge-card.view";
+import { InfiniteScroll } from "src/views/activity/components/infinite-scroll/infinite-scroll.view";
+import { Card } from "src/views/shared/card/card.view";
+import { Header } from "src/views/shared/header/header.view";
+import { PageLoader } from "src/views/shared/page-loader/page-loader.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Activity: FC = () => {
+export const Activity: FC = () => {
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
   const { claim, fetchBridges, getPendingBridges } = useBridgeContext();
@@ -29,6 +31,9 @@ const Activity: FC = () => {
   const { notifyError } = useErrorContext();
   const { openSnackbar } = useUIContext();
   const { tokens } = useTokensContext();
+  const [lastVerifiedBatch, setLastVerifiedBatch] = useState<AsyncTask<BigNumber, string>>({
+    status: "pending",
+  });
   const [apiBridges, setApiBridges] = useState<AsyncTask<Bridge[], undefined, true>>({
     status: "pending",
   });
@@ -196,7 +201,7 @@ const Activity: FC = () => {
   ]);
 
   useEffect(() => {
-    // Polling
+    // Polling bridges
     if (
       env &&
       connectedProvider.status === "successful" &&
@@ -240,6 +245,44 @@ const Activity: FC = () => {
     processFetchBridgesSuccess,
     callIfMounted,
   ]);
+
+  useEffect(() => {
+    // Polling lastVerifiedBatch
+    if (env) {
+      const ethereum = env.chains[0];
+      const poeContract = ProofOfEfficiency__factory.connect(
+        ethereum.poeContractAddress,
+        ethereum.provider
+      );
+      const refreshLastVerifiedBatch = () => {
+        setLastVerifiedBatch((currentLastVerifiedBatch) =>
+          isAsyncTaskDataAvailable(currentLastVerifiedBatch)
+            ? { data: currentLastVerifiedBatch.data, status: "reloading" }
+            : { status: "loading" }
+        );
+        poeContract
+          .lastVerifiedBatch()
+          .then((newLastVerifiedBatch) => {
+            setLastVerifiedBatch({
+              data: newLastVerifiedBatch,
+              status: "successful",
+            });
+          })
+          .catch(() => {
+            setLastVerifiedBatch({
+              error: "An error occurred getting the last verified batch",
+              status: "failed",
+            });
+          });
+      };
+      refreshLastVerifiedBatch();
+      const intervalId = setInterval(refreshLastVerifiedBatch, AUTO_REFRESH_RATE);
+
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [env]);
 
   useEffect(() => {
     setWrongNetworkBridges([]);
@@ -367,6 +410,7 @@ const Activity: FC = () => {
                         bridge={bridge}
                         env={env}
                         isFinaliseDisabled={true}
+                        lastVerifiedBatch={lastVerifiedBatch}
                         networkError={false}
                         showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                       />
@@ -377,6 +421,7 @@ const Activity: FC = () => {
                         bridge={bridge}
                         env={env}
                         isFinaliseDisabled={areBridgesDisabled}
+                        lastVerifiedBatch={lastVerifiedBatch}
                         networkError={wrongNetworkBridges.includes(bridge.id)}
                         onClaim={() => onClaim(bridge)}
                         showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
@@ -394,5 +439,3 @@ const Activity: FC = () => {
     }
   }
 };
-
-export default Activity;

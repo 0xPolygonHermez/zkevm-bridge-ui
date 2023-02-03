@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
+export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   arrowDownIcon: {
     backgroundColor: theme.palette.grey.main,
     borderRadius: "50%",
@@ -124,5 +124,3 @@ const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useBridgeFormStyles;

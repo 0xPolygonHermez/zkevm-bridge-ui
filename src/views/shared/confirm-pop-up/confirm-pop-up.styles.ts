@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
+export const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "center",
     background: theme.palette.transparency,
@@ -51,5 +51,3 @@ const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
   },
 }));
-
-export default useConfirmPopUpStyles;

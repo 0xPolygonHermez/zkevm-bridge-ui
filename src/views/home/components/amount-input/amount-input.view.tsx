@@ -5,8 +5,8 @@ import { ChangeEvent, FC, useEffect, useState } from "react";
 import { Chain, Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
 import { isTokenEther } from "src/utils/tokens";
-import useAmountInputStyles from "src/views/home/components/amount-input/amount-input.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { useAmountInputStyles } from "src/views/home/components/amount-input/amount-input.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface AmountInputProps {
   balance: BigNumber;
@@ -17,7 +17,7 @@ interface AmountInputProps {
   value?: BigNumber;
 }
 
-const AmountInput: FC<AmountInputProps> = ({
+export const AmountInput: FC<AmountInputProps> = ({
   balance,
   from,
   maxEtherBridge,
@@ -95,5 +95,3 @@ const AmountInput: FC<AmountInputProps> = ({
     </div>
   );
 };
-
-export default AmountInput;

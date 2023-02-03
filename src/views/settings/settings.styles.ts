@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useActivityStyles = createUseStyles((theme: Theme) => ({
+export const useSettingsStyles = createUseStyles((theme: Theme) => ({
   card: {
     margin: [theme.spacing(5), "auto", 0, "auto"],
     maxWidth: theme.maxWidth,
@@ -60,5 +60,3 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(2),
   },
 }));
-
-export default useActivityStyles;

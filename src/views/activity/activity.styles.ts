@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useActivityStyles = createUseStyles((theme: Theme) => ({
+export const useActivityStyles = createUseStyles((theme: Theme) => ({
   bridgeCardwrapper: {
     "&:not(:last-child)": {
       marginBottom: theme.spacing(2),
@@ -69,5 +69,3 @@ const useActivityStyles = createUseStyles((theme: Theme) => ({
     borderBottom: `${theme.palette.grey.main} 1px solid`,
   },
 }));
-
-export default useActivityStyles;

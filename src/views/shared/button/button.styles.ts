@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useButtonStyles = createUseStyles((theme: Theme) => ({
+export const useButtonStyles = createUseStyles((theme: Theme) => ({
   button: {
     "&:disabled": {
       backgroundColor: theme.palette.grey.dark,
@@ -30,5 +30,3 @@ const useButtonStyles = createUseStyles((theme: Theme) => ({
     paddingLeft: theme.spacing(1.5),
   },
 }));
-
-export default useButtonStyles;

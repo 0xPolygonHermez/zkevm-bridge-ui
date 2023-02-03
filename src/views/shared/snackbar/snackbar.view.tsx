@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 
 import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
 import { Message } from "src/domain";
-import useSnackbarStyles from "src/views/shared/snackbar/snackbar.styles";
+import { useSnackbarStyles } from "src/views/shared/snackbar/snackbar.styles";
 
 interface SnackbarProps {
   message: Message;
@@ -13,7 +13,7 @@ interface SnackbarProps {
   onReport: (error: string) => void;
 }
 
-function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
+export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport }) => {
   const classes = useSnackbarStyles();
 
   const Icon = ({ message }: { message: Message }): JSX.Element => {
@@ -66,6 +66,4 @@ function Snackbar({ message, onClose, onReport }: SnackbarProps): JSX.Element {
       </div>
     );
   }
-}
-
-export default Snackbar;
+};

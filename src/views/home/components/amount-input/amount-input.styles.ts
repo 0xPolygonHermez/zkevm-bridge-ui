@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useAmountInputStyles = createUseStyles((theme: Theme) => ({
+export const useAmountInputStyles = createUseStyles((theme: Theme) => ({
   amountInput: {
     "&:disabled": {
       backgroundColor: "transparent",
@@ -41,5 +41,3 @@ const useAmountInputStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useAmountInputStyles;

@@ -29,7 +29,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@hermeznetwork/eslint-config-react-ts": "^1.3.0",
+    "@iden3/eslint-config-react-ts": "^1.4.0",
     "@typechain/ethers-v5": "^10.1.0",
     "@types/node": "^18.6.2",
     "@types/platform": "^1.3.4",
@@ -45,7 +45,7 @@
     "vite-plugin-svgr": "^2.2.1"
   },
   "eslintConfig": {
-    "extends": "@hermeznetwork/eslint-config-react-ts",
+    "extends": "@iden3/eslint-config-react-ts",
     "ignorePatterns": [
       "dist"
     ]

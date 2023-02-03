@@ -1,4 +1,4 @@
-function useIntersection({
+export const useIntersection = ({
   className,
   observed,
   target,
@@ -6,7 +6,7 @@ function useIntersection({
   className: string;
   observed: React.RefObject<HTMLDivElement>;
   target: React.RefObject<HTMLDivElement>;
-}): void {
+}) => {
   const observer = new IntersectionObserver((entries) => {
     const entry = entries[0];
     if (entry && entry.boundingClientRect.y < 0) {
@@ -18,6 +18,4 @@ function useIntersection({
   if (observed.current) {
     observer.observe(observed.current);
   }
-}
-
-export default useIntersection;
+};

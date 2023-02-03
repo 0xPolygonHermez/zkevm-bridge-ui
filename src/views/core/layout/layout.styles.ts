@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useLayoutStyles = createUseStyles((theme: Theme) => ({
+export const useLayoutStyles = createUseStyles((theme: Theme) => ({
   container: {
     display: "flex",
     flex: 1,
@@ -25,5 +25,3 @@ const useLayoutStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(2),
   },
 }));
-
-export default useLayoutStyles;

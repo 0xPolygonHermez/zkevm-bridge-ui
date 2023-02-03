@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 import { ReactComponent as ArrowLeftIcon } from "src/assets/icons/arrow-left.svg";
 import { RouterState } from "src/domain";
 import { routes } from "src/routes";
-import useHeaderStyles from "src/views/shared/header/header.styles";
-import NetworkSelector from "src/views/shared/network-selector/network-selector.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useHeaderStyles } from "src/views/shared/header/header.styles";
+import { NetworkSelector } from "src/views/shared/network-selector/network-selector.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface HeaderProps {
   Subtitle?: ReactElement;
@@ -14,7 +14,7 @@ interface HeaderProps {
   title: string;
 }
 
-const Header: FC<HeaderProps> = ({ backTo, Subtitle, title }) => {
+export const Header: FC<HeaderProps> = ({ backTo, Subtitle, title }) => {
   const classes = useHeaderStyles();
   const route = routes[backTo.routeKey].path;
 
@@ -37,5 +37,3 @@ const Header: FC<HeaderProps> = ({ backTo, Subtitle, title }) => {
     </header>
   );
 };
-
-export default Header;

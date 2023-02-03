@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
+export const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
   button: {
     "&:disabled": {
       cursor: "inherit",
@@ -43,5 +43,3 @@ const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(2),
   },
 }));
-
-export default useNetworkBoxStyles;

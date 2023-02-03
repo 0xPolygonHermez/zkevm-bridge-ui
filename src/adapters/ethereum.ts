@@ -15,6 +15,7 @@ import {
 } from "src/constants";
 import { Chain, Permit, Token, TxStatus } from "src/domain";
 import { Erc20__factory } from "src/types/contracts/erc-20";
+import { calculateTransactionReceiptFee } from "src/utils/fees";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { StrictSchema } from "src/utils/type-safety";
 
@@ -321,6 +322,27 @@ const getErc20TokenEncodedMetadata = async ({
   return defaultAbiCoder.encode(["string", "string", "uint8"], [name, symbol, decimals]);
 };
 
+interface GetTxFeePaidParams {
+  chain: Chain;
+  txHash: string;
+}
+
+function getTxFeePaid({ chain, txHash }: GetTxFeePaidParams): Promise<BigNumber | undefined> {
+  return chain.provider.getTransactionReceipt(txHash).then((txReceipt) => {
+    if (txReceipt) {
+      if (txReceipt.effectiveGasPrice) {
+        return calculateTransactionReceiptFee({ txReceipt, type: "eip-1559" });
+      }
+
+      return chain.provider.getTransaction(txHash).then((txResponse) => {
+        if (txResponse) {
+          return calculateTransactionReceiptFee({ txReceipt, txResponse, type: "legacy" });
+        }
+      });
+    }
+  });
+}
+
 function isTxMined(tx: TypeSafeTransactionResponse | null): boolean {
   return tx !== null && tx.blockNumber !== null;
 }
@@ -345,6 +367,7 @@ export {
   getErc20TokenMetadata,
   getErc20TokenEncodedMetadata,
   isTxMined,
+  getTxFeePaid,
   isTxCanceled,
   hasTxBeenReverted,
 };

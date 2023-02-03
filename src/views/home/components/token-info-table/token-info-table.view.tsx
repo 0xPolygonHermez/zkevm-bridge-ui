@@ -8,15 +8,15 @@ import { Token } from "src/domain";
 import { getShortenedEthereumAddress } from "src/utils/addresses";
 import { copyToClipboard } from "src/utils/browser";
 import { isTokenEther } from "src/utils/tokens";
-import useTokenInfoTableStyles from "src/views/home/components/token-info-table/token-info-table.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { useTokenInfoTableStyles } from "src/views/home/components/token-info-table/token-info-table.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface TokenInfoTableProps {
   className?: string;
   token: Token;
 }
 
-const TokenInfoTable: FC<TokenInfoTableProps> = ({ className, token }) => {
+export const TokenInfoTable: FC<TokenInfoTableProps> = ({ className, token }) => {
   const classes = useTokenInfoTableStyles();
   const env = useEnvContext();
 
@@ -178,5 +178,3 @@ const TokenInfoTable: FC<TokenInfoTableProps> = ({ className, token }) => {
     );
   }
 };
-
-export default TokenInfoTable;

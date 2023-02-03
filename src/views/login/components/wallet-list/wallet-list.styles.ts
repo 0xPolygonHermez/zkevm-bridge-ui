@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useWalletListStyles = createUseStyles((theme: Theme) => ({
+export const useWalletListStyles = createUseStyles((theme: Theme) => ({
   wallet: {
     "&:hover": {
       background: "#e2e5ee",
@@ -29,5 +29,3 @@ const useWalletListStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(1),
   },
 }));
-
-export default useWalletListStyles;

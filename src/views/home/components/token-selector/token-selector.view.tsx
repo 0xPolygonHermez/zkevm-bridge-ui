@@ -1,12 +1,12 @@
 import { FC, MouseEvent, useEffect, useState } from "react";
 
 import { Chain, Token } from "src/domain";
-import TokenAdder from "src/views/home/components/token-adder/token-adder.view";
-import TokenInfo from "src/views/home/components/token-info/token-info.view";
-import TokenList from "src/views/home/components/token-list/token-list.view";
-import useTokenSelectorStyles from "src/views/home/components/token-selector/token-selector.styles";
-import Card from "src/views/shared/card/card.view";
-import Portal from "src/views/shared/portal/portal.view";
+import { TokenAdder } from "src/views/home/components/token-adder/token-adder.view";
+import { TokenInfo } from "src/views/home/components/token-info/token-info.view";
+import { TokenList } from "src/views/home/components/token-list/token-list.view";
+import { useTokenSelectorStyles } from "src/views/home/components/token-selector/token-selector.styles";
+import { Card } from "src/views/shared/card/card.view";
+import { Portal } from "src/views/shared/portal/portal.view";
 
 type Screen =
   | {
@@ -36,7 +36,7 @@ interface TokenSelectorProps {
   tokens: Token[];
 }
 
-const TokenSelector: FC<TokenSelectorProps> = ({
+export const TokenSelector: FC<TokenSelectorProps> = ({
   account,
   chains,
   onAddToken,
@@ -152,5 +152,3 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     </Portal>
   );
 };
-
-export default TokenSelector;

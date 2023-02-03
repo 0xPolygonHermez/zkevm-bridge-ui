@@ -1,10 +1,10 @@
 import { FC } from "react";
 
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
-import useApprovalInfoStyles from "src/views/bridge-confirmation/components/approval-info/approval-info.styles";
-import Typography from "src/views/shared/typography/typography.view";
+import { useApprovalInfoStyles } from "src/views/bridge-confirmation/components/approval-info/approval-info.styles";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const ApprovalMessage: FC = () => {
+export const ApprovalInfo: FC = () => {
   const classes = useApprovalInfoStyles();
 
   return (
@@ -14,5 +14,3 @@ const ApprovalMessage: FC = () => {
     </div>
   );
 };
-
-export default ApprovalMessage;

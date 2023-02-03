@@ -7,11 +7,11 @@ import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-log
 import { useEnvContext } from "src/contexts/env.context";
 import { routes } from "src/routes";
 import { areSettingsVisible } from "src/utils/feature-toggles";
-import useHeaderStyles from "src/views/home/components/header/header.styles";
-import NetworkSelector from "src/views/shared/network-selector/network-selector.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useHeaderStyles } from "src/views/home/components/header/header.styles";
+import { NetworkSelector } from "src/views/shared/network-selector/network-selector.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Header: FC = () => {
+export const Header: FC = () => {
   const classes = useHeaderStyles();
   const env = useEnvContext();
 
@@ -43,5 +43,3 @@ const Header: FC = () => {
     </header>
   );
 };
-
-export default Header;

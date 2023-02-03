@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
+export const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
   networkButton: {
     "&:hover": {
       backgroundColor: theme.palette.grey.main,
@@ -30,5 +30,3 @@ const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useNetworkSelectorStyles;

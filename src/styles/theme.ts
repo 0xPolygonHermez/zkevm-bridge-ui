@@ -1,4 +1,4 @@
-const theme = {
+export const theme = {
   breakpoints: {
     upSm: "@media (min-width: 480px)",
   },
@@ -35,5 +35,3 @@ const theme = {
 };
 
 export type Theme = typeof theme;
-
-export default theme;

@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useTypographyStyles = createUseStyles((theme: Theme) => ({
+export const useTypographyStyles = createUseStyles((theme: Theme) => ({
   body1: {
     color: theme.palette.black,
     fontSize: 16,
@@ -40,5 +40,3 @@ const useTypographyStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useTypographyStyles;

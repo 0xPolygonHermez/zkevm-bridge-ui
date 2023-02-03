@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
+export const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
   arrowIcon: {
     transform: "rotate(90deg)",
     [theme.breakpoints.upSm]: {
@@ -95,5 +95,3 @@ const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     },
   },
 }));
-
-export default useBridgeConfirmationStyles;

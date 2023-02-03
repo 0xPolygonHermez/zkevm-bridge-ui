@@ -6,32 +6,32 @@ import { getBatchNumberOfL2Block } from "src/adapters/ethereum";
 import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
-import { AUTO_REFRESH_RATE } from "src/constants";
 import { AsyncTask, Bridge, Env } from "src/domain";
 import { routes } from "src/routes";
-import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
-import useBridgeCardStyles from "src/views/activity/components/bridge-card/bridge-card.styles";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Icon from "src/views/shared/icon/icon.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useBridgeCardStyles } from "src/views/activity/components/bridge-card/bridge-card.styles";
+import { Card } from "src/views/shared/card/card.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 export interface BridgeCardProps {
   bridge: Bridge;
   env: Env;
   isFinaliseDisabled: boolean;
+  lastVerifiedBatch: AsyncTask<BigNumber, string>;
   networkError: boolean;
   onClaim?: () => void;
   showFiatAmount: boolean;
 }
 
-const BridgeCard: FC<BridgeCardProps> = ({
+export const BridgeCard: FC<BridgeCardProps> = ({
   bridge,
   env,
   isFinaliseDisabled,
+  lastVerifiedBatch,
   networkError,
   onClaim,
   showFiatAmount,
@@ -39,16 +39,17 @@ const BridgeCard: FC<BridgeCardProps> = ({
   const { amount, fiatAmount, from, status, to, token } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
-  const [lastVerifiedBatch, setLastVerifiedBatch] = useState<AsyncTask<BigNumber, string>>({
-    status: "pending",
-  });
   const [batchNumberOfL2Block, setBatchNumberOfL2Block] = useState<AsyncTask<BigNumber, string>>({
     status: "pending",
   });
 
   useEffect(() => {
     if (status !== "pending" && bridge.from.key === "polygon-zkevm") {
-      setBatchNumberOfL2Block({ status: "loading" });
+      setBatchNumberOfL2Block((currentBatchNumberOfL2Block) =>
+        isAsyncTaskDataAvailable(currentBatchNumberOfL2Block)
+          ? { data: currentBatchNumberOfL2Block.data, status: "reloading" }
+          : { status: "loading" }
+      );
       getBatchNumberOfL2Block(env.chains[1].provider, bridge.blockNumber)
         .then((newBatchNumberOfL2Block) => {
           setBatchNumberOfL2Block({
@@ -64,44 +65,6 @@ const BridgeCard: FC<BridgeCardProps> = ({
         });
     }
   }, [bridge, env, status]);
-
-  useEffect(() => {
-    // Polling
-    if (status === "initiated" && from.key === "polygon-zkevm") {
-      const ethereum = env.chains[0];
-      const poeContract = ProofOfEfficiency__factory.connect(
-        ethereum.poeContractAddress,
-        ethereum.provider
-      );
-      const refreshLastVerifiedBatch = () => {
-        setLastVerifiedBatch((currentLastVerifiedBatch) =>
-          isAsyncTaskDataAvailable(currentLastVerifiedBatch)
-            ? { data: currentLastVerifiedBatch.data, status: "reloading" }
-            : { status: "loading" }
-        );
-        poeContract
-          .lastVerifiedBatch()
-          .then((newLastVerifiedBatch) => {
-            setLastVerifiedBatch({
-              data: newLastVerifiedBatch,
-              status: "successful",
-            });
-          })
-          .catch(() => {
-            setLastVerifiedBatch({
-              error: "An error occurred getting the last verified batch",
-              status: "failed",
-            });
-          });
-      };
-      refreshLastVerifiedBatch();
-      const intervalId = setInterval(refreshLastVerifiedBatch, AUTO_REFRESH_RATE);
-
-      return () => {
-        clearInterval(intervalId);
-      };
-    }
-  }, [env, from, status]);
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
@@ -215,5 +178,3 @@ const BridgeCard: FC<BridgeCardProps> = ({
     </Card>
   );
 };
-
-export default BridgeCard;

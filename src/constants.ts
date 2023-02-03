@@ -1,9 +1,17 @@
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { ethers } from "ethers";
 
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { Chain, Currency, EthereumChain, EthereumChainId, ProviderError, Token, ZkEVMChain } from "src/domain";
+import {
+  Chain,
+  Currency,
+  EthereumChain,
+  EthereumChainId,
+  ProviderError,
+  Token,
+  ZkEVMChain,
+} from "src/domain";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 
 export const DAI_PERMIT_TYPEHASH =
@@ -85,8 +93,8 @@ export const getChains = ({
     rpcUrl: string;
   };
 }): Promise<[EthereumChain, ZkEVMChain]> => {
-  const ethereumProvider = new JsonRpcProvider(ethereum.rpcUrl);
-  const polygonZkEVMProvider = new JsonRpcProvider(polygonZkEVM.rpcUrl);
+  const ethereumProvider = new StaticJsonRpcProvider(ethereum.rpcUrl);
+  const polygonZkEVMProvider = new StaticJsonRpcProvider(polygonZkEVM.rpcUrl);
   const poeContract = ProofOfEfficiency__factory.connect(
     ethereum.poeContractAddress,
     ethereumProvider

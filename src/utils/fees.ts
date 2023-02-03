@@ -1,8 +1,22 @@
-import { TypeSafeTransactionResponse } from "@ethersproject/abstract-provider";
+import {
+  TypeSafeTransactionReceipt,
+  TypeSafeTransactionResponse,
+} from "@ethersproject/abstract-provider";
 import { BigNumber } from "ethers";
-import { Gas } from "src/domain";
+import { EIP1559GasType, Gas, LegacyGasType } from "src/domain";
 
-export const calculateFee = (gas: Gas): BigNumber => {
+type CalculateTransactionReceiptFeeParams =
+  | {
+      txReceipt: TypeSafeTransactionReceipt;
+      type: EIP1559GasType;
+    }
+  | {
+      txReceipt: TypeSafeTransactionReceipt;
+      txResponse: TypeSafeTransactionResponse;
+      type: LegacyGasType;
+    };
+
+export const calculateMaxTxFee = (gas: Gas): BigNumber => {
   switch (gas.type) {
     case "eip-1559": {
       return gas.data.gasLimit.mul(gas.data.maxFeePerGas);
@@ -13,16 +27,25 @@ export const calculateFee = (gas: Gas): BigNumber => {
   }
 };
 
-export const calculateTransactionResponseFee = (
-  transactionResponse: TypeSafeTransactionResponse
+export const calculateTransactionReceiptFee = (
+  params: CalculateTransactionReceiptFeeParams
 ): BigNumber | undefined => {
-  const { gasLimit, gasPrice, maxFeePerGas } = transactionResponse;
-  const gas: Gas | undefined =
-    gasLimit && maxFeePerGas
-      ? { data: { gasLimit, maxFeePerGas }, type: "eip-1559" }
-      : gasLimit && gasPrice
-      ? { data: { gasLimit, gasPrice }, type: "legacy" }
-      : undefined;
+  if (params.type === "eip-1559") {
+    const { effectiveGasPrice, gasUsed } = params.txReceipt;
 
-  return gas && calculateFee(gas);
+    if (!effectiveGasPrice || !gasUsed) {
+      return undefined;
+    }
+
+    return gasUsed.mul(effectiveGasPrice);
+  } else {
+    const { gasUsed } = params.txReceipt;
+    const { gasPrice } = params.txResponse;
+
+    if (!gasUsed || !gasPrice) {
+      return undefined;
+    }
+
+    return gasUsed.mul(gasPrice);
+  }
 };

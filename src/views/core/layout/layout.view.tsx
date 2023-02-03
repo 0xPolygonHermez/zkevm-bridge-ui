@@ -3,12 +3,12 @@ import { FC, PropsWithChildren, useEffect, useState } from "react";
 import { reportError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
-import useLayoutStyles from "src/views/core/layout/layout.styles";
-import ConfirmPopUp from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
-import Snackbar from "src/views/shared/snackbar/snackbar.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useLayoutStyles } from "src/views/core/layout/layout.styles";
+import { ConfirmPopUp } from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
+import { Snackbar } from "src/views/shared/snackbar/snackbar.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
-const Layout: FC<PropsWithChildren> = ({ children }) => {
+export const Layout: FC<PropsWithChildren> = ({ children }) => {
   const classes = useLayoutStyles();
   const { closeSnackbar, snackbar } = useUIContext();
   const [showNetworkOutdatedPopUp, setShowNetworkOutdatedPopUp] = useState(false);
@@ -66,5 +66,3 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
     </>
   );
 };
-
-export default Layout;

@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { isCancelRequestError } from "src/adapters/bridge-api";
 import { parseError } from "src/adapters/error";
+import { getTxFeePaid } from "src/adapters/ethereum";
 import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
 import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
@@ -14,22 +15,21 @@ import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Bridge } from "src/domain";
-import useCallIfMounted from "src/hooks/use-call-if-mounted";
+import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
-import { calculateTransactionResponseFee } from "src/utils/fees";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
-import useBridgeDetailsStyles from "src/views/bridge-details/bridge-details.styles";
-import Chain from "src/views/bridge-details/components/chain/chain";
-import Button from "src/views/shared/button/button.view";
-import Card from "src/views/shared/card/card.view";
-import ErrorMessage from "src/views/shared/error-message/error-message.view";
-import Header from "src/views/shared/header/header.view";
-import Icon from "src/views/shared/icon/icon.view";
-import PageLoader from "src/views/shared/page-loader/page-loader.view";
-import Typography from "src/views/shared/typography/typography.view";
+import { useBridgeDetailsStyles } from "src/views/bridge-details/bridge-details.styles";
+import { Chain } from "src/views/bridge-details/components/chain/chain";
+import { Button } from "src/views/shared/button/button.view";
+import { Card } from "src/views/shared/card/card.view";
+import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
+import { Header } from "src/views/shared/header/header.view";
+import { Icon } from "src/views/shared/icon/icon.view";
+import { PageLoader } from "src/views/shared/page-loader/page-loader.view";
+import { Typography } from "src/views/shared/typography/typography.view";
 
 interface Fees {
   step1?: BigNumber;
@@ -37,25 +37,11 @@ interface Fees {
 }
 
 const calculateFees = (bridge: Bridge): Promise<Fees> => {
-  const step1Promise = bridge.from.provider
-    .getTransaction(
-      bridge.status === "pending"
-        ? bridge.claimTxHash || bridge.depositTxHash
-        : bridge.depositTxHash
-    )
-    .then((txResponse) => {
-      return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
-    })
-    .catch(() => undefined);
+  const step1Promise = getTxFeePaid({ chain: bridge.from, txHash: bridge.depositTxHash });
 
   const step2Promise =
     bridge.status === "completed"
-      ? bridge.to.provider
-          .getTransaction(bridge.claimTxHash)
-          .then((txResponse) => {
-            return txResponse ? calculateTransactionResponseFee(txResponse) : undefined;
-          })
-          .catch(() => undefined)
+      ? getTxFeePaid({ chain: bridge.to, txHash: bridge.claimTxHash })
       : Promise.resolve(undefined);
 
   return Promise.all([step1Promise, step2Promise]).then(([step1, step2]) => ({
@@ -64,7 +50,7 @@ const calculateFees = (bridge: Bridge): Promise<Fees> => {
   }));
 };
 
-const BridgeDetails: FC = () => {
+export const BridgeDetails: FC = () => {
   const callIfMounted = useCallIfMounted();
   const { bridgeId } = useParams();
   const navigate = useNavigate();
@@ -418,5 +404,3 @@ const BridgeDetails: FC = () => {
     }
   }
 };
-
-export default BridgeDetails;

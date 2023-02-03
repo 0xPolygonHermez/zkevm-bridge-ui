@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import { AsyncTask, Token } from "src/domain";
-import Button from "src/views/shared/button/button.view";
+import { Button } from "src/views/shared/button/button.view";
 
 interface BridgeButtonProps {
   approvalTask: AsyncTask<null, string>;
@@ -12,7 +12,7 @@ interface BridgeButtonProps {
   token: Token;
 }
 
-const BridgeButton: FC<BridgeButtonProps> = ({
+export const BridgeButton: FC<BridgeButtonProps> = ({
   approvalTask,
   isDisabled = false,
   isTxApprovalRequired,
@@ -50,5 +50,3 @@ const BridgeButton: FC<BridgeButtonProps> = ({
     return bridgeButton;
   }
 };
-
-export default BridgeButton;
