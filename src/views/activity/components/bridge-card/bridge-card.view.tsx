@@ -43,14 +43,17 @@ export const BridgeCard: FC<BridgeCardProps> = ({
     status: "pending",
   });
 
+  const [blockNumber, fromKey] =
+    bridge.status !== "pending" ? [bridge.blockNumber, bridge.from.key] : [undefined, undefined];
+
   useEffect(() => {
-    if (status !== "pending" && bridge.from.key === "polygon-zkevm") {
+    if (status === "initiated" && fromKey === "polygon-zkevm") {
       setBatchNumberOfL2Block((currentBatchNumberOfL2Block) =>
         isAsyncTaskDataAvailable(currentBatchNumberOfL2Block)
           ? { data: currentBatchNumberOfL2Block.data, status: "reloading" }
           : { status: "loading" }
       );
-      getBatchNumberOfL2Block(env.chains[1].provider, bridge.blockNumber)
+      getBatchNumberOfL2Block(env.chains[1].provider, blockNumber)
         .then((newBatchNumberOfL2Block) => {
           setBatchNumberOfL2Block({
             data: BigNumber.from(newBatchNumberOfL2Block),
@@ -64,7 +67,7 @@ export const BridgeCard: FC<BridgeCardProps> = ({
           });
         });
     }
-  }, [bridge, env, status]);
+  }, [blockNumber, env, fromKey, status]);
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
