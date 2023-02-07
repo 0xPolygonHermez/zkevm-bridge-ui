@@ -309,8 +309,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         offset,
       });
 
-      const deposits = await Promise.all(
-        apiDeposits.map(async (apiDeposit): Promise<Deposit> => {
+      const deposits = await apiDeposits.reduce(
+        async (acc: Promise<Deposit[]>, apiDeposit): Promise<Deposit[]> => {
           const {
             amount,
             block_num,
@@ -339,31 +339,36 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             );
           }
 
-          const token = await getToken({
-            env,
-            originNetwork: orig_net,
-            tokenOriginAddress: orig_addr,
-          });
+          return acc.then((accDeposits) =>
+            getToken({
+              env,
+              originNetwork: orig_net,
 
-          return {
-            amount: BigNumber.from(amount),
-            blockNumber: block_num,
-            claim:
-              claim_tx_hash !== null
-                ? { status: "claimed", txHash: claim_tx_hash }
-                : ready_for_claim
-                ? { status: "ready" }
-                : { status: "pending" },
-            depositCount: deposit_cnt,
-            depositTxHash: tx_hash,
-            destinationAddress: dest_addr,
-            fiatAmount: undefined,
-            from,
-            to,
-            token,
-            tokenOriginNetwork: orig_net,
-          };
-        })
+              tokenOriginAddress: orig_addr,
+            }).then((token) => [
+              ...accDeposits,
+              {
+                amount: BigNumber.from(amount),
+                blockNumber: block_num,
+                claim:
+                  claim_tx_hash !== null
+                    ? { status: "claimed", txHash: claim_tx_hash }
+                    : ready_for_claim
+                    ? { status: "ready" }
+                    : { status: "pending" },
+                depositCount: deposit_cnt,
+                depositTxHash: tx_hash,
+                destinationAddress: dest_addr,
+                fiatAmount: undefined,
+                from,
+                to,
+                token,
+                tokenOriginNetwork: orig_net,
+              },
+            ])
+          );
+        },
+        Promise.resolve([])
       );
 
       const tokenPrices: TokenPrices = env.fiatExchangeRates.areEnabled

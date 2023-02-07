@@ -9,6 +9,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -91,7 +92,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
   const { notifyError } = useErrorContext();
   const { changeNetwork, connectedProvider } = useProvidersContext();
   const [tokens, setTokens] = useState<Token[]>();
-  const [fetchedTokens, setFetchedTokens] = useState<Token[]>([]);
+  const fetchedTokens = useRef<Token[]>([]);
 
   /**
    * Provided a token, its native chain and any other chain, computes the address of the wrapped token on the other chain
@@ -247,7 +248,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       const token = [
         ...getCustomTokens(),
         ...(tokens || [getEtherToken(chain)]),
-        ...fetchedTokens,
+        ...fetchedTokens.current,
       ].find(
         (token) =>
           (token.address === tokenOriginAddress && token.chainId === chain.chainId) ||
@@ -261,7 +262,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
       } else {
         return getTokenFromAddress({ address: tokenOriginAddress, chain })
           .then((token) => {
-            setFetchedTokens((currentFetchedTokens) => [...currentFetchedTokens, token]);
+            fetchedTokens.current = [...fetchedTokens.current, token];
             return token;
           })
           .catch(() => {
@@ -271,7 +272,7 @@ const TokensProvider: FC<PropsWithChildren> = (props) => {
           });
       }
     },
-    [tokens, fetchedTokens, getTokenFromAddress]
+    [tokens, getTokenFromAddress]
   );
 
   const getErc20TokenBalance = useCallback(
