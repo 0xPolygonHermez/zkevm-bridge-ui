@@ -1,6 +1,5 @@
 import { FC, PropsWithChildren, useEffect, useState } from "react";
 
-import { reportError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { useLayoutStyles } from "src/views/core/layout/layout.styles";
@@ -15,7 +14,6 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
   const env = useEnvContext();
 
   const onCloseSnackbar = closeSnackbar;
-  const onReportFromSnackbar = reportError;
 
   useEffect(() => {
     if (env) {
@@ -29,11 +27,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
         <div className={classes.container}>{children}</div>
       </div>
       {snackbar.status === "open" && (
-        <Snackbar
-          message={snackbar.message}
-          onClose={onCloseSnackbar}
-          onReport={onReportFromSnackbar}
-        />
+        <Snackbar message={snackbar.message} onClose={onCloseSnackbar} />
       )}
       {env && showNetworkOutdatedPopUp && env.outdatedNetworkModal.isEnabled && (
         <ConfirmPopUp
