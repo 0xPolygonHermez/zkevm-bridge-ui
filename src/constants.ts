@@ -76,6 +76,8 @@ export const ETH_TOKEN_LOGO_URI =
 
 export const POLYGON_SUPPORT_URL = "https://support.polygon.technology";
 
+export const POLYGON_SUPPORT_NEW_TICKET_URL = `${POLYGON_SUPPORT_URL}/support/tickets/new`;
+
 export const getChains = ({
   ethereum,
   polygonZkEVM,
