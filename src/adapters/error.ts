@@ -44,7 +44,7 @@ export const jsonRpcError = StrictSchema<JsonRpcError>()(
 
 export const metaMaskUserRejectedRequestError = StrictSchema<MetaMaskUserRejectedRequestError>()(
   z.object({
-    code: z.literal(4001),
+    code: z.literal("ACTION_REJECTED"),
     message: z.string(),
   })
 );
