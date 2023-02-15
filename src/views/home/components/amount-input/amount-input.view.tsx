@@ -2,42 +2,26 @@ import { BigNumber } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
-import { Chain, Token } from "src/domain";
+import { Token } from "src/domain";
 import { formatTokenAmount } from "src/utils/amounts";
-import { isTokenEther } from "src/utils/tokens";
 import { useAmountInputStyles } from "src/views/home/components/amount-input/amount-input.styles";
 import { Typography } from "src/views/shared/typography/typography.view";
 
 interface AmountInputProps {
   balance: BigNumber;
-  from: Chain;
-  maxEtherBridge: BigNumber;
   onChange: (params: { amount?: BigNumber; error?: string }) => void;
   token: Token;
   value?: BigNumber;
 }
 
-export const AmountInput: FC<AmountInputProps> = ({
-  balance,
-  from,
-  maxEtherBridge,
-  onChange,
-  token,
-  value,
-}) => {
+export const AmountInput: FC<AmountInputProps> = ({ balance, onChange, token, value }) => {
   const defaultInputValue = value ? formatTokenAmount(value, token) : "";
   const [inputValue, setInputValue] = useState(defaultInputValue);
   const classes = useAmountInputStyles(inputValue.length);
-  const shouldApplyMaxEtherBridgeLimit = isTokenEther(token) && from.key === "ethereum";
 
   const processOnChangeCallback = (amount?: BigNumber) => {
     if (amount) {
-      const balanceError = amount.gt(balance) ? "Insufficient balance" : undefined;
-      const maxEtherBridgeError =
-        shouldApplyMaxEtherBridgeLimit && amount.gt(maxEtherBridge)
-          ? "Amount exceeds the max allowed to bridge"
-          : undefined;
-      const error = balanceError || maxEtherBridgeError;
+      const error = amount.gt(balance) ? "Insufficient balance" : undefined;
 
       return onChange({ amount, error });
     } else {
@@ -60,11 +44,9 @@ export const AmountInput: FC<AmountInputProps> = ({
   };
 
   const onMax = () => {
-    const maxPossibleAmount =
-      shouldApplyMaxEtherBridgeLimit && balance.gt(maxEtherBridge) ? maxEtherBridge : balance;
-    if (maxPossibleAmount.gt(0)) {
-      setInputValue(formatTokenAmount(maxPossibleAmount, token));
-      processOnChangeCallback(maxPossibleAmount);
+    if (balance.gt(0)) {
+      setInputValue(formatTokenAmount(balance, token));
+      processOnChangeCallback(balance);
     } else {
       setInputValue("");
       processOnChangeCallback();

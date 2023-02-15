@@ -42,7 +42,7 @@ export const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     flex: 1,
     gap: theme.spacing(1),
     justifyContent: "center",
-    maxWidth: 240,
+    maxWidth: 260,
     padding: [theme.spacing(1), theme.spacing(2)],
   },
   chainsRow: {

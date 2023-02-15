@@ -38,10 +38,6 @@ import { serializeBridgeId } from "src/utils/serializers";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 
-interface GetMaxEtherBridgeParams {
-  chain: Chain;
-}
-
 interface EstimateBridgeGasParams {
   destinationAddress: string;
   from: Chain;
@@ -111,7 +107,6 @@ interface BridgeContext {
     bridges: Bridge[];
     total: number;
   }>;
-  getMaxEtherBridge: (params: GetMaxEtherBridgeParams) => Promise<BigNumber>;
   getPendingBridges: (bridges?: Bridge[]) => Promise<PendingBridge[]>;
 }
 
@@ -133,9 +128,6 @@ const bridgeContext = createContext<BridgeContext>({
   fetchBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
-  getMaxEtherBridge: () => {
-    return Promise.reject(bridgeContextNotReadyErrorMsg);
-  },
   getPendingBridges: () => {
     return Promise.reject(bridgeContextNotReadyErrorMsg);
   },
@@ -146,13 +138,6 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
   const { changeNetwork, connectedProvider } = useProvidersContext();
   const { addWrappedToken, getToken } = useTokensContext();
   const { getTokenPrice } = usePriceOracleContext();
-
-  const getMaxEtherBridge = useCallback(
-    ({ chain }: GetMaxEtherBridgeParams): Promise<BigNumber> => {
-      return Bridge__factory.connect(chain.bridgeContractAddress, chain.provider).maxEtherBridge();
-    },
-    []
-  );
 
   type Price = BigNumber | null;
   type TokenPrices = Partial<Record<string, Price>>;
@@ -905,18 +890,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       estimateBridgeGas,
       fetchBridge,
       fetchBridges,
-      getMaxEtherBridge,
       getPendingBridges,
     }),
-    [
-      getMaxEtherBridge,
-      estimateBridgeGas,
-      fetchBridge,
-      fetchBridges,
-      getPendingBridges,
-      bridge,
-      claim,
-    ]
+    [estimateBridgeGas, fetchBridge, fetchBridges, getPendingBridges, bridge, claim]
   );
 
   return <bridgeContext.Provider value={value} {...props} />;
