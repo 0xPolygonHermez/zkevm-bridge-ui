@@ -34,8 +34,8 @@ const getBatchNumberOfL2Block = async (
   provider: JsonRpcProvider,
   blockNumber: number
 ): Promise<number> => {
-  const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberOfL2Block", [
-    blockNumber,
+  const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberByBlockNumber", [
+    ethersUtils.hexlify(blockNumber),
   ]);
   return z.number().parse(batchNumberOfL2Block);
 };
