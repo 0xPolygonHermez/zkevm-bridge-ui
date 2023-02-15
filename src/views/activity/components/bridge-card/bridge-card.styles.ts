@@ -68,6 +68,7 @@ export const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     marginLeft: theme.spacing(2),
   },
   infoContainer: {
+    alignItems: "center",
     display: "flex",
     flex: 1,
   },

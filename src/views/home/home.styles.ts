@@ -19,9 +19,6 @@ export const useHomeStyles = createUseStyles((theme: Theme) => ({
       margin: [theme.spacing(3), "auto", theme.spacing(5)],
     },
   },
-  maxEtherBridgeInfo: {
-    margin: [0, "auto", theme.spacing(3)],
-  },
   metaMaskIcon: {
     marginRight: theme.spacing(1),
     width: 20,

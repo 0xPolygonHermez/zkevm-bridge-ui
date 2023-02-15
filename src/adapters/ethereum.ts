@@ -35,7 +35,7 @@ const getBatchNumberOfL2Block = async (
   blockNumber: number
 ): Promise<number> => {
   const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberByBlockNumber", [
-    blockNumber,
+    ethersUtils.hexlify(blockNumber),
   ]);
   return z.number().parse(batchNumberOfL2Block);
 };

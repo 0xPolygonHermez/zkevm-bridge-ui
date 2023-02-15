@@ -45,6 +45,11 @@ export const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     maxWidth: 240,
     padding: [theme.spacing(1), theme.spacing(2)],
   },
+  chainName: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   chainsRow: {
     alignItems: "center",
     borderBottom: `1px solid ${theme.palette.grey.light}`,

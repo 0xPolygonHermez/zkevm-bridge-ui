@@ -27,7 +27,6 @@ import { Typography } from "src/views/shared/typography/typography.view";
 interface BridgeFormProps {
   account: string;
   formData?: FormData;
-  maxEtherBridge?: BigNumber;
   onResetForm: () => void;
   onSubmit: (formData: FormData) => void;
 }
@@ -37,13 +36,7 @@ interface SelectedChains {
   to: Chain;
 }
 
-export const BridgeForm: FC<BridgeFormProps> = ({
-  account,
-  formData,
-  maxEtherBridge,
-  onResetForm,
-  onSubmit,
-}) => {
+export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm, onSubmit }) => {
   const classes = useBridgeFormStyles();
   const callIfMounted = useCallIfMounted();
   const env = useEnvContext();
@@ -268,7 +261,7 @@ export const BridgeForm: FC<BridgeFormProps> = ({
     }
   }, [formData, onResetForm]);
 
-  if (!env || !selectedChains || !tokens || !token || !maxEtherBridge) {
+  if (!env || !selectedChains || !tokens || !token) {
     return (
       <div className={classes.spinner}>
         <Spinner />
@@ -313,8 +306,6 @@ export const BridgeForm: FC<BridgeFormProps> = ({
                 ? balanceFrom.data
                 : BigNumber.from(0)
             }
-            from={selectedChains.from}
-            maxEtherBridge={maxEtherBridge}
             onChange={onAmountInputChange}
             token={token}
             value={amount}
