@@ -681,11 +681,20 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         : { from: destinationAddress };
 
       const tokenAddress = selectTokenAddress(token, from);
+      const forceUpdateGlobalExitRoot = from.key === "polygon-zkevm";
 
       const gasLimit =
         from.key === "ethereum"
           ? await contract.estimateGas
-              .bridgeAsset(tokenAddress, to.networkId, destinationAddress, amount, "0x", overrides)
+              .bridgeAsset(
+                to.networkId,
+                destinationAddress,
+                amount,
+                tokenAddress,
+                forceUpdateGlobalExitRoot,
+                "0x",
+                overrides
+              )
               .then((gasLimit) => {
                 const gasLimitIncrease = gasLimit
                   .div(BigNumber.from(100))
@@ -763,12 +772,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               })
             : "0x";
 
+        const forceUpdateGlobalExitRoot = from.key === "polygon-zkevm";
+
         return contract
           .bridgeAsset(
-            selectTokenAddress(token, from),
             to.networkId,
             destinationAddress,
             amount,
+            selectTokenAddress(token, from),
+            forceUpdateGlobalExitRoot,
             permitData,
             overrides
           )
