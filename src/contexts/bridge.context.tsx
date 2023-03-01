@@ -674,6 +674,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       token,
       tokenSpendPermission,
     }: EstimateBridgeGasParams): Promise<Gas> => {
+      if (!env) {
+        throw new Error("Env is not available");
+      }
+
       const contract = Bridge__factory.connect(from.bridgeContractAddress, from.provider);
       const amount = BigNumber.from(0);
       const overrides: CallOverrides = isTokenEther(token)
@@ -681,7 +685,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         : { from: destinationAddress };
 
       const tokenAddress = selectTokenAddress(token, from);
-      const forceUpdateGlobalExitRoot = from.key === "polygon-zkevm";
+      const forceUpdateGlobalExitRoot =
+        from.key === "polygon-zkevm" ? true : env.forceUpdateGlobalExitRootForL1;
 
       const gasLimit =
         from.key === "ethereum"
@@ -727,7 +732,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         };
       }
     },
-    []
+    [env]
   );
 
   const bridge = useCallback(
@@ -772,7 +777,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               })
             : "0x";
 
-        const forceUpdateGlobalExitRoot = from.key === "polygon-zkevm";
+        const forceUpdateGlobalExitRoot =
+          from.key === "polygon-zkevm" ? true : env.forceUpdateGlobalExitRootForL1;
 
         return contract
           .bridgeAsset(

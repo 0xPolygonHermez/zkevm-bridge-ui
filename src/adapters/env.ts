@@ -8,6 +8,7 @@ interface Env {
   VITE_BRIDGE_API_URL: string;
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_EXPLORER_URL: string;
+  VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: string;
   VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_RPC_URL: string;
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
@@ -50,6 +51,7 @@ const envToDomain = ({
   VITE_BRIDGE_API_URL,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
   VITE_ETHEREUM_EXPLORER_URL,
+  VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT,
   VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
   VITE_ETHEREUM_RPC_URL,
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
@@ -69,6 +71,9 @@ const envToDomain = ({
   const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
   const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
   const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(VITE_SHOW_OUTDATED_NETWORK_MODAL);
+  const forceUpdateGlobalExitRootForL1 = stringBooleanParser.parse(
+    VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT
+  );
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
   const outdatedNetworkModal: domain.Env["outdatedNetworkModal"] = isOutdatedNetworkModalEnabled
     ? {
@@ -109,6 +114,7 @@ const envToDomain = ({
         fiatExchangeRates: {
           areEnabled: false,
         },
+        forceUpdateGlobalExitRootForL1,
         outdatedNetworkModal,
       };
     }
@@ -125,7 +131,7 @@ const envToDomain = ({
       throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS env vars");
     }
 
-    return {
+    const e: domain.Env = {
       bridgeApiUrl,
       chains,
       fiatExchangeRates: {
@@ -137,8 +143,11 @@ const envToDomain = ({
           chainId: ethereumChain.chainId,
         }),
       },
+      forceUpdateGlobalExitRootForL1,
       outdatedNetworkModal,
     };
+
+    return e;
   });
 };
 
@@ -148,6 +157,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_BRIDGE_API_URL: z.string().url(),
       VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
+      VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: z.string(),
       VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_RPC_URL: z.string().url(),
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
