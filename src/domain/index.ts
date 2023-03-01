@@ -64,6 +64,7 @@ export interface Env {
         areEnabled: true;
         usdcToken: Token;
       };
+  forceUpdateGlobalExitRootForL1: boolean;
   outdatedNetworkModal:
     | {
         isEnabled: false;
