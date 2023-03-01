@@ -131,7 +131,7 @@ const envToDomain = ({
       throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS env vars");
     }
 
-    const e: domain.Env = {
+    return {
       bridgeApiUrl,
       chains,
       fiatExchangeRates: {
@@ -146,8 +146,6 @@ const envToDomain = ({
       forceUpdateGlobalExitRootForL1,
       outdatedNetworkModal,
     };
-
-    return e;
   });
 };
 
