@@ -56,7 +56,7 @@ export const BridgeCard: FC<BridgeCardProps> = ({
       getBatchNumberOfL2Block(env.chains[1].provider, blockNumber)
         .then((newBatchNumberOfL2Block) => {
           setBatchNumberOfL2Block({
-            data: BigNumber.from(newBatchNumberOfL2Block),
+            data: newBatchNumberOfL2Block,
             status: "successful",
           });
         })

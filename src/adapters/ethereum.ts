@@ -33,11 +33,15 @@ const silentlyGetConnectedAccounts = (provider: Web3Provider): Promise<string[]>
 const getBatchNumberOfL2Block = async (
   provider: JsonRpcProvider,
   blockNumber: number
-): Promise<number> => {
+): Promise<BigNumber> => {
   const batchNumberOfL2Block: unknown = await provider.send("zkevm_batchNumberByBlockNumber", [
     ethersUtils.hexlify(blockNumber),
   ]);
-  return z.number().parse(batchNumberOfL2Block);
+
+  return z
+    .string()
+    .transform((v) => BigNumber.from(v))
+    .parse(batchNumberOfL2Block);
 };
 
 const getConnectedAccounts = (provider: Web3Provider): Promise<string[]> => {
