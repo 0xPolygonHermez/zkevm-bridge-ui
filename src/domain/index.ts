@@ -52,6 +52,7 @@ export interface Token {
 }
 
 export interface Env {
+  areDepositLimitsEnabled: boolean;
   bridgeApiUrl: string;
   chains: [EthereumChain, ZkEVMChain];
   fiatExchangeRates:
@@ -86,6 +87,13 @@ export enum EthereumChainId {
   MAINNET = 1,
   GOERLI = 5,
 }
+
+interface DepositLimit {
+  hard: number;
+  soft: number;
+}
+
+export type DepositLimits = Record<number, Record<string, DepositLimit>>;
 
 export enum WalletName {
   METAMASK = "MetaMask",
@@ -313,6 +321,19 @@ export type AsyncTask<D, E, P = false> = P extends true
       | SuccessfulAsyncTask<D>
       | ReloadingAsyncTask<D>
       | FailedAsyncTask<E>;
+
+// Modal state
+
+interface OpenModal<D> {
+  data: D;
+  status: "open";
+}
+
+interface ClosedModal {
+  status: "closed";
+}
+
+export type ModalState<D> = OpenModal<D> | ClosedModal;
 
 // Utility
 

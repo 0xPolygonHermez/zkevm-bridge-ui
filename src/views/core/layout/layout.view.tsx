@@ -4,14 +4,14 @@ import { reportError } from "src/adapters/error";
 import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { useLayoutStyles } from "src/views/core/layout/layout.styles";
-import { ConfirmPopUp } from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
+import { ConfirmationModal } from "src/views/shared/confirmation-modal/confirmation-modal.view";
 import { Snackbar } from "src/views/shared/snackbar/snackbar.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
 export const Layout: FC<PropsWithChildren> = ({ children }) => {
   const classes = useLayoutStyles();
   const { closeSnackbar, snackbar } = useUIContext();
-  const [showNetworkOutdatedPopUp, setShowNetworkOutdatedPopUp] = useState(false);
+  const [showNetworkOutdatedModal, setShowNetworkOutdatedModal] = useState(false);
   const env = useEnvContext();
 
   const onCloseSnackbar = closeSnackbar;
@@ -19,7 +19,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (env) {
-      setShowNetworkOutdatedPopUp(env.outdatedNetworkModal.isEnabled);
+      setShowNetworkOutdatedModal(env.outdatedNetworkModal.isEnabled);
     }
   }, [env]);
 
@@ -35,8 +35,8 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
           onReport={onReportFromSnackbar}
         />
       )}
-      {env && showNetworkOutdatedPopUp && env.outdatedNetworkModal.isEnabled && (
-        <ConfirmPopUp
+      {env && showNetworkOutdatedModal && env.outdatedNetworkModal.isEnabled && (
+        <ConfirmationModal
           message={
             <div>
               {env.outdatedNetworkModal.messageParagraph1 && (
@@ -57,8 +57,8 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
               )}
             </div>
           }
-          onClose={() => setShowNetworkOutdatedPopUp(false)}
-          onConfirm={() => setShowNetworkOutdatedPopUp(false)}
+          onClose={() => setShowNetworkOutdatedModal(false)}
+          onConfirm={() => setShowNetworkOutdatedModal(false)}
           showCancelButton={false}
           title={env.outdatedNetworkModal.title}
         />

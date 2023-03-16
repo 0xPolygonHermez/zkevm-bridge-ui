@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-export const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
+export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "center",
     background: theme.palette.transparency,
@@ -36,7 +36,7 @@ export const useConfirmPopUpStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     width: "100%",
   },
-  confirmButton: {
+  confirmationButton: {
     "&:hover": {
       background: theme.palette.primary.dark,
     },

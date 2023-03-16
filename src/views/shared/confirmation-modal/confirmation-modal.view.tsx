@@ -1,11 +1,11 @@
 import { FC, MouseEvent, ReactNode } from "react";
 
 import { Card } from "src/views/shared/card/card.view";
-import { useConfirmPopUpStyles } from "src/views/shared/confirm-pop-up/confirm-pop-up.styles";
+import { useConfirmationModalStyles } from "src/views/shared/confirmation-modal/confirmation-modal.styles";
 import { Portal } from "src/views/shared/portal/portal.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
-interface ConfirmPopUpProps {
+interface ConfirmationModalProps {
   message: ReactNode;
   onClose: () => void;
   onConfirm: () => void;
@@ -13,14 +13,14 @@ interface ConfirmPopUpProps {
   title?: string;
 }
 
-export const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
+export const ConfirmationModal: FC<ConfirmationModalProps> = ({
   message,
   onClose,
   onConfirm,
   showCancelButton = true,
   title,
 }) => {
-  const classes = useConfirmPopUpStyles();
+  const classes = useConfirmationModalStyles();
 
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
@@ -42,7 +42,10 @@ export const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
                 Cancel
               </button>
             )}
-            <button className={`${classes.button} ${classes.confirmButton}`} onClick={onConfirm}>
+            <button
+              className={`${classes.button} ${classes.confirmationButton}`}
+              onClick={onConfirm}
+            >
               Confirm
             </button>
           </div>
