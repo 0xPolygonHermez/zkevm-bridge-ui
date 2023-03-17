@@ -71,7 +71,7 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                   </Typography>
                   <Typography className={classes.forbiddenText} type="body1">
                     For safety reasons, we do not yet allow deposits of large amounts of tokens into
-                    zkEVM. Please try again with an amount less than{" "}
+                    the zkEVM. Please try again with an amount less than{" "}
                     <b>
                       {data.hardLimit} {data.formData.token.symbol}
                     </b>
@@ -88,7 +88,7 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                     Warning
                   </Typography>
                   <Typography className={classes.forbiddenText} type="body1">
-                    We do not oficcialy support the token you are about to bridge. For safety
+                    We do not officially support the token you are about to bridge. For safety
                     reasons, we need to ensure that you understand the risks and the possible
                     consequences of something going wrong.
                   </Typography>
