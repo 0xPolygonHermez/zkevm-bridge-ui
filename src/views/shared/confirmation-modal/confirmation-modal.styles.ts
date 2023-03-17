@@ -25,7 +25,7 @@ export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
   card: {
     display: "flex",
     flexDirection: "column",
-    marginTop: theme.spacing(40),
+    marginTop: theme.spacing(30),
     maxWidth: 510,
     padding: theme.spacing(4),
     width: "100%",

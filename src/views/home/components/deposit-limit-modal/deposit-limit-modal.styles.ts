@@ -25,7 +25,7 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
   card: {
     display: "flex",
     flexDirection: "column",
-    marginTop: theme.spacing(40),
+    marginTop: theme.spacing(30),
     maxWidth: 510,
     padding: theme.spacing(4),
     width: "100%",
@@ -38,12 +38,6 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(4),
     marginTop: theme.spacing(2),
     textAlign: "center",
-  },
-  input: {
-    fontSize: 20,
-    fontWeight: 500,
-    marginBottom: theme.spacing(4),
-    padding: theme.spacing(1),
   },
   title: {
     marginBottom: theme.spacing(1),

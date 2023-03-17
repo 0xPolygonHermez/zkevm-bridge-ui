@@ -87,7 +87,7 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                   <Typography className={classes.title} type="h1">
                     Warning
                   </Typography>
-                  <Typography className={classes.warningText} type="body1">
+                  <Typography className={classes.forbiddenText} type="body1">
                     We do not oficcialy support the token you are about to bridge. For safety
                     reasons, we need to ensure that you understand the risks and the possible
                     consequences of something going wrong.

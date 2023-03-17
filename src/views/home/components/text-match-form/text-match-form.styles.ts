@@ -20,11 +20,11 @@ export const useTextMatchFormStyles = createUseStyles((theme: Theme) => ({
     borderColor: theme.palette.grey.dark,
     borderRadius: 8,
     borderStyle: "solid",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 500,
     marginBottom: theme.spacing(4),
     marginTop: theme.spacing(1),
-    padding: [theme.spacing(1.75), theme.spacing(2)],
+    padding: [theme.spacing(1.5), theme.spacing(1.75)],
     transition: theme.hoverTransition,
   },
 }));
