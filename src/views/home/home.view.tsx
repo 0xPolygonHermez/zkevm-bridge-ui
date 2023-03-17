@@ -37,18 +37,26 @@ export const Home = (): JSX.Element => {
     if (formData.from.key === "ethereum") {
       const { from, token } = formData;
       const depositLimits = DEPOSIT_LIMITS[from.chainId][token.address];
-      const softLimit = ethersUtils.parseUnits(depositLimits.soft.toString(), token.decimals);
-      const hardLimit = ethersUtils.parseUnits(depositLimits.hard.toString(), token.decimals);
 
-      if (formData.amount.gte(hardLimit)) {
+      if (depositLimits === undefined) {
         setDepositLimitModal({
-          data: { formData, hardLimit: depositLimits.hard, type: "forbidden" },
+          data: { formData, type: "unknown-limit" },
           status: "open",
         });
-      } else if (formData.amount.gte(softLimit)) {
-        setDepositLimitModal({ data: { formData, type: "warning" }, status: "open" });
       } else {
-        onSubmitForm(formData);
+        const softLimit = ethersUtils.parseUnits(depositLimits.soft.toString(), token.decimals);
+        const hardLimit = ethersUtils.parseUnits(depositLimits.hard.toString(), token.decimals);
+
+        if (formData.amount.gte(hardLimit)) {
+          setDepositLimitModal({
+            data: { formData, hardLimit: depositLimits.hard, type: "forbidden" },
+            status: "open",
+          });
+        } else if (formData.amount.gte(softLimit)) {
+          setDepositLimitModal({ data: { formData, type: "warning" }, status: "open" });
+        } else {
+          onSubmitForm(formData);
+        }
       }
     } else {
       onSubmitForm(formData);

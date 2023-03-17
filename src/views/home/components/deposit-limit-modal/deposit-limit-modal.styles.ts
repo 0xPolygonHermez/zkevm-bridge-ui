@@ -33,7 +33,6 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
     userSelect: "none",
   },
   forbiddenText: {
-    lineHeight: "24px",
     marginBottom: theme.spacing(4),
   },
   input: {
@@ -47,6 +46,6 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
     textAlign: "center",
   },
   warningText: {
-    lineHeight: "24px",
+    margin: [theme.spacing(2), 0],
   },
 }));
