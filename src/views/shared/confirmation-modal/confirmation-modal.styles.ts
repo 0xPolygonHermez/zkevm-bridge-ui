@@ -4,50 +4,40 @@ import { Theme } from "src/styles/theme";
 
 export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
   background: {
-    alignItems: "center",
+    alignItems: "flex-start",
     background: theme.palette.transparency,
     display: "flex",
     height: "100vh",
     justifyContent: "center",
     width: "100%",
   },
-  button: {
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    padding: [theme.spacing(1), theme.spacing(5)],
-  },
-  buttonsBox: {
-    display: "flex",
-    justifyContent: "space-around",
-  },
   cancelButton: {
     "&:hover": {
-      background: theme.palette.grey.light,
+      color: theme.palette.black,
     },
-    backgroundColor: theme.palette.grey.main,
+    background: "transparent",
+    border: 0,
     color: theme.palette.grey.dark,
+    cursor: "pointer",
+    margin: [theme.spacing(1), "auto", theme.spacing(-1), "auto"],
+    padding: theme.spacing(1),
   },
   card: {
     display: "flex",
     flexDirection: "column",
-    gap: theme.spacing(3),
-    maxWidth: 500,
-    padding: theme.spacing(3),
+    marginTop: theme.spacing(40),
+    maxWidth: 510,
+    padding: theme.spacing(4),
     width: "100%",
   },
-  confirmationButton: {
-    "&:hover": {
-      background: theme.palette.primary.dark,
+  textContainer: {
+    "& p": {
+      lineHeight: "24px",
+      textAlign: "center",
     },
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.white,
+    margin: [theme.spacing(3), 0, [theme.spacing(4)]],
   },
-  text: {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing(2),
+  title: {
     textAlign: "center",
   },
 }));

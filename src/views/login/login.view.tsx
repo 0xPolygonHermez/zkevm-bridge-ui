@@ -96,7 +96,7 @@ export const Login: FC = () => {
       {showPolicyModal && (
         <ConfirmationModal
           message={
-            <Typography type="body2">
+            <Typography type="body1">
               DISCLAIMER: This early version of the public testnet will require frequent maintenance
               and may be restarted if upgrades are needed.
             </Typography>

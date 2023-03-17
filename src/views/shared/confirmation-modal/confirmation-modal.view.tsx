@@ -1,4 +1,5 @@
 import { FC, MouseEvent, ReactNode } from "react";
+import { Button } from "src/views/shared/button/button.view";
 
 import { Card } from "src/views/shared/card/card.view";
 import { useConfirmationModalStyles } from "src/views/shared/confirmation-modal/confirmation-modal.styles";
@@ -32,23 +33,18 @@ export const ConfirmationModal: FC<ConfirmationModalProps> = ({
     <Portal>
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.text}>
-            {title && <Typography type="body1">{title}</Typography>}
-            {message}
-          </div>
-          <div className={classes.buttonsBox}>
-            {showCancelButton && (
-              <button className={`${classes.button} ${classes.cancelButton}`} onClick={onClose}>
-                Cancel
-              </button>
-            )}
-            <button
-              className={`${classes.button} ${classes.confirmationButton}`}
-              onClick={onConfirm}
-            >
-              Confirm
+          {title && (
+            <Typography className={classes.title} type="h1">
+              {title}
+            </Typography>
+          )}
+          <div className={classes.textContainer}>{message}</div>
+          <Button onClick={onConfirm}>Confirm</Button>
+          {showCancelButton && (
+            <button className={classes.cancelButton} onClick={onClose}>
+              Cancel
             </button>
-          </div>
+          )}
         </Card>
       </div>
     </Portal>
