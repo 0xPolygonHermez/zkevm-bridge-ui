@@ -19,13 +19,13 @@ export type DepositLimitModalData =
       type: "forbidden";
     };
 
-interface DepositLimitProps {
+interface DepositLimitModalProps {
   data: DepositLimitModalData;
   onAccept: (formData: FormData) => void;
   onCancel: () => void;
 }
 
-export const DepositLimitModal: FC<DepositLimitProps> = ({ data, onAccept, onCancel }) => {
+export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, onCancel }) => {
   const classes = useDepositLimitModalStyles();
 
   return (
@@ -55,8 +55,8 @@ export const DepositLimitModal: FC<DepositLimitProps> = ({ data, onAccept, onCan
           <Card className={classes.card}>
             <h1 className={classes.title}>Warning</h1>
             <p className={classes.forbiddenText}>
-              For safety reasons we don&apos;t allow to deposit large quantities of tokens into the
-              zkEVM by the moment. Please, try again with an amount smaller than{" "}
+              For safety reasons, we do not yet allow deposits of large amounts of tokens into
+              zkEVM. Please try again with an amount less than{" "}
               <b>
                 {data.hardLimit} {data.formData.token.symbol}
               </b>

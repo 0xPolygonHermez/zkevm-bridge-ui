@@ -12,8 +12,6 @@ export const TextMatchForm: FC<TextMatchFormProps> = ({ onSubmit, text }) => {
   const classes = useTextMatchFormStyles();
   const [inputValue, setInputValue] = useState("");
 
-  const doTextsMatch = () => text.toLowerCase() === inputValue.toLowerCase();
-
   return (
     <form className={classes.form} onSubmit={onSubmit}>
       <input
@@ -23,7 +21,7 @@ export const TextMatchForm: FC<TextMatchFormProps> = ({ onSubmit, text }) => {
         type="text"
         value={inputValue}
       />
-      <Button disabled={!doTextsMatch()} type="submit">
+      <Button disabled={text.toLowerCase() !== inputValue.toLowerCase()} type="submit">
         Continue
       </Button>
     </form>
