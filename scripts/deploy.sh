@@ -61,6 +61,8 @@ then
   echo "VITE_OUTDATED_NETWORK_MODAL_URL=$OUTDATED_NETWORK_MODAL_URL" >> $ENV_FILENAME
 fi
 
+echo "VITE_ENABLE_DEPOSIT_LIMITS=$ENABLE_DEPOSIT_LIMITS" >> $ENV_FILENAME
+
 echo "Generated .env file:"
 echo "$(cat /app/.env)"
 
