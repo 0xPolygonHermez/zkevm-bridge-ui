@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { DEPOSIT_LIMITS } from "src/constants";
+import { useEnvContext } from "src/contexts/env.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { FormData, ModalState } from "src/domain";
@@ -22,6 +23,7 @@ import { Typography } from "src/views/shared/typography/typography.view";
 export const Home = (): JSX.Element => {
   const classes = useHomeStyles();
   const navigate = useNavigate();
+  const env = useEnvContext();
   const { formData, setFormData } = useFormContext();
   const { connectedProvider } = useProvidersContext();
   const [depositLimitModal, setDepositLimitModal] = useState<ModalState<DepositLimitModalData>>({
@@ -34,7 +36,7 @@ export const Home = (): JSX.Element => {
   };
 
   const onCheckDepositLimitAndSubmitForm = (formData: FormData) => {
-    if (formData.from.key === "ethereum") {
+    if (env && env.areDepositLimitsEnabled && formData.from.key === "ethereum") {
       const { from, token } = formData;
       const depositLimits = DEPOSIT_LIMITS[from.chainId][token.address];
 
