@@ -20,15 +20,7 @@ import {
 } from "src/adapters/ethereum";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import {
-  AsyncTask,
-  Chain,
-  ConnectedProvider,
-  Env,
-  EthereumChainId,
-  EthereumEvent,
-  WalletName,
-} from "src/domain";
+import { AsyncTask, Chain, ConnectedProvider, Env, EthereumEvent, WalletName } from "src/domain";
 import { getChecksumAddress } from "src/utils/addresses";
 import {
   isAsyncTaskDataAvailable,
@@ -94,9 +86,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
         const supportedChainIds = env.chains.map((chain) => chain.chainId);
         if (!supportedChainIds.includes(currentNetworkChainId)) {
           setConnectedProvider({
-            error: supportedChainIds.includes(EthereumChainId.GOERLI)
-              ? `Switch your network to Ethereum Goerli testnet or ${env.chains[1].name} to continue`
-              : `Switch your network to Ethereum or ${env.chains[1].name} to continue`,
+            error: `Switch your network to ${env.chains[0].name} or ${env.chains[1].name} to continue`,
             status: "failed",
           });
         } else {

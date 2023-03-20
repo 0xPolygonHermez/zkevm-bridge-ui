@@ -65,7 +65,7 @@ export const NetworkBox: FC = () => {
   return (
     <Card>
       <div className={classes.networkBox}>
-        <Typography type="body1">Polygon zkEVM testnet</Typography>
+        <Typography type="body1">{env.chains[1].name}</Typography>
         <ul>
           <li className={classes.listItem}>
             <Typography type="body2">
@@ -95,7 +95,7 @@ export const NetworkBox: FC = () => {
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
-              L1 Goerli Smart Contract:{" "}
+              {env.chains[0].name} Smart Contract:{" "}
               <a
                 className={classes.link}
                 href={`${ethereumChain.explorerUrl}/address/${ethereumChain.poeContractAddress}`}

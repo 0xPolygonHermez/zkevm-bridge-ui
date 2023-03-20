@@ -8,7 +8,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, PolicyCheck, WalletName } from "src/domain";
 import { routes } from "src/routes";
-import { getDeploymentName, getNetworkName } from "src/utils/labels";
+import { getDeploymentName } from "src/utils/labels";
 import { WalletList } from "src/views/login/components/wallet-list/wallet-list.view";
 import { useLoginStyles } from "src/views/login/login.styles";
 import { Card } from "src/views/shared/card/card.view";
@@ -61,12 +61,7 @@ export const Login: FC = () => {
 
   const ethereumChain = env.chains[0];
   const deploymentName = getDeploymentName(ethereumChain);
-  const networkName = getNetworkName(ethereumChain);
   const appName = deploymentName !== undefined ? `${deploymentName} Bridge` : "Bridge";
-  const networkInfo =
-    networkName !== undefined &&
-    ethereumChain.chainId !== EthereumChainId.MAINNET &&
-    `Connect with ${networkName} testnet environment`;
 
   return (
     <div className={classes.login}>
@@ -78,7 +73,9 @@ export const Login: FC = () => {
         <div className={classes.networkBoxWrapper}>
           <NetworkBox />
         </div>
-        {networkInfo && <InfoBanner message={networkInfo} />}
+        {ethereumChain.chainId !== EthereumChainId.MAINNET && (
+          <InfoBanner message={`Connect with ${ethereumChain.name} environment`} />
+        )}
         <div className={classes.cardWrap}>
           <Card className={classes.card}>
             <>
