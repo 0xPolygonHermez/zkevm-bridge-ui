@@ -14,6 +14,7 @@ import {
   ZkEVMChain,
 } from "src/domain";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
+import { getEthereumNetworkName } from "src/utils/labels";
 
 export const DAI_PERMIT_TYPEHASH =
   "0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb";
@@ -151,7 +152,7 @@ export const getChains = ({
       explorerUrl: ethereum.explorerUrl,
       Icon: EthChainIcon,
       key: "ethereum",
-      name: EthereumChainId.GOERLI === ethereumNetwork.chainId ? "Ethereum Goerli" : "Ethereum",
+      name: getEthereumNetworkName(ethereumNetwork.chainId),
       nativeCurrency: {
         decimals: 18,
         name: "Ether",
