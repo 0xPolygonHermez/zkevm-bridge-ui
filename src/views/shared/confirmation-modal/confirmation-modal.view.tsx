@@ -1,11 +1,12 @@
 import { FC, MouseEvent, ReactNode } from "react";
+import { Button } from "src/views/shared/button/button.view";
 
 import { Card } from "src/views/shared/card/card.view";
-import { useConfirmPopUpStyles } from "src/views/shared/confirm-pop-up/confirm-pop-up.styles";
+import { useConfirmationModalStyles } from "src/views/shared/confirmation-modal/confirmation-modal.styles";
 import { Portal } from "src/views/shared/portal/portal.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
-interface ConfirmPopUpProps {
+interface ConfirmationModalProps {
   message: ReactNode;
   onClose: () => void;
   onConfirm: () => void;
@@ -13,14 +14,14 @@ interface ConfirmPopUpProps {
   title?: string;
 }
 
-export const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
+export const ConfirmationModal: FC<ConfirmationModalProps> = ({
   message,
   onClose,
   onConfirm,
   showCancelButton = true,
   title,
 }) => {
-  const classes = useConfirmPopUpStyles();
+  const classes = useConfirmationModalStyles();
 
   const onOutsideClick = (event: MouseEvent) => {
     if (event.target === event.currentTarget) {
@@ -32,20 +33,18 @@ export const ConfirmPopUp: FC<ConfirmPopUpProps> = ({
     <Portal>
       <div className={classes.background} onMouseDown={onOutsideClick}>
         <Card className={classes.card}>
-          <div className={classes.text}>
-            {title && <Typography type="body1">{title}</Typography>}
-            {message}
-          </div>
-          <div className={classes.buttonsBox}>
-            {showCancelButton && (
-              <button className={`${classes.button} ${classes.cancelButton}`} onClick={onClose}>
-                Cancel
-              </button>
-            )}
-            <button className={`${classes.button} ${classes.confirmButton}`} onClick={onConfirm}>
-              Confirm
+          {title && (
+            <Typography className={classes.title} type="h1">
+              {title}
+            </Typography>
+          )}
+          <div className={classes.textContainer}>{message}</div>
+          <Button onClick={onConfirm}>Confirm</Button>
+          {showCancelButton && (
+            <button className={classes.cancelButton} onClick={onClose}>
+              Cancel
             </button>
-          </div>
+          )}
         </Card>
       </div>
     </Portal>

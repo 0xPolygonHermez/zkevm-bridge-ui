@@ -12,7 +12,7 @@ import { getDeploymentName, getNetworkName } from "src/utils/labels";
 import { WalletList } from "src/views/login/components/wallet-list/wallet-list.view";
 import { useLoginStyles } from "src/views/login/login.styles";
 import { Card } from "src/views/shared/card/card.view";
-import { ConfirmPopUp } from "src/views/shared/confirm-pop-up/confirm-pop-up.view";
+import { ConfirmationModal } from "src/views/shared/confirmation-modal/confirmation-modal.view";
 import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
 import { InfoBanner } from "src/views/shared/info-banner/info-banner.view";
 import { NetworkBox } from "src/views/shared/network-box/network-box.view";
@@ -21,7 +21,7 @@ import { Typography } from "src/views/shared/typography/typography.view";
 export const Login: FC = () => {
   const classes = useLoginStyles();
   const [selectedWallet, setSelectedWallet] = useState<WalletName>();
-  const [showPolicyPopUp, setShowPolicyPopUp] = useState(false);
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
   const navigate = useNavigate();
   const { state } = useLocation();
   const { connectedProvider, connectProvider } = useProvidersContext();
@@ -30,7 +30,7 @@ export const Login: FC = () => {
   const onConnectProvider = () => {
     setPolicyCheck();
     selectedWallet && connectProvider(selectedWallet);
-    setShowPolicyPopUp(false);
+    setShowPolicyModal(false);
   };
 
   const onCheckAndConnectProvider = (walletName: WalletName) => {
@@ -39,7 +39,7 @@ export const Login: FC = () => {
     if (checked === PolicyCheck.Checked) {
       void connectProvider(walletName);
     } else {
-      setShowPolicyPopUp(true);
+      setShowPolicyModal(true);
     }
   };
 
@@ -93,15 +93,15 @@ export const Login: FC = () => {
           )}
         </div>
       </div>
-      {showPolicyPopUp && (
-        <ConfirmPopUp
+      {showPolicyModal && (
+        <ConfirmationModal
           message={
-            <Typography type="body2">
+            <Typography type="body1">
               DISCLAIMER: This early version of the public testnet will require frequent maintenance
               and may be restarted if upgrades are needed.
             </Typography>
           }
-          onClose={() => setShowPolicyPopUp(false)}
+          onClose={() => setShowPolicyModal(false)}
           onConfirm={onConnectProvider}
           title="Welcome to the Polygon zkEVM testnet"
         />
