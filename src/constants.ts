@@ -6,6 +6,7 @@ import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains
 import {
   Chain,
   Currency,
+  DepositLimits,
   EthereumChain,
   EthereumChainId,
   ProviderError,
@@ -61,11 +62,50 @@ export const BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE = 100000;
 
 export const GAS_PRICE_INCREASE_PERCENTAGE = 50; // 50%
 
+export const SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD = "I understand";
+
 export const REPORT_ERROR_FORM_ENTRIES = {
   error: "entry.1383309652",
   network: "entry.1632331664",
   platform: "entry.259085709",
   url: "entry.2056392454",
+};
+
+export const DEPOSIT_LIMITS: DepositLimits = {
+  [EthereumChainId.GOERLI]: {
+    // ETH
+    [ethers.constants.AddressZero]: {
+      hard: 100,
+      soft: 10,
+    },
+    // WETH
+    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6": {
+      hard: 100,
+      soft: 10,
+    },
+    // DAI
+    "0xD7E55eB808693D5Ff81a3391c59886C7E0449f35": {
+      hard: 10000,
+      soft: 1000,
+    },
+  },
+  [EthereumChainId.MAINNET]: {
+    // ETH
+    [ethers.constants.AddressZero]: {
+      hard: 100,
+      soft: 10,
+    },
+    // DAI
+    "0x6B175474E89094C44Da98b954EedeAC495271d0F": {
+      hard: 10000,
+      soft: 1000,
+    },
+    // WETH
+    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2": {
+      hard: 100,
+      soft: 10,
+    },
+  },
 };
 
 export const REPORT_ERROR_FORM_URL =
