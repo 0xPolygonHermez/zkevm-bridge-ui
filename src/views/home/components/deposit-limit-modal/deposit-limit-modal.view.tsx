@@ -89,7 +89,7 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                   </Typography>
                   <Typography className={classes.forbiddenText} type="body1">
                     You are about to deposit an imported token into the Mainnet Beta of the zkEVM.
-                    For safety reasons, we need to ensure that you are understand its risks and the
+                    For safety reasons, we need to ensure that you understand its risks and the
                     possible consequences of something going wrong.
                   </Typography>
                   <Button onClick={() => onAccept(data.formData)}>Yes, I want to proceed</Button>
