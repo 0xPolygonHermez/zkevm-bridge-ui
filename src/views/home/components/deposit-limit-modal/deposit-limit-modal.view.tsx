@@ -45,9 +45,9 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                     Warning
                   </Typography>
                   <Typography className={classes.warningText} type="body1">
-                    You are about to deposit a large amount of tokens into the zkEVM. For safety
-                    reasons, we need to ensure that you understand the risks and the possible
-                    consequences of something going wrong.
+                    You are about to deposit a large amount of tokens into the Mainnet Beta of the
+                    zkEVM. For safety reasons, we need to ensure that you understand its risks and
+                    the possible consequences of something going wrong.
                     <br></br>
                     <br></br>
                     To do so, please type{" "}
@@ -88,9 +88,9 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ data, onAccept, 
                     Warning
                   </Typography>
                   <Typography className={classes.forbiddenText} type="body1">
-                    We do not officially support the token you are about to bridge. For safety
-                    reasons, we need to ensure that you understand the risks and the possible
-                    consequences of something going wrong.
+                    You are about to deposit an imported token into the Mainnet Beta of the zkEVM.
+                    For safety reasons, we need to ensure that you are understand its risks and the
+                    possible consequences of something going wrong.
                   </Typography>
                   <Button onClick={() => onAccept(data.formData)}>Yes, I want to proceed</Button>
                   <button className={classes.cancelButton} onClick={onCancel} type="button">
