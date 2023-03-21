@@ -94,13 +94,13 @@ export const Login: FC = () => {
         <ConfirmationModal
           message={
             <Typography type="body1">
-              DISCLAIMER: This early version of the public testnet will require frequent maintenance
-              and may be restarted if upgrades are needed.
+              DISCLAIMER: This version of the Polygon zkEVM will require frequent maintenance and
+              may be restarted if upgrades are needed.
             </Typography>
           }
           onClose={() => setShowPolicyModal(false)}
           onConfirm={onConnectProvider}
-          title="Welcome to the Polygon zkEVM testnet"
+          title={`Welcome to the Polygon zkEVM ${deploymentName || ""}`}
         />
       )}
     </div>

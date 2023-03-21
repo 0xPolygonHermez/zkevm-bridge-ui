@@ -21,6 +21,7 @@ export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
     cursor: "pointer",
     margin: [theme.spacing(1), "auto", theme.spacing(-1), "auto"],
     padding: theme.spacing(1),
+    transition: theme.hoverTransition,
   },
   card: {
     display: "flex",
