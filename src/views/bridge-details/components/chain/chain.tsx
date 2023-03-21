@@ -17,14 +17,13 @@ export const Chain: FC<ChainProps> = ({ chain, className }) => {
   if (chain.key === "ethereum") {
     return (
       <Typography className={className} type="body1">
-        <EthChainIcon />{" "}
-        {domain.EthereumChainId.GOERLI === chain.chainId ? "Ethereum Goerli" : "Ethereum"}
+        <EthChainIcon /> {chain.name}
       </Typography>
     );
   } else {
     return (
       <Typography className={className} type="body1">
-        <PolygonZkEVMChainIcon className={classes.polygonZkEvmChain} /> Polygon zkEVM
+        <PolygonZkEVMChainIcon className={classes.polygonZkEvmChain} /> {chain.name}
       </Typography>
     );
   }
