@@ -1,9 +1,7 @@
-import { utils as ethersUtils } from "ethers";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
-import { DEPOSIT_LIMITS } from "src/constants";
 import { useEnvContext } from "src/contexts/env.context";
 import { useFormContext } from "src/contexts/form.context";
 import { useProvidersContext } from "src/contexts/providers.context";
@@ -11,10 +9,7 @@ import { FormData, ModalState } from "src/domain";
 import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.view";
-import {
-  DepositLimitModal,
-  DepositLimitModalData,
-} from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
+import { DepositLimitModal } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
 import { Header } from "src/views/home/components/header/header.view";
 import { useHomeStyles } from "src/views/home/home.styles";
 import { NetworkBox } from "src/views/shared/network-box/network-box.view";
@@ -26,7 +21,7 @@ export const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { formData, setFormData } = useFormContext();
   const { connectedProvider } = useProvidersContext();
-  const [depositLimitModal, setDepositLimitModal] = useState<ModalState<DepositLimitModalData>>({
+  const [depositLimitModal, setDepositLimitModal] = useState<ModalState<FormData>>({
     status: "closed",
   });
 
@@ -36,30 +31,11 @@ export const Home = (): JSX.Element => {
   };
 
   const onCheckDepositLimitAndSubmitForm = (formData: FormData) => {
-    if (env && env.areDepositLimitsEnabled && formData.from.key === "ethereum") {
-      const { from, token } = formData;
-      const depositLimits = DEPOSIT_LIMITS[from.chainId][token.address];
-
-      if (depositLimits === undefined) {
-        setDepositLimitModal({
-          data: { formData, type: "unknown-limit" },
-          status: "open",
-        });
-      } else {
-        const softLimit = ethersUtils.parseUnits(depositLimits.soft.toString(), token.decimals);
-        const hardLimit = ethersUtils.parseUnits(depositLimits.hard.toString(), token.decimals);
-
-        if (formData.amount.gte(hardLimit)) {
-          setDepositLimitModal({
-            data: { formData, hardLimit: depositLimits.hard, type: "forbidden" },
-            status: "open",
-          });
-        } else if (formData.amount.gte(softLimit)) {
-          setDepositLimitModal({ data: { formData, type: "warning" }, status: "open" });
-        } else {
-          onSubmitForm(formData);
-        }
-      }
+    if (env && env.isDepositWarningEnabled && formData.from.key === "ethereum") {
+      setDepositLimitModal({
+        data: formData,
+        status: "open",
+      });
     } else {
       onSubmitForm(formData);
     }
@@ -91,7 +67,7 @@ export const Home = (): JSX.Element => {
           />
           {depositLimitModal.status === "open" && (
             <DepositLimitModal
-              data={depositLimitModal.data}
+              formData={depositLimitModal.data}
               onAccept={onSubmitForm}
               onCancel={() => setDepositLimitModal({ status: "closed" })}
             />
