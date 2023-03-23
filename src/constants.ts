@@ -56,16 +56,6 @@ export const GAS_PRICE_INCREASE_PERCENTAGE = 50; // 50%
 
 export const SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD = "I understand";
 
-export const REPORT_ERROR_FORM_ENTRIES = {
-  error: "entry.1383309652",
-  network: "entry.1632331664",
-  platform: "entry.259085709",
-  url: "entry.2056392454",
-};
-
-export const REPORT_ERROR_FORM_URL =
-  "https://docs.google.com/forms/d/1YOvhK2RfTQmYO8DGMRqN7FYxRhBZd9jB6PZ7InJirTk/viewform";
-
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
