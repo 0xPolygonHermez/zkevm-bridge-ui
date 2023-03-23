@@ -2,13 +2,13 @@ import platform from "platform";
 import * as StackTrace from "stacktrace-js";
 import { ZodError, z } from "zod";
 
-import { REPORT_ERROR_FORM_ENTRIES, REPORT_ERROR_FORM_URL } from "src/constants";
 import {
   EthersInsufficientFundsError,
   MetaMaskResourceUnavailableError,
   MetaMaskUnknownChainError,
   MetaMaskUserRejectedRequestError,
   ProviderError,
+  ReportFormEnvEnabled,
 } from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
 
@@ -138,13 +138,13 @@ export function logDecodingError<T>(error: ZodError<T>, details: string): void {
 /**
  * Report an error using the report issue form
  */
-export function reportError(error: string): void {
+export function reportError(error: string, reportForm: ReportFormEnvEnabled): void {
   // ToDo: Add network data
   const data = {
-    [REPORT_ERROR_FORM_ENTRIES.url]: window.location.href,
-    [REPORT_ERROR_FORM_ENTRIES.error]: error,
-    [REPORT_ERROR_FORM_ENTRIES.platform]: platform.toString(),
+    [reportForm.entries.url]: window.location.href,
+    [reportForm.entries.error]: error,
+    [reportForm.entries.platform]: platform.toString(),
   };
   const params = new URLSearchParams(data).toString();
-  window.open(`${REPORT_ERROR_FORM_URL}?${params}`, "_blank");
+  window.open(`${reportForm.url}?${params}`, "_blank");
 }

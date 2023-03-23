@@ -51,6 +51,20 @@ export interface Token {
   };
 }
 
+export interface ReportFormEnvDisabled {
+  isEnabled: false;
+}
+
+export interface ReportFormEnvEnabled {
+  entries: {
+    error: string;
+    platform: string;
+    url: string;
+  };
+  isEnabled: true;
+  url: string;
+}
+
 export interface Env {
   bridgeApiUrl: string;
   chains: [EthereumChain, ZkEVMChain];
@@ -77,6 +91,7 @@ export interface Env {
         title?: string;
         url?: string;
       };
+  reportForm: ReportFormEnvEnabled | ReportFormEnvDisabled;
 }
 
 export interface RouterState {

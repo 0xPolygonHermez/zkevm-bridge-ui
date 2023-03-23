@@ -4,16 +4,17 @@ import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
-import { Message } from "src/domain";
+import { Env, Message } from "src/domain";
 import { useSnackbarStyles } from "src/views/shared/snackbar/snackbar.styles";
 
 interface SnackbarProps {
   message: Message;
   onClose: () => void;
-  onReport: (error: string) => void;
+  onReport: (error: string, reportForm: Extract<Env["reportForm"], { isEnabled: true }>) => void;
+  reportForm: Env["reportForm"];
 }
 
-export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport }) => {
+export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport, reportForm }) => {
   const classes = useSnackbarStyles();
 
   const Icon = ({ message }: { message: Message }): JSX.Element => {
@@ -51,14 +52,16 @@ export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport }) => {
         <div className={classes.wrapper}>
           <Icon message={message} />
           <p className={classes.message}>{text}</p>
-          <button
-            className={classes.reportButton}
-            onClick={() => {
-              onReport(parsed);
-            }}
-          >
-            Report
-          </button>
+          {reportForm.isEnabled && (
+            <button
+              className={classes.reportButton}
+              onClick={() => {
+                onReport(parsed, reportForm);
+              }}
+            >
+              Report
+            </button>
+          )}
           <button className={classes.closeButton} onClick={onClose}>
             <CloseIcon className={classes.closeIcon} />
           </button>
