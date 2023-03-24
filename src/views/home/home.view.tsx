@@ -10,7 +10,7 @@ import { FormData, ModalState } from "src/domain";
 import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.view";
-import { DepositWarningModal } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
+import { DepositWarningModal } from "src/views/home/components/deposit-warning-modal/deposit-warning-modal.view";
 import { Header } from "src/views/home/components/header/header.view";
 import { useHomeStyles } from "src/views/home/home.styles";
 import { NetworkBox } from "src/views/shared/network-box/network-box.view";

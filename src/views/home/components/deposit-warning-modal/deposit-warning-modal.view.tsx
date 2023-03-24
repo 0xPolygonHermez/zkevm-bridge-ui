@@ -6,7 +6,7 @@ import {
 } from "src/constants";
 
 import { FormData } from "src/domain";
-import { useDepositWarningModalStyles } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.styles";
+import { useDepositWarningModalStyles } from "src/views/home/components/deposit-warning-modal/deposit-warning-modal.styles";
 import { TextMatchForm } from "src/views/home/components/text-match-form/text-match-form.view";
 import { Card } from "src/views/shared/card/card.view";
 import { ExternalLink } from "src/views/shared/external-link/external-link.view";
