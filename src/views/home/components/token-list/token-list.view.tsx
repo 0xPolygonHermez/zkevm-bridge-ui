@@ -5,6 +5,7 @@ import { isChainNativeCustomToken } from "src/adapters/storage";
 import { ReactComponent as InfoIcon } from "src/assets/icons/info.svg";
 import { ReactComponent as MagnifyingGlassIcon } from "src/assets/icons/magnifying-glass.svg";
 import { ReactComponent as XMarkIcon } from "src/assets/icons/xmark.svg";
+import { TOKEN_BLACKLIST } from "src/constants";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Chain, Token } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
@@ -83,50 +84,57 @@ export const TokenList: FC<TokenListProps> = ({
     setCustomToken({ status: "pending" });
 
     if (ethersUtils.isAddress(searchTerm) && newFilteredTokens.length === 0) {
-      setCustomToken({ status: "loading" });
+      if (TOKEN_BLACKLIST.includes(searchTerm)) {
+        setCustomToken({
+          error: "We don't support this token by the moment.",
+          status: "failed",
+        });
+      } else {
+        setCustomToken({ status: "loading" });
 
-      void getTokenFromAddress({
-        address: searchTerm,
-        chain: chains.from,
-      })
-        .then((token: Token) => {
-          getTokenBalance(token, chains.from)
-            .then((balance) => {
-              callIfMounted(() => {
-                setCustomToken((currentCustomToken) =>
-                  currentCustomToken.status === "pending"
-                    ? currentCustomToken
-                    : {
-                        data: { ...token, balance: { data: balance, status: "successful" } },
-                        status: "successful",
-                      }
-                );
+        void getTokenFromAddress({
+          address: searchTerm,
+          chain: chains.from,
+        })
+          .then((token: Token) => {
+            getTokenBalance(token, chains.from)
+              .then((balance) => {
+                callIfMounted(() => {
+                  setCustomToken((currentCustomToken) =>
+                    currentCustomToken.status === "pending"
+                      ? currentCustomToken
+                      : {
+                          data: { ...token, balance: { data: balance, status: "successful" } },
+                          status: "successful",
+                        }
+                  );
+                });
+              })
+              .catch(() => {
+                callIfMounted(() => {
+                  setCustomToken((currentCustomToken) =>
+                    currentCustomToken.status === "pending"
+                      ? currentCustomToken
+                      : {
+                          data: {
+                            ...token,
+                            balance: { error: "Couldn't retrieve token balance", status: "failed" },
+                          },
+                          status: "successful",
+                        }
+                  );
+                });
+              });
+          })
+          .catch(() =>
+            callIfMounted(() => {
+              setCustomToken({
+                error: "The token couldn't be found on the selected network.",
+                status: "failed",
               });
             })
-            .catch(() => {
-              callIfMounted(() => {
-                setCustomToken((currentCustomToken) =>
-                  currentCustomToken.status === "pending"
-                    ? currentCustomToken
-                    : {
-                        data: {
-                          ...token,
-                          balance: { error: "Couldn't retrieve token balance", status: "failed" },
-                        },
-                        status: "successful",
-                      }
-                );
-              });
-            });
-        })
-        .catch(() =>
-          callIfMounted(() => {
-            setCustomToken({
-              error: "The token couldn't be found on the selected network.",
-              status: "failed",
-            });
-          })
-        );
+          );
+      }
     }
   };
 
