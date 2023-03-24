@@ -40,6 +40,13 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(2),
     textAlign: "center",
   },
+  link: {
+    "&:hover": {
+      color: theme.palette.primary.dark,
+    },
+    color: theme.palette.primary.main,
+    transition: theme.hoverTransition,
+  },
   title: {
     marginBottom: theme.spacing(1),
     textAlign: "center",

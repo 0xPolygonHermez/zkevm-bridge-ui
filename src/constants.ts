@@ -34,6 +34,8 @@ export const PENDING_TXS_KEY = "pendingTxs";
 
 export const POLICY_CHECK_KEY = "policyCheck";
 
+export const DEPOSIT_WARNING_KEY = "depositWarning";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;
@@ -70,6 +72,10 @@ export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
 export const POLYGON_SUPPORT_URL = "https://support.polygon.technology";
+
+export const POLYGON_TERMS_AND_CONDITIONS_URL = "https://polygon.technology/terms-of-use";
+
+export const POLYGON_PRIVACY_POLICY_URL = "https://polygon.technology/privacy-policy";
 
 export const getChains = ({
   ethereum,

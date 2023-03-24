@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getIsDepositWarningHidden, setIsDepositWarningHidden } from "src/adapters/storage";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
@@ -25,13 +26,23 @@ export const Home = (): JSX.Element => {
     status: "closed",
   });
 
-  const onSubmitForm = (formData: FormData) => {
+  const onSubmitForm = (formData: FormData, hideDepositWarning?: boolean) => {
+    if (hideDepositWarning) {
+      setIsDepositWarningHidden(hideDepositWarning);
+    }
     setFormData(formData);
     navigate(routes.bridgeConfirmation.path);
   };
 
   const onCheckDepositLimitAndSubmitForm = (formData: FormData) => {
-    if (env && env.isDepositWarningEnabled && formData.from.key === "ethereum") {
+    const isDepositWarningHidden = getIsDepositWarningHidden();
+
+    if (
+      env &&
+      env.isDepositWarningEnabled &&
+      !isDepositWarningHidden &&
+      formData.from.key === "ethereum"
+    ) {
       setDepositLimitModal({
         data: formData,
         status: "open",

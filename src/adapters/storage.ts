@@ -187,6 +187,19 @@ export function setPolicyCheck(): PolicyCheck {
   return setStorageByKey({ key: constants.POLICY_CHECK_KEY, value: PolicyCheck.Checked });
 }
 
+// IsDepositWarningHidden
+export function getIsDepositWarningHidden(): boolean {
+  return getStorageByKey({
+    defaultValue: false,
+    key: constants.DEPOSIT_WARNING_KEY,
+    parser: z.boolean(),
+  });
+}
+
+export function setIsDepositWarningHidden(value: boolean): boolean {
+  return setStorageByKey({ key: constants.DEPOSIT_WARNING_KEY, value });
+}
+
 // Helpers
 export function getStorageByKey<I, O>({
   defaultValue,
