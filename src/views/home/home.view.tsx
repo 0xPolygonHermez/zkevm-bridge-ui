@@ -10,7 +10,7 @@ import { FormData, ModalState } from "src/domain";
 import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.view";
-import { DepositLimitModal } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
+import { DepositWarningModal } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
 import { Header } from "src/views/home/components/header/header.view";
 import { useHomeStyles } from "src/views/home/home.styles";
 import { NetworkBox } from "src/views/shared/network-box/network-box.view";
@@ -22,7 +22,7 @@ export const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { formData, setFormData } = useFormContext();
   const { connectedProvider } = useProvidersContext();
-  const [depositLimitModal, setDepositLimitModal] = useState<ModalState<FormData>>({
+  const [depositWarningModal, setDepositWarningModal] = useState<ModalState<FormData>>({
     status: "closed",
   });
 
@@ -34,7 +34,7 @@ export const Home = (): JSX.Element => {
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const onCheckDepositLimitAndSubmitForm = (formData: FormData) => {
+  const onCheckShowDepositWarningAndSubmitForm = (formData: FormData) => {
     const isDepositWarningHidden = getIsDepositWarningHidden();
 
     if (
@@ -43,7 +43,7 @@ export const Home = (): JSX.Element => {
       !isDepositWarningHidden &&
       formData.from.key === "ethereum"
     ) {
-      setDepositLimitModal({
+      setDepositWarningModal({
         data: formData,
         status: "open",
       });
@@ -74,13 +74,13 @@ export const Home = (): JSX.Element => {
             account={connectedProvider.data.account}
             formData={formData}
             onResetForm={onResetForm}
-            onSubmit={onCheckDepositLimitAndSubmitForm}
+            onSubmit={onCheckShowDepositWarningAndSubmitForm}
           />
-          {depositLimitModal.status === "open" && (
-            <DepositLimitModal
-              formData={depositLimitModal.data}
+          {depositWarningModal.status === "open" && (
+            <DepositWarningModal
+              formData={depositWarningModal.data}
               onAccept={onSubmitForm}
-              onCancel={() => setDepositLimitModal({ status: "closed" })}
+              onCancel={() => setDepositWarningModal({ status: "closed" })}
             />
           )}
         </>

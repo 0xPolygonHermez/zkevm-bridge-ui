@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
+export const useDepositWarningModalStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "flex-start",
     background: theme.palette.transparency,

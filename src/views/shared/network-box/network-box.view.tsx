@@ -12,7 +12,7 @@ import { Message } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import { Card } from "src/views/shared/card/card.view";
-import { Link } from "src/views/shared/link/link.view";
+import { ExternalLink } from "src/views/shared/external-link/external-link.view";
 import { useNetworkBoxStyles } from "src/views/shared/network-box/network-box.styles";
 import { Typography } from "src/views/shared/typography/typography.view";
 
@@ -84,17 +84,19 @@ export const NetworkBox: FC = () => {
           <li className={classes.listItem}>
             <Typography type="body2">
               Block explorer URL:{" "}
-              <Link href={polygonZkEVMChain.explorerUrl}>{polygonZkEVMChain.explorerUrl}</Link>
+              <ExternalLink href={polygonZkEVMChain.explorerUrl}>
+                {polygonZkEVMChain.explorerUrl}
+              </ExternalLink>
             </Typography>
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
               {env.chains[0].name} Smart Contract:{" "}
-              <Link
+              <ExternalLink
                 href={`${ethereumChain.explorerUrl}/address/${ethereumChain.poeContractAddress}`}
               >
                 {ethereumChain.poeContractAddress}
-              </Link>
+              </ExternalLink>
             </Typography>
           </li>
         </ul>

@@ -6,21 +6,25 @@ import {
 } from "src/constants";
 
 import { FormData } from "src/domain";
-import { useDepositLimitModalStyles } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.styles";
+import { useDepositWarningModalStyles } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.styles";
 import { TextMatchForm } from "src/views/home/components/text-match-form/text-match-form.view";
 import { Card } from "src/views/shared/card/card.view";
-import { Link } from "src/views/shared/link/link.view";
+import { ExternalLink } from "src/views/shared/external-link/external-link.view";
 import { Portal } from "src/views/shared/portal/portal.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
-interface DepositLimitModalProps {
+interface DepositWarningModalProps {
   formData: FormData;
   onAccept: (formData: FormData, hideDepositWarning: boolean) => void;
   onCancel: () => void;
 }
 
-export const DepositLimitModal: FC<DepositLimitModalProps> = ({ formData, onAccept, onCancel }) => {
-  const classes = useDepositLimitModalStyles();
+export const DepositWarningModal: FC<DepositWarningModalProps> = ({
+  formData,
+  onAccept,
+  onCancel,
+}) => {
+  const classes = useDepositWarningModalStyles();
 
   return (
     <Portal>
@@ -32,8 +36,9 @@ export const DepositLimitModal: FC<DepositLimitModalProps> = ({ formData, onAcce
           <Typography className={classes.warningText} type="body1">
             You are about to transfer tokens using the Polygon zkEVM Mainnet Beta. There are risks
             associated with your use of the Mainnet Beta here. You agree to the{" "}
-            <Link href={POLYGON_TERMS_AND_CONDITIONS_URL}>Terms of Use</Link>, including those
-            risks, and the <Link href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</Link>
+            <ExternalLink href={POLYGON_TERMS_AND_CONDITIONS_URL}>Terms of Use</ExternalLink>,
+            including those risks, and the{" "}
+            <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>
             <br></br>
             To do so, type <b className={classes.exampleText}>
               {SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD}

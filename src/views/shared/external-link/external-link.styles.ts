@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-export const useLinkStyles = createUseStyles((theme: Theme) => ({
+export const useExternalLinkStyles = createUseStyles((theme: Theme) => ({
   link: {
     "&:hover": {
       color: theme.palette.primary.dark,
