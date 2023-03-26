@@ -296,7 +296,7 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
           <button className={classes.tokenSelector} onClick={onTokenDropdownClick} type="button">
-            <Icon size={24} url={token.logoURI} />
+            <Icon isRounded size={24} url={token.logoURI} />
             <Typography type="h2">{token.symbol}</Typography>
             <CaretDown />
           </button>

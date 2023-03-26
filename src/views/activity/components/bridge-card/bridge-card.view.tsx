@@ -86,7 +86,7 @@ export const BridgeCard: FC<BridgeCardProps> = ({
 
   const bridgeAmount = (
     <div className={classes.token}>
-      <Icon className={classes.tokenIcon} size={20} url={token.logoURI} />
+      <Icon className={classes.tokenIcon} isRounded size={20} url={token.logoURI} />
       <Typography type="body1">{tokenAmountString}</Typography>
     </div>
   );

@@ -219,7 +219,7 @@ export const TokenList: FC<TokenListProps> = ({
                     role="button"
                   >
                     <div className={classes.tokenInfo}>
-                      <Icon className={classes.tokenIcon} size={24} url={token.logoURI} />
+                      <Icon className={classes.tokenIcon} isRounded size={24} url={token.logoURI} />
                       <Typography type="body1">{token.name}</Typography>
                     </div>
                   </button>
@@ -243,7 +243,7 @@ export const TokenList: FC<TokenListProps> = ({
                     role="button"
                   >
                     <div className={classes.tokenInfoWithBalance}>
-                      <Icon className={classes.tokenIcon} size={24} url={token.logoURI} />
+                      <Icon className={classes.tokenIcon} isRounded size={24} url={token.logoURI} />
                       <Typography type="body1">{token.name}</Typography>
                       <div className={classes.tokenBalanceWrapper}>
                         <TokenBalance

@@ -312,7 +312,7 @@ export const BridgeDetails: FC = () => {
           <Header backTo={{ routeKey: "activity" }} title="Bridge Details" />
           <Card className={classes.card}>
             <div className={classes.balance}>
-              <Icon className={classes.tokenIcon} size={48} url={token.logoURI} />
+              <Icon className={classes.tokenIcon} isRounded size={48} url={token.logoURI} />
               <Typography type="h1">{tokenAmountString}</Typography>
               <Typography className={classes.fiat} type="h2">
                 {fiatAmountString}
