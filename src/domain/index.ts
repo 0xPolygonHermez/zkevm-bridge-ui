@@ -62,7 +62,6 @@ export interface Env {
         apiKey: string;
         apiUrl: string;
         areEnabled: true;
-        usdcToken: Token;
       };
   forceUpdateGlobalExitRootForL1: boolean;
   isDepositWarningEnabled: boolean;
@@ -77,6 +76,8 @@ export interface Env {
         title?: string;
         url?: string;
       };
+  usdcToken: Token;
+  wethToken: Token;
 }
 
 export interface RouterState {
@@ -113,6 +114,13 @@ export enum Currency {
 }
 
 export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
+
+export enum UniswapV3FeeAmount {
+  LOWEST = 100,
+  LOW = 500,
+  MEDIUM = 3000,
+  HIGH = 10000,
+}
 
 // User notifications
 export type Message =

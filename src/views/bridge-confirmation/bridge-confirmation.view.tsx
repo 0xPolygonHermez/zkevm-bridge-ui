@@ -238,7 +238,7 @@ export const BridgeConfirmation: FC = () => {
       const etherToken = getEtherToken(from);
 
       // Get the fiat price of Ether
-      getTokenPrice({ chain: from, token: etherToken })
+      getTokenPrice({ token: etherToken })
         .then((etherPrice) => {
           callIfMounted(() => {
             setEtherTokenFiatPrice(etherPrice);
@@ -258,7 +258,7 @@ export const BridgeConfirmation: FC = () => {
 
       // Get the fiat price of the bridged token when it's not Ether
       if (!isTokenEther(token)) {
-        getTokenPrice({ chain: from, token })
+        getTokenPrice({ token })
           .then((tokenPrice) => {
             callIfMounted(() => {
               setBridgedTokenFiatPrice(tokenPrice);

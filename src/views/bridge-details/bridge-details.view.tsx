@@ -172,10 +172,10 @@ export const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
-      const { amount, from, token } = bridge.data;
+      const { amount, token } = bridge.data;
 
       // fiat amount
-      getTokenPrice({ chain: from, token })
+      getTokenPrice({ token })
         .then((tokenPrice) => {
           callIfMounted(() => {
             setFiatAmount(
@@ -203,12 +203,10 @@ export const BridgeDetails: FC = () => {
 
   useEffect(() => {
     if (tokens && env?.fiatExchangeRates.areEnabled && bridge.status === "successful") {
-      const { from } = bridge.data;
-
       // fiat fees
       const token = tokens.find((t) => t.symbol === "WETH");
       if (token) {
-        getTokenPrice({ chain: from, token })
+        getTokenPrice({ token })
           .then((tokenPrice) => {
             callIfMounted(() => {
               setFiatFees({

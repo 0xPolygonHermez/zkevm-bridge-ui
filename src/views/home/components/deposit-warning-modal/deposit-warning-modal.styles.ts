@@ -3,6 +3,11 @@ import { createUseStyles } from "react-jss";
 import { Theme } from "src/styles/theme";
 
 export const useDepositWarningModalStyles = createUseStyles((theme: Theme) => ({
+  aboveDepositLimitWarningText: {
+    lineHeight: "24px",
+    margin: [theme.spacing(2), 0, theme.spacing(4)],
+    textAlign: "center",
+  },
   background: {
     alignItems: "flex-start",
     background: theme.palette.transparency,
@@ -31,14 +36,13 @@ export const useDepositWarningModalStyles = createUseStyles((theme: Theme) => ({
     padding: theme.spacing(4),
     width: "100%",
   },
+  confirmationWarningText: {
+    lineHeight: "24px",
+    margin: [theme.spacing(2), 0],
+    textAlign: "center",
+  },
   exampleText: {
     userSelect: "none",
-  },
-  forbiddenText: {
-    lineHeight: "24px",
-    marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(2),
-    textAlign: "center",
   },
   link: {
     "&:hover": {
@@ -49,11 +53,6 @@ export const useDepositWarningModalStyles = createUseStyles((theme: Theme) => ({
   },
   title: {
     marginBottom: theme.spacing(1),
-    textAlign: "center",
-  },
-  warningText: {
-    lineHeight: "24px",
-    margin: [theme.spacing(2), 0],
     textAlign: "center",
   },
 }));

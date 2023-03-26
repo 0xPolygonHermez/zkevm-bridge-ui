@@ -194,10 +194,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           : { status: "pending" };
 
       const tokenPrice: BigNumber | undefined = env.fiatExchangeRates.areEnabled
-        ? await getTokenPrice({
-            chain: from,
-            token,
-          }).catch(() => undefined)
+        ? await getTokenPrice({ token }).catch(() => undefined)
         : undefined;
 
       const fiatAmount =
@@ -367,9 +364,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               const tokenPrice =
                 tokenCachedPrice !== undefined
                   ? tokenCachedPrice
-                  : await getTokenPrice({ chain: deposit.from, token: deposit.token }).catch(
-                      () => null
-                    );
+                  : await getTokenPrice({ token: deposit.token }).catch(() => null);
 
               return {
                 ...tokenPrices,
@@ -633,7 +628,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           const token = await addWrappedToken({ token: tx.token });
           const tokenPrice =
             chain && env.fiatExchangeRates.areEnabled
-              ? await getTokenPrice({ chain, token: tx.token })
+              ? await getTokenPrice({ token: tx.token })
               : undefined;
           const fiatAmount =
             tokenPrice &&

@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-import { getChains, getUsdcToken } from "src/constants";
+import {
+  USDC_ADDRESSES,
+  WETH_ADDRESSES,
+  getChains,
+  getUsdcToken,
+  getWethToken,
+} from "src/constants";
 import * as domain from "src/domain";
 import { StrictSchema } from "src/utils/type-safety";
 
@@ -14,7 +20,6 @@ interface Env {
   VITE_ETHEREUM_RPC_URL: string;
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
-  VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1?: string;
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2?: string;
   VITE_OUTDATED_NETWORK_MODAL_TITLE?: string;
@@ -58,7 +63,6 @@ const envToDomain = ({
   VITE_ETHEREUM_RPC_URL,
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
-  VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1,
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2,
   VITE_OUTDATED_NETWORK_MODAL_TITLE,
@@ -110,6 +114,26 @@ const envToDomain = ({
       throw new Error("Ethereum chain not found");
     }
 
+    const usdcAddress = USDC_ADDRESSES[ethereumChain.chainId];
+    const wethAddress = WETH_ADDRESSES[ethereumChain.chainId];
+
+    if (!usdcAddress) {
+      throw new Error(`USDC Address doesn't exist for chainId: ${ethereumChain.chainId}`);
+    }
+
+    if (!wethAddress) {
+      throw new Error(`WETH Address doesn't exist for chainId: ${ethereumChain.chainId}`);
+    }
+
+    const usdcToken = getUsdcToken({
+      address: usdcAddress,
+      chainId: ethereumChain.chainId,
+    });
+    const wethToken = getWethToken({
+      address: wethAddress,
+      chainId: ethereumChain.chainId,
+    });
+
     if (!useFiatExchangeRates) {
       return {
         bridgeApiUrl,
@@ -120,6 +144,8 @@ const envToDomain = ({
         forceUpdateGlobalExitRootForL1,
         isDepositWarningEnabled,
         outdatedNetworkModal,
+        usdcToken,
+        wethToken,
       };
     }
 
@@ -131,10 +157,6 @@ const envToDomain = ({
       throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_API_KEY env var");
     }
 
-    if (!VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS) {
-      throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS env vars");
-    }
-
     return {
       bridgeApiUrl,
       chains,
@@ -142,14 +164,12 @@ const envToDomain = ({
         apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
         apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
         areEnabled: true,
-        usdcToken: getUsdcToken({
-          address: VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
-          chainId: ethereumChain.chainId,
-        }),
       },
       forceUpdateGlobalExitRootForL1,
       isDepositWarningEnabled,
       outdatedNetworkModal,
+      usdcToken,
+      wethToken,
     };
   });
 };
@@ -166,7 +186,6 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_ETHEREUM_RPC_URL: z.string().url(),
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
-      VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
       VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1: z.string().optional(),
       VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2: z.string().optional(),
       VITE_OUTDATED_NETWORK_MODAL_TITLE: z.string().optional(),

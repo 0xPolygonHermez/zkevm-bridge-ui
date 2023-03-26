@@ -3,7 +3,15 @@ import { ethers } from "ethers";
 
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { Chain, Currency, EthereumChain, ProviderError, Token, ZkEVMChain } from "src/domain";
+import {
+  Chain,
+  Currency,
+  EthereumChain,
+  EthereumChainId,
+  ProviderError,
+  Token,
+  ZkEVMChain,
+} from "src/domain";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { getEthereumNetworkName } from "src/utils/labels";
 
@@ -19,12 +27,9 @@ export const EIP_2612_DOMAIN_TYPEHASH =
 export const UNISWAP_DOMAIN_TYPEHASH =
   "0x8cad95687ba82c2ce50e74f7b754645e5117c3a5bec8151c0726d5857980a866";
 
-export const UNISWAP_V2_ROUTER_02_CONTRACT_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+export const UNISWAP_V3_QUOTER_CONTRACT_ADDRESS = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 
-export const UNISWAP_V2_ROUTER_02_INIT_CODE_HASH =
-  "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f";
-
-export const UNISWAP_V2_ROUTER_02_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+export const UNISWAP_V3_ROUTER_02_FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 
 export const PREFERRED_CURRENCY_KEY = "currency";
 
@@ -82,6 +87,18 @@ export const TOKEN_BLACKLIST = [
   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
 ];
+
+export const DEPOSIT_LIMIT = 10000;
+
+export const USDC_ADDRESSES: Record<number, string> = {
+  [EthereumChainId.GOERLI]: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+  [EthereumChainId.MAINNET]: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+};
+
+export const WETH_ADDRESSES: Record<number, string> = {
+  [EthereumChainId.GOERLI]: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  [EthereumChainId.MAINNET]: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+};
 
 export const getChains = ({
   ethereum,
@@ -171,4 +188,20 @@ export const getUsdcToken = ({
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
   name: "USD Coin",
   symbol: "USDC",
+});
+
+export const getWethToken = ({
+  address,
+  chainId,
+}: {
+  address: string;
+  chainId: number;
+}): Token => ({
+  address,
+  chainId,
+  decimals: 18,
+  logoURI:
+    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
+  name: "Wrapped Ether",
+  symbol: "WETH",
 });
