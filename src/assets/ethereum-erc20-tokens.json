@@ -16,36 +16,12 @@
     "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
   },
   {
-    "name": "Wrapped Ether",
-    "address": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-    "chainId": 5,
-    "symbol": "WETH",
-    "decimals": 18,
-    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png"
-  },
-  {
-    "name": "Uniswap",
-    "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-    "chainId": 5,
-    "symbol": "UNI",
-    "decimals": 18,
-    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984/logo.png"
-  },
-  {
     "name": "Matic Token",
     "address": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
     "chainId": 1,
     "symbol": "MATIC",
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png"
-  },
-  {
-    "name": "Wrapped Ether",
-    "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    "chainId": 1,
-    "symbol": "WETH",
-    "decimals": 18,
-    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png"
   },
   {
     "name": "Wrapped BTC",
@@ -78,5 +54,53 @@
     "decimals": 18,
     "chainId": 1,
     "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
+  },
+  {
+    "name": "ChainLink Token",
+    "address": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+    "symbol": "LINK",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0x514910771AF9Ca656af840dff83E8264EcF986CA/logo.png"
+  },
+  {
+    "name": "Curve DAO Token",
+    "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+    "symbol": "CRV",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0xD533a949740bb3306d119CC777fa900bA034cd52/logo.png"
+  },
+  {
+    "name": "Balancer",
+    "address": "0xba100000625a3754423978a60c9317c58a424e3D",
+    "symbol": "BAL",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0xba100000625a3754423978a60c9317c58a424e3D/logo.png"
+  },
+  {
+    "name": "LUSD Stablecoin",
+    "address": "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+    "symbol": "LUSD",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets-cdn.trustwallet.com/blockchains/ethereum/assets/0x5f98805A4E8be255a32880FDeC7F6728C6568bA0/logo.png"
+  },
+  {
+    "name": "Wrapped liquid staked Ether 2.0",
+    "address": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+    "symbol": "wstETH",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/18834/large/wstETH.png"
+  },
+  {
+    "name": "Staked MATIC",
+    "address": "0x9ee91f9f426fa633d227f7a9b000e28b9dfd8599",
+    "symbol": "stMATIC",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/24185/large/stMATIC.png"
   }
 ]
