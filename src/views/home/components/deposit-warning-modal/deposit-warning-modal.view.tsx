@@ -40,6 +40,7 @@ export const DepositWarningModal: FC<DepositWarningModalProps> = ({
             including those risks, and the{" "}
             <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>
             <br></br>
+            <br></br>
             To do so, type <b className={classes.exampleText}>
               {SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD}
             </b>{" "}
