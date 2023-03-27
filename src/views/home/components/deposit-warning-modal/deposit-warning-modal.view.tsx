@@ -41,8 +41,8 @@ export const DepositWarningModal: FC<DepositWarningModalProps> = ({
             including{" "}
             <ExternalLink href={POLYGON_ZKEVM_RISK_DISCLOSURES_URL}>those risks</ExternalLink>, and
             the <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>.
-            <br></br>
-            <br></br>
+            <br />
+            <br />
             To do so, type <b className={classes.exampleText}>{DEPOSIT_CHECK_WORD}</b> below to
             continue.
           </Typography>
