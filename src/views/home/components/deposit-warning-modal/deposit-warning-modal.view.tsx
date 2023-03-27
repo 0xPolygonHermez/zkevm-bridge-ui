@@ -1,8 +1,9 @@
 import { FC } from "react";
 import {
+  DEPOSIT_CHECK_WORD,
   POLYGON_PRIVACY_POLICY_URL,
   POLYGON_TERMS_AND_CONDITIONS_URL,
-  SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD,
+  POLYGON_ZKEVM_RISK_DISCLOSURES_URL,
 } from "src/constants";
 
 import { FormData } from "src/domain";
@@ -41,14 +42,12 @@ export const DepositWarningModal: FC<DepositWarningModalProps> = ({
             <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>
             <br></br>
             <br></br>
-            To do so, type <b className={classes.exampleText}>
-              {SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD}
-            </b>{" "}
-            below to continue.
+            To do so, type <b className={classes.exampleText}>{DEPOSIT_CHECK_WORD}</b> below to
+            continue.
           </Typography>
           <TextMatchForm
             onSubmit={(hideDepositWarning) => onAccept(formData, hideDepositWarning)}
-            text={SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD}
+            text={DEPOSIT_CHECK_WORD}
           />
           <button className={classes.cancelButton} onClick={onCancel} type="button">
             Cancel
