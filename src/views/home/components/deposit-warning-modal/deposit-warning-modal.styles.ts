@@ -2,7 +2,7 @@ import { createUseStyles } from "react-jss";
 
 import { Theme } from "src/styles/theme";
 
-export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
+export const useDepositWarningModalStyles = createUseStyles((theme: Theme) => ({
   background: {
     alignItems: "flex-start",
     background: theme.palette.transparency,
@@ -39,6 +39,13 @@ export const useDepositLimitModalStyles = createUseStyles((theme: Theme) => ({
     marginBottom: theme.spacing(4),
     marginTop: theme.spacing(2),
     textAlign: "center",
+  },
+  link: {
+    "&:hover": {
+      color: theme.palette.primary.dark,
+    },
+    color: theme.palette.primary.main,
+    transition: theme.hoverTransition,
   },
   title: {
     marginBottom: theme.spacing(1),

@@ -6,7 +6,7 @@ import { StrictSchema } from "src/utils/type-safety";
 
 interface Env {
   VITE_BRIDGE_API_URL: string;
-  VITE_ENABLE_DEPOSIT_LIMITS: string;
+  VITE_ENABLE_DEPOSIT_WARNING: string;
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_EXPLORER_URL: string;
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: string;
@@ -50,7 +50,7 @@ const stringBooleanParser = StrictSchema<string, boolean>()(
 
 const envToDomain = ({
   VITE_BRIDGE_API_URL,
-  VITE_ENABLE_DEPOSIT_LIMITS,
+  VITE_ENABLE_DEPOSIT_WARNING,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
   VITE_ETHEREUM_EXPLORER_URL,
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT,
@@ -88,7 +88,7 @@ const envToDomain = ({
     : {
         isEnabled: false,
       };
-  const areDepositLimitsEnabled = stringBooleanParser.parse(VITE_ENABLE_DEPOSIT_LIMITS);
+  const isDepositWarningEnabled = stringBooleanParser.parse(VITE_ENABLE_DEPOSIT_WARNING);
 
   return getChains({
     ethereum: {
@@ -112,13 +112,13 @@ const envToDomain = ({
 
     if (!useFiatExchangeRates) {
       return {
-        areDepositLimitsEnabled,
         bridgeApiUrl,
         chains,
         fiatExchangeRates: {
           areEnabled: false,
         },
         forceUpdateGlobalExitRootForL1,
+        isDepositWarningEnabled,
         outdatedNetworkModal,
       };
     }
@@ -136,7 +136,6 @@ const envToDomain = ({
     }
 
     return {
-      areDepositLimitsEnabled,
       bridgeApiUrl,
       chains,
       fiatExchangeRates: {
@@ -149,6 +148,7 @@ const envToDomain = ({
         }),
       },
       forceUpdateGlobalExitRootForL1,
+      isDepositWarningEnabled,
       outdatedNetworkModal,
     };
   });
@@ -158,7 +158,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
   z
     .object({
       VITE_BRIDGE_API_URL: z.string().url(),
-      VITE_ENABLE_DEPOSIT_LIMITS: z.string(),
+      VITE_ENABLE_DEPOSIT_WARNING: z.string(),
       VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
       VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: z.string(),

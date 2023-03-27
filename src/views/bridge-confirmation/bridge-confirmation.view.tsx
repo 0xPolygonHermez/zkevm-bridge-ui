@@ -429,7 +429,7 @@ export const BridgeConfirmation: FC = () => {
     <div className={classes.contentWrapper}>
       <Header backTo={{ routeKey: "home" }} title="Confirm Bridge" />
       <Card className={classes.card}>
-        <Icon className={classes.tokenIcon} size={46} url={token.logoURI} />
+        <Icon className={classes.tokenIcon} isRounded size={46} url={token.logoURI} />
         <Typography type="h1">{tokenAmountString}</Typography>
         {fiatAmountString && (
           <Typography className={classes.fiat} type="body2">
@@ -454,7 +454,7 @@ export const BridgeConfirmation: FC = () => {
         <div className={classes.feeBlock}>
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
-            <Icon size={20} url={ETH_TOKEN_LOGO_URI} />
+            <Icon isRounded size={20} url={ETH_TOKEN_LOGO_URI} />
             <Typography type="body1">{feeString}</Typography>
           </div>
         </div>

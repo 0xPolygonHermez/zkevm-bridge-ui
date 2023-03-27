@@ -5,4 +5,11 @@ export const useIconStyles = createUseStyles({
     height: size,
     width: size,
   }),
+  roundedWrapper: {
+    alignItems: "center",
+    borderRadius: "50%",
+    display: "flex",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
 });

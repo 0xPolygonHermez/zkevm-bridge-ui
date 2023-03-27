@@ -52,7 +52,6 @@ export interface Token {
 }
 
 export interface Env {
-  areDepositLimitsEnabled: boolean;
   bridgeApiUrl: string;
   chains: [EthereumChain, ZkEVMChain];
   fiatExchangeRates:
@@ -66,6 +65,7 @@ export interface Env {
         usdcToken: Token;
       };
   forceUpdateGlobalExitRootForL1: boolean;
+  isDepositWarningEnabled: boolean;
   outdatedNetworkModal:
     | {
         isEnabled: false;
@@ -87,13 +87,6 @@ export enum EthereumChainId {
   MAINNET = 1,
   GOERLI = 5,
 }
-
-interface DepositLimit {
-  hard: number;
-  soft: number;
-}
-
-export type DepositLimits = Record<number, Record<string, DepositLimit>>;
 
 export enum WalletName {
   METAMASK = "MetaMask",
@@ -258,7 +251,7 @@ export enum ProviderError {
 }
 
 export interface MetaMaskUserRejectedRequestError {
-  code: "ACTION_REJECTED";
+  code: 4001 | "ACTION_REJECTED";
   message: string;
 }
 
