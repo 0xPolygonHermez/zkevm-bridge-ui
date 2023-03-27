@@ -86,7 +86,7 @@ export const TokenList: FC<TokenListProps> = ({
     if (ethersUtils.isAddress(searchTerm) && newFilteredTokens.length === 0) {
       if (TOKEN_BLACKLIST.includes(searchTerm)) {
         setCustomToken({
-          error: "The token you are trying to import.",
+          error: "We do not support this token at the moment.",
           status: "failed",
         });
       } else {
