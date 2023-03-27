@@ -38,8 +38,9 @@ export const DepositWarningModal: FC<DepositWarningModalProps> = ({
             You are about to transfer tokens using the Polygon zkEVM Mainnet Beta. There are risks
             associated with your use of the Mainnet Beta here. You agree to the{" "}
             <ExternalLink href={POLYGON_TERMS_AND_CONDITIONS_URL}>Terms of Use</ExternalLink>,
-            including those risks, and the{" "}
-            <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>
+            including{" "}
+            <ExternalLink href={POLYGON_ZKEVM_RISK_DISCLOSURES_URL}>those risks</ExternalLink>, and
+            the <ExternalLink href={POLYGON_PRIVACY_POLICY_URL}>Privacy Policy</ExternalLink>.
             <br></br>
             <br></br>
             To do so, type <b className={classes.exampleText}>{DEPOSIT_CHECK_WORD}</b> below to
