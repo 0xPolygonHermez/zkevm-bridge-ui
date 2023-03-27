@@ -251,7 +251,7 @@ export enum ProviderError {
 }
 
 export interface MetaMaskUserRejectedRequestError {
-  code: "ACTION_REJECTED";
+  code: 4001;
   message: string;
 }
 
