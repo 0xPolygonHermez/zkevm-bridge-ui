@@ -191,13 +191,13 @@ export function setPolicyCheck(): PolicyCheck {
 export function getIsDepositWarningDismissed(): boolean {
   return getStorageByKey({
     defaultValue: false,
-    key: constants.DEPOSIT_WARNING_KEY,
+    key: constants.DISMISSED_DEPOSIT_WARNING_KEY,
     parser: z.boolean(),
   });
 }
 
 export function setIsDepositWarningDismissed(value: boolean): boolean {
-  return setStorageByKey({ key: constants.DEPOSIT_WARNING_KEY, value });
+  return setStorageByKey({ key: constants.DISMISSED_DEPOSIT_WARNING_KEY, value });
 }
 
 // Helpers

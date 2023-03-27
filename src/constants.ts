@@ -34,7 +34,7 @@ export const PENDING_TXS_KEY = "pendingTxs";
 
 export const POLICY_CHECK_KEY = "policyCheck";
 
-export const DEPOSIT_WARNING_KEY = "depositWarning";
+export const DISMISSED_DEPOSIT_WARNING_KEY = "dismissedDepositWarning";
 
 export const PREFERRED_CURRENCY = Currency.USD;
 
