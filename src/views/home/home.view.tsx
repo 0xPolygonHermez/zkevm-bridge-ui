@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getIsDepositWarningHidden, setIsDepositWarningHidden } from "src/adapters/storage";
+import { getIsDepositWarningDismissed, setIsDepositWarningDismissed } from "src/adapters/storage";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
@@ -28,19 +28,19 @@ export const Home = (): JSX.Element => {
 
   const onSubmitForm = (formData: FormData, hideDepositWarning?: boolean) => {
     if (hideDepositWarning) {
-      setIsDepositWarningHidden(hideDepositWarning);
+      setIsDepositWarningDismissed(hideDepositWarning);
     }
     setFormData(formData);
     navigate(routes.bridgeConfirmation.path);
   };
 
   const onCheckShowDepositWarningAndSubmitForm = (formData: FormData) => {
-    const isDepositWarningHidden = getIsDepositWarningHidden();
+    const isDepositWarningDismissed = getIsDepositWarningDismissed();
 
     if (
       env &&
       env.isDepositWarningEnabled &&
-      !isDepositWarningHidden &&
+      !isDepositWarningDismissed &&
       formData.from.key === "ethereum"
     ) {
       setDepositWarningModal({

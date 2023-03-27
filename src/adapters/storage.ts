@@ -187,8 +187,8 @@ export function setPolicyCheck(): PolicyCheck {
   return setStorageByKey({ key: constants.POLICY_CHECK_KEY, value: PolicyCheck.Checked });
 }
 
-// IsDepositWarningHidden
-export function getIsDepositWarningHidden(): boolean {
+// IsDepositWarningDismissed
+export function getIsDepositWarningDismissed(): boolean {
   return getStorageByKey({
     defaultValue: false,
     key: constants.DEPOSIT_WARNING_KEY,
@@ -196,7 +196,7 @@ export function getIsDepositWarningHidden(): boolean {
   });
 }
 
-export function setIsDepositWarningHidden(value: boolean): boolean {
+export function setIsDepositWarningDismissed(value: boolean): boolean {
   return setStorageByKey({ key: constants.DEPOSIT_WARNING_KEY, value });
 }
 
