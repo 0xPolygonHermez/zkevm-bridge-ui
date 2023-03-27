@@ -102,5 +102,37 @@
     "decimals": 18,
     "chainId": 1,
     "logoURI": "https://assets.coingecko.com/coins/images/24185/large/stMATIC.png"
+  },
+  {
+    "name": "Coinbase Wrapped Staked ETH",
+    "address": "0xBe9895146f7AF43049ca1c1AE358B0541Ea49704",
+    "symbol": "cbETH",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/27008/large/cbeth.png"
+  },
+  {
+    "name": "Liquid Staking Matic",
+    "address": "0xf03A7Eb46d01d9EcAA104558C732Cf82f6B6B645",
+    "symbol": "MaticX",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/25383/large/maticx.png"
+  },
+  {
+    "name": "Aave Token",
+    "address": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+    "symbol": "AAVE",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/12645/large/AAVE.png"
+  },
+  {
+    "name": "Lido DAO Token",
+    "address": "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32",
+    "symbol": "LDO",
+    "decimals": 18,
+    "chainId": 1,
+    "logoURI": "https://assets.coingecko.com/coins/images/13573/large/Lido_DAO.png"
   }
 ]
