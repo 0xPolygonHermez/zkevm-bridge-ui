@@ -8,6 +8,7 @@ interface Env {
   VITE_BRIDGE_API_URL: string;
   VITE_ENABLE_DEPOSIT_WARNING: string;
   VITE_ENABLE_FIAT_EXCHANGE_RATES: string;
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL?: string;
   VITE_ENABLE_REPORT_FORM: string;
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_EXPLORER_URL: string;
@@ -29,7 +30,6 @@ interface Env {
   VITE_REPORT_FORM_PLATFORM_ENTRY?: string;
   VITE_REPORT_FORM_URL?: string;
   VITE_REPORT_FORM_URL_ENTRY?: string;
-  VITE_ENABLE_OUTDATED_NETWORK_MODAL?: string;
 }
 
 type GetFiatExchangeRatesEnvParams = Pick<
@@ -156,6 +156,7 @@ const envToDomain = ({
   VITE_BRIDGE_API_URL,
   VITE_ENABLE_DEPOSIT_WARNING,
   VITE_ENABLE_FIAT_EXCHANGE_RATES,
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL,
   VITE_ENABLE_REPORT_FORM,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
   VITE_ETHEREUM_EXPLORER_URL,
@@ -177,7 +178,6 @@ const envToDomain = ({
   VITE_REPORT_FORM_PLATFORM_ENTRY,
   VITE_REPORT_FORM_URL,
   VITE_REPORT_FORM_URL_ENTRY,
-  VITE_ENABLE_OUTDATED_NETWORK_MODAL,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
   const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(
@@ -250,6 +250,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_BRIDGE_API_URL: z.string().url(),
       VITE_ENABLE_DEPOSIT_WARNING: z.string(),
       VITE_ENABLE_FIAT_EXCHANGE_RATES: z.string(),
+      VITE_ENABLE_OUTDATED_NETWORK_MODAL: z.string().optional(),
       VITE_ENABLE_REPORT_FORM: z.string(),
       VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
@@ -271,7 +272,6 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_REPORT_FORM_PLATFORM_ENTRY: z.string().optional(),
       VITE_REPORT_FORM_URL: z.string().optional(),
       VITE_REPORT_FORM_URL_ENTRY: z.string().optional(),
-      VITE_ENABLE_OUTDATED_NETWORK_MODAL: z.string().optional(),
     })
     .transform(envToDomain)
 );

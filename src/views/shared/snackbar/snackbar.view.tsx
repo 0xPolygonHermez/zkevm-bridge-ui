@@ -46,12 +46,17 @@ export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport, report
       </div>
     );
   } else {
-    const { parsed, text = "An error occurred. Would you mind reporting it?" } = message;
+    const { parsed, text } = message;
+
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>
           <Icon message={message} />
-          <p className={classes.message}>{text}</p>
+          <p className={classes.message}>
+            {text || reportForm.isEnabled
+              ? "An error occurred. Would you mind reporting it?"
+              : "An error occurred. You can see the details in the console"}
+          </p>
           {reportForm.isEnabled && (
             <button
               className={classes.reportButton}
