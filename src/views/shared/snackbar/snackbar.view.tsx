@@ -4,13 +4,13 @@ import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
-import { Env, Message } from "src/domain";
+import { Env, Message, ReportFormEnvEnabled } from "src/domain";
 import { useSnackbarStyles } from "src/views/shared/snackbar/snackbar.styles";
 
 interface SnackbarProps {
   message: Message;
   onClose: () => void;
-  onReport: (error: string, reportForm: Extract<Env["reportForm"], { isEnabled: true }>) => void;
+  onReport: (error: string, reportForm: ReportFormEnvEnabled) => void;
   reportForm: Env["reportForm"];
 }
 
