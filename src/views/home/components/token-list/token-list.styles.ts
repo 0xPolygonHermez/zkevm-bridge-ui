@@ -22,6 +22,7 @@ export const useTokenListStyles = createUseStyles((theme: Theme) => ({
     display: "flex",
     height: "100%",
     justifyContent: "center",
+    textAlign: "center",
   },
   clearSearchButton: {
     "&:hover": {

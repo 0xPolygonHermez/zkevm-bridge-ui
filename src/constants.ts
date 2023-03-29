@@ -34,6 +34,8 @@ export const PENDING_TXS_KEY = "pendingTxs";
 
 export const POLICY_CHECK_KEY = "policyCheck";
 
+export const DISMISSED_DEPOSIT_WARNING_KEY = "dismissedDepositWarning";
+
 export const PREFERRED_CURRENCY = Currency.USD;
 
 export const FIAT_DISPLAY_PRECISION = 2;
@@ -54,12 +56,26 @@ export const BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE = 100000;
 
 export const GAS_PRICE_INCREASE_PERCENTAGE = 50; // 50%
 
-export const SOFT_DEPOSIT_LIMIT_EXCEEDED_WORD = "I understand";
+export const DEPOSIT_CHECK_WORD = "I understand";
 
 export const ETH_TOKEN_LOGO_URI =
   "https://raw.githubusercontent.com/Uniswap/interface/main/src/assets/images/ethereum-logo.png";
 
 export const POLYGON_SUPPORT_URL = "https://support.polygon.technology";
+
+export const POLYGON_TERMS_AND_CONDITIONS_URL = "https://polygon.technology/terms-of-use";
+
+export const POLYGON_PRIVACY_POLICY_URL = "https://polygon.technology/privacy-policy";
+
+export const POLYGON_ZKEVM_RISK_DISCLOSURES_URL =
+  "https://wiki.polygon.technology/docs/zkEVM/#polygon-zkevm-risk-disclosures";
+
+export const TOKEN_BLACKLIST = [
+  // WETH
+  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+  "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  "0x4F9A0e7FD2Bf6067db6994CF12E4495Df938E6e9",
+];
 
 export const getChains = ({
   ethereum,

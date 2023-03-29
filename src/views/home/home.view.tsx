@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getIsDepositWarningDismissed, setIsDepositWarningDismissed } from "src/adapters/storage";
 
 import { ReactComponent as MetaMaskIcon } from "src/assets/icons/metamask.svg";
 import { useEnvContext } from "src/contexts/env.context";
@@ -9,7 +10,7 @@ import { FormData, ModalState } from "src/domain";
 import { routes } from "src/routes";
 import { getPartiallyHiddenEthereumAddress } from "src/utils/addresses";
 import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.view";
-import { DepositLimitModal } from "src/views/home/components/deposit-limit-modal/deposit-limit-modal.view";
+import { DepositWarningModal } from "src/views/home/components/deposit-warning-modal/deposit-warning-modal.view";
 import { Header } from "src/views/home/components/header/header.view";
 import { useHomeStyles } from "src/views/home/home.styles";
 import { NetworkBox } from "src/views/shared/network-box/network-box.view";
@@ -21,18 +22,28 @@ export const Home = (): JSX.Element => {
   const env = useEnvContext();
   const { formData, setFormData } = useFormContext();
   const { connectedProvider } = useProvidersContext();
-  const [depositLimitModal, setDepositLimitModal] = useState<ModalState<FormData>>({
+  const [depositWarningModal, setDepositWarningModal] = useState<ModalState<FormData>>({
     status: "closed",
   });
 
-  const onSubmitForm = (formData: FormData) => {
+  const onSubmitForm = (formData: FormData, hideDepositWarning?: boolean) => {
+    if (hideDepositWarning) {
+      setIsDepositWarningDismissed(hideDepositWarning);
+    }
     setFormData(formData);
     navigate(routes.bridgeConfirmation.path);
   };
 
-  const onCheckDepositLimitAndSubmitForm = (formData: FormData) => {
-    if (env && env.isDepositWarningEnabled && formData.from.key === "ethereum") {
-      setDepositLimitModal({
+  const onCheckShowDepositWarningAndSubmitForm = (formData: FormData) => {
+    const isDepositWarningDismissed = getIsDepositWarningDismissed();
+
+    if (
+      env &&
+      env.isDepositWarningEnabled &&
+      !isDepositWarningDismissed &&
+      formData.from.key === "ethereum"
+    ) {
+      setDepositWarningModal({
         data: formData,
         status: "open",
       });
@@ -63,13 +74,13 @@ export const Home = (): JSX.Element => {
             account={connectedProvider.data.account}
             formData={formData}
             onResetForm={onResetForm}
-            onSubmit={onCheckDepositLimitAndSubmitForm}
+            onSubmit={onCheckShowDepositWarningAndSubmitForm}
           />
-          {depositLimitModal.status === "open" && (
-            <DepositLimitModal
-              formData={depositLimitModal.data}
+          {depositWarningModal.status === "open" && (
+            <DepositWarningModal
+              formData={depositWarningModal.data}
               onAccept={onSubmitForm}
-              onCancel={() => setDepositLimitModal({ status: "closed" })}
+              onCancel={() => setDepositWarningModal({ status: "closed" })}
             />
           )}
         </>

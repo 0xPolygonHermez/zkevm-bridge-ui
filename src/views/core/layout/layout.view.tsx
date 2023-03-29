@@ -5,6 +5,7 @@ import { useEnvContext } from "src/contexts/env.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { useLayoutStyles } from "src/views/core/layout/layout.styles";
 import { ConfirmationModal } from "src/views/shared/confirmation-modal/confirmation-modal.view";
+import { ExternalLink } from "src/views/shared/external-link/external-link.view";
 import { Snackbar } from "src/views/shared/snackbar/snackbar.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
@@ -49,11 +50,12 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
                   <Typography type="body2">{env.outdatedNetworkModal.messageParagraph2}</Typography>
                 </>
               )}
+              <br />
               {env.outdatedNetworkModal.url && (
                 <Typography className={classes.linkContainer} type="body2">
-                  <a className={classes.link} href={env.outdatedNetworkModal.url}>
+                  <ExternalLink href={env.outdatedNetworkModal.url}>
                     {env.outdatedNetworkModal.url}
-                  </a>
+                  </ExternalLink>
                 </Typography>
               )}
             </div>

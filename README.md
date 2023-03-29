@@ -83,7 +83,3 @@ docker run \
 -e SHOW_OUTDATED_NETWORK_MODAL=false \
 -p 8080:80 zkevm-bridge-ui:local
 ```
-
-## Disclaimer
-
-This code has not yet been audited and should not be used in any production environment.
