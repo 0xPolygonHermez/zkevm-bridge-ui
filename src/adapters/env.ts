@@ -29,7 +29,7 @@ interface Env {
   VITE_REPORT_FORM_PLATFORM_ENTRY?: string;
   VITE_REPORT_FORM_URL?: string;
   VITE_REPORT_FORM_URL_ENTRY?: string;
-  VITE_SHOW_OUTDATED_NETWORK_MODAL?: string;
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL?: string;
 }
 
 type GetFiatExchangeRatesEnvParams = Pick<
@@ -177,10 +177,12 @@ const envToDomain = ({
   VITE_REPORT_FORM_PLATFORM_ENTRY,
   VITE_REPORT_FORM_URL,
   VITE_REPORT_FORM_URL_ENTRY,
-  VITE_SHOW_OUTDATED_NETWORK_MODAL,
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
-  const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(VITE_SHOW_OUTDATED_NETWORK_MODAL);
+  const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(
+    VITE_ENABLE_OUTDATED_NETWORK_MODAL
+  );
   const forceUpdateGlobalExitRootForL1 = stringBooleanParser.parse(
     VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT
   );
@@ -269,7 +271,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_REPORT_FORM_PLATFORM_ENTRY: z.string().optional(),
       VITE_REPORT_FORM_URL: z.string().optional(),
       VITE_REPORT_FORM_URL_ENTRY: z.string().optional(),
-      VITE_SHOW_OUTDATED_NETWORK_MODAL: z.string().optional(),
+      VITE_ENABLE_OUTDATED_NETWORK_MODAL: z.string().optional(),
     })
     .transform(envToDomain)
 );
