@@ -5,7 +5,7 @@
     "chainId": 5,
     "symbol": "MATIC",
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png"
+    "logoURI": "/icons/tokens/matic.png"
   },
   {
     "name": "Dai Stablecoin",
@@ -21,7 +21,7 @@
     "chainId": 1,
     "symbol": "MATIC",
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/b69af6c4c7b5734900824a6571a9ae3bbf59ec54/blockchains/polygon/info/logo.png"
+    "logoURI": "/icons/tokens/matic.png"
   },
   {
     "name": "Wrapped BTC",
