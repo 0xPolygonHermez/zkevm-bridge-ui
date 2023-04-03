@@ -34,7 +34,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
           message={snackbar.message}
           onClose={onCloseSnackbar}
           onReport={onReportFromSnackbar}
-          reportForm={env?.reportForm}
+          reportForm={env.reportForm}
         />
       )}
       {env && showNetworkOutdatedModal && env.outdatedNetworkModal.isEnabled && (
