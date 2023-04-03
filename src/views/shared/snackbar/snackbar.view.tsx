@@ -4,16 +4,17 @@ import { ReactComponent as ErrorIcon } from "src/assets/icons/error.svg";
 import { ReactComponent as SuccessIcon } from "src/assets/icons/success.svg";
 import { ReactComponent as CloseIcon } from "src/assets/icons/xmark.svg";
 import { SNACKBAR_AUTO_HIDE_DURATION } from "src/constants";
-import { Message } from "src/domain";
+import { Env, Message, ReportFormEnvEnabled } from "src/domain";
 import { useSnackbarStyles } from "src/views/shared/snackbar/snackbar.styles";
 
 interface SnackbarProps {
   message: Message;
   onClose: () => void;
-  onReport: (error: string) => void;
+  onReport: (error: string, reportForm: ReportFormEnvEnabled) => void;
+  reportForm: Env["reportForm"];
 }
 
-export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport }) => {
+export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport, reportForm }) => {
   const classes = useSnackbarStyles();
 
   const Icon = ({ message }: { message: Message }): JSX.Element => {
@@ -45,20 +46,27 @@ export const Snackbar: FC<SnackbarProps> = ({ message, onClose, onReport }) => {
       </div>
     );
   } else {
-    const { parsed, text = "An error occurred. Would you mind reporting it?" } = message;
+    const { parsed, text } = message;
+
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>
           <Icon message={message} />
-          <p className={classes.message}>{text}</p>
-          <button
-            className={classes.reportButton}
-            onClick={() => {
-              onReport(parsed);
-            }}
-          >
-            Report
-          </button>
+          <p className={classes.message}>
+            {text || reportForm.isEnabled
+              ? "An error occurred. Would you mind reporting it?"
+              : "An error occurred. You can see the details in the console"}
+          </p>
+          {reportForm.isEnabled && (
+            <button
+              className={classes.reportButton}
+              onClick={() => {
+                onReport(parsed, reportForm);
+              }}
+            >
+              Report
+            </button>
+          )}
           <button className={classes.closeButton} onClick={onClose}>
             <CloseIcon className={classes.closeIcon} />
           </button>

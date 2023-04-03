@@ -7,6 +7,9 @@ import { StrictSchema } from "src/utils/type-safety";
 interface Env {
   VITE_BRIDGE_API_URL: string;
   VITE_ENABLE_DEPOSIT_WARNING: string;
+  VITE_ENABLE_FIAT_EXCHANGE_RATES: string;
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL?: string;
+  VITE_ENABLE_REPORT_FORM: string;
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_EXPLORER_URL: string;
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: string;
@@ -23,9 +26,30 @@ interface Env {
   VITE_POLYGON_ZK_EVM_EXPLORER_URL: string;
   VITE_POLYGON_ZK_EVM_NETWORK_ID: string;
   VITE_POLYGON_ZK_EVM_RPC_URL: string;
-  VITE_SHOW_OUTDATED_NETWORK_MODAL?: string;
-  VITE_USE_FIAT_EXCHANGE_RATES: string;
+  VITE_REPORT_FORM_ERROR_ENTRY?: string;
+  VITE_REPORT_FORM_PLATFORM_ENTRY?: string;
+  VITE_REPORT_FORM_URL?: string;
+  VITE_REPORT_FORM_URL_ENTRY?: string;
 }
+
+type GetFiatExchangeRatesEnvParams = Pick<
+  Env,
+  | "VITE_ENABLE_FIAT_EXCHANGE_RATES"
+  | "VITE_FIAT_EXCHANGE_RATES_API_KEY"
+  | "VITE_FIAT_EXCHANGE_RATES_API_URL"
+  | "VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS"
+> & {
+  ethereumChain: domain.Chain;
+};
+
+type GetReportFormEnvParams = Pick<
+  Env,
+  | "VITE_ENABLE_REPORT_FORM"
+  | "VITE_REPORT_FORM_URL"
+  | "VITE_REPORT_FORM_ERROR_ENTRY"
+  | "VITE_REPORT_FORM_PLATFORM_ENTRY"
+  | "VITE_REPORT_FORM_URL_ENTRY"
+>;
 
 const stringBooleanParser = StrictSchema<string, boolean>()(
   z.string().transform((value, context) => {
@@ -48,9 +72,92 @@ const stringBooleanParser = StrictSchema<string, boolean>()(
   })
 );
 
+const getFiatExchangeRatesEnv = ({
+  ethereumChain,
+  VITE_ENABLE_FIAT_EXCHANGE_RATES,
+  VITE_FIAT_EXCHANGE_RATES_API_KEY,
+  VITE_FIAT_EXCHANGE_RATES_API_URL,
+  VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+}: GetFiatExchangeRatesEnvParams): domain.Env["fiatExchangeRates"] => {
+  const areFiatExchangeRatesEnabled = stringBooleanParser.parse(VITE_ENABLE_FIAT_EXCHANGE_RATES);
+
+  if (!areFiatExchangeRatesEnabled) {
+    return {
+      areEnabled: false,
+    };
+  }
+
+  if (!VITE_FIAT_EXCHANGE_RATES_API_URL) {
+    throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_API_URL env vars");
+  }
+
+  if (!VITE_FIAT_EXCHANGE_RATES_API_KEY) {
+    throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_API_KEY env var");
+  }
+
+  if (!VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS) {
+    throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS env vars");
+  }
+
+  return {
+    apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
+    apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
+    areEnabled: true,
+    usdcToken: getUsdcToken({
+      address: VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+      chainId: ethereumChain.chainId,
+    }),
+  };
+};
+
+const getReportFormEnv = ({
+  VITE_ENABLE_REPORT_FORM,
+  VITE_REPORT_FORM_ERROR_ENTRY,
+  VITE_REPORT_FORM_PLATFORM_ENTRY,
+  VITE_REPORT_FORM_URL,
+  VITE_REPORT_FORM_URL_ENTRY,
+}: GetReportFormEnvParams): domain.Env["reportForm"] => {
+  const isReportFormEnabled = stringBooleanParser.parse(VITE_ENABLE_REPORT_FORM);
+
+  if (!isReportFormEnabled) {
+    return {
+      isEnabled: false,
+    };
+  }
+
+  if (!VITE_REPORT_FORM_URL) {
+    throw new Error("Missing VITE_REPORT_FORM_URL env vars");
+  }
+
+  if (!VITE_REPORT_FORM_ERROR_ENTRY) {
+    throw new Error("Missing VITE_REPORT_FORM_ERROR_ENTRY env vars");
+  }
+
+  if (!VITE_REPORT_FORM_PLATFORM_ENTRY) {
+    throw new Error("Missing VITE_REPORT_FORM_PLATFORM_ENTRY env vars");
+  }
+
+  if (!VITE_REPORT_FORM_URL_ENTRY) {
+    throw new Error("Missing VITE_REPORT_FORM_URL_ENTRY env vars");
+  }
+
+  return {
+    entries: {
+      error: VITE_REPORT_FORM_ERROR_ENTRY,
+      platform: VITE_REPORT_FORM_PLATFORM_ENTRY,
+      url: VITE_REPORT_FORM_URL_ENTRY,
+    },
+    isEnabled: true,
+    url: VITE_REPORT_FORM_URL,
+  };
+};
+
 const envToDomain = ({
   VITE_BRIDGE_API_URL,
   VITE_ENABLE_DEPOSIT_WARNING,
+  VITE_ENABLE_FIAT_EXCHANGE_RATES,
+  VITE_ENABLE_OUTDATED_NETWORK_MODAL,
+  VITE_ENABLE_REPORT_FORM,
   VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS,
   VITE_ETHEREUM_EXPLORER_URL,
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT,
@@ -67,12 +174,15 @@ const envToDomain = ({
   VITE_POLYGON_ZK_EVM_EXPLORER_URL,
   VITE_POLYGON_ZK_EVM_NETWORK_ID,
   VITE_POLYGON_ZK_EVM_RPC_URL,
-  VITE_SHOW_OUTDATED_NETWORK_MODAL,
-  VITE_USE_FIAT_EXCHANGE_RATES,
+  VITE_REPORT_FORM_ERROR_ENTRY,
+  VITE_REPORT_FORM_PLATFORM_ENTRY,
+  VITE_REPORT_FORM_URL,
+  VITE_REPORT_FORM_URL_ENTRY,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
-  const useFiatExchangeRates = stringBooleanParser.parse(VITE_USE_FIAT_EXCHANGE_RATES);
-  const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(VITE_SHOW_OUTDATED_NETWORK_MODAL);
+  const isOutdatedNetworkModalEnabled = stringBooleanParser.parse(
+    VITE_ENABLE_OUTDATED_NETWORK_MODAL
+  );
   const forceUpdateGlobalExitRootForL1 = stringBooleanParser.parse(
     VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT
   );
@@ -110,46 +220,26 @@ const envToDomain = ({
       throw new Error("Ethereum chain not found");
     }
 
-    if (!useFiatExchangeRates) {
-      return {
-        bridgeApiUrl,
-        chains,
-        fiatExchangeRates: {
-          areEnabled: false,
-        },
-        forceUpdateGlobalExitRootForL1,
-        isDepositWarningEnabled,
-        outdatedNetworkModal,
-      };
-    }
-
-    if (!VITE_FIAT_EXCHANGE_RATES_API_URL) {
-      throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_API_URL env vars");
-    }
-
-    if (!VITE_FIAT_EXCHANGE_RATES_API_KEY) {
-      throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_API_KEY env var");
-    }
-
-    if (!VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS) {
-      throw new Error("Missing VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS env vars");
-    }
-
     return {
       bridgeApiUrl,
       chains,
-      fiatExchangeRates: {
-        apiKey: VITE_FIAT_EXCHANGE_RATES_API_KEY,
-        apiUrl: VITE_FIAT_EXCHANGE_RATES_API_URL,
-        areEnabled: true,
-        usdcToken: getUsdcToken({
-          address: VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
-          chainId: ethereumChain.chainId,
-        }),
-      },
+      fiatExchangeRates: getFiatExchangeRatesEnv({
+        ethereumChain,
+        VITE_ENABLE_FIAT_EXCHANGE_RATES,
+        VITE_FIAT_EXCHANGE_RATES_API_KEY,
+        VITE_FIAT_EXCHANGE_RATES_API_URL,
+        VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+      }),
       forceUpdateGlobalExitRootForL1,
       isDepositWarningEnabled,
       outdatedNetworkModal,
+      reportForm: getReportFormEnv({
+        VITE_ENABLE_REPORT_FORM,
+        VITE_REPORT_FORM_ERROR_ENTRY,
+        VITE_REPORT_FORM_PLATFORM_ENTRY,
+        VITE_REPORT_FORM_URL,
+        VITE_REPORT_FORM_URL_ENTRY,
+      }),
     };
   });
 };
@@ -159,6 +249,9 @@ const envParser = StrictSchema<Env, domain.Env>()(
     .object({
       VITE_BRIDGE_API_URL: z.string().url(),
       VITE_ENABLE_DEPOSIT_WARNING: z.string(),
+      VITE_ENABLE_FIAT_EXCHANGE_RATES: z.string(),
+      VITE_ENABLE_OUTDATED_NETWORK_MODAL: z.string().optional(),
+      VITE_ENABLE_REPORT_FORM: z.string(),
       VITE_ETHEREUM_BRIDGE_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_EXPLORER_URL: z.string().url(),
       VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: z.string(),
@@ -175,8 +268,10 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_POLYGON_ZK_EVM_EXPLORER_URL: z.string().url(),
       VITE_POLYGON_ZK_EVM_NETWORK_ID: z.string(),
       VITE_POLYGON_ZK_EVM_RPC_URL: z.string().url(),
-      VITE_SHOW_OUTDATED_NETWORK_MODAL: z.string().optional(),
-      VITE_USE_FIAT_EXCHANGE_RATES: z.string(),
+      VITE_REPORT_FORM_ERROR_ENTRY: z.string().optional(),
+      VITE_REPORT_FORM_PLATFORM_ENTRY: z.string().optional(),
+      VITE_REPORT_FORM_URL: z.string().optional(),
+      VITE_REPORT_FORM_URL_ENTRY: z.string().optional(),
     })
     .transform(envToDomain)
 );
