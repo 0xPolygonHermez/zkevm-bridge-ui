@@ -81,6 +81,7 @@ docker run \
 -e BRIDGE_API_URL=http://localhost:8080 \
 -e ENABLE_FIAT_EXCHANGE_RATES=false \
 -e ENABLE_OUTDATED_NETWORK_MODAL=false \
+-e ENABLE_DEPOSIT_WARNING=true \
 -e ENABLE_REPORT_FORM=false \
 -p 8080:80 zkevm-bridge-ui:local
 ```
