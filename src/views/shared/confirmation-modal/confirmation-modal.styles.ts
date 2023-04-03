@@ -4,12 +4,15 @@ import { Theme } from "src/styles/theme";
 
 export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
   background: {
-    alignItems: "flex-start",
+    alignItems: "center",
     background: theme.palette.transparency,
     display: "flex",
     height: "100vh",
     justifyContent: "center",
     width: "100%",
+    [theme.breakpoints.upSm]: {
+      alignItems: "flex-start",
+    },
   },
   cancelButton: {
     "&:hover": {
@@ -26,10 +29,15 @@ export const useConfirmationModalStyles = createUseStyles((theme: Theme) => ({
   card: {
     display: "flex",
     flexDirection: "column",
-    marginTop: theme.spacing(30),
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
     maxWidth: 510,
-    padding: theme.spacing(4),
+    padding: theme.spacing(3),
     width: "100%",
+    [theme.breakpoints.upSm]: {
+      marginTop: theme.spacing(30),
+      padding: theme.spacing(4),
+    },
   },
   textContainer: {
     "& p": {

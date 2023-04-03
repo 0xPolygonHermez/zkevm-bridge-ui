@@ -29,9 +29,15 @@ export const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     alignItems: "center",
     display: "flex",
     gap: theme.spacing(4),
+    textAlign: "center",
   },
   link: {
     color: theme.palette.primary.dark,
+  },
+  list: {
+    paddingLeft: theme.spacing(2),
+    width: "100%",
+    wordBreak: "break-word",
   },
   listItem: {
     padding: [theme.spacing(0.25), 0],
