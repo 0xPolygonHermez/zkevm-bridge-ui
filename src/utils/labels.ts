@@ -6,7 +6,11 @@ export function getBridgeStatus(status: Bridge["status"], from: Bridge["from"]):
       return "Processing";
     }
     case "initiated": {
-      return "Initiated";
+      if (from.key === "ethereum") {
+        return "Processing";
+      } else {
+        return "Initiated";
+      }
     }
     case "on-hold": {
       if (from.key === "ethereum") {
