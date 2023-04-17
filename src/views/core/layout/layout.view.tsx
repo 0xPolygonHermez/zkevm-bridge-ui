@@ -29,11 +29,12 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
       <div className={classes.layout}>
         <div className={classes.container}>{children}</div>
       </div>
-      {snackbar.status === "open" && (
+      {env && snackbar.status === "open" && (
         <Snackbar
           message={snackbar.message}
           onClose={onCloseSnackbar}
           onReport={onReportFromSnackbar}
+          reportForm={env.reportForm}
         />
       )}
       {env && showNetworkOutdatedModal && env.outdatedNetworkModal.isEnabled && (

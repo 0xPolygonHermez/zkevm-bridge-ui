@@ -35,14 +35,14 @@ cp .env.example .env
 
 If you want to see token prices converted to your local fiat currency in the UI you'll need to
 register [here](https://exchangeratesapi.io) to obtain an API Key. Once you get it, you need to set
-the `VITE_USE_FIAT_EXCHANGE_RATES` env var to `true` and fill this required env vars as well:
+the `VITE_ENABLE_FIAT_EXCHANGE_RATES` env var to `true` and fill this required env vars as well:
 
 - `VITE_FIAT_EXCHANGE_RATES_API_URL`
 - `VITE_FIAT_EXCHANGE_RATES_API_KEY`
 - `VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS`
 
 If you just want to omit fiat conversion you can just disable this feature by setting the
-`VITE_USE_FIAT_EXCHANGE_RATES` env var to `false`.
+`VITE_ENABLE_FIAT_EXCHANGE_RATES` env var to `false`.
 
 Finally, to run the UI in development mode, you just need to run:
 
@@ -79,7 +79,9 @@ docker run \
 -e POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS=0x9d98deabc42dd696deb9e40b4f1cab7ddbf55988 \
 -e POLYGON_ZK_EVM_NETWORK_ID=1 \
 -e BRIDGE_API_URL=http://localhost:8080 \
--e USE_FIAT_EXCHANGE_RATES=false \
--e SHOW_OUTDATED_NETWORK_MODAL=false \
+-e ENABLE_FIAT_EXCHANGE_RATES=false \
+-e ENABLE_OUTDATED_NETWORK_MODAL=false \
+-e ENABLE_DEPOSIT_WARNING=true \
+-e ENABLE_REPORT_FORM=false \
 -p 8080:80 zkevm-bridge-ui:local
 ```
