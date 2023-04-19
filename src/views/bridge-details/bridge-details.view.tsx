@@ -324,7 +324,7 @@ export const BridgeDetails: FC = () => {
               </Typography>
               <Typography className={classes.alignRow} type="body1">
                 <span className={dotClass} />
-                {getBridgeStatus(status)}
+                {getBridgeStatus(status, from)}
               </Typography>
             </div>
             <div className={classes.row}>
@@ -388,7 +388,7 @@ export const BridgeDetails: FC = () => {
               </div>
             )}
           </Card>
-          {(status === "initiated" || status === "on-hold") && (
+          {(status === "initiated" || (status === "on-hold" && from.key === "polygon-zkevm")) && (
             <div className={classes.finaliseRow}>
               <Button
                 disabled={status === "initiated" || isFinaliseButtonDisabled}
