@@ -6,7 +6,7 @@ import { getBatchNumberOfL2Block } from "src/adapters/ethereum";
 import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
-import { AsyncTask, Bridge, Env } from "src/domain";
+import { AsyncTask, Bridge, Env, PendingBridge } from "src/domain";
 import { routes } from "src/routes";
 import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
 import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
@@ -69,11 +69,15 @@ export const BridgeCard: FC<BridgeCardProps> = ({
     }
   }, [blockNumber, env, fromKey, status]);
 
-  const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClaimButtonClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     if (onClaim) {
       onClaim();
     }
+  };
+
+  const onCardClick = (bridge: Exclude<Bridge, PendingBridge>) => {
+    navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
   };
 
   const preferredCurrencySymbol = getCurrencySymbol(getCurrency());
@@ -83,13 +87,6 @@ export const BridgeCard: FC<BridgeCardProps> = ({
   const fiatAmountString = showFiatAmount
     ? `${preferredCurrencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
     : undefined;
-
-  const bridgeAmount = (
-    <div className={classes.token}>
-      <Icon className={classes.tokenIcon} isRounded size={20} url={token.logoURI} />
-      <Typography type="body1">{tokenAmountString}</Typography>
-    </div>
-  );
 
   const remainingBatchesMsg: string = (() => {
     if (
@@ -107,77 +104,197 @@ export const BridgeCard: FC<BridgeCardProps> = ({
     }
   })();
 
-  return (
-    <Card
-      className={classes.card}
-      onClick={() => {
-        if (status !== "pending") {
-          navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
-        }
-      }}
-    >
-      <div className={classes.top}>
-        <div className={classes.row}>
-          {status === "initiated" && <p className={classes.steps}>STEP 1/2</p>}
-          {status === "on-hold" && <p className={classes.steps}>STEP 2/2</p>}
-        </div>
-        <div className={classes.infoContainer}>
-          <div className={classes.circle}>
-            {to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />}
-          </div>
-          <div className={classes.info}>
-            <div className={classes.row}>
-              <Typography className={classes.label} type="body1">
-                {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
-              </Typography>
-              {fiatAmountString && bridgeAmount}
-            </div>
-            <div className={classes.row}>
-              <span
-                className={`${classes.statusBox} ${
-                  status === "completed" ? classes.greenStatus : classes.pendingStatus
-                }`}
-              >
-                {getBridgeStatus(status)}
-              </span>
-              {fiatAmountString && (
-                <Typography className={classes.fiat} type="body1">
-                  {fiatAmountString}
-                </Typography>
-              )}
-            </div>
-          </div>
-          {!fiatAmountString && <div className={classes.amount}>{bridgeAmount}</div>}
-        </div>
-      </div>
-      {status === "initiated" && (
-        <div className={classes.bottom}>
-          {from.key === "ethereum" ? (
-            <Typography type="body2">Step 2 will require signature</Typography>
-          ) : (
-            <Typography type="body2">{remainingBatchesMsg}</Typography>
-          )}
-          <button className={classes.finaliseButton} disabled>
-            Finalise
-          </button>
-        </div>
-      )}
-      {status === "on-hold" && (
-        <div className={classes.bottom}>
-          {networkError ? (
-            <ErrorMessage error={`Switch to ${to.name} to continue`} type="body2" />
-          ) : (
-            <Typography type="body2">Signature required to finalise the bridge</Typography>
-          )}
-          <button
-            className={classes.finaliseButton}
-            disabled={isFinaliseDisabled}
-            onClick={onClick}
-          >
-            Finalise
-          </button>
-        </div>
-      )}
-    </Card>
+  const BridgeAmount = (
+    <div className={classes.token}>
+      <Icon className={classes.tokenIcon} isRounded size={20} url={token.logoURI} />
+      <Typography type="body1">{tokenAmountString}</Typography>
+    </div>
   );
+
+  const BridgeIcon = to.key === "ethereum" ? <BridgeL1Icon /> : <BridgeL2Icon />;
+
+  const BridgeLabel = (
+    <Typography className={classes.label} type="body1">
+      {to.key === "ethereum" ? "Bridge to L1" : "Bridge to L2"}
+    </Typography>
+  );
+
+  const BridgeStatus = (
+    <span
+      className={`${classes.statusBox} ${
+        status === "completed" ? classes.greenStatus : classes.pendingStatus
+      }`}
+    >
+      {getBridgeStatus(status, from)}
+    </span>
+  );
+
+  const FiatAmount = (
+    <Typography className={classes.fiat} type="body1">
+      {fiatAmountString}
+    </Typography>
+  );
+
+  switch (bridge.status) {
+    case "pending": {
+      return (
+        <Card className={classes.card}>
+          <div className={classes.top}>
+            <div className={classes.infoContainer}>
+              <div className={classes.circle}>{BridgeIcon}</div>
+              <div className={classes.info}>
+                <div className={classes.row}>
+                  {BridgeLabel}
+                  {fiatAmountString && BridgeAmount}
+                </div>
+                <div className={classes.row}>
+                  {BridgeStatus}
+                  {fiatAmountString && FiatAmount}
+                </div>
+              </div>
+              {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+            </div>
+          </div>
+        </Card>
+      );
+    }
+    case "initiated": {
+      if (bridge.from.key === "ethereum") {
+        return (
+          <Card className={classes.card} onClick={() => onCardClick(bridge)}>
+            <div className={classes.top}>
+              <div className={classes.infoContainer}>
+                <div className={classes.circle}>{BridgeIcon}</div>
+                <div className={classes.info}>
+                  <div className={classes.row}>
+                    {BridgeLabel}
+                    {fiatAmountString && BridgeAmount}
+                  </div>
+                  <div className={classes.row}>
+                    {BridgeStatus}
+                    {fiatAmountString && FiatAmount}
+                  </div>
+                </div>
+                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              </div>
+            </div>
+          </Card>
+        );
+      } else {
+        return (
+          <Card className={classes.card} onClick={() => onCardClick(bridge)}>
+            <div className={classes.top}>
+              <div className={classes.row}>
+                <p className={classes.steps}>STEP 1/2</p>
+              </div>
+              <div className={classes.infoContainer}>
+                <div className={classes.circle}>{BridgeIcon}</div>
+                <div className={classes.info}>
+                  <div className={classes.row}>
+                    {BridgeLabel}
+                    {fiatAmountString && BridgeAmount}
+                  </div>
+                  <div className={classes.row}>
+                    {BridgeStatus}
+                    {fiatAmountString && FiatAmount}
+                  </div>
+                </div>
+                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              </div>
+            </div>
+            <div className={classes.bottom}>
+              <Typography type="body2">{remainingBatchesMsg}</Typography>
+              <button className={classes.finaliseButton} disabled>
+                Finalise
+              </button>
+            </div>
+          </Card>
+        );
+      }
+    }
+    case "on-hold": {
+      if (bridge.from.key === "ethereum") {
+        return (
+          <Card className={classes.card} onClick={() => onCardClick(bridge)}>
+            <div className={classes.top}>
+              <div className={classes.infoContainer}>
+                <div className={classes.circle}>{BridgeIcon}</div>
+                <div className={classes.info}>
+                  <div className={classes.row}>
+                    {BridgeLabel}
+                    {fiatAmountString && BridgeAmount}
+                  </div>
+                  <div className={classes.row}>
+                    {BridgeStatus}
+                    {fiatAmountString && FiatAmount}
+                  </div>
+                </div>
+                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              </div>
+            </div>
+          </Card>
+        );
+      } else {
+        return (
+          <Card className={classes.card} onClick={() => onCardClick(bridge)}>
+            <div className={classes.top}>
+              <div className={classes.row}>
+                <p className={classes.steps}>STEP 2/2</p>
+              </div>
+              <div className={classes.infoContainer}>
+                <div className={classes.circle}>{BridgeIcon}</div>
+                <div className={classes.info}>
+                  <div className={classes.row}>
+                    {BridgeLabel}
+                    {fiatAmountString && BridgeAmount}
+                  </div>
+                  <div className={classes.row}>
+                    {BridgeStatus}
+                    {fiatAmountString && FiatAmount}
+                  </div>
+                </div>
+                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              </div>
+            </div>
+            <div className={classes.bottom}>
+              {networkError ? (
+                <ErrorMessage error={`Switch to ${to.name} to continue`} type="body2" />
+              ) : (
+                <Typography type="body2">Signature required to finalise the bridge</Typography>
+              )}
+              <button
+                className={classes.finaliseButton}
+                disabled={isFinaliseDisabled}
+                onClick={onClaimButtonClick}
+              >
+                Finalise
+              </button>
+            </div>
+          </Card>
+        );
+      }
+    }
+    case "completed": {
+      return (
+        <Card className={classes.card} onClick={() => onCardClick(bridge)}>
+          <div className={classes.top}>
+            <div className={classes.infoContainer}>
+              <div className={classes.circle}>{BridgeIcon}</div>
+              <div className={classes.info}>
+                <div className={classes.row}>
+                  {BridgeLabel}
+                  {fiatAmountString && BridgeAmount}
+                </div>
+                <div className={classes.row}>
+                  {BridgeStatus}
+                  {fiatAmountString && FiatAmount}
+                </div>
+              </div>
+              {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+            </div>
+          </div>
+        </Card>
+      );
+    }
+  }
 };

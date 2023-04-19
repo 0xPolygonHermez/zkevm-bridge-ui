@@ -67,7 +67,7 @@ export const NetworkBox: FC = () => {
     <Card>
       <div className={classes.networkBox}>
         <Typography type="body1">{env.chains[1].name}</Typography>
-        <ul>
+        <ul className={classes.list}>
           <li className={classes.listItem}>
             <Typography type="body2">
               RPC URL: {polygonZkEVMChain.provider.connection.url}
