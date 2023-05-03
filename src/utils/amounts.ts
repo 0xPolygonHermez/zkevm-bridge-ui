@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from "ethers";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 
-import { FIAT_DISPLAY_PRECISION, TOKEN_DISPLAY_PRECISION } from "src/constants";
+import { TOKEN_DISPLAY_PRECISION } from "src/constants";
 import { Token } from "src/domain";
 
 export const formatTokenAmount = (value: BigNumber, token: Token): string => {
@@ -11,13 +11,6 @@ export const formatTokenAmount = (value: BigNumber, token: Token): string => {
     decimals.length > TOKEN_DISPLAY_PRECISION
       ? decimals.slice(0, TOKEN_DISPLAY_PRECISION)
       : decimals;
-  return trimmed === "" || trimmed === "0" ? whole : `${whole}.${trimmed}`;
-};
-
-export const formatFiatAmount = (value: BigNumber): string => {
-  const [whole, decimals = ""] = formatUnits(value, FIAT_DISPLAY_PRECISION).split(".");
-  const trimmed =
-    decimals.length > FIAT_DISPLAY_PRECISION ? decimals.slice(0, FIAT_DISPLAY_PRECISION) : decimals;
   return trimmed === "" || trimmed === "0" ? whole : `${whole}.${trimmed}`;
 };
 

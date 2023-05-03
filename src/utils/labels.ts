@@ -1,4 +1,4 @@
-import { Bridge, Chain, Currency, EthereumChainId } from "src/domain";
+import { Bridge, Chain, EthereumChainId } from "src/domain";
 
 export function getBridgeStatus(status: Bridge["status"], from: Bridge["from"]): string {
   switch (status) {
@@ -46,26 +46,6 @@ export function getDeploymentName(chain: Chain): string | undefined {
     }
     default: {
       return undefined;
-    }
-  }
-}
-
-type CurrencySymbol = "€" | "$" | "¥" | "£";
-
-export function getCurrencySymbol(currency: Currency): CurrencySymbol {
-  switch (currency) {
-    case Currency.EUR: {
-      return "€";
-    }
-    case Currency.USD: {
-      return "$";
-    }
-    case Currency.GBP: {
-      return "£";
-    }
-    case Currency.JPY:
-    case Currency.CNY: {
-      return "¥";
     }
   }
 }

@@ -35,10 +35,6 @@ export const useBridgeCardStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "center",
     width: theme.spacing(6),
   },
-  fiat: {
-    color: theme.palette.grey.dark,
-    fontSize: 14,
-  },
   finaliseButton: {
     "&:disabled": {
       backgroundColor: theme.palette.grey.dark,

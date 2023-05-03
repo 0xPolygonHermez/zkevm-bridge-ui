@@ -2,7 +2,6 @@ import { BridgeProvider } from "src/contexts/bridge.context";
 import { EnvProvider } from "src/contexts/env.context";
 import { ErrorProvider } from "src/contexts/error.context";
 import { FormProvider } from "src/contexts/form.context";
-import { PriceOracleProvider } from "src/contexts/price-oracle.context";
 import { ProvidersProvider } from "src/contexts/providers.context";
 import { TokensProvider } from "src/contexts/tokens.context";
 import { UIProvider } from "src/contexts/ui.context";
@@ -19,15 +18,13 @@ export const App = (): JSX.Element => {
         <EnvProvider>
           <ProvidersProvider>
             <TokensProvider>
-              <PriceOracleProvider>
-                <BridgeProvider>
-                  <FormProvider>
-                    <Layout>
-                      <Router />
-                    </Layout>
-                  </FormProvider>
-                </BridgeProvider>
-              </PriceOracleProvider>
+              <BridgeProvider>
+                <FormProvider>
+                  <Layout>
+                    <Router />
+                  </Layout>
+                </FormProvider>
+              </BridgeProvider>
             </TokensProvider>
           </ProvidersProvider>
         </EnvProvider>

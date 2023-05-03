@@ -58,10 +58,6 @@ export const useBridgeDetailsStyles = createUseStyles((theme: Theme) => ({
     gap: theme.spacing(1),
     padding: [theme.spacing(1), theme.spacing(2)],
   },
-  fiat: {
-    color: theme.palette.grey.dark,
-    fontSize: 14,
-  },
   finaliseRow: {
     alignItems: "center",
     display: "flex",

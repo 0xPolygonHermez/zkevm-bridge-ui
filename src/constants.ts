@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 
 import { ReactComponent as EthChainIcon } from "src/assets/icons/chains/ethereum.svg";
 import { ReactComponent as PolygonZkEVMChainIcon } from "src/assets/icons/chains/polygon-zkevm.svg";
-import { Chain, Currency, EthereumChain, ProviderError, Token, ZkEVMChain } from "src/domain";
+import { Chain, EthereumChain, ProviderError, Token, ZkEVMChain } from "src/domain";
 import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
 import { getEthereumNetworkName } from "src/utils/labels";
 
@@ -35,10 +35,6 @@ export const PENDING_TXS_KEY = "pendingTxs";
 export const POLICY_CHECK_KEY = "policyCheck";
 
 export const DISMISSED_DEPOSIT_WARNING_KEY = "dismissedDepositWarning";
-
-export const PREFERRED_CURRENCY = Currency.USD;
-
-export const FIAT_DISPLAY_PRECISION = 2;
 
 export const TOKEN_DISPLAY_PRECISION = 6;
 
@@ -150,19 +146,3 @@ export const getEtherToken = (chain: Chain): Token => {
     symbol: "ETH",
   };
 };
-
-export const getUsdcToken = ({
-  address,
-  chainId,
-}: {
-  address: string;
-  chainId: number;
-}): Token => ({
-  address,
-  chainId,
-  decimals: 6,
-  logoURI:
-    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
-  name: "USD Coin",
-  symbol: "USDC",
-});
