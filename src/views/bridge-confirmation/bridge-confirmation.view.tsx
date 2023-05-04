@@ -4,23 +4,20 @@ import { useNavigate } from "react-router-dom";
 
 import { parseError } from "src/adapters/error";
 import { getPermit, isContractAllowedToSpendToken } from "src/adapters/ethereum";
-import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as ArrowRightIcon } from "src/assets/icons/arrow-right.svg";
-import { ETH_TOKEN_LOGO_URI, FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
+import { ETH_TOKEN_LOGO_URI, getEtherToken } from "src/constants";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
 import { useFormContext } from "src/contexts/form.context";
-import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Gas, TokenSpendPermission } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
-import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
+import { formatTokenAmount } from "src/utils/amounts";
 import { calculateMaxTxFee } from "src/utils/fees";
-import { getCurrencySymbol } from "src/utils/labels";
 import { isTokenEther, selectTokenAddress } from "src/utils/tokens";
 import {
   isAsyncTaskDataAvailable,
@@ -47,13 +44,10 @@ export const BridgeConfirmation: FC = () => {
   const { formData, setFormData } = useFormContext();
   const { openSnackbar } = useUIContext();
   const { connectedProvider } = useProvidersContext();
-  const { getTokenPrice } = usePriceOracleContext();
-  const { approve, getErc20TokenBalance, tokens } = useTokensContext();
+  const { approve, getErc20TokenBalance } = useTokensContext();
   const [isBridgeInProgress, setIsBridgeInProgress] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<BigNumber>();
   const [maxAmountConsideringFee, setMaxAmountConsideringFee] = useState<BigNumber>();
-  const [bridgedTokenFiatPrice, setBridgedTokenFiatPrice] = useState<BigNumber>();
-  const [etherTokenFiatPrice, setEtherTokenFiatPrice] = useState<BigNumber>();
   const [error, setError] = useState<string>();
   const [tokenSpendPermission, setTokenSpendPermission] = useState<TokenSpendPermission>();
   const [approvalTask, setApprovalTask] = useState<AsyncTask<null, string>>({
@@ -62,7 +56,6 @@ export const BridgeConfirmation: FC = () => {
   const [estimatedGas, setEstimatedGas] = useState<AsyncTask<Gas, string>>({
     status: "pending",
   });
-  const currencySymbol = getCurrencySymbol(getCurrency());
 
   useEffect(() => {
     if (
@@ -232,47 +225,6 @@ export const BridgeConfirmation: FC = () => {
     }
   }, [navigate, formData]);
 
-  useEffect(() => {
-    if (formData) {
-      const { from, token } = formData;
-      const etherToken = getEtherToken(from);
-
-      // Get the fiat price of Ether
-      getTokenPrice({ chain: from, token: etherToken })
-        .then((etherPrice) => {
-          callIfMounted(() => {
-            setEtherTokenFiatPrice(etherPrice);
-            if (isTokenEther(token)) {
-              setBridgedTokenFiatPrice(etherPrice);
-            }
-          });
-        })
-        .catch(() =>
-          callIfMounted(() => {
-            setEtherTokenFiatPrice(undefined);
-            if (isTokenEther(token)) {
-              setBridgedTokenFiatPrice(undefined);
-            }
-          })
-        );
-
-      // Get the fiat price of the bridged token when it's not Ether
-      if (!isTokenEther(token)) {
-        getTokenPrice({ chain: from, token })
-          .then((tokenPrice) => {
-            callIfMounted(() => {
-              setBridgedTokenFiatPrice(tokenPrice);
-            });
-          })
-          .catch(() =>
-            callIfMounted(() => {
-              setBridgedTokenFiatPrice(undefined);
-            })
-          );
-      }
-    }
-  }, [formData, tokens, estimatedGas, getTokenPrice, callIfMounted]);
-
   const onApprove = () => {
     if (isAsyncTaskDataAvailable(connectedProvider) && formData) {
       setApprovalTask({ status: "loading" });
@@ -371,43 +323,11 @@ export const BridgeConfirmation: FC = () => {
   const { from, to, token } = formData;
   const etherToken = getEtherToken(from);
 
-  const fiatAmount =
-    bridgedTokenFiatPrice &&
-    multiplyAmounts(
-      {
-        precision: FIAT_DISPLAY_PRECISION,
-        value: bridgedTokenFiatPrice,
-      },
-      {
-        precision: token.decimals,
-        value: maxAmountConsideringFee,
-      },
-      FIAT_DISPLAY_PRECISION
-    );
-
   const fee = calculateMaxTxFee(estimatedGas.data);
-  const fiatFee =
-    env.fiatExchangeRates.areEnabled &&
-    etherTokenFiatPrice &&
-    multiplyAmounts(
-      {
-        precision: FIAT_DISPLAY_PRECISION,
-        value: etherTokenFiatPrice,
-      },
-      {
-        precision: etherToken.decimals,
-        value: fee,
-      },
-      FIAT_DISPLAY_PRECISION
-    );
 
   const tokenAmountString = `${
     maxAmountConsideringFee.gt(0) ? formatTokenAmount(maxAmountConsideringFee, token) : "0"
   } ${token.symbol}`;
-
-  const fiatAmountString = env.fiatExchangeRates.areEnabled
-    ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
-    : undefined;
 
   const absMaxPossibleAmountConsideringFee = formatTokenAmount(
     maxAmountConsideringFee.abs(),
@@ -422,8 +342,6 @@ export const BridgeConfirmation: FC = () => {
     : undefined;
 
   const etherFeeString = `${formatTokenAmount(fee, etherToken)} ${etherToken.symbol}`;
-  const fiatFeeString = fiatFee ? `${currencySymbol}${formatFiatAmount(fiatFee)}` : undefined;
-  const feeString = fiatFeeString ? `${etherFeeString} ~ ${fiatFeeString}` : etherFeeString;
 
   return (
     <div className={classes.contentWrapper}>
@@ -431,11 +349,6 @@ export const BridgeConfirmation: FC = () => {
       <Card className={classes.card}>
         <Icon className={classes.tokenIcon} isRounded size={46} url={token.logoURI} />
         <Typography type="h1">{tokenAmountString}</Typography>
-        {fiatAmountString && (
-          <Typography className={classes.fiat} type="body2">
-            {fiatAmountString}
-          </Typography>
-        )}
         <div className={classes.chainsRow}>
           <div className={classes.chainBox}>
             <from.Icon />
@@ -455,7 +368,7 @@ export const BridgeConfirmation: FC = () => {
           <Typography type="body2">Estimated gas fee</Typography>
           <div className={classes.fee}>
             <Icon isRounded size={20} url={ETH_TOKEN_LOGO_URI} />
-            <Typography type="body1">{feeString}</Typography>
+            <Typography type="body1">{etherFeeString}</Typography>
           </div>
         </div>
       </Card>

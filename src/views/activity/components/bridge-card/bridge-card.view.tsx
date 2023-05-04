@@ -3,13 +3,12 @@ import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { getBatchNumberOfL2Block } from "src/adapters/ethereum";
-import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as BridgeL1Icon } from "src/assets/icons/l1-bridge.svg";
 import { ReactComponent as BridgeL2Icon } from "src/assets/icons/l2-bridge.svg";
 import { AsyncTask, Bridge, Env, PendingBridge } from "src/domain";
 import { routes } from "src/routes";
-import { formatFiatAmount, formatTokenAmount } from "src/utils/amounts";
-import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { formatTokenAmount } from "src/utils/amounts";
+import { getBridgeStatus } from "src/utils/labels";
 import { isAsyncTaskDataAvailable } from "src/utils/types";
 import { useBridgeCardStyles } from "src/views/activity/components/bridge-card/bridge-card.styles";
 import { Card } from "src/views/shared/card/card.view";
@@ -24,7 +23,6 @@ export interface BridgeCardProps {
   lastVerifiedBatch: AsyncTask<BigNumber, string>;
   networkError: boolean;
   onClaim?: () => void;
-  showFiatAmount: boolean;
 }
 
 export const BridgeCard: FC<BridgeCardProps> = ({
@@ -34,9 +32,8 @@ export const BridgeCard: FC<BridgeCardProps> = ({
   lastVerifiedBatch,
   networkError,
   onClaim,
-  showFiatAmount,
 }) => {
-  const { amount, fiatAmount, from, status, to, token } = bridge;
+  const { amount, from, status, to, token } = bridge;
   const classes = useBridgeCardStyles();
   const navigate = useNavigate();
   const [batchNumberOfL2Block, setBatchNumberOfL2Block] = useState<AsyncTask<BigNumber, string>>({
@@ -80,13 +77,7 @@ export const BridgeCard: FC<BridgeCardProps> = ({
     navigate(`${routes.bridgeDetails.path.split(":")[0]}${bridge.id}`);
   };
 
-  const preferredCurrencySymbol = getCurrencySymbol(getCurrency());
-
   const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
-
-  const fiatAmountString = showFiatAmount
-    ? `${preferredCurrencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
-    : undefined;
 
   const remainingBatchesMsg: string = (() => {
     if (
@@ -129,12 +120,6 @@ export const BridgeCard: FC<BridgeCardProps> = ({
     </span>
   );
 
-  const FiatAmount = (
-    <Typography className={classes.fiat} type="body1">
-      {fiatAmountString}
-    </Typography>
-  );
-
   switch (bridge.status) {
     case "pending": {
       return (
@@ -143,16 +128,10 @@ export const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.infoContainer}>
               <div className={classes.circle}>{BridgeIcon}</div>
               <div className={classes.info}>
-                <div className={classes.row}>
-                  {BridgeLabel}
-                  {fiatAmountString && BridgeAmount}
-                </div>
-                <div className={classes.row}>
-                  {BridgeStatus}
-                  {fiatAmountString && FiatAmount}
-                </div>
+                <div className={classes.row}>{BridgeLabel}</div>
+                <div className={classes.row}>{BridgeStatus}</div>
               </div>
-              {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              <div className={classes.amount}>{BridgeAmount}</div>
             </div>
           </div>
         </Card>
@@ -166,16 +145,10 @@ export const BridgeCard: FC<BridgeCardProps> = ({
               <div className={classes.infoContainer}>
                 <div className={classes.circle}>{BridgeIcon}</div>
                 <div className={classes.info}>
-                  <div className={classes.row}>
-                    {BridgeLabel}
-                    {fiatAmountString && BridgeAmount}
-                  </div>
-                  <div className={classes.row}>
-                    {BridgeStatus}
-                    {fiatAmountString && FiatAmount}
-                  </div>
+                  <div className={classes.row}>{BridgeLabel}</div>
+                  <div className={classes.row}>{BridgeStatus}</div>
                 </div>
-                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+                <div className={classes.amount}>{BridgeAmount}</div>
               </div>
             </div>
           </Card>
@@ -190,16 +163,10 @@ export const BridgeCard: FC<BridgeCardProps> = ({
               <div className={classes.infoContainer}>
                 <div className={classes.circle}>{BridgeIcon}</div>
                 <div className={classes.info}>
-                  <div className={classes.row}>
-                    {BridgeLabel}
-                    {fiatAmountString && BridgeAmount}
-                  </div>
-                  <div className={classes.row}>
-                    {BridgeStatus}
-                    {fiatAmountString && FiatAmount}
-                  </div>
+                  <div className={classes.row}>{BridgeLabel}</div>
+                  <div className={classes.row}>{BridgeStatus}</div>
                 </div>
-                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+                <div className={classes.amount}>{BridgeAmount}</div>
               </div>
             </div>
             <div className={classes.bottom}>
@@ -220,16 +187,10 @@ export const BridgeCard: FC<BridgeCardProps> = ({
               <div className={classes.infoContainer}>
                 <div className={classes.circle}>{BridgeIcon}</div>
                 <div className={classes.info}>
-                  <div className={classes.row}>
-                    {BridgeLabel}
-                    {fiatAmountString && BridgeAmount}
-                  </div>
-                  <div className={classes.row}>
-                    {BridgeStatus}
-                    {fiatAmountString && FiatAmount}
-                  </div>
+                  <div className={classes.row}>{BridgeLabel}</div>
+                  <div className={classes.row}>{BridgeStatus}</div>
                 </div>
-                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+                <div className={classes.amount}>{BridgeAmount}</div>
               </div>
             </div>
           </Card>
@@ -246,14 +207,11 @@ export const BridgeCard: FC<BridgeCardProps> = ({
                 <div className={classes.info}>
                   <div className={classes.row}>
                     {BridgeLabel}
-                    {fiatAmountString && BridgeAmount}
+                    {BridgeAmount}
                   </div>
-                  <div className={classes.row}>
-                    {BridgeStatus}
-                    {fiatAmountString && FiatAmount}
-                  </div>
+                  <div className={classes.row}>{BridgeStatus}</div>
                 </div>
-                {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+                <div className={classes.amount}>{BridgeAmount}</div>
               </div>
             </div>
             <div className={classes.bottom}>
@@ -281,16 +239,10 @@ export const BridgeCard: FC<BridgeCardProps> = ({
             <div className={classes.infoContainer}>
               <div className={classes.circle}>{BridgeIcon}</div>
               <div className={classes.info}>
-                <div className={classes.row}>
-                  {BridgeLabel}
-                  {fiatAmountString && BridgeAmount}
-                </div>
-                <div className={classes.row}>
-                  {BridgeStatus}
-                  {fiatAmountString && FiatAmount}
-                </div>
+                <div className={classes.row}>{BridgeLabel}</div>
+                <div className={classes.row}>{BridgeStatus}</div>
               </div>
-              {!fiatAmountString && <div className={classes.amount}>{BridgeAmount}</div>}
+              <div className={classes.amount}>{BridgeAmount}</div>
             </div>
           </div>
         </Card>

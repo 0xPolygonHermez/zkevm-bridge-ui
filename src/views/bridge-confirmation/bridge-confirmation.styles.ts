@@ -83,9 +83,6 @@ export const useBridgeConfirmationStyles = createUseStyles((theme: Theme) => ({
     flexDirection: "column",
     gap: theme.spacing(1),
   },
-  fiat: {
-    marginTop: theme.spacing(1),
-  },
   infoMessage: {
     alignItems: "center",
     display: "flex",

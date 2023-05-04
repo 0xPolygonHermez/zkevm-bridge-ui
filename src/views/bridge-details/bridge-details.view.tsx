@@ -5,20 +5,18 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { isCancelRequestError } from "src/adapters/bridge-api";
 import { parseError } from "src/adapters/error";
 import { getTxFeePaid } from "src/adapters/ethereum";
-import { getCurrency } from "src/adapters/storage";
 import { ReactComponent as NewWindowIcon } from "src/assets/icons/new-window.svg";
-import { FIAT_DISPLAY_PRECISION, getEtherToken } from "src/constants";
+import { getEtherToken } from "src/constants";
 import { useBridgeContext } from "src/contexts/bridge.context";
 import { useEnvContext } from "src/contexts/env.context";
 import { useErrorContext } from "src/contexts/error.context";
-import { usePriceOracleContext } from "src/contexts/price-oracle.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { useTokensContext } from "src/contexts/tokens.context";
 import { AsyncTask, Bridge } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { routes } from "src/routes";
-import { formatFiatAmount, formatTokenAmount, multiplyAmounts } from "src/utils/amounts";
-import { getBridgeStatus, getCurrencySymbol } from "src/utils/labels";
+import { formatTokenAmount } from "src/utils/amounts";
+import { getBridgeStatus } from "src/utils/labels";
 import { deserializeBridgeId } from "src/utils/serializers";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import { useBridgeDetailsStyles } from "src/views/bridge-details/bridge-details.styles";
@@ -59,17 +57,12 @@ export const BridgeDetails: FC = () => {
   const { claim, fetchBridge } = useBridgeContext();
   const { tokens } = useTokensContext();
   const { connectedProvider } = useProvidersContext();
-  const { getTokenPrice } = usePriceOracleContext();
   const [incorrectNetworkMessage, setIncorrectNetworkMessage] = useState<string>();
   const [bridge, setBridge] = useState<AsyncTask<Bridge, string>>({
     status: "pending",
   });
   const [ethFees, setEthFees] = useState<Fees>({});
-  const [fiatFees, setFiatFees] = useState<Fees>({});
-  const [fiatAmount, setFiatAmount] = useState<BigNumber>();
   const [isFinaliseButtonDisabled, setIsFinaliseButtonDisabled] = useState<boolean>(false);
-  const currencySymbol = getCurrencySymbol(getCurrency());
-
   const classes = useBridgeDetailsStyles();
 
   const onClaim = () => {
@@ -170,86 +163,6 @@ export const BridgeDetails: FC = () => {
     }
   }, [bridge, notifyError, callIfMounted]);
 
-  useEffect(() => {
-    if (env !== undefined && env.fiatExchangeRates.areEnabled && bridge.status === "successful") {
-      const { amount, from, token } = bridge.data;
-
-      // fiat amount
-      getTokenPrice({ chain: from, token })
-        .then((tokenPrice) => {
-          callIfMounted(() => {
-            setFiatAmount(
-              multiplyAmounts(
-                {
-                  precision: FIAT_DISPLAY_PRECISION,
-                  value: tokenPrice,
-                },
-                {
-                  precision: token.decimals,
-                  value: amount,
-                },
-                FIAT_DISPLAY_PRECISION
-              )
-            );
-          });
-        })
-        .catch(() =>
-          callIfMounted(() => {
-            setFiatAmount(undefined);
-          })
-        );
-    }
-  }, [env, bridge, getTokenPrice, callIfMounted]);
-
-  useEffect(() => {
-    if (tokens && env?.fiatExchangeRates.areEnabled && bridge.status === "successful") {
-      const { from } = bridge.data;
-
-      // fiat fees
-      const token = tokens.find((t) => t.symbol === "WETH");
-      if (token) {
-        getTokenPrice({ chain: from, token })
-          .then((tokenPrice) => {
-            callIfMounted(() => {
-              setFiatFees({
-                step1: ethFees.step1
-                  ? multiplyAmounts(
-                      {
-                        precision: FIAT_DISPLAY_PRECISION,
-                        value: tokenPrice,
-                      },
-                      {
-                        precision: token.decimals,
-                        value: ethFees.step1,
-                      },
-                      FIAT_DISPLAY_PRECISION
-                    )
-                  : undefined,
-                step2: ethFees.step2
-                  ? multiplyAmounts(
-                      {
-                        precision: FIAT_DISPLAY_PRECISION,
-                        value: tokenPrice,
-                      },
-                      {
-                        precision: token.decimals,
-                        value: ethFees.step2,
-                      },
-                      FIAT_DISPLAY_PRECISION
-                    )
-                  : undefined,
-              });
-            });
-          })
-          .catch(() =>
-            callIfMounted(() => {
-              setFiatFees({});
-            })
-          );
-      }
-    }
-  }, [env, bridge, ethFees, getTokenPrice, callIfMounted, tokens]);
-
   switch (bridge.status) {
     case "pending":
     case "loading":
@@ -266,16 +179,12 @@ export const BridgeDetails: FC = () => {
     }
     case "successful": {
       const { amount, from, status, to, token } = bridge.data;
-
       const bridgeTxUrl = `${from.explorerUrl}/tx/${bridge.data.depositTxHash}`;
       const claimTxUrl =
         bridge.data.status === "completed"
           ? `${to.explorerUrl}/tx/${bridge.data.claimTxHash}`
           : undefined;
-
       const { step1: step1EthFee, step2: step2EthFee } = ethFees;
-      const { step1: step1FiatFee, step2: step2FiatFee } = fiatFees;
-
       const ethToken = getEtherToken(from);
 
       if (env === undefined) {
@@ -283,21 +192,8 @@ export const BridgeDetails: FC = () => {
       }
 
       const tokenAmountString = `${formatTokenAmount(amount, token)} ${token.symbol}`;
-
-      const fiatAmountString = env.fiatExchangeRates.areEnabled
-        ? `${currencySymbol}${fiatAmount ? formatFiatAmount(fiatAmount) : "--"}`
-        : undefined;
-
       const step1FeeString = `${step1EthFee ? formatTokenAmount(step1EthFee, ethToken) : "--"} ETH`;
-      const step1FiatFeeString = env.fiatExchangeRates.areEnabled
-        ? `${currencySymbol}${step1FiatFee ? formatFiatAmount(step1FiatFee) : "--"}`
-        : undefined;
-
       const step2FeeString = `${step2EthFee ? formatTokenAmount(step2EthFee, ethToken) : "--"} ETH`;
-      const step2FiatFeeString = env.fiatExchangeRates.areEnabled
-        ? `${currencySymbol}${step2FiatFee ? formatFiatAmount(step2FiatFee) : "--"}`
-        : undefined;
-
       const dotClass =
         bridge.status === "successful"
           ? bridge.data.status === "completed"
@@ -314,9 +210,6 @@ export const BridgeDetails: FC = () => {
             <div className={classes.balance}>
               <Icon className={classes.tokenIcon} isRounded size={48} url={token.logoURI} />
               <Typography type="h1">{tokenAmountString}</Typography>
-              <Typography className={classes.fiat} type="h2">
-                {fiatAmountString}
-              </Typography>
             </div>
             <div className={classes.row}>
               <Typography className={classes.alignRow} type="body2">
@@ -345,7 +238,6 @@ export const BridgeDetails: FC = () => {
               </Typography>
               <Typography className={classes.alignRow} type="body1">
                 {step1FeeString}
-                {step1FiatFeeString ? ` ~ ${step1FiatFeeString}` : ""}
               </Typography>
             </div>
             {bridge.data.status === "completed" && (
@@ -355,7 +247,6 @@ export const BridgeDetails: FC = () => {
                 </Typography>
                 <Typography className={classes.alignRow} type="body1">
                   {step2FeeString}
-                  {step2FiatFeeString ? ` ~ ${step2FiatFeeString}` : ""}
                 </Typography>
               </div>
             )}

@@ -412,7 +412,6 @@ export const Activity: FC = () => {
                         isFinaliseDisabled={true}
                         lastVerifiedBatch={lastVerifiedBatch}
                         networkError={false}
-                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                       />
                     </div>
                   ) : (
@@ -424,7 +423,6 @@ export const Activity: FC = () => {
                         lastVerifiedBatch={lastVerifiedBatch}
                         networkError={wrongNetworkBridges.includes(bridge.id)}
                         onClaim={() => onClaim(bridge)}
-                        showFiatAmount={env !== undefined && env.fiatExchangeRates.areEnabled}
                       />
                     </div>
                   )

@@ -4,8 +4,7 @@ export type RouteId =
   | "bridgeDetails"
   | "home"
   | "login"
-  | "networkError"
-  | "settings";
+  | "networkError";
 
 export const routes: {
   [P in RouteId]: {
@@ -43,10 +42,5 @@ export const routes: {
     id: "networkError",
     isPrivate: false,
     path: "/network-error",
-  },
-  settings: {
-    id: "settings",
-    isPrivate: true,
-    path: "/settings",
   },
 };

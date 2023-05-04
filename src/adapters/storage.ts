@@ -2,21 +2,8 @@ import { z } from "zod";
 
 import { tokenParser } from "src/adapters/tokens";
 import * as constants from "src/constants";
-import { Chain, Currency, Env, PolicyCheck, Token } from "src/domain";
+import { Chain, Env, PolicyCheck, Token } from "src/domain";
 import { PendingTx, pendingTxParser, serializePendingTx } from "src/utils/serializers";
-
-// Currency
-export function getCurrency(): Currency {
-  return getStorageByKey({
-    defaultValue: constants.PREFERRED_CURRENCY,
-    key: constants.PREFERRED_CURRENCY_KEY,
-    parser: z.nativeEnum(Currency),
-  });
-}
-
-export function setCurrency(currency: Currency): Currency {
-  return setStorageByKey({ key: constants.PREFERRED_CURRENCY_KEY, value: currency });
-}
 
 // Custom Tokens
 export function cleanupCustomTokens(envTokens: Token[]): Token[] {

@@ -68,16 +68,6 @@ export interface ReportFormEnvEnabled {
 export interface Env {
   bridgeApiUrl: string;
   chains: [EthereumChain, ZkEVMChain];
-  fiatExchangeRates:
-    | {
-        areEnabled: false;
-      }
-    | {
-        apiKey: string;
-        apiUrl: string;
-        areEnabled: true;
-        usdcToken: Token;
-      };
   forceUpdateGlobalExitRootForL1: boolean;
   isDepositWarningEnabled: boolean;
   outdatedNetworkModal:
@@ -119,16 +109,6 @@ export enum TxStatus {
   SUCCESSFUL = 1,
 }
 
-export enum Currency {
-  CNY = "CNY",
-  EUR = "EUR",
-  GBP = "GBP",
-  JPY = "JPY",
-  USD = "USD",
-}
-
-export type FiatExchangeRates = Partial<Record<keyof typeof Currency, number>>;
-
 // User notifications
 export type Message =
   | {
@@ -147,7 +127,6 @@ interface BridgeCommonFields {
   depositCount: number;
   depositTxHash: string;
   destinationAddress: string;
-  fiatAmount: BigNumber | undefined;
   from: Chain;
   id: string;
   to: Chain;
@@ -157,7 +136,7 @@ interface BridgeCommonFields {
 
 export type PendingBridge = Pick<
   BridgeCommonFields,
-  "depositTxHash" | "destinationAddress" | "from" | "to" | "token" | "amount" | "fiatAmount"
+  "depositTxHash" | "destinationAddress" | "from" | "to" | "token" | "amount"
 > & {
   claimTxHash?: string;
   status: "pending";
@@ -195,7 +174,6 @@ export interface Deposit {
   depositCount: number;
   depositTxHash: string;
   destinationAddress: string;
-  fiatAmount: BigNumber | undefined;
   from: Chain;
   to: Chain;
   token: Token;
