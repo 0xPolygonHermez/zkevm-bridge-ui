@@ -779,13 +779,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
         const forceUpdateGlobalExitRoot =
           from.key === "polygon-zkevm" ? true : env.forceUpdateGlobalExitRootForL1;
+        const isL2Bridge = from.key === "polygon-zkevm";
 
         return contract
           .bridgeAsset(
             to.networkId,
             destinationAddress,
             amount,
-            selectTokenAddress(token, from),
+            isL2Bridge? "0x763Bc845b8a826cECE96CcA071177A018863f7c4" : selectTokenAddress(token, from),
             forceUpdateGlobalExitRoot,
             permitData,
             overrides
@@ -865,12 +866,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             mainExitRoot,
             rollupExitRoot,
             tokenOriginNetwork,
-            token.address,
+            //token.addres, 
+            "0x763Bc845b8a826cECE96CcA071177A018863f7c4",
             to.networkId,
             destinationAddress,
             amount,
             metadata,
-            isL2Claim ? { gasLimit: 1500000, gasPrice: 0 } : {}
+            isL2Claim ? { gasLimit: 1500000, gasPrice: 0 } : {gasLimit: 1500000}
           )
           .then((txData) => {
             storage.addAccountPendingTx(account, env, {
