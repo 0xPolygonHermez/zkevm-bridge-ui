@@ -236,10 +236,10 @@ const permit = async ({
     case Permit.EIP_2612:
     case Permit.UNISWAP: {
       const eip2612StandardDomain = {
-        chainId,
         name,
-        verifyingContract: tokenAddress,
         version: "1",
+        chainId,
+        verifyingContract: tokenAddress,
       };
 
       const eip2612UniswapDomain = {
