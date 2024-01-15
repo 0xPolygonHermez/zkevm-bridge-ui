@@ -786,7 +786,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             to.networkId,
             destinationAddress,
             amount,
-            isL2Bridge? "0x763Bc845b8a826cECE96CcA071177A018863f7c4" : selectTokenAddress(token, from),
+            // "0xd9aac0446f93F26ee76BF2A38701AC5e11CbDBb6" is the token address in Layer1
+            // needed to setup in config later 
+            isL2Bridge? "0xd9aac0446f93F26ee76BF2A38701AC5e11CbDBb6" : selectTokenAddress(token, from),
             forceUpdateGlobalExitRoot,
             permitData,
             overrides
@@ -867,7 +869,9 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             rollupExitRoot,
             tokenOriginNetwork,
             //token.addres, 
-            "0x763Bc845b8a826cECE96CcA071177A018863f7c4",
+            // "0xd9aac0446f93F26ee76BF2A38701AC5e11CbDBb6" is the token address in Layer1
+            // needed to setup in config later 
+            "0xd9aac0446f93F26ee76BF2A38701AC5e11CbDBb6",
             to.networkId,
             destinationAddress,
             amount,
