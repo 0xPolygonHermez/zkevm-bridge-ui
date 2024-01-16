@@ -16,6 +16,7 @@ export const useNetworkBoxStyles = createUseStyles((theme: Theme) => ({
     background: theme.palette.grey.light,
     border: "none",
     borderRadius: 8,
+    color: "white",
     cursor: "pointer",
     display: "flex",
     padding: [theme.spacing(1), theme.spacing(1.5)],

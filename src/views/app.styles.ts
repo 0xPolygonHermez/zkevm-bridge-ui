@@ -72,6 +72,10 @@ export const useAppStyles = createUseStyles((theme: Theme) => ({
       fontSize: 16,
       minHeight: "100vh",
     },
+    input: {
+      backgroundColor: "#151619",
+      color: "#fff",
+    },
     "input[type='search']::-webkit-search-cancel-button": {
       "-webkit-appearance": "none",
     },

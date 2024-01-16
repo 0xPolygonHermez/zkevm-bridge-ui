@@ -26,7 +26,8 @@ export const useSnackbarStyles = createUseStyles((theme: Theme) => ({
     width: 16,
   },
   message: {
-    color: theme.palette.white,
+    backgroundColor: "0A0B0D",
+    color: '#fff',
     flex: 1,
     lineHeight: "24px",
     margin: [0, theme.spacing(1.5)],
@@ -38,12 +39,12 @@ export const useSnackbarStyles = createUseStyles((theme: Theme) => ({
   },
   reportButton: {
     "&:hover": {
-      backgroundColor: theme.palette.grey.dark,
+      backgroundColor: "rgba(49, 49, 59, 0.5)",
     },
-    backgroundColor: theme.palette.grey.veryDark,
+    backgroundColor: "#151619",
     border: 0,
     borderRadius: 12,
-    color: theme.palette.white,
+    color: '#fff',
     cursor: "pointer",
     padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
     transition: theme.hoverTransition,
@@ -57,7 +58,7 @@ export const useSnackbarStyles = createUseStyles((theme: Theme) => ({
   },
   wrapper: {
     alignItems: "center",
-    background: theme.palette.black,
+    background: '#0A0B0D',
     borderRadius: 16,
     display: "flex",
     justifyContent: "center",
