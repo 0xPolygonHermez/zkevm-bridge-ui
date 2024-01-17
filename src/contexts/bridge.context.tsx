@@ -159,6 +159,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         deposit_cnt,
         dest_addr,
         dest_net,
+        global_index,
         network_id,
         orig_addr,
         orig_net,
@@ -229,6 +230,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "initiated",
             to,
@@ -245,6 +247,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "on-hold",
             to,
@@ -262,6 +265,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "completed",
             to,
@@ -303,6 +307,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             deposit_cnt,
             dest_addr,
             dest_net,
+            global_index,
             network_id,
             orig_addr,
             orig_net,
@@ -346,6 +351,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 destinationAddress: dest_addr,
                 fiatAmount: undefined,
                 from,
+                globalIndex: global_index,
                 to,
                 token,
                 tokenOriginNetwork: orig_net,
@@ -389,6 +395,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           depositTxHash,
           destinationAddress,
           from,
+          globalIndex,
           to,
           token,
           tokenOriginNetwork,
@@ -426,6 +433,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "initiated",
               to,
@@ -442,6 +450,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "on-hold",
               to,
@@ -459,6 +468,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "completed",
               to,
@@ -827,6 +837,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         depositTxHash,
         destinationAddress,
         from,
+        globalIndex,
         to,
         token,
         tokenOriginNetwork,
@@ -845,11 +856,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const apiUrl = env.bridgeApiUrl;
       const networkId = from.networkId;
 
-      const { mainExitRoot, merkleProof, rollupExitRoot } = await getMerkleProof({
-        apiUrl,
-        depositCount,
-        networkId,
-      });
+      const { mainExitRoot, merkleProof, rollupExitRoot, rollupMerkleProof } = await getMerkleProof(
+        {
+          apiUrl,
+          depositCount,
+          networkId,
+        }
+      );
 
       const isTokenNativeOfToChain = token.chainId === to.chainId;
       const isMetadataRequired = !isTokenEther(token) && !isTokenNativeOfToChain;
@@ -861,7 +874,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         contract
           .claimAsset(
             merkleProof,
-            depositCount,
+            rollupMerkleProof,
+            globalIndex,
             mainExitRoot,
             rollupExitRoot,
             tokenOriginNetwork,

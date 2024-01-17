@@ -13,7 +13,7 @@ import { useUIContext } from "src/contexts/ui.context";
 import { AsyncTask, Bridge, PendingBridge } from "src/domain";
 import { useCallIfMounted } from "src/hooks/use-call-if-mounted";
 import { useIntersection } from "src/hooks/use-intersection";
-import { ProofOfEfficiency__factory } from "src/types/contracts/proof-of-efficiency";
+import { RollupManager__factory } from "src/types/contracts/rollup-manager";
 import { isAsyncTaskDataAvailable, isMetaMaskUserRejectedRequestError } from "src/utils/types";
 import { useActivityStyles } from "src/views/activity/activity.styles";
 import { BridgeCard } from "src/views/activity/components/bridge-card/bridge-card.view";
@@ -250,8 +250,8 @@ export const Activity: FC = () => {
     // Polling lastVerifiedBatch
     if (env) {
       const ethereum = env.chains[0];
-      const poeContract = ProofOfEfficiency__factory.connect(
-        ethereum.poeContractAddress,
+      const rollupManagerContract = RollupManager__factory.connect(
+        ethereum.rollupManagerAddress,
         ethereum.provider
       );
       const refreshLastVerifiedBatch = () => {
@@ -260,8 +260,10 @@ export const Activity: FC = () => {
             ? { data: currentLastVerifiedBatch.data, status: "reloading" }
             : { status: "loading" }
         );
-        poeContract
-          .lastVerifiedBatch()
+        rollupManagerContract
+          .getLastVerifiedBatch(
+            rollupManagerContract.rollupAddressToID(env.chains[0].poeContractAddress)
+          )
           .then((newLastVerifiedBatch) => {
             setLastVerifiedBatch({
               data: newLastVerifiedBatch,
