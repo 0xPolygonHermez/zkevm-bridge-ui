@@ -85,6 +85,7 @@ export const getChains = ({
     bridgeContractAddress: string;
     explorerUrl: string;
     poeContractAddress: string;
+    rollupManagerAddress: string;
     rpcUrl: string;
   };
   polygonZkEVM: {
@@ -121,6 +122,7 @@ export const getChains = ({
       networkId: 0,
       poeContractAddress: ethereum.poeContractAddress,
       provider: ethereumProvider,
+      rollupManagerAddress: ethereum.rollupManagerAddress,
     },
     {
       bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
