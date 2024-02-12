@@ -709,7 +709,10 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                 forceUpdateGlobalExitRoot,
                 "0x",
                 overrides
-              )
+              ).catch((e) => {
+                console.warn("Failed to estimate gas for bridgeAsset", e);
+                return BigNumber.from(300000);
+              })
               .then((gasLimit) => {
                 const gasLimitIncrease = gasLimit
                   .div(BigNumber.from(100))
