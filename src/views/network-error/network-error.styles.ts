@@ -16,6 +16,8 @@ export const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(1), theme.spacing(5)],
   },
   logo: {
+    filter:
+      "invert(44%) sepia(65%) saturate(527%) hue-rotate(227deg) brightness(100%) contrast(88%)",
     marginBottom: theme.spacing(4),
     maxWidth: "300px",
     width: "100%",

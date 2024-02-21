@@ -38,6 +38,8 @@ export const useHeaderStyles = createUseStyles((theme: Theme) => ({
     transition: theme.hoverTransition,
   },
   logo: {
+    filter:
+      "invert(44%) sepia(65%) saturate(527%) hue-rotate(227deg) brightness(100%) contrast(88%)",
     height: 56,
   },
   rightBlock: {

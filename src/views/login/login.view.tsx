@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { routerStateParser } from "src/adapters/browser";
 import { getPolicyCheck, setPolicyCheck } from "src/adapters/storage";
-import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
+import { ReactComponent as GPTLogo } from "src/assets/gpt-logo-white-transparent.svg";
 import { useEnvContext } from "src/contexts/env.context";
 import { useProvidersContext } from "src/contexts/providers.context";
 import { EthereumChainId, PolicyCheck, WalletName } from "src/domain";
@@ -66,7 +66,7 @@ export const Login: FC = () => {
   return (
     <div className={classes.login}>
       <div className={classes.contentWrapper}>
-        <PolygonZkEVMLogo className={classes.logo} />
+        <GPTLogo className={classes.logo} />
         <Typography className={classes.appName} type="body1">
           {appName}
         </Typography>
