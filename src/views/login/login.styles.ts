@@ -39,8 +39,6 @@ export const useLoginStyles = createUseStyles((theme: Theme) => ({
     padding: [0, theme.spacing(2)],
   },
   logo: {
-    filter:
-      "invert(44%) sepia(65%) saturate(527%) hue-rotate(227deg) brightness(100%) contrast(88%)",
     height: 120,
     marginBottom: theme.spacing(3),
     marginTop: theme.spacing(8),
