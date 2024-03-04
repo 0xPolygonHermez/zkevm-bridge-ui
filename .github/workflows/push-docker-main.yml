@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - generic_build
+      - generic_build_id6
 
 jobs:
   build:
