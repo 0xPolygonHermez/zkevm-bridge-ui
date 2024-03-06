@@ -35,7 +35,9 @@ export const Header: FC = () => {
         </Link>
       </div>
       <div className={`${classes.block} ${classes.centerBlock}`}>
-        <PolygonZkEVMLogo className={classes.logo} />
+        {
+          env.logo ? <img className={classes.logo} src={env.logo} /> : <PolygonZkEVMLogo className={classes.logo} />
+        }
       </div>
       <div className={`${classes.block} ${classes.rightBlock}`}>
         <NetworkSelector />
