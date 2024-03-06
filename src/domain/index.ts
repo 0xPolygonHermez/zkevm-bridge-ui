@@ -80,7 +80,7 @@ export interface Env {
       };
   forceUpdateGlobalExitRootForL1: boolean;
   isDepositWarningEnabled: boolean;
-  logo: string;
+  logo?: string;
   outdatedNetworkModal:
     | {
         isEnabled: false;
