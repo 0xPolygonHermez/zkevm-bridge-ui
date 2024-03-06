@@ -13,7 +13,6 @@ import { BridgeForm } from "src/views/home/components/bridge-form/bridge-form.vi
 import { DepositWarningModal } from "src/views/home/components/deposit-warning-modal/deposit-warning-modal.view";
 import { Header } from "src/views/home/components/header/header.view";
 import { useHomeStyles } from "src/views/home/home.styles";
-import { NetworkBox } from "src/views/shared/network-box/network-box.view";
 import { Typography } from "src/views/shared/typography/typography.view";
 
 export const Home = (): JSX.Element => {
@@ -66,9 +65,6 @@ export const Home = (): JSX.Element => {
             <Typography type="body1">
               {getPartiallyHiddenEthereumAddress(connectedProvider.data.account)}
             </Typography>
-          </div>
-          <div className={classes.networkBoxWrapper}>
-            <NetworkBox />
           </div>
           <BridgeForm
             account={connectedProvider.data.account}
