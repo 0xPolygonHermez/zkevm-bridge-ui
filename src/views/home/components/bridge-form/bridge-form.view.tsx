@@ -274,16 +274,19 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
       <Card className={classes.card}>
         <div className={classes.row}>
           <div className={classes.leftBox}>
-            <Typography type="body2">From</Typography>
-            <button
-              className={classes.fromChain}
-              onClick={() => setChains(env.chains)}
-              type="button"
-            >
-              <selectedChains.from.Icon />
-              <Typography type="body1">{selectedChains.from.name}</Typography>
-              <CaretDown />
-            </button>
+            <selectedChains.from.Icon />
+            <div className={classes.from}>
+              <Typography type="body2">From</Typography>
+              <button
+                className={classes.fromChain}
+                onClick={() => setChains(env.chains)}
+                type="button"
+              >
+                
+                <Typography type="body1">{selectedChains.from.name}</Typography>
+                <CaretDown />
+              </button>
+            </div>
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>

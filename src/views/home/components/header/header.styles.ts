@@ -5,6 +5,7 @@ import { Theme } from "src/styles/theme";
 export const useHeaderStyles = createUseStyles((theme: Theme) => ({
   activityLabel: {
     display: "none",
+    marginLeft: theme.spacing(1),
     [theme.breakpoints.upSm]: {
       display: "block",
     },
@@ -14,33 +15,30 @@ export const useHeaderStyles = createUseStyles((theme: Theme) => ({
     flex: 1,
     gap: theme.spacing(0.75),
   },
-  centerBlock: {
-    justifyContent: "center",
-  },
   header: {
     alignItems: "center",
     display: "flex",
-    margin: [theme.spacing(2), "auto", 0],
+    margin: [theme.spacing(3), "auto", 0],
     width: "100%",
   },
   leftBlock: {
     justifyContent: "left",
   },
   link: {
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
-    alignItems: "center",
-    borderRadius: 8,
-    display: "flex",
-    gap: theme.spacing(1),
-    padding: [theme.spacing(0.75), theme.spacing(1)],
-    transition: theme.hoverTransition,
   },
   logo: {
-    height: 56,
+    height: 48,
   },
   rightBlock: {
     justifyContent: "end",
+  },
+  roundedBlock: {
+    alignItems: 'center',
+    background: '#ffffff',
+    borderRadius: '12px',
+    display: 'flex',
+    height: 48,
+    justifyContent: 'space-between',
+    padding: theme.spacing(1.5),
   },
 }));

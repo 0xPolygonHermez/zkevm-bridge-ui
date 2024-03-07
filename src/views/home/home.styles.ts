@@ -6,7 +6,7 @@ export const useHomeStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     display: "flex",
     flexDirection: "column",
-    padding: [0, theme.spacing(2)],
+    padding: [0, theme.spacing(3)],
   },
   ethereumAddress: {
     alignItems: "center",

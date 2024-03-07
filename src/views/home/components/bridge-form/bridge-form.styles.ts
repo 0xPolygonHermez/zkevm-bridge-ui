@@ -32,8 +32,14 @@ export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     padding: [theme.spacing(2), theme.spacing(3)],
   },
   form: {
+    background: '#ffffff',
+    borderRadius: '20px',
     margin: "auto",
     maxWidth: theme.maxWidth,
+    width: '400px',
+  },
+  from: {
+    marginLeft: theme.spacing(1.25),
   },
   fromChain: {
     "&:hover": {
@@ -64,10 +70,9 @@ export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     },
   },
   leftBox: {
-    alignItems: "flex-start",
+    alignItems: 'center',
     display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   middleRow: {
     borderTop: `1px solid ${theme.palette.grey.light}`,
