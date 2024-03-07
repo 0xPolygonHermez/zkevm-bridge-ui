@@ -29,14 +29,24 @@ export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     margin: [theme.spacing(5), "auto"],
   },
   card: {
-    padding: [theme.spacing(2), theme.spacing(3)],
+    borderRadius: '0px',
+  },
+  chainInfo: {
+    border: '1px solid #f6f6f6',
+    borderRadius: '12px',
+    padding: theme.spacing(1.5),
+  },
+  chainLogo: {
+    height: 36,
+    width: 36,
   },
   form: {
     background: '#ffffff',
     borderRadius: '20px',
     margin: "auto",
     maxWidth: theme.maxWidth,
-    width: '400px',
+    padding: [theme.spacing(2.5), theme.spacing(3)],
+    width: '400px'
   },
   from: {
     marginLeft: theme.spacing(1.25),
@@ -75,7 +85,6 @@ export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
     justifyContent: "flex-start",
   },
   middleRow: {
-    borderTop: `1px solid ${theme.palette.grey.light}`,
     marginTop: theme.spacing(1.25),
     padding: [theme.spacing(2), 0, 0],
   },
@@ -93,39 +102,5 @@ export const useBridgeFormStyles = createUseStyles((theme: Theme) => ({
   spinner: {
     margin: "auto",
     marginTop: theme.spacing(7),
-  },
-  toChain: {
-    alignItems: "center",
-    background: "none",
-    border: "none",
-    borderRadius: 8,
-    display: "flex",
-    gap: theme.spacing(0.75),
-    marginBottom: -theme.spacing(0.75),
-    marginLeft: -theme.spacing(1.25),
-    marginTop: theme.spacing(0.5),
-    padding: [theme.spacing(0.75), theme.spacing(1.25)],
-    [theme.breakpoints.upSm]: {
-      gap: theme.spacing(1.25),
-    },
-  },
-  tokenSelector: {
-    "&:hover": {
-      backgroundColor: theme.palette.grey.main,
-    },
-    alignItems: "center",
-    backgroundColor: theme.palette.grey.light,
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    display: "flex",
-    gap: theme.spacing(1),
-    padding: [theme.spacing(1), theme.spacing(1.25)],
-    transition: theme.hoverTransition,
-    [theme.breakpoints.upSm]: {
-      backgroundColor: theme.palette.grey.light,
-      gap: theme.spacing(2),
-      padding: [theme.spacing(1.5), theme.spacing(2)],
-    },
   },
 }));

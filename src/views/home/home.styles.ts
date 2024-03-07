@@ -5,6 +5,7 @@ import { Theme } from "src/styles/theme";
 export const useHomeStyles = createUseStyles((theme: Theme) => ({
   contentWrapper: {
     display: "flex",
+    flex: 1,
     flexDirection: "column",
     padding: [0, theme.spacing(3)],
   },
