@@ -14,6 +14,7 @@ export const useNetworkSelectorStyles = createUseStyles((theme: Theme) => ({
     cursor: "pointer",
     display: "flex",
     gap: theme.spacing(1),
+    height: '48px',
     justifyContent: "space-between",
     maxWidth: 200,
     padding: theme.spacing(1.25),

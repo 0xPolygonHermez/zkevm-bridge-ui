@@ -22,24 +22,24 @@ export const Header: FC = () => {
   return (
     <header className={classes.header}>
       <div className={`${classes.block} ${classes.leftBlock}`}>
+        {
+          env.logo ? <img className={classes.logo} src={env.logo} /> : <PolygonZkEVMLogo className={classes.logo} />
+        }
+      </div>
+      <div className={`${classes.block} ${classes.rightBlock}`}>
         {areSettingsVisible(env) && (
           <Link className={classes.link} title="Settings" to={routes.settings.path}>
             <SettingIcon />
           </Link>
         )}
         <Link className={classes.link} to={routes.activity.path}>
-          <ClockIcon />
-          <Typography className={classes.activityLabel} type="body1">
-            Activity
-          </Typography>
+          <div className={classes.roundedBlock}>
+            <ClockIcon />
+            <Typography className={classes.activityLabel} type="body1">
+              Activity
+            </Typography>
+          </div>
         </Link>
-      </div>
-      <div className={`${classes.block} ${classes.centerBlock}`}>
-        {
-          env.logo ? <img className={classes.logo} src={env.logo} /> : <PolygonZkEVMLogo className={classes.logo} />
-        }
-      </div>
-      <div className={`${classes.block} ${classes.rightBlock}`}>
         <NetworkSelector />
       </div>
     </header>

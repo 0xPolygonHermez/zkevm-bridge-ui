@@ -19,7 +19,6 @@ import { Button } from "src/views/shared/button/button.view";
 import { Card } from "src/views/shared/card/card.view";
 import { ChainList } from "src/views/shared/chain-list/chain-list.view";
 import { ErrorMessage } from "src/views/shared/error-message/error-message.view";
-import { Icon } from "src/views/shared/icon/icon.view";
 import { Spinner } from "src/views/shared/spinner/spinner.view";
 import { TokenBalance } from "src/views/shared/token-balance/token-balance.view";
 import { Typography } from "src/views/shared/typography/typography.view";
@@ -69,10 +68,6 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
         setAmount(undefined);
       }
     }
-  };
-
-  const onTokenDropdownClick = () => {
-    setIsTokenListOpen(true);
   };
 
   const onSelectToken = (token: Token) => {
@@ -272,18 +267,20 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
   return (
     <form className={classes.form} onSubmit={onFormSubmit}>
       <Card className={classes.card}>
-        <div className={classes.row}>
+        <div className={`${classes.row} ${classes.chainInfo}`}>
           <div className={classes.leftBox}>
-            <Typography type="body2">From</Typography>
-            <button
-              className={classes.fromChain}
-              onClick={() => setChains(env.chains)}
-              type="button"
-            >
-              <selectedChains.from.Icon />
-              <Typography type="body1">{selectedChains.from.name}</Typography>
-              <CaretDown />
-            </button>
+            <selectedChains.from.Icon className={classes.chainLogo} />
+            <div className={classes.from}>
+              <Typography type="body2">From</Typography>
+              <button
+                className={classes.fromChain}
+                onClick={() => setChains(env.chains)}
+                type="button"
+              >
+                <Typography type="body1">{selectedChains.from.name}</Typography>
+                <CaretDown />
+              </button>
+            </div>
           </div>
           <div className={classes.rightBox}>
             <Typography type="body2">Balance</Typography>
@@ -295,11 +292,6 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
           </div>
         </div>
         <div className={`${classes.row} ${classes.middleRow}`}>
-          <button className={classes.tokenSelector} onClick={onTokenDropdownClick} type="button">
-            <Icon isRounded size={24} url={token.logoURI} />
-            <Typography type="h2">{token.symbol}</Typography>
-            <CaretDown />
-          </button>
           <AmountInput
             balance={
               balanceFrom && isAsyncTaskDataAvailable(balanceFrom)
@@ -307,6 +299,9 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
                 : BigNumber.from(0)
             }
             onChange={onAmountInputChange}
+            onTokenDropdownClick={() => {
+              setIsTokenListOpen(true);
+            }}
             token={token}
             value={amount}
           />
@@ -316,11 +311,11 @@ export const BridgeForm: FC<BridgeFormProps> = ({ account, formData, onResetForm
         <ArrowDown className={classes.arrowDownIcon} />
       </div>
       <Card className={classes.card}>
-        <div className={classes.row}>
+        <div className={`${classes.row} ${classes.chainInfo}`}>
           <div className={classes.leftBox}>
-            <Typography type="body2">To</Typography>
-            <div className={classes.toChain}>
-              <selectedChains.to.Icon />
+            <selectedChains.to.Icon className={classes.chainLogo} />
+            <div className={classes.from}>
+              <Typography type="body2">To</Typography>
               <Typography type="body1">{selectedChains.to.name}</Typography>
             </div>
           </div>
