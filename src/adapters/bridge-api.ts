@@ -12,6 +12,7 @@ interface DepositInput {
   deposit_cnt: number;
   dest_addr: string;
   dest_net: number;
+  global_index: string;
   network_id: number;
   orig_addr: string;
   orig_net: number;
@@ -26,6 +27,7 @@ interface DepositOutput {
   deposit_cnt: number;
   dest_addr: string;
   dest_net: number;
+  global_index: string;
   network_id: number;
   orig_addr: string;
   orig_net: number;
@@ -37,6 +39,7 @@ interface MerkleProof {
   main_exit_root: string;
   merkle_proof: string[];
   rollup_exit_root: string;
+  rollup_merkle_proof: string[];
 }
 
 const depositParser = StrictSchema<DepositInput, DepositOutput>()(
@@ -52,6 +55,7 @@ const depositParser = StrictSchema<DepositInput, DepositOutput>()(
     deposit_cnt: z.coerce.number().int().nonnegative(),
     dest_addr: z.string(),
     dest_net: z.number(),
+    global_index: z.string(),
     network_id: z.number(),
     orig_addr: z.string(),
     orig_net: z.number(),
@@ -93,10 +97,12 @@ const apiMerkleProofToDomain = ({
   main_exit_root,
   merkle_proof,
   rollup_exit_root,
+  rollup_merkle_proof,
 }: MerkleProof): domain.MerkleProof => ({
   mainExitRoot: main_exit_root,
   merkleProof: merkle_proof,
   rollupExitRoot: rollup_exit_root,
+  rollupMerkleProof: rollup_merkle_proof,
 });
 
 const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
@@ -105,6 +111,7 @@ const merkleProofParser = StrictSchema<MerkleProof, domain.MerkleProof>()(
       main_exit_root: z.string().length(66),
       merkle_proof: z.array(z.string().length(66)),
       rollup_exit_root: z.string().length(66),
+      rollup_merkle_proof: z.array(z.string().length(66)),
     })
     .transform(apiMerkleProofToDomain)
 );

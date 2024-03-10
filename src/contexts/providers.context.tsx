@@ -84,6 +84,7 @@ const ProvidersProvider: FC<PropsWithChildren> = (props) => {
 
         const currentNetworkChainId = currentNetwork.chainId;
         const supportedChainIds = env.chains.map((chain) => chain.chainId);
+
         if (!supportedChainIds.includes(currentNetworkChainId)) {
           setConnectedProvider({
             error: `Switch your network to ${env.chains[0].name} or ${env.chains[1].name} to continue`,

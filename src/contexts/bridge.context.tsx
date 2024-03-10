@@ -73,16 +73,16 @@ type FetchBridgesParams = {
   env: Env;
   ethereumAddress: string;
 } & (
-  | {
+    | {
       limit: number;
       offset: number;
       type: "load";
     }
-  | {
+    | {
       quantity: number;
       type: "reload";
     }
-);
+  );
 
 interface BridgeParams {
   amount: BigNumber;
@@ -159,6 +159,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         deposit_cnt,
         dest_addr,
         dest_net,
+        global_index,
         network_id,
         orig_addr,
         orig_net,
@@ -190,14 +191,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         claim_tx_hash !== null
           ? { status: "claimed", txHash: claim_tx_hash }
           : ready_for_claim
-          ? { status: "ready" }
-          : { status: "pending" };
+            ? { status: "ready" }
+            : { status: "pending" };
 
       const tokenPrice: BigNumber | undefined = env.fiatExchangeRates.areEnabled
         ? await getTokenPrice({
-            chain: from,
-            token,
-          }).catch(() => undefined)
+          chain: from,
+          token,
+        }).catch(() => undefined)
         : undefined;
 
       const fiatAmount =
@@ -229,6 +230,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "initiated",
             to,
@@ -245,6 +247,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "on-hold",
             to,
@@ -262,6 +265,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             destinationAddress: dest_addr,
             fiatAmount,
             from,
+            globalIndex: global_index,
             id,
             status: "completed",
             to,
@@ -286,13 +290,15 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       total: number;
     }> => {
       const apiUrl = env.bridgeApiUrl;
-      const { deposits: apiDeposits, total } = await getDeposits({
+      const result = await getDeposits({
         abortSignal,
         apiUrl,
         ethereumAddress,
         limit,
         offset,
       });
+
+      const apiDeposits = result.deposits; // `deposits` es ahora una constante.
 
       const deposits = await apiDeposits.reduce(
         async (acc: Promise<Deposit[]>, apiDeposit): Promise<Deposit[]> => {
@@ -303,6 +309,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
             deposit_cnt,
             dest_addr,
             dest_net,
+            global_index,
             network_id,
             orig_addr,
             orig_net,
@@ -312,16 +319,12 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
 
           const from = env.chains.find((chain) => chain.networkId === network_id);
           if (from === undefined) {
-            throw new Error(
-              `The specified network_id "${network_id}" can not be found in the list of supported Chains`
-            );
+            return acc.then((accDeposits) => {return accDeposits})
           }
 
           const to = env.chains.find((chain) => chain.networkId === dest_net);
           if (to === undefined) {
-            throw new Error(
-              `The specified dest_net "${dest_net}" can not be found in the list of supported Chains`
-            );
+            return acc.then((accDeposits) => {return accDeposits})
           }
 
           return acc.then((accDeposits) =>
@@ -339,13 +342,14 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
                   claim_tx_hash !== null
                     ? { status: "claimed", txHash: claim_tx_hash }
                     : ready_for_claim
-                    ? { status: "ready" }
-                    : { status: "pending" },
+                      ? { status: "ready" }
+                      : { status: "pending" },
                 depositCount: deposit_cnt,
                 depositTxHash: tx_hash,
                 destinationAddress: dest_addr,
                 fiatAmount: undefined,
                 from,
+                globalIndex: global_index,
                 to,
                 token,
                 tokenOriginNetwork: orig_net,
@@ -356,28 +360,30 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         Promise.resolve([])
       );
 
+      const total: number = deposits.length;
+
       const tokenPrices: TokenPrices = env.fiatExchangeRates.areEnabled
         ? await deposits.reduce(
-            async (
-              accTokenPrices: Promise<TokenPrices>,
-              deposit: Deposit
-            ): Promise<TokenPrices> => {
-              const tokenPrices = await accTokenPrices;
-              const tokenCachedPrice = tokenPrices[deposit.token.address];
-              const tokenPrice =
-                tokenCachedPrice !== undefined
-                  ? tokenCachedPrice
-                  : await getTokenPrice({ chain: deposit.from, token: deposit.token }).catch(
-                      () => null
-                    );
+          async (
+            accTokenPrices: Promise<TokenPrices>,
+            deposit: Deposit
+          ): Promise<TokenPrices> => {
+            const tokenPrices = await accTokenPrices;
+            const tokenCachedPrice = tokenPrices[deposit.token.address];
+            const tokenPrice =
+              tokenCachedPrice !== undefined
+                ? tokenCachedPrice
+                : await getTokenPrice({ chain: deposit.from, token: deposit.token }).catch(
+                  () => null
+                );
 
-              return {
-                ...tokenPrices,
-                [deposit.token.address]: tokenPrice,
-              };
-            },
-            Promise.resolve({})
-          )
+            return {
+              ...tokenPrices,
+              [deposit.token.address]: tokenPrice,
+            };
+          },
+          Promise.resolve({})
+        )
         : {};
 
       const bridges = deposits.map((partialDeposit): Bridge => {
@@ -389,6 +395,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
           depositTxHash,
           destinationAddress,
           from,
+          globalIndex,
           to,
           token,
           tokenOriginNetwork,
@@ -399,16 +406,16 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         const fiatAmount =
           tokenPrice !== undefined && tokenPrice !== null
             ? multiplyAmounts(
-                {
-                  precision: FIAT_DISPLAY_PRECISION,
-                  value: tokenPrice,
-                },
-                {
-                  precision: token.decimals,
-                  value: amount,
-                },
-                FIAT_DISPLAY_PRECISION
-              )
+              {
+                precision: FIAT_DISPLAY_PRECISION,
+                value: tokenPrice,
+              },
+              {
+                precision: token.decimals,
+                value: amount,
+              },
+              FIAT_DISPLAY_PRECISION
+            )
             : undefined;
 
         const id = serializeBridgeId({
@@ -426,6 +433,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "initiated",
               to,
@@ -442,6 +450,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "on-hold",
               to,
@@ -459,6 +468,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
               destinationAddress,
               fiatAmount,
               from,
+              globalIndex,
               id,
               status: "completed",
               to,
@@ -691,26 +701,26 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const gasLimit =
         from.key === "ethereum"
           ? await contract.estimateGas
-              .bridgeAsset(
-                to.networkId,
-                destinationAddress,
-                amount,
-                tokenAddress,
-                forceUpdateGlobalExitRoot,
-                "0x",
-                overrides
-              )
-              .then((gasLimit) => {
-                const gasLimitIncrease = gasLimit
-                  .div(BigNumber.from(100))
-                  .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
+            .bridgeAsset(
+              to.networkId,
+              destinationAddress,
+              amount,
+              tokenAddress,
+              forceUpdateGlobalExitRoot,
+              "0x",
+              overrides
+            )
+            .then((gasLimit) => {
+              const gasLimitIncrease = gasLimit
+                .div(BigNumber.from(100))
+                .mul(BRIDGE_CALL_GAS_LIMIT_INCREASE_PERCENTAGE);
 
-                const increasedGasLimit = gasLimit.add(gasLimitIncrease);
+              const increasedGasLimit = gasLimit.add(gasLimitIncrease);
 
-                return tokenSpendPermission.type === "permit"
-                  ? increasedGasLimit.add(BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE)
-                  : increasedGasLimit;
-              })
+              return tokenSpendPermission.type === "permit"
+                ? increasedGasLimit.add(BRIDGE_CALL_PERMIT_GAS_LIMIT_INCREASE)
+                : increasedGasLimit;
+            })
           : BigNumber.from(300000);
 
       const { gasPrice, maxFeePerGas } = await from.provider.getFeeData();
@@ -760,21 +770,21 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         ...(gas
           ? gas.data
           : (await estimateBridgeGas({ destinationAddress, from, to, token, tokenSpendPermission }))
-              .data),
+            .data),
       };
 
       const executeBridge = async () => {
         const permitData =
           tokenSpendPermission.type === "permit"
             ? await permit({
-                account: account,
-                from: from,
-                permit: tokenSpendPermission.permit,
-                provider: provider,
-                spender: from.bridgeContractAddress,
-                token,
-                value: amount,
-              })
+              account: account,
+              from: from,
+              permit: tokenSpendPermission.permit,
+              provider: provider,
+              spender: from.bridgeContractAddress,
+              token,
+              value: amount,
+            })
             : "0x";
 
         const forceUpdateGlobalExitRoot =
@@ -827,6 +837,7 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         depositTxHash,
         destinationAddress,
         from,
+        globalIndex,
         to,
         token,
         tokenOriginNetwork,
@@ -845,11 +856,13 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
       const apiUrl = env.bridgeApiUrl;
       const networkId = from.networkId;
 
-      const { mainExitRoot, merkleProof, rollupExitRoot } = await getMerkleProof({
-        apiUrl,
-        depositCount,
-        networkId,
-      });
+      const { mainExitRoot, merkleProof, rollupExitRoot, rollupMerkleProof } = await getMerkleProof(
+        {
+          apiUrl,
+          depositCount,
+          networkId,
+        }
+      );
 
       const isTokenNativeOfToChain = token.chainId === to.chainId;
       const isMetadataRequired = !isTokenEther(token) && !isTokenNativeOfToChain;
@@ -861,7 +874,8 @@ const BridgeProvider: FC<PropsWithChildren> = (props) => {
         contract
           .claimAsset(
             merkleProof,
-            depositCount,
+            rollupMerkleProof,
+            globalIndex,
             mainExitRoot,
             rollupExitRoot,
             tokenOriginNetwork,
