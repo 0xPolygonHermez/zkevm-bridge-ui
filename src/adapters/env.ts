@@ -15,6 +15,7 @@ interface Env {
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: string;
   VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: string;
   VITE_ETHEREUM_RPC_URL: string;
+  VITE_FAVICON_PATH: string;
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
@@ -164,6 +165,7 @@ const envToDomain = ({
   VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT,
   VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS,
   VITE_ETHEREUM_RPC_URL,
+  VITE_FAVICON_PATH,
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
@@ -190,6 +192,8 @@ const envToDomain = ({
   );
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
   const logoPath = VITE_LOGO_PATH;
+  const faviconPath = VITE_FAVICON_PATH;
+
   const outdatedNetworkModal: domain.Env["outdatedNetworkModal"] = isOutdatedNetworkModalEnabled
     ? {
         isEnabled: true,
@@ -226,6 +230,7 @@ const envToDomain = ({
     return {
       bridgeApiUrl,
       chains,
+      faviconPath,
       fiatExchangeRates: getFiatExchangeRatesEnv({
         ethereumChain,
         VITE_ENABLE_FIAT_EXCHANGE_RATES,
@@ -261,6 +266,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT: z.string(),
       VITE_ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS: z.string().length(42),
       VITE_ETHEREUM_RPC_URL: z.string().url(),
+      VITE_FAVICON_PATH: z.string(),
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
