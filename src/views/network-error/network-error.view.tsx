@@ -25,7 +25,9 @@ export const NetworkError: FC = () => {
 
   return parsedProviderError.success ? (
     <div className={classes.wrapper}>
-      <PolygonZkEVMLogo className={classes.logo} />
+      {
+        env && env.logo ? <img className={classes.logo} src={env.logo} /> : <PolygonZkEVMLogo className={classes.logo} />
+      }
       <div className={classes.textBox}>
         <Typography type="h1">Network Error</Typography>
         <Typography type="body1">

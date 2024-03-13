@@ -66,7 +66,9 @@ export const Login: FC = () => {
   return (
     <div className={classes.login}>
       <div className={classes.contentWrapper}>
-        <PolygonZkEVMLogo className={classes.logo} />
+        {
+          env.logo ? <img className={classes.logo} src={env.logo} /> : <PolygonZkEVMLogo className={classes.logo} />
+        }
         <Typography className={classes.appName} type="body1">
           {appName}
         </Typography>
