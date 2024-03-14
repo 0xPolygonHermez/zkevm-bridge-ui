@@ -31,7 +31,9 @@ interface Env {
   VITE_REPORT_FORM_PLATFORM_ENTRY?: string;
   VITE_REPORT_FORM_URL?: string;
   VITE_REPORT_FORM_URL_ENTRY?: string;
-  VITE_UI_LOGO: string;
+  VITE_UI_L1_LOGO?: string;
+  VITE_UI_L2_LOGO?: string;
+  VITE_UI_LOGO?: string;
 }
 
 type GetFiatExchangeRatesEnvParams = Pick<
@@ -181,6 +183,8 @@ const envToDomain = ({
   VITE_REPORT_FORM_PLATFORM_ENTRY,
   VITE_REPORT_FORM_URL,
   VITE_REPORT_FORM_URL_ENTRY,
+  VITE_UI_L1_LOGO,
+  VITE_UI_L2_LOGO,
   VITE_UI_LOGO,
 }: Env): Promise<domain.Env> => {
   const polygonZkEVMNetworkId = z.coerce.number().positive().parse(VITE_POLYGON_ZK_EVM_NETWORK_ID);
@@ -212,6 +216,8 @@ const envToDomain = ({
       rollupManagerAddress: VITE_ETHEREUM_ROLLUP_MANAGER_ADDRESS,
       rpcUrl: VITE_ETHEREUM_RPC_URL,
     },
+    l1Logo: VITE_UI_L1_LOGO,
+    l2Logo: VITE_UI_L2_LOGO,
     polygonZkEVM: {
       bridgeContractAddress: VITE_POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS,
       explorerUrl: VITE_POLYGON_ZK_EVM_EXPLORER_URL,
@@ -220,7 +226,6 @@ const envToDomain = ({
     },
   }).then((chains) => {
     const ethereumChain = chains.find((chain) => chain.key === "ethereum");
-
     if (!ethereumChain) {
       throw new Error("Ethereum chain not found");
     }
@@ -279,7 +284,9 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_REPORT_FORM_PLATFORM_ENTRY: z.string().optional(),
       VITE_REPORT_FORM_URL: z.string().optional(),
       VITE_REPORT_FORM_URL_ENTRY: z.string().optional(),
-      VITE_UI_LOGO: z.string().url(),
+      VITE_UI_L1_LOGO: z.string().url().optional(),
+      VITE_UI_L2_LOGO: z.string().url().optional(),
+      VITE_UI_LOGO: z.string().url().optional(),
     })
     .transform(envToDomain)
 );

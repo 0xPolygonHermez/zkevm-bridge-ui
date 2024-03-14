@@ -44,7 +44,7 @@ export const NetworkSelector: FC = () => {
         title={selectedChain.name}
         type="button"
       >
-        <selectedChain.Icon />
+        <selectedChain.Icon className={classes.chainLogo} />
         <Typography className={classes.networkButtonText} type="body1">
           {selectedChain.name}
         </Typography>

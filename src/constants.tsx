@@ -79,7 +79,9 @@ export const TOKEN_BLACKLIST = [
 
 export const getChains = ({
   ethereum,
-  polygonZkEVM,
+  l1Logo,
+  l2Logo,
+  polygonZkEVM
 }: {
   ethereum: {
     bridgeContractAddress: string;
@@ -88,6 +90,8 @@ export const getChains = ({
     rollupManagerAddress: string;
     rpcUrl: string;
   };
+  l1Logo?: string;
+  l2Logo?: string;
   polygonZkEVM: {
     bridgeContractAddress: string;
     explorerUrl: string;
@@ -111,7 +115,7 @@ export const getChains = ({
       bridgeContractAddress: ethereum.bridgeContractAddress,
       chainId: ethereumNetwork.chainId,
       explorerUrl: ethereum.explorerUrl,
-      Icon: EthChainIcon,
+      Icon: l1Logo ? ({ className }: { className?: string }) => <img className={className} src={l1Logo} /> : EthChainIcon,
       key: "ethereum",
       name: getEthereumNetworkName(ethereumNetwork.chainId),
       nativeCurrency: {
@@ -128,7 +132,7 @@ export const getChains = ({
       bridgeContractAddress: polygonZkEVM.bridgeContractAddress,
       chainId: polygonZkEVMNetwork.chainId,
       explorerUrl: polygonZkEVM.explorerUrl,
-      Icon: PolygonZkEVMChainIcon,
+      Icon: l2Logo ? ({ className }: { className?: string }) => <img className={className} src={l2Logo} /> : PolygonZkEVMChainIcon,
       key: "polygon-zkevm",
       name: polygonZkEVMNetworkName,
       nativeCurrency: {
