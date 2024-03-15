@@ -32,6 +32,9 @@ export const NetworkBox: FC = () => {
   const ethereumChain = env.chains[0];
   const polygonZkEVMChain = env.chains[1];
 
+  const name = env.networkName;
+  const symbol = env.networkSymbol;
+
   const successMsg: Message = {
     text: `${polygonZkEVMChain.name} network successfully added`,
     type: "success-msg",
@@ -66,7 +69,7 @@ export const NetworkBox: FC = () => {
   return (
     <Card>
       <div className={classes.networkBox}>
-        <Typography type="body1">{env.chains[1].name}</Typography>
+        <Typography type="body1">{name ? name : env.chains[1].name}</Typography>
         <ul className={classes.list}>
           <li className={classes.listItem}>
             <Typography type="body2">
@@ -78,7 +81,7 @@ export const NetworkBox: FC = () => {
           </li>
           <li className={classes.listItem}>
             <Typography type="body2">
-              Currency symbol: {polygonZkEVMChain.nativeCurrency.symbol}
+              Currency symbol: {symbol ? symbol : polygonZkEVMChain.nativeCurrency.symbol}
             </Typography>
           </li>
           <li className={classes.listItem}>
