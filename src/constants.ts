@@ -116,8 +116,8 @@ export const getChains = ({
       name: getEthereumNetworkName(ethereumNetwork.chainId),
       nativeCurrency: {
         decimals: 18,
-        name: "SkpGPT",
-        symbol: "SkpGPT",
+        name: "Ether",
+        symbol: "ETH",
       },
       networkId: 0,
       poeContractAddress: ethereum.poeContractAddress,
