@@ -1,3 +1,4 @@
+import { AppHead } from "./helmet";
 import { BridgeProvider } from "src/contexts/bridge.context";
 import { EnvProvider } from "src/contexts/env.context";
 import { ErrorProvider } from "src/contexts/error.context";
@@ -23,6 +24,7 @@ export const App = (): JSX.Element => {
                 <BridgeProvider>
                   <FormProvider>
                     <Layout>
+                      <AppHead />
                       <Router />
                     </Layout>
                   </FormProvider>
