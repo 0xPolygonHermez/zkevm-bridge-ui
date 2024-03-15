@@ -130,7 +130,7 @@ export const getChains = ({
       explorerUrl: polygonZkEVM.explorerUrl,
       Icon: PolygonZkEVMChainIcon,
       key: "polygon-zkevm",
-      name: polygonZkEVMNetworkName,
+      name: "Skopje Testnet",
       nativeCurrency: {
         decimals: 18,
         name: "SkpGPT",
