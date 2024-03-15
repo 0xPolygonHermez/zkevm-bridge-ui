@@ -116,8 +116,8 @@ export const getChains = ({
       name: getEthereumNetworkName(ethereumNetwork.chainId),
       nativeCurrency: {
         decimals: 18,
-        name: "Ether",
-        symbol: "ETH",
+        name: "SkpGPT",
+        symbol: "SkpGPT",
       },
       networkId: 0,
       poeContractAddress: ethereum.poeContractAddress,
@@ -133,8 +133,8 @@ export const getChains = ({
       name: polygonZkEVMNetworkName,
       nativeCurrency: {
         decimals: 18,
-        name: "Ether",
-        symbol: "ETH",
+        name: "SkpGPT",
+        symbol: "SkpGPT",
       },
       networkId: polygonZkEVM.networkId,
       provider: polygonZkEVMProvider,
@@ -148,8 +148,8 @@ export const getEtherToken = (chain: Chain): Token => {
     chainId: chain.chainId,
     decimals: 18,
     logoURI: ETH_TOKEN_LOGO_URI,
-    name: "Ether",
-    symbol: "ETH",
+    name: "SkpGPT",
+    symbol: "SkpGPT",
   };
 };
 
