@@ -2,7 +2,6 @@ import { FC, useEffect } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { providerError } from "src/adapters/error";
-import { ReactComponent as PolygonZkEVMLogo } from "src/assets/polygon-zkevm-logo.svg";
 import { useEnvContext } from "src/contexts/env.context";
 import { ProviderError } from "src/domain";
 import { routes } from "src/routes";
@@ -25,7 +24,6 @@ export const NetworkError: FC = () => {
 
   return parsedProviderError.success ? (
     <div className={classes.wrapper}>
-      <PolygonZkEVMLogo className={classes.logo} />
       <div className={classes.textBox}>
         <Typography type="h1">Network Error</Typography>
         <Typography type="body1">

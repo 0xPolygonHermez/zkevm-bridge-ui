@@ -15,11 +15,6 @@ export const useNetworkErrorStyles = createUseStyles((theme: Theme) => ({
     marginTop: theme.spacing(4),
     padding: [theme.spacing(1), theme.spacing(5)],
   },
-  logo: {
-    marginBottom: theme.spacing(4),
-    maxWidth: "300px",
-    width: "100%",
-  },
   textBox: {
     backgroundColor: theme.palette.white,
     borderRadius: 8,

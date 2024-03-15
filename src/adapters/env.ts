@@ -19,6 +19,7 @@ interface Env {
   VITE_FIAT_EXCHANGE_RATES_API_KEY?: string;
   VITE_FIAT_EXCHANGE_RATES_API_URL?: string;
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS?: string;
+  VITE_LOGO_PATH: string;
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1?: string;
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2?: string;
   VITE_OUTDATED_NETWORK_MODAL_TITLE?: string;
@@ -168,6 +169,7 @@ const envToDomain = ({
   VITE_FIAT_EXCHANGE_RATES_API_KEY,
   VITE_FIAT_EXCHANGE_RATES_API_URL,
   VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS,
+  VITE_LOGO_PATH,
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1,
   VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2,
   VITE_OUTDATED_NETWORK_MODAL_TITLE,
@@ -189,6 +191,7 @@ const envToDomain = ({
     VITE_ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT
   );
   const bridgeApiUrl = VITE_BRIDGE_API_URL;
+  const logoPath = VITE_LOGO_PATH;
   const outdatedNetworkModal: domain.Env["outdatedNetworkModal"] = isOutdatedNetworkModalEnabled
     ? {
         isEnabled: true,
@@ -235,6 +238,7 @@ const envToDomain = ({
       }),
       forceUpdateGlobalExitRootForL1,
       isDepositWarningEnabled,
+      logoPath,
       outdatedNetworkModal,
       reportForm: getReportFormEnv({
         VITE_ENABLE_REPORT_FORM,
@@ -264,6 +268,7 @@ const envParser = StrictSchema<Env, domain.Env>()(
       VITE_FIAT_EXCHANGE_RATES_API_KEY: z.string().optional(),
       VITE_FIAT_EXCHANGE_RATES_API_URL: z.string().url().optional(),
       VITE_FIAT_EXCHANGE_RATES_ETHEREUM_USDC_ADDRESS: z.string().length(42).optional(),
+      VITE_LOGO_PATH: z.string(),
       VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_1: z.string().optional(),
       VITE_OUTDATED_NETWORK_MODAL_MESSAGE_PARAGRAPH_2: z.string().optional(),
       VITE_OUTDATED_NETWORK_MODAL_TITLE: z.string().optional(),
